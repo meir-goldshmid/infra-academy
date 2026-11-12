@@ -12,9 +12,9 @@ Senior & Staff+: consensus, Kafka internals, tail latency, overload & metastable
 | | |
 |---|---|
 | 🎓 **CS Degree** | 13 units / 90 Duolingo-style lessons (logic, bits, proofs, logs, Big-O, probability, data structures, algorithms, graphs, calculus, linear algebra, theory of computation) with 10 interactive labs and mistake review — merged from CS Degree Quest |
-| 🎯 **Interview prep** | System design cases, LeetCode-style coding problems for infra roles, timed mock interviews, question bank, behavioral prep |
+| 🎯 **Interview prep** | Top 50 Senior→Principal questions reported at big tech (with what they test + answer outlines), system design cases, LeetCode-style coding problems for infra roles, timed mock interviews, question bank, behavioral prep |
 | 📚 **Lessons** | TL;DR → analogy → real explanation → diagram → hands-on commands → memory hook → pitfalls → interview Q&A → quiz |
-| 🎮 **Playground** | 11 simulators: load balancer, requests/limits & OOMKill, queues & DLQ, SLO/error budget, CIDR, firewall rules, k8s scheduler, DR (RPO/RTO), cache hit ratio, autoscaling, debug terminal |
+| 🎮 **Playground** | 12 simulators: cache eviction (LRU vs LFU vs FIFO), load balancer, requests/limits & OOMKill, queues & DLQ, SLO/error budget, CIDR, firewall rules, k8s scheduler, DR (RPO/RTO), cache hit ratio, autoscaling, debug terminal |
 | 📟 **On-call simulator** | Choose-your-own-adventure incidents (OOM crashloop, DNS, queue backlog, expired cert, region down, cost spike…) |
 | 🃏 **Flashcards** | Spaced repetition (Leitner) built from the glossary and interview questions |
 | ⌨️ **Command cookbook** | Every command from every lesson, searchable |

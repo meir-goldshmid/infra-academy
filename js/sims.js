@@ -789,4 +789,93 @@ Fix properly: raise memory request+limit (e.g. 512Mi) based on measured usage, o
       return null;
     }
   };
+  // =============== 12. Cache eviction: FIFO vs LRU vs LFU ===============
+  I.sims.eviction = {
+    icon: "🧹", track: "architecture",
+    title: { en: "Cache eviction lab: FIFO vs LRU vs LFU", he: "מעבדת Eviction: FIFO מול LRU מול LFU" },
+    desc: { en: "Same requests, same cache size, three eviction policies side by side. Click keys yourself or play a traffic pattern and see who wins — and when LRU collapses.", he: "אותן בקשות, אותו גודל cache, שלוש מדיניות eviction זו לצד זו. לחצו על מפתחות בעצמכם או הריצו תבנית תעבורה וראו מי מנצח — ומתי LRU קורס." },
+    mount(el, H) {
+      const t = T(H);
+      const KEYS = "ABCDEFGHIJ".split("");
+      el.innerHTML = `<div class="sim-controls">
+        ${slider("cap", t("Cache size (slots)", "גודל cache (משבצות)"), 2, 8, 1, 4)}
+        <label>${t("Traffic pattern", "תבנית תעבורה")}<select id="pat">
+          <option value="zipf">${t("Hot keys (Zipf) — realistic", "מפתחות חמים (Zipf) — מציאותי")}</option>
+          <option value="loop">${t("Loop over N+1 keys (cyclic scan)", "לולאה על N+1 מפתחות (סריקה מחזורית)")}</option>
+          <option value="scan">${t("Hot keys + a one-off big scan", "מפתחות חמים + סריקה חד-פעמית גדולה")}</option>
+          <option value="shift">${t("Popularity shift (yesterday's hits go cold)", "שינוי פופולריות (הלהיטים של אתמול מתקררים)")}</option>
+        </select></label>
+        <button class="btn small" id="play">▶ ${t("Play", "הפעלה")}</button>
+        <button class="btn small" id="step">⏭ ${t("Step", "צעד")}</button>
+        <button class="btn small" id="reset">↺ ${t("Reset", "איפוס")}</button></div>
+      <div style="display:flex;flex-wrap:wrap;gap:6px;margin:6px 0;direction:ltr">${KEYS.map(k => `<button class="btn small" data-k="${k}" style="min-width:2.4em;font-family:monospace">${k}</button>`).join("")}</div>
+      <div style="opacity:.75;font-size:.85em">${t("Click a key to request it, or use Play / Step.", "לחצו על מפתח כדי לבקש אותו, או Play / צעד.")}</div>
+      <div id="seq" style="font-family:monospace;font-size:.85em;opacity:.8;min-height:1.4em;direction:ltr;text-align:left;overflow:hidden;white-space:nowrap;margin-top:4px"></div>
+      <div id="cols" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-top:8px"></div>
+      <div class="sim-out" id="out"></div><div class="sim-lesson" id="lesson"></div>`;
+      const $ = (s) => el.querySelector(s);
+      let pols, seq, timer = null, step = 0;
+      const mk = (name) => ({ name, slots: [], meta: {}, hits: 0, miss: 0, last: null, evicted: null, clock: 0 });
+      const access = (p, k) => {
+        const cap = +$("#cap").value; const m = p.meta; p.clock++; p.evicted = null;
+        if (p.slots.includes(k)) {
+          p.hits++; p.last = "hit";
+          if (p.name !== "FIFO") m[k].used = p.clock;
+          if (p.name === "LFU") m[k].freq++;
+          return;
+        }
+        p.miss++; p.last = "miss";
+        if (p.slots.length >= cap) {
+          let victim;
+          if (p.name === "FIFO") victim = p.slots.reduce((a, b) => m[a].added <= m[b].added ? a : b);
+          else if (p.name === "LRU") victim = p.slots.reduce((a, b) => m[a].used <= m[b].used ? a : b);
+          else victim = p.slots.reduce((a, b) => (m[a].freq < m[b].freq || (m[a].freq === m[b].freq && m[a].used <= m[b].used)) ? a : b);
+          p.slots.splice(p.slots.indexOf(victim), 1); delete m[victim]; p.evicted = victim;
+        }
+        p.slots.push(k); m[k] = { added: p.clock, used: p.clock, freq: 1 };
+      };
+      const zipf = () => { const w = KEYS.map((_, i) => 1 / Math.pow(i + 1, 1.2)); let r = Math.random() * w.reduce((a, b) => a + b); for (let i = 0; i < w.length; i++) { r -= w[i]; if (r <= 0) return KEYS[i]; } return KEYS[0]; };
+      const next = () => {
+        const pat = $("#pat").value, cap = +$("#cap").value;
+        if (pat === "zipf") return zipf();
+        if (pat === "loop") return KEYS[step % Math.min(cap + 1, KEYS.length)];
+        if (pat === "scan") { const ph = step % 40, len = Math.min(KEYS.length - 3, cap + 2); if (ph >= 25 && ph < 25 + len) return KEYS[3 + (ph - 25)]; return KEYS[[0, 0, 1, 0, 2, 1, 0][step % 7]]; }
+        const hot = step < 30 ? ["A", "A", "B", "A", "B", "C"] : ["H", "I", "J", "H", "I", "H"];
+        return hot[Math.floor(Math.random() * hot.length)];
+      };
+      const render = (k) => {
+        const ratio = (p) => p.hits / Math.max(1, p.hits + p.miss);
+        const best = Math.max(...pols.map(ratio));
+        $("#seq").textContent = seq.join(" ");
+        $("#cols").innerHTML = pols.map(p => {
+          const col = p.last === "hit" ? css("--good") : p.last === "miss" ? css("--bad") : css("--border");
+          const rule = p.name === "FIFO" ? t("evicts the oldest inserted", "מוציא את מי שנכנס ראשון") : p.name === "LRU" ? t("evicts the least recently used", "מוציא את מי שלא נגעו בו הכי הרבה זמן") : t("evicts the least frequently used", "מוציא את הכי פחות פופולרי");
+          return `<div style="border:2px solid ${col};border-radius:10px;padding:8px">
+            <b>${p.name}</b> ${step && best > 0 && ratio(p) === best ? "🏆" : ""}<div style="font-size:.8em;opacity:.8">${rule}</div>
+            <div style="display:flex;flex-wrap:wrap;gap:4px;margin:6px 0;direction:ltr">${p.slots.map(s => `<span style="font-family:monospace;padding:3px 7px;border-radius:6px;background:${s === k ? (p.last === "hit" ? css("--good") : css("--accent")) : css("--border")};color:${s === k ? "#fff" : "inherit"}">${s}${p.name === "LFU" ? `<sub>${p.meta[s].freq}</sub>` : ""}</span>`).join("")}</div>
+            <div style="font-size:.85em;min-height:1.3em">${p.last ? (p.last === "hit" ? "✅ hit" : "❌ miss") : ""}${p.evicted ? ` · 🗑️ ${t("evicted", "הוצא")} ${p.evicted}` : ""}</div>
+            <div style="font-size:1.3em;font-weight:700">${fmt(ratio(p) * 100, 0)}%</div><small>${p.hits}/${p.hits + p.miss} hits</small></div>`;
+        }).join("");
+        $("#out").innerHTML = metric(t("Requests", "בקשות"), fmt(step));
+        const pat = $("#pat").value; let msg;
+        if (step < 8) msg = t("💡 Each column is the same cache size with a different eviction rule. Click keys or press Play.", "💡 כל עמודה היא אותו גודל cache עם כלל eviction אחר. לחצו על מפתחות או Play.");
+        else if (pat === "loop") msg = t("💥 Cyclic scan over N+1 keys: every policy here evicts exactly the key you need next → ~0% hits (LFU too: every key has the same count). A cache 1 slot too small is as bad as no cache. That's why databases use scan-resistant variants (Postgres ring buffers for sequential scans, InnoDB midpoint insertion).", "💥 סריקה מחזורית על N+1 מפתחות: כל המדיניות כאן מוציאות בדיוק את המפתח שיידרש הבא → כ-0% hits (גם LFU: לכל המפתחות אותו מונה). cache שקטן במשבצת אחת גרוע כמו בלי cache. בגלל זה מסדי נתונים משתמשים בגרסאות עמידות לסריקה (ring buffer ב-Postgres ל-seq scan, midpoint insertion ב-InnoDB).");
+        else if (pat === "scan") msg = t("🧽 A one-off scan pollutes LRU: it pushes out the hot keys. LFU remembers that A/B/C are popular and keeps them. Modern caches (Caffeine W-TinyLFU, Redis allkeys-lfu) mix recency and frequency.", "🧽 סריקה חד-פעמית 'מזהמת' את LRU: היא דוחפת החוצה את המפתחות החמים. LFU זוכר ש-A/B/C פופולריים ומשאיר אותם. caches מודרניים (Caffeine W-TinyLFU, Redis allkeys-lfu) משלבים recency ו-frequency.");
+        else if (pat === "shift") msg = t("🕰️ After the popularity shift, pure LFU clings to yesterday's heroes (A/B have big counters) while LRU adapts fast. That's why real LFU implementations decay counters over time (Redis lfu-decay-time).", "🕰️ אחרי שינוי הפופולריות, LFU טהור נאחז בלהיטים של אתמול (ל-A/B יש מונים גבוהים) בזמן ש-LRU מסתגל מהר. לכן מימושי LFU אמיתיים מדעיכים מונים עם הזמן (lfu-decay-time ב-Redis).");
+        else msg = t("📊 With skewed (Zipf) traffic LRU and LFU both beat FIFO; a bigger cache raises the hit ratio with diminishing returns. Interview tip: LRU = hashmap + doubly linked list → O(1) get/put.", "📊 בתעבורה מוטה (Zipf) גם LRU וגם LFU מנצחים את FIFO; cache גדול יותר מעלה את ה-hit ratio עם תשואה פוחתת. טיפ לראיון: LRU = hashmap + רשימה מקושרת דו-כיוונית → get/put ב-O(1).");
+        $("#lesson").innerHTML = msg;
+      };
+      const reset = () => { pols = [mk("FIFO"), mk("LRU"), mk("LFU")]; seq = []; step = 0; render(); };
+      const request = (k) => { seq.push(k); if (seq.length > 60) seq.shift(); pols.forEach(p => access(p, k)); step++; render(k); };
+      const stop = () => { if (timer) { clearInterval(timer); timer = null; } $("#play").textContent = "▶ " + t("Play", "הפעלה"); };
+      el.querySelectorAll("[data-k]").forEach(b => b.onclick = () => request(b.dataset.k));
+      $("#step").onclick = () => request(next());
+      $("#play").onclick = () => { if (timer) stop(); else { timer = setInterval(() => request(next()), 350); $("#play").textContent = "⏸ " + t("Pause", "השהיה"); } };
+      $("#reset").onclick = () => { stop(); reset(); };
+      $("#cap").oninput = (e) => { $("#capV").textContent = e.target.value; reset(); };
+      $("#pat").onchange = reset;
+      reset();
+      return () => { if (timer) clearInterval(timer); };
+    }
+  };
 })();

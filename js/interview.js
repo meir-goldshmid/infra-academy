@@ -120,14 +120,20 @@
       return null;
     }
     if (sub === "coding") {
-      let f = "all";
+      let f = "all", tag = "";
+      const tags = [...new Set(I.problems.flatMap(p => p.tags || []))].sort();
       const draw = () => {
-        const ps = I.problems.filter(p => f === "all" || p.difficulty === f || (f === "todo" && !iv.code[p.id]));
+        const ps = I.problems.filter(p => (f === "all" || p.difficulty === f || (f === "todo" && !iv.code[p.id])) && (!tag || (p.tags || []).includes(tag)));
         $("#plist").innerHTML = ps.map(p => `<a class="card lesson-item" href="#/interview/code/${p.id}"><span class="licon">${p.icon || "🧩"}</span><span class="ltext"><b>${esc(L(p.title))}</b><span>${(p.tags || []).join(" · ")}</span></span>${p.leetcode ? `<span class="tag">LC ${esc(p.leetcode)}</span>` : ""}<span class="tag" style="color:${diffColor[p.difficulty]}">${p.difficulty}</span><span class="check ${iv.code[p.id] ? "on" : ""}">${iv.code[p.id] ? "✓" : ""}</span></a>`).join("") || `<p class="muted">${t("comingSoon")}</p>`;
       };
       app.innerHTML = `${crumbs}<h1>🧩 ${T("Coding practice", "תרגול קוד")}</h1><p class="muted">${T("LeetCode-style problems picked for infra/backend roles — each tied to where it shows up in real systems.", "בעיות בסגנון LeetCode שנבחרו לתפקידי תשתיות/backend — כל אחת מקושרת למקום שבו היא מופיעה במערכות אמיתיות.")}</p>
-        <div class="row" style="margin-bottom:12px">${[["all", T("All", "הכול")], ["easy", "easy"], ["medium", "medium"], ["hard", "hard"], ["todo", T("Not solved yet", "עוד לא נפתרו")]].map(([k, l]) => `<button class="btn small" data-f="${k}">${l}</button>`).join("")}</div><div class="lesson-list" id="plist"></div>`;
-      $$("[data-f]").forEach(b => b.onclick = () => { f = b.dataset.f; draw(); }); draw();
+        <div class="row" style="margin-bottom:12px">${[["all", T("All", "הכול")], ["easy", "easy"], ["medium", "medium"], ["hard", "hard"], ["todo", T("Not solved yet", "עוד לא נפתרו")]].map(([k, l]) => `<button class="btn small" data-f="${k}">${l}</button>`).join("")}
+          <select id="ptag" class="btn small"><option value="">${T("Any pattern", "כל התבניות")}</option>${tags.map(x => `<option value="${esc(x)}">${esc(x)}</option>`).join("")}</select>
+          <span class="tag" id="pcount"></span></div><div class="lesson-list" id="plist"></div>`;
+      const draw0 = draw;
+      $$("[data-f]").forEach(b => b.onclick = () => { f = b.dataset.f; draw0(); $("#pcount").textContent = $("#plist").children.length; });
+      $("#ptag").onchange = (e) => { tag = e.target.value; draw0(); $("#pcount").textContent = $("#plist").children.length; };
+      draw(); $("#pcount").textContent = $("#plist").children.length;
       return null;
     }
     if (sub === "bank") {
@@ -142,6 +148,70 @@
         }).join("");
       };
       $("#bf").oninput = draw; draw(); return null;
+    }
+    if (sub === "top") {
+      const TQ = I.topQuestions || [];
+      iv.top = iv.top || {};
+      const cats = { design: ["🏛️", T("System design", "System design")], coding: ["🧩", T("Coding", "קוד")], infra: ["🛠️", T("Infra / SRE deep dive", "תשתיות / SRE לעומק")], behavioral: ["🗣️", T("Behavioral", "התנהגותי")], leadership: ["🧭", T("Staff+ leadership", "מנהיגות Staff+")] };
+      const lvls = { senior: "Senior", staff: "Staff", principal: "Principal" };
+      const lvlOrder = { senior: 1, staff: 2, principal: 3 };
+      const companies = [...new Set(TQ.flatMap(q => q.companies || []))].sort();
+      let fc = "", fl = "", fco = "", fq = "", todo = false;
+      app.innerHTML = `${crumbs}<h1>🏆 ${T("Top 50 @ Big Tech — Senior to Principal", "Top 50 בחברות הגדולות — Senior עד Principal")}</h1>
+        <p class="muted">${T("The questions most often reported in senior, staff and principal infra/platform/SRE/backend loops at Google, Amazon, Meta, Microsoft, Apple, Netflix, Nvidia and similar companies. Company tags mean \"commonly reported at\", not a guarantee. Say your answer out loud first, then open the outline.", "השאלות שהכי נפוצות בדיווחים מראיונות Senior, Staff ו-Principal לתפקידי תשתיות/פלטפורמה/SRE/backend ב-Google, Amazon, Meta, Microsoft, Apple, Netflix, Nvidia וחברות דומות. תגיות החברה אומרות \"מדווח לעיתים קרובות ב-\", לא הבטחה. קודם עונים בקול, ורק אז פותחים את התשובה.")}</p>
+        <div class="card" style="margin-bottom:12px"><b id="tqProg"></b><div class="rank-bar"><div id="tqBar" style="width:0"></div></div></div>
+        <div class="row" style="margin-bottom:8px">
+          <select id="tqc" class="btn small"><option value="">${T("All categories", "כל הקטגוריות")}</option>${Object.entries(cats).map(([k, v]) => `<option value="${k}">${v[0]} ${v[1]}</option>`).join("")}</select>
+          <select id="tql" class="btn small"><option value="">${T("All levels", "כל הרמות")}</option>${Object.entries(lvls).map(([k, v]) => `<option value="${k}">${v}</option>`).join("")}</select>
+          <select id="tqco" class="btn small"><option value="">${T("All companies", "כל החברות")}</option>${companies.map(c => `<option>${esc(c)}</option>`).join("")}</select>
+          <label class="btn small"><input type="checkbox" id="tqt"> ${T("Not practiced yet", "עוד לא תורגלו")}</label>
+          <button class="btn small" id="tqr">🎲 ${T("Random question", "שאלה אקראית")}</button></div>
+        <input id="tqf" type="text" class="btn" style="width:100%;font-weight:400;margin-bottom:8px" placeholder="${t("filter")}">
+        <div id="tql2"></div>`;
+      const linkLabel = (h) => {
+        const [, kind, a, b] = h.split("/");
+        if (kind === "lesson") { const l = C.lessons.find(x => x.id === a); return l ? "📚 " + esc(L(l.title)) : null; }
+        if (kind === "interview" && a === "design") { const d = I.designs.find(x => x.id === b); return d ? "🏛️ " + esc(L(d.title)) : null; }
+        if (kind === "interview" && a === "code") { const p = I.problems.find(x => x.id === b); return p ? "🧩 " + esc(L(p.title)) : null; }
+        if (kind === "oncall") { const s = (I.scenarios || []).find(x => x.id === a); return s ? "📟 " + esc(L(s.title)) : null; }
+        if (kind === "interview" && a === "behavioral") return "🗣️ " + T("Behavioral prep", "הכנה התנהגותית");
+        return null;
+      };
+      const item = (q, n) => {
+        const links = (q.links || []).map(h => { const lb = linkLabel(h); return lb ? `<a class="tag" href="${h}">${lb}</a>` : ""; }).join(" ");
+        return `<details class="qa" id="tq-${q.id}"><summary><span class="tag">${n}</span> ${cats[q.cat] ? cats[q.cat][0] : ""} ${L(q.q)} <span class="tag">${lvls[q.level] || ""}</span>${iv.top[q.id] ? ` <span class="tag" style="color:var(--good)">✓</span>` : ""}</summary>
+          <div style="margin-top:8px">
+            <div class="row" style="margin-bottom:6px">${(q.companies || []).map(c => `<span class="tag">${esc(c)}</span>`).join("")}</div>
+            <p>🎯 <b>${T("What they're really testing", "מה באמת בודקים")}:</b> ${L(q.signal)}</p>
+            <div>🧱 <b>${T("Answer outline", "שלד תשובה")}:</b>${L(q.outline)}</div>
+            ${q.levelUp ? `<blockquote>🚀 <b>${T("Staff/Principal level-up", "שדרוג לרמת Staff/Principal")}:</b> ${L(q.levelUp)}</blockquote>` : ""}
+            ${links ? `<div class="row" style="margin-top:8px">${links}</div>` : ""}
+            <label style="display:block;margin-top:10px"><input type="checkbox" data-tq="${q.id}" ${iv.top[q.id] ? "checked" : ""}> ${T("I practiced this out loud", "תרגלתי את זה בקול")}</label>
+          </div></details>`;
+      };
+      const draw = () => {
+        const s = fq.toLowerCase();
+        const list = TQ.filter(q => (!fc || q.cat === fc) && (!fl || q.level === fl) && (!fco || (q.companies || []).includes(fco)) && (!todo || !iv.top[q.id]) &&
+          (!s || C.strip(L(q.q) + " " + L(q.signal) + " " + L(q.outline)).toLowerCase().includes(s)));
+        const groups = Object.keys(cats).map(k => [k, list.filter(q => q.cat === k).sort((a, b) => (lvlOrder[a.level] || 0) - (lvlOrder[b.level] || 0))]).filter(g => g[1].length);
+        let n = 0;
+        $("#tql2").innerHTML = groups.map(([k, qs]) => `<h2>${cats[k][0]} ${cats[k][1]} <span class="tag">${qs.length}</span></h2>` + qs.map(q => item(q, ++n)).join("")).join("") || `<p class="muted">${TQ.length ? T("Nothing matches.", "אין התאמות.") : t("comingSoon")}</p>`;
+        const done = TQ.filter(q => iv.top[q.id]).length;
+        $("#tqProg").textContent = `${T("Practiced", "תורגלו")}: ${done}/${TQ.length}`;
+        $("#tqBar").style.width = (TQ.length ? 100 * done / TQ.length : 0) + "%";
+        $$("[data-tq]").forEach(cb => cb.onchange = () => {
+          const k = cb.dataset.tq;
+          if (cb.checked) { if (!iv.top[k]) { iv.top[k] = new Date().toISOString().slice(0, 10); C.addXP(15, "+15 XP 🏆"); } } else delete iv.top[k];
+          C.save(); draw(); const el = document.getElementById("tq-" + k); if (el) el.open = true;
+        });
+      };
+      $("#tqc").onchange = (e) => { fc = e.target.value; draw(); };
+      $("#tql").onchange = (e) => { fl = e.target.value; draw(); };
+      $("#tqco").onchange = (e) => { fco = e.target.value; draw(); };
+      $("#tqt").onchange = (e) => { todo = e.target.checked; draw(); };
+      $("#tqf").oninput = (e) => { fq = e.target.value.trim(); draw(); };
+      $("#tqr").onclick = () => { const els = [...$$("#tql2 details")]; if (!els.length) return; els.forEach(d => d.open = false); const d = els[Math.floor(Math.random() * els.length)]; d.scrollIntoView({ behavior: "smooth", block: "center" }); d.style.outline = "2px solid var(--accent)"; setTimeout(() => d.style.outline = "", 1500); };
+      draw(); return null;
     }
     if (sub === "behavioral") {
       app.innerHTML = `${crumbs}<h1>🗣️ ${T("Behavioral & scenario questions", "שאלות התנהגותיות ותרחישים")}</h1>
@@ -230,6 +300,7 @@
           <li>${T("Week 3: Architecture, Data, Observability + medium problems", "שבוע 3: ארכיטקטורה, מידע, Observability + בעיות medium")}</li>
           <li>${T("Week 4: Reliability, Cloud, senior designs, 3 mock interviews, behavioral stories", "שבוע 4: אמינות, ענן, designs לבכירים, 3 ראיונות מדומים, סיפורים התנהגותיים")}</li></ol></div></div>
       <div class="grid">
+        ${card("#/interview/top", "🏆", T("Top 50 @ Big Tech", "Top 50 בחברות הגדולות"), T("The most-reported Senior → Principal questions at Google, Amazon, Meta, Microsoft, Netflix, Nvidia & co — with what they test and an answer outline.", "השאלות הנפוצות ביותר לרמות Senior עד Principal ב-Google, Amazon, Meta, Microsoft, Netflix, Nvidia ודומות — מה בודקים ושלד תשובה."), I.topQuestions ? `${Object.keys(iv.top || {}).length}/${I.topQuestions.length} ✓` : "")}
         ${card("#/interview/design", "🏛️", "System design", T("Case studies with clarifying questions, real estimates, diagrams, deep dives and follow-ups.", "תרגילים עם שאלות הבהרה, הערכות אמיתיות, דיאגרמות, צלילות לעומק ושאלות המשך."), `${dDone}/${I.designs.length} ✓`)}
         ${card("#/interview/coding", "🧩", T("Coding (LeetCode-style)", "קוד (בסגנון LeetCode)"), T("Problems that matter for infra: LRU, rate limiters, consistent hashing, topo sort, heaps, intervals.", "בעיות שרלוונטיות לתשתיות: LRU, rate limiters, consistent hashing, topo sort, heaps, intervals."), `${cDone}/${I.problems.length} ✓`)}
         ${card("#/interview/mock", "🎙️", T("Mock interview", "ראיון מדומה"), T("Timed random questions from everything you learned. Self-graded, tracks your weak spots.", "שאלות אקראיות עם טיימר מכל מה שלמדת. דירוג עצמי, מזהה נקודות חולשה."), lastMock != null ? `${T("last", "אחרון")}: ${lastMock}%` : "")}

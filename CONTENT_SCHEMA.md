@@ -94,7 +94,7 @@ INFRA.scenarios.push({
 
 `lb` (load balancer), `resources` (CPU/memory requests & limits, throttling, OOMKill), `queue` (producer/consumer/backlog/DLQ),
 `slo` (error budget calculator), `cidr` (subnet calculator), `firewall` (ordered rule tester), `scheduler` (k8s scheduling & node failure),
-`dr` (RPO/RTO & DR strategy), `cache` (cache hit ratio & latency), `scaling` (autoscaling vs traffic), `terminal` (fake shell).
+`dr` (RPO/RTO & DR strategy), `cache` (cache hit ratio & latency), `scaling` (autoscaling vs traffic), `terminal` (fake shell), `eviction` (FIFO vs LRU vs LFU cache eviction side by side).
 
 ## Interview prep — system design case (`INFRA.designs`)
 

@@ -11,7 +11,7 @@ const files = process.argv.slice(2).length
   : fs.readdirSync(path.join(root, "content")).filter(f => f.endsWith(".js")).map(f => path.join("content", f));
 
 const TRACKS = ["foundations","linux","containers","kubernetes","networking","architecture","data","observability","reliability","cloud","staff"];
-const SIMS = ["lb","resources","queue","slo","cidr","firewall","scheduler","dr","cache","scaling","terminal"];
+const SIMS = ["lb","resources","queue","slo","cidr","firewall","scheduler","dr","cache","scaling","terminal","eviction"];
 const errors = [];
 const sandbox = {}; sandbox.window = sandbox; // like a browser: window.INFRA and bare INFRA are the same
 vm.createContext(sandbox);
@@ -20,7 +20,7 @@ for (const f of files) {
   catch (e) { errors.push(`${f}: PARSE/RUN ERROR ${e.message}`); }
 }
 const I = sandbox.window.INFRA || { lessons: [], glossary: [], scenarios: [] };
-I.lessons = I.lessons || []; I.glossary = I.glossary || []; I.scenarios = I.scenarios || []; I.designs = I.designs || []; I.problems = I.problems || [];
+I.lessons = I.lessons || []; I.glossary = I.glossary || []; I.scenarios = I.scenarios || []; I.designs = I.designs || []; I.problems = I.problems || []; I.topQuestions = I.topQuestions || [];
 const bi = (o, where) => {
   if (!o || typeof o !== "object" || typeof o.en !== "string" || typeof o.he !== "string" || !o.en.trim() || !o.he.trim())
     errors.push(`${where}: missing bilingual {en,he}`);
@@ -71,10 +71,27 @@ for (const p of I.problems) {
   (p.hints||[]).forEach((x,i) => bi(x, `${w}.hints[${i}]`));
   (p.followUps||[]).forEach((x,i) => { bi(x.q, `${w}.followUps[${i}].q`); bi(x.a, `${w}.followUps[${i}].a`); });
 }
+const seen = new Set();
+for (const x of [...I.designs, ...I.problems, ...I.topQuestions]) { if (seen.has(x.id)) errors.push(`duplicate id ${x.id}`); seen.add(x.id); }
+const TOP_CATS = ["design","coding","infra","behavioral","leadership"], TOP_LVLS = ["senior","staff","principal"];
+const linkOk = (h) => { const [, kind, a, b] = String(h).split("/");
+  if (kind === "lesson") return I.lessons.some(l => l.id === a);
+  if (kind === "oncall") return I.scenarios.some(s => s.id === a);
+  if (kind === "interview" && a === "design") return I.designs.some(d => d.id === b);
+  if (kind === "interview" && a === "code") return I.problems.some(p => p.id === b);
+  return kind === "interview" && a === "behavioral"; };
+for (const q of I.topQuestions) {
+  const w = `top ${q.id}`;
+  ["q","signal","outline"].forEach(k => bi(q[k], `${w}.${k}`));
+  if (q.levelUp) bi(q.levelUp, `${w}.levelUp`);
+  if (!TOP_CATS.includes(q.cat)) errors.push(`${w}: bad cat ${q.cat}`);
+  if (!TOP_LVLS.includes(q.level)) errors.push(`${w}: bad level ${q.level}`);
+  if (files.length >= 5) (q.links||[]).forEach(h => { if (!linkOk(h)) errors.push(`${w}: broken link ${h}`); });
+}
 const allIds = new Set(I.lessons.map(l => l.id));
 const dangling = [];
 for (const l of I.lessons) (l.related||[]).forEach(r => { if (!allIds.has(r)) dangling.push(`${l.id} -> ${r}`); });
-console.log(`lessons=${I.lessons.length} glossary=${I.glossary.length} scenarios=${I.scenarios.length} designs=${I.designs.length} problems=${I.problems.length}`);
+console.log(`lessons=${I.lessons.length} glossary=${I.glossary.length} scenarios=${I.scenarios.length} designs=${I.designs.length} problems=${I.problems.length} top=${I.topQuestions.length}`);
 if (dangling.length) console.log(`(info) related ids not found in loaded files: ${dangling.length}${files.length < 5 ? " (fine when validating a single file)" : ": " + dangling.join(", ")}`);
 if (errors.length) { console.log(`ERRORS (${errors.length}):\n` + errors.slice(0, 60).join("\n")); process.exit(1); }
 console.log("OK");
