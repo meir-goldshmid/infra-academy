@@ -19,7 +19,8 @@ The user opens Claude Code in this folder **instead of** an AI chat or Google. W
 - `content/*.js` — all lessons, glossary terms and on-call scenarios. Format: `CONTENT_SCHEMA.md`.
 - `content/my-lessons.js` — lessons written on request (`/teach`). Add new lessons here unless they clearly belong to an existing file.
 - `js/i18n.js` — UI strings, tracks, ranks. `js/app.js` — router & views. `js/sims.js` — interactive simulators.
-- `tools/validate.js` — **always run `node tools/validate.js` after changing content**; it must print `OK`.
+- `content/cs/<id>.js` + `content/cs-he/<id>.js` — CS Degree units (step-based lessons: learn/mcq/tf/input/order/widget) in English and Hebrew with identical structure; player in `js/cs.js`, labs in `js/cs-widgets.js`. Validate with `node tools/validate-cs.js`.
+- `tools/validate.js` — **always run `node tools/validate.js` (and `node tools/validate-cs.js` for CS changes) after changing content**; both must print OK.
 
 ## Rules
 

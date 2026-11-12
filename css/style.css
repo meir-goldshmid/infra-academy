@@ -239,3 +239,83 @@ textarea.notes { width: 100%; min-height: 110px; padding: 12px; border-radius: 1
 .confetti { position: fixed; top: -10px; font-size: 22px; z-index: 70; pointer-events: none; animation: fall 1.6s linear forwards; }
 @keyframes fall { to { transform: translateY(105vh) rotate(540deg); opacity: .2; } }
 @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+
+/* ================= CS Degree (merged from CS Degree Quest) ================= */
+:root { --card: var(--surface); --card2: var(--surface-2); --line: var(--border); --accent2: #0aa5c9; --gold: #e8a400; --fire: var(--warn);
+  --good-bg: color-mix(in srgb, var(--good) 22%, var(--surface)); --bad-bg: color-mix(in srgb, var(--bad) 20%, var(--surface)); --shadow: 0 3px 0 rgba(0,0,0,.12); }
+.cs-player { max-width: 760px; margin: 0 auto; }
+.cs-top { display: flex; align-items: center; gap: 10px; }
+.cs-stage { min-height: 240px; animation: fadein .25s; }
+.cs-stage h2 { font-size: 1.25rem; margin: .3em 0 .7em; }
+.cs-qlabel { font-size: .78em; font-weight: 800; letter-spacing: .05em; text-transform: uppercase; color: var(--accent); }
+.cs-choices .opt { display: flex; gap: 10px; align-items: center; }
+.cs-key { display: inline-grid; place-items: center; min-width: 24px; height: 24px; border-radius: 6px; border: 1px solid var(--border); font-size: .8em; color: var(--muted); }
+.opt.sel { border-color: var(--accent); box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 35%, transparent); }
+.cs-tf { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.cs-tf .opt { font-size: 1.15em; padding: 18px; text-align: center; }
+.cs-input { width: 100%; padding: 12px 14px; border-radius: 10px; border: 2px solid var(--border); background: var(--surface); color: var(--text); font: inherit; font-size: 1.1em; }
+.cs-input.right { border-color: var(--good); } .cs-input.wrong { border-color: var(--bad); }
+.cs-slots, .cs-pool { display: flex; flex-wrap: wrap; gap: 8px; min-height: 48px; padding: 10px; border-radius: 10px; margin-bottom: 10px; }
+.cs-slots { border: 2px dashed var(--border); }
+.cs-slots.right { border-color: var(--good); } .cs-slots.wrong { border-color: var(--bad); }
+.tok { padding: 8px 12px; border-radius: 10px; border: 1px solid var(--border); background: var(--surface); font-weight: 600; }
+.tok b { color: var(--accent); }
+.cs-foot { display: flex; gap: 12px; align-items: center; justify-content: space-between; flex-wrap: wrap; margin-top: 14px; padding: 14px 16px; border-radius: 14px; background: var(--surface-2); position: sticky; bottom: 10px; box-shadow: var(--shadow); }
+.cs-foot.good { background: var(--good-bg); } .cs-foot.bad { background: var(--bad-bg); }
+.cs-fb { flex: 1; min-width: 200px; } .cs-fb:empty { display: none; }
+.cs-foot .btn { min-width: 140px; justify-content: center; margin-inline-start: auto; }
+.cs-correct { font-weight: 700; margin: 4px 0; }
+.learn-body svg { max-width: 100%; height: auto; }
+.learn-body pre, .learn-body .formula { direction: ltr; }
+.learn-body table { display: table; }
+.dev::before { content: '💻 In your world'; }
+html[lang="he"] .dev::before { content: '💻 בעולם שלך'; }
+.learn-body p { margin: 10px 0; }
+.learn-body ul, .learn-body ol { padding-inline-start: 22px; }
+.learn-body li { margin: 4px 0; }
+.callout, .dev, .fun, .formula { border-radius: 14px; padding: 12px 14px; margin: 12px 0; }
+.callout { background: color-mix(in srgb, var(--accent) 18%, var(--card)); border-inline-start: 5px solid var(--accent); }
+.dev { background: color-mix(in srgb, var(--accent2) 14%, var(--card)); border-inline-start: 5px solid var(--accent2); }
+.dev::before { content: '💻 In your world'; display: block; font-size: 12px; font-weight: 900; text-transform: uppercase; letter-spacing: .08em; color: var(--accent2); margin-bottom: 4px; }
+.fun { background: color-mix(in srgb, var(--gold) 14%, var(--card)); border-inline-start: 5px solid var(--gold); }
+.formula { text-align: center; font-size: 22px; font-weight: 800; background: var(--card2); font-family: var(--mono); letter-spacing: .02em; overflow-x: auto; }
+.widget { background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 14px; margin: 12px 0; box-shadow: var(--shadow); }
+.widget .w-row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; justify-content: center; }
+.widget .readout { font-family: var(--mono); font-size: 15px; background: var(--card2); border-radius: 12px; padding: 10px 12px; margin-top: 10px; line-height: 1.6; }
+.widget .readout b { color: var(--accent2); }
+.widget input[type=range] { width: 100%; accent-color: var(--accent); }
+.widget canvas { width: 100%; display: block; border-radius: 12px; background: var(--card2); touch-action: none; }
+.bit { width: 34px; height: 46px; border-radius: 10px; font-family: var(--mono); font-weight: 900; font-size: 22px; background: var(--card2); border: 2px solid var(--line); display: flex; flex-direction: column; align-items: center; justify-content: center; line-height: 1; transition: .15s; }
+.bit small { font-size: 9px; color: var(--muted); font-weight: 700; margin-top: 3px; }
+.bit.on { background: var(--accent); border-color: var(--accent); color: #fff; transform: translateY(-3px); }
+.bit.on small { color: #e6ddff; }
+.tbtn { padding: 10px 18px; border-radius: 12px; font-weight: 900; font-family: var(--mono); background: var(--card2); border: 2px solid var(--line); font-size: 17px; }
+.tbtn.on { background: var(--good); color: #05261b; border-color: var(--good); }
+.truth-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 12px; }
+.truth-grid div { padding: 8px 10px; border-radius: 10px; font-family: var(--mono); font-weight: 800; display: flex; justify-content: space-between; background: var(--bad-bg); font-size: 15px; }
+.truth-grid div.t { background: var(--good-bg); }
+.gbars { display: flex; flex-direction: column; gap: 6px; margin-top: 10px; }
+.gbar { display: grid; grid-template-columns: 88px 1fr 84px; white-space: nowrap; align-items: center; gap: 8px; font-family: var(--mono); font-size: 12px; }
+.gbar .track { height: 18px; background: var(--card2); border-radius: 6px; overflow: hidden; }
+.gbar .fill { height: 100%; border-radius: 6px; transition: width .25s; min-width: 2px; }
+.gbar .num { text-align: right; font-size: 12px; color: var(--muted); }
+.sortbars { display: flex; align-items: flex-end; gap: 3px; height: 150px; padding: 6px; background: var(--card2); border-radius: 12px; }
+.sortbars i { flex: 1; background: var(--accent); border-radius: 4px 4px 0 0; transition: height .12s; }
+.sortbars i.cmp { background: var(--gold); }
+.sortbars i.swp { background: var(--bad); }
+.sortbars i.ok { background: var(--good); }
+.seg { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin-bottom: 10px; }
+.seg button { padding: 7px 12px; border-radius: 10px; background: var(--card2); border: 2px solid var(--line); font-weight: 800; font-size: 14px; }
+.seg button.on { border-color: var(--accent2); color: var(--accent2); }
+.buckets { display: grid; gap: 4px; margin-top: 10px; font-family: var(--mono); font-size: 13px; }
+.buckets div { display: flex; gap: 6px; align-items: center; padding: 4px 6px; border-radius: 8px; background: var(--card2); min-height: 32px; flex-wrap: wrap; }
+.buckets div b { color: var(--muted); width: 22px; }
+.buckets span { background: var(--accent); color: #fff; padding: 2px 8px; border-radius: 6px; animation: pop .3s; }
+.buckets span.hot { background: var(--bad); }
+.guess-grid { display: grid; grid-template-columns: repeat(10, 1fr); gap: 3px; margin: 10px 0; }
+.guess-grid i { aspect-ratio: 1; border-radius: 4px; background: var(--accent); transition: .3s; font-style: normal; font-size: 9px; display: grid; place-items: center; color: rgba(255,255,255,.75); }
+.guess-grid i.out { background: var(--card2); color: transparent; }
+.guess-grid i.hit { background: var(--good); color: #05261b; font-weight: 900; }
+.inline-input { padding: 10px 12px; border-radius: 12px; border: 2px solid var(--line); background: var(--card2); color: var(--text); font-size: 16px; font-weight: 700; width: 120px; }
+@keyframes pop { 0% { transform: scale(.6); opacity: 0; } 70% { transform: scale(1.12); } 100% { transform: scale(1); opacity: 1; } }
+.widget .small { font-size: .85em; } .widget .center { text-align: center; } .widget .grow { flex: 1; min-width: 0; }

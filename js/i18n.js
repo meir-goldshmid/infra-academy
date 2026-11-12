@@ -41,6 +41,7 @@ INFRA.ui = {
   navOncall: { en: "On-call", he: "תורנות" },
   navCards: { en: "Flashcards", he: "כרטיסיות" },
   navAsk: { en: "Ask", he: "שאל/י" },
+  navCS: { en: "CS Degree", he: "תואר CS" },
   navInterview: { en: "Interview prep", he: "הכנה לראיון" },
   navMore: { en: "More", he: "עוד" },
   navGlossary: { en: "Glossary", he: "מילון" },

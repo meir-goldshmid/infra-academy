@@ -10,6 +10,8 @@ alerting · SLI/SLO/SLA · error budgets · HA · BCDR (RPO/RTO) · incident man
 
 | | |
 |---|---|
+| 🎓 **CS Degree** | 13 units / 90 Duolingo-style lessons (logic, bits, proofs, logs, Big-O, probability, data structures, algorithms, graphs, calculus, linear algebra, theory of computation) with 10 interactive labs and mistake review — merged from CS Degree Quest |
+| 🎯 **Interview prep** | System design cases, LeetCode-style coding problems for infra roles, timed mock interviews, question bank, behavioral prep |
 | 📚 **Lessons** | TL;DR → analogy → real explanation → diagram → hands-on commands → memory hook → pitfalls → interview Q&A → quiz |
 | 🎮 **Playground** | 11 simulators: load balancer, requests/limits & OOMKill, queues & DLQ, SLO/error budget, CIDR, firewall rules, k8s scheduler, DR (RPO/RTO), cache hit ratio, autoscaling, debug terminal |
 | 📟 **On-call simulator** | Choose-your-own-adventure incidents (OOM crashloop, DNS, queue backlog, expired cert, region down, cost spike…) |
@@ -38,3 +40,4 @@ Open Claude Code in this folder (`claude`). `CLAUDE.md` turns it into an infra t
 ## Add content by hand
 
 See [`CONTENT_SCHEMA.md`](CONTENT_SCHEMA.md), then run `node tools/validate.js`.
+CS Degree units live in `content/cs/<id>.js` (English, `CQ.unit`) with Hebrew translations in `content/cs-he/<id>.js` (`CQ.unitHe`, identical structure); validate with `node tools/validate-cs.js`.

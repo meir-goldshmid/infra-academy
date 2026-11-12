@@ -87,7 +87,7 @@
     $$("[data-i18n]").forEach(el => el.textContent = t(el.dataset.i18n));
     $("#searchInput").placeholder = t("searchPlaceholder");
     $("#nav").innerHTML = [
-      ["#/", "navHome"], ["#/learn", "navLearn"], ["#/play", "navPlay"], ["#/oncall", "navOncall"], ["#/interview", "navInterview"],
+      ["#/", "navHome"], ["#/learn", "navLearn"], ["#/play", "navPlay"], ["#/oncall", "navOncall"], ["#/interview", "navInterview"], ["#/cs", "navCS"],
       ["#/cards", "navCards"], ["#/glossary", "navGlossary"], ["#/cookbook", "navCookbook"], ["#/ask", "navAsk"]
     ].map(([h, k]) => `<a href="${h}" data-route="${h}">${t(k)}</a>`).join("");
   }
@@ -96,7 +96,7 @@
     else document.documentElement.setAttribute("data-theme", S.theme);
     $("#themeBtn").textContent = S.theme === "dark" ? "☀️" : S.theme === "light" ? "🌙" : "🌓";
   }
-  $("#langBtn").onclick = () => { S.lang = S.lang === "he" ? "en" : "he"; save(); applyLang(); render(); };
+  $("#langBtn").onclick = () => { S.lang = S.lang === "he" ? "en" : "he"; save(); searchIndex = null; applyLang(); render(); };
   $("#themeBtn").onclick = () => { S.theme = S.theme === "auto" ? "dark" : S.theme === "dark" ? "light" : "auto"; save(); applyTheme(); };
 
   // ---------------- router ----------------
@@ -111,7 +111,8 @@
     });
     const app = $("#app");
     const views = { "": home, learn, track: viewTrack, lesson: viewLesson, play, oncall, cards, glossary, cookbook, ask };
-    if (route === "interview" && I.interview) { cleanup = I.interview.render(app, hash.split("/").slice(1).map(decodeURIComponent), ctx) || null; }
+    if (route === "cs" && window.CQ && CQ.render) { cleanup = CQ.render(app, hash.split("/").map(decodeURIComponent), ctx) || null; }
+    else if (route === "interview" && I.interview) { cleanup = I.interview.render(app, hash.split("/").slice(1).map(decodeURIComponent), ctx) || null; }
     else (views[route] || home)(app, arg ? decodeURIComponent(arg) : undefined);
     if (!location.hash.includes("#sec-")) window.scrollTo(0, 0);
   }
@@ -486,6 +487,7 @@ If the answer is worth keeping, also add it as a new lesson (or extend this one)
     I.scenarios.forEach(s => idx.push({ type: "📟", href: `#/oncall/${s.id}`, title: () => L(s.title), sub: () => t("oncallTitle"), hay: both(s.title).toLowerCase(), body: "" }));
     (I.designs || []).forEach(d => idx.push({ type: "🏛️", href: `#/interview/design/${d.id}`, title: () => `${d.icon || ""} ${L(d.title)}`, sub: () => strip(L(d.prompt)), hay: (both(d.title) + " " + both(d.prompt) + " " + d.id).toLowerCase(), body: strip((d.deepDives || []).map(x => both(x.h) + " " + both(x.body)).join(" ")).toLowerCase() }));
     (I.problems || []).forEach(p => idx.push({ type: "🧩", href: `#/interview/code/${p.id}`, title: () => `${p.icon || ""} ${L(p.title)}${p.leetcode ? " (LC " + p.leetcode + ")" : ""}`, sub: () => (p.tags || []).join(", "), hay: (both(p.title) + " " + (p.tags || []).join(" ") + " " + p.id + " lc" + (p.leetcode || "") + " " + (p.leetcode || "")).toLowerCase(), body: strip(both(p.statement)).toLowerCase() }));
+    if (window.CQ && CQ.searchItems) CQ.searchItems(S.lang).forEach(({ u, l, text }) => idx.push({ type: "🎓", href: `#/cs/lesson/${u.id}/${l.id}`, title: () => `${l.emoji} ${l.title}`, sub: () => `${u.emoji} ${u.title}`, hay: (l.title + " " + u.title).toLowerCase(), body: strip(text).toLowerCase() }));
     Object.entries(I.sims || {}).forEach(([id, s]) => idx.push({ type: "🎮", href: `#/play/${id}`, title: () => L(s.title), sub: () => L(s.desc), hay: (both(s.title) + " " + both(s.desc)).toLowerCase(), body: "" }));
     return idx;
   }
