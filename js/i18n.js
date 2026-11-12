@@ -21,7 +21,9 @@ INFRA.tracks = [
   { id: "reliability",  icon: "🛡️", color: "#2f9e44", title: { en: "Reliability & BCDR", he: "אמינות ו-BCDR" },
     blurb: { en: "SLI/SLO/SLA, error budgets, HA, disaster recovery, incidents, deployments.", he: "SLI/SLO/SLA, Error Budgets, HA, התאוששות מאסון, תקלות ו-Deployments." } },
   { id: "cloud",        icon: "☁️", color: "#0ca678", title: { en: "Cloud & DevOps", he: "ענן ו-DevOps" },
-    blurb: { en: "IaaS/PaaS, regions, AWS/Azure/GCP map, Terraform, CI/CD, IAM, FinOps.", he: "IaaS/PaaS, Regions, מפת AWS/Azure/GCP, Terraform, CI/CD, IAM ו-FinOps." } }
+    blurb: { en: "IaaS/PaaS, regions, AWS/Azure/GCP map, Terraform, CI/CD, IAM, FinOps.", he: "IaaS/PaaS, Regions, מפת AWS/Azure/GCP, Terraform, CI/CD, IAM ו-FinOps." } },
+  { id: "staff",        icon: "🧭", color: "#a61e4d", title: { en: "Senior & Staff+", he: "Senior ו-Staff+" },
+    blurb: { en: "Distributed systems depth, platform & security at scale, and the Staff/Principal skills: design docs, strategy, migrations, influence.", he: "עומק במערכות מבוזרות, פלטפורמה ואבטחה בסקייל, והכישורים של Staff/Principal: מסמכי design, אסטרטגיה, מיגרציות והשפעה." } }
 ];
 
 INFRA.ranks = [

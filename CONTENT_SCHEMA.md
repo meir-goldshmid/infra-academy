@@ -88,6 +88,7 @@ INFRA.scenarios.push({
 | observability | Metrics, logs, traces, alerting |
 | reliability | SLI/SLO/SLA, incidents, HA, BCDR |
 | cloud | Cloud models, IaC, CI/CD, IAM, security, FinOps |
+| staff | Senior & Staff+: distributed systems depth, platform/security at scale, design docs, strategy, migrations, leadership |
 
 ## Simulator ids (implemented in `js/sims.js`)
 

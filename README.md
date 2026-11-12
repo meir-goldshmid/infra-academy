@@ -4,7 +4,8 @@ Learn infrastructure & cloud like you'll be on-call tomorrow — in **Hebrew and
 
 Kubernetes · Docker · VMs · CPU & memory · Linux · networking · DNS · TLS · load balancers · VPCs · firewalls & network isolation ·
 microservices · queues & message brokers · caching · databases · replication & sharding · backups · metrics, logs & traces ·
-alerting · SLI/SLO/SLA · error budgets · HA · BCDR (RPO/RTO) · incident management · deployments · Terraform · CI/CD · IAM · FinOps.
+alerting · SLI/SLO/SLA · error budgets · HA · BCDR (RPO/RTO) · incident management · deployments · Terraform · CI/CD · IAM · FinOps ·
+Senior & Staff+: consensus, Kafka internals, tail latency, overload & metastable failures, cells, service mesh, zero trust, supply chain, eBPF, Postgres at scale, design docs, tech strategy, migrations at scale.
 
 ## What's inside
 
