@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Infra Academy</title>
+  <meta name="description" content="Learn infrastructure & cloud — Kubernetes, Docker, networking, observability, SRE, BCDR — in Hebrew and English, with analogies, simulators and an on-call game.">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛰️</text></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header class="topbar">
+    <a href="#/" class="brand"><span class="brand-icon">🛰️</span><span class="brand-name">Infra Academy</span></a>
+    <nav class="nav" id="nav"></nav>
+    <div class="top-actions">
+      <button class="search-btn" id="searchBtn" title="Search ( / )"><span>🔎</span><span class="search-hint" data-i18n="searchHint"></span><kbd>/</kbd></button>
+      <button class="icon-btn" id="langBtn" title="Language">EN</button>
+      <button class="icon-btn" id="themeBtn" title="Theme">🌙</button>
+      <div class="xp-pill" id="xpPill"></div>
+    </div>
+  </header>
+
+  <main id="app" class="app" tabindex="-1"></main>
+
+  <div class="modal" id="searchModal" hidden>
+    <div class="modal-backdrop" data-close></div>
+    <div class="modal-card search-card">
+      <input id="searchInput" class="search-input" autocomplete="off" spellcheck="false">
+      <div id="searchResults" class="search-results"></div>
+    </div>
+  </div>
+  <div class="toast" id="toast" hidden></div>
+
+  <!-- Content (plain scripts, no build step). Add new content files here. -->
+  <script src="content/foundations.js"></script>
+  <script src="content/linux.js"></script>
+  <script src="content/containers.js"></script>
+  <script src="content/kubernetes.js"></script>
+  <script src="content/k8s-platform-a.js"></script>
+  <script src="content/k8s-platform-b.js"></script>
+  <script src="content/networking.js"></script>
+  <script src="content/architecture.js"></script>
+  <script src="content/data.js"></script>
+  <script src="content/observability.js"></script>
+  <script src="content/reliability.js"></script>
+  <script src="content/cloud.js"></script>
+  <script src="content/scenarios.js"></script>
+  <script src="content/scenarios-k8s.js"></script>
+  <script src="content/interview-design.js"></script>
+  <script src="content/interview-coding.js"></script>
+  <script src="content/my-lessons.js"></script>
+
+  <script src="js/i18n.js"></script>
+  <script src="js/sims.js"></script>
+  <script src="js/interview.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
