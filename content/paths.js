@@ -11,11 +11,11 @@ INFRA.paths = INFRA.paths || [];
     title: { en: "Zero to Ops: How It All Works", he: "מאפס ל-Ops: איך הכול עובד" },
     blurb: {
       en: "Understand what really happens inside a server, a Linux box, a network and a container, so you can read any architecture diagram and debug the basics on your own.",
-      he: "להבין מה באמת קורה בתוך שרת, מכונת Linux, רשת וקונטיינר, כדי שתוכל/י לקרוא כל דיאגרמת ארכיטקטורה ולדבג את הבסיס לבד."
+      he: "להבין מה באמת קורה בתוך שרת, מכונת Linux, רשת וקונטיינר, כדי שתוכל לקרוא כל דיאגרמת ארכיטקטורה ולדבג את הבסיס לבד."
     },
     audience: {
       en: "Developers, juniors, career changers: anyone who can code a little but treats servers and networks as a black box.",
-      he: "מפתחים, ג'וניורים ומי שעושה הסבה: כל מי שיודע/ת לכתוב קצת קוד אבל מתייחס/ת לשרתים ולרשתות כקופסה שחורה."
+      he: "מפתחים, ג'וניורים ומי שעושה הסבה: כל מי שיודע לכתוב קצת קוד אבל מתייחס לשרתים ולרשתות כקופסה שחורה."
     },
     stages: [
       st("Stage 1 · The machine", "שלב 1 · המכונה",
@@ -341,7 +341,7 @@ INFRA.paths = INFRA.paths || [];
         ]),
       st("Stage 7 · Essentials nobody teaches", "שלב 7 · היסודות שאף אחד לא מלמד",
         "These are the topics behind the most embarrassing production bugs: time zones, encodings, auth, tenants, privacy. A principal knows them cold because they cut across every system.",
-        "אלה הנושאים שמאחורי באגי הפרודקשן הכי מביכים: time zones, קידודים, auth, tenants, פרטיות. Principal מכיר/ה אותם בעל פה, כי הם חוצים כל מערכת.",
+        "אלה הנושאים שמאחורי באגי הפרודקשן הכי מביכים: time zones, קידודים, auth, tenants, פרטיות. Principal מכיר אותם בעל פה, כי הם חוצים כל מערכת.",
         [
           s("pr-time-timestamps", "UTC, DST and monotonic clocks: the time bugs gallery.", "UTC, DST ושעונים מונוטוניים: גלריית באגי הזמן."),
           s("pr-encoding-serialization", "UTF-8, Base64, Protobuf and money as integers.", "UTF-8, Base64, Protobuf וכסף כמספר שלם."),
@@ -366,7 +366,43 @@ INFRA.paths = INFRA.paths || [];
           s("pr-big-data", "Batch, streaming and the lakehouse.", "Batch, streaming וה-lakehouse."),
           s("pr-backups-strategy", "Immutable backups and restore drills at principal level.", "גיבויים immutable ותרגולי שחזור ברמת Principal.")
         ]),
-      st("Stage 9 · Operate and lead", "שלב 9 · להפעיל ולהוביל",
+      st("Stage 9 · Security like a principal", "שלב 9 · אבטחה ברמת Principal",
+        "Security is a design property, not a scan at the end. Start from the threat model, learn the OWASP 2025 list as a map of how systems really get broken, then build the walls: crypto, network and tenant isolation, data protection and the security operations that catch what slips through.",
+        "אבטחה היא תכונה של ה-design, לא סריקה בסוף. מתחילים מ-threat model, לומדים את OWASP 2025 כמפה של איך מערכות באמת נפרצות, ואז בונים את החומות: קריפטוגרפיה, בידוד רשת ו-tenants, הגנה על מידע, ו-security operations שתופסים את מה שחמק.",
+        [
+          s("pr-threat-modeling", "Find the threats on the whiteboard, before they become CVEs.", "למצוא את האיומים על הלוח, לפני שהם הופכים ל-CVEs."),
+          s("pr-owasp-2025", "The 10 ways web apps really get broken in 2025, with vulnerable and fixed code.", "10 הדרכים שבהן אפליקציות באמת נפרצות ב-2025, עם קוד פגיע וקוד מתוקן."),
+          s("pr-owasp-api-llm", "APIs and LLM agents have their own top 10: BOLA, prompt injection, excessive agency.", "ל-APIs ול-LLM agents יש top 10 משלהם: BOLA, prompt injection, excessive agency."),
+          s("pr-applied-crypto-pki", "Envelope encryption, certificates and mTLS without rolling your own crypto.", "Envelope encryption, תעודות ו-mTLS בלי להמציא קריפטוגרפיה בעצמך."),
+          s("pr-network-isolation-deep", "Default-deny at every layer, and how to prove it works.", "Default-deny בכל שכבה, ואיך מוכיחים שזה עובד."),
+          s("pr-tenant-isolation-deep", "Tenant A must never see tenant B: enforce it end to end and test it.", "Tenant A לעולם לא רואה את tenant B: לאכוף את זה מקצה לקצה ולבדוק את זה."),
+          s("pr-data-security", "Classify, encrypt, tokenize and govern access to data.", "לסווג, להצפין, לעשות tokenization ולנהל גישה למידע."),
+          s("pr-security-ops", "Vulnerability SLAs, detections and security incident response.", "SLAs לחולשות, detections ותגובה לאירועי אבטחה.")
+        ]),
+      st("Stage 10 · Quality you can prove", "שלב 10 · איכות שאפשר להוכיח",
+        "A principal is trusted because their systems behave as promised. That trust is built from tests at the right level, validation at every boundary, deliberate error handling, APIs that don't break their callers and reviews that raise the bar.",
+        "סומכים על Principal כי המערכות שלו מתנהגות כמו שהובטח. האמון הזה נבנה מבדיקות ברמה הנכונה, ולידציה בכל גבול, טיפול מכוון בשגיאות, APIs שלא שוברים את מי שקורא להם, ו-code review שמרים את הרף.",
+        [
+          s("pr-unit-testing-craft", "Fast, deterministic unit tests that catch real bugs, not just coverage.", "Unit tests מהירים ודטרמיניסטיים שתופסים באגים אמיתיים, לא רק coverage."),
+          s("pr-integration-testing", "Testcontainers, contract tests and e2e: test the seams between systems.", "Testcontainers, contract tests ו-e2e: לבדוק את התפרים בין המערכות."),
+          s("pr-performance-testing", "Turn sizing estimates into measured numbers with k6 and flame graphs.", "להפוך הערכות sizing למספרים מדודים עם k6 ו-flame graphs."),
+          s("pr-input-validation", "Parse, don't validate: every boundary checks what comes in.", "Parse, don't validate: כל גבול בודק את מה שנכנס."),
+          s("pr-error-handling", "Fail closed, retry only what's transient, never swallow errors.", "Fail closed, retry רק למה שזמני, ואף פעם לא לבלוע שגיאות."),
+          s("pr-api-design", "API review: status codes, errors, versioning and compatibility.", "API review: status codes, שגיאות, versioning ותאימות לאחור."),
+          s("pr-enterprise-integrations", "SSO, SCIM, payments and CRM sync with real customers' systems.", "SSO, SCIM, תשלומים וסנכרון CRM מול מערכות של לקוחות אמיתיים."),
+          s("pr-code-review-quality", "Quality gates and code review that raise the bar without blocking.", "Quality gates ו-code review שמרימים את הרף בלי לחסום.")
+        ]),
+      st("Stage 11 · Follow the request end to end", "שלב 11 · לעקוב אחרי הבקשה מקצה לקצה",
+        "Now connect everything: step through real flows hop by hop and watch each earlier lesson show up in its place, from DNS and TLS to sagas, Kubernetes and the incident that ends in a postmortem. A principal can narrate any of these from memory.",
+        "עכשיו מחברים הכול: עוברים על תהליכים אמיתיים קפיצה אחר קפיצה ורואים כל שיעור קודם מופיע במקום שלו, מ-DNS ו-TLS ועד sagas, Kubernetes והתקלה שנגמרת ב-postmortem. Principal יכול לספר כל אחד מהם בעל פה.",
+        [
+          s("flow-url-to-page", "The classic: from typing a URL to pixels on screen.", "הקלאסיקה: מהקלדת URL ועד פיקסלים על המסך."),
+          s("flow-login-sso", "OIDC, PKCE and MFA, hop by hop.", "OIDC, PKCE ו-MFA, קפיצה אחר קפיצה."),
+          s("flow-checkout-payment", "Idempotency, sagas and webhooks working together for real money.", "Idempotency, sagas ו-webhooks עובדים יחד על כסף אמיתי."),
+          s("flow-commit-to-prod", "From git push to a signed, canaried release.", "מ-git push ועד release חתום שעבר canary."),
+          s("flow-alert-to-postmortem", "The incident lifecycle from the first page to the action items.", "מחזור החיים של תקלה, מה-page הראשון ועד ה-action items.")
+        ]),
+      st("Stage 12 · Operate and lead", "שלב 12 · להפעיל ולהוביל",
         "The last stage is what makes the title: making decisions in writing, setting strategy, running big migrations and influencing without authority. Finish by re-reading the Playbook from Stage 1, and it will read differently.",
         "השלב האחרון הוא מה שעושה את התואר: לקבל החלטות בכתב, לקבוע אסטרטגיה, להריץ מיגרציות גדולות ולהשפיע בלי סמכות. מסיימים בקריאה חוזרת של ה-Playbook משלב 1, והוא ייקרא אחרת.",
         [
@@ -377,6 +413,96 @@ INFRA.paths = INFRA.paths || [];
           s("staff-migrations-at-scale", "Moving 200 services without stopping the company.", "להעביר 200 שירותים בלי לעצור את החברה."),
           s("staff-influence", "Leading without authority.", "להוביל בלי סמכות."),
           s("staff-interview-loop", "How senior, staff and principal are actually scored.", "איך באמת מעריכים senior, staff ו-principal.")
+        ])
+    ]
+  });
+  // ------------------------------------------------------------------ 6. Security
+  INFRA.paths.push({
+    id: "security", icon: "🛡️", color: "#862e9c",
+    title: { en: "Security for Senior & Principal Engineers", he: "אבטחה ל-Senior ו-Principal" },
+    blurb: {
+      en: "Design systems that are hard to break and quick to recover: threat models, OWASP 2025, identity, crypto, network and tenant isolation, secure delivery and incident response.",
+      he: "לתכנן מערכות שקשה לפרוץ ומהר להתאושש מהן: threat models, OWASP 2025, זהות, קריפטוגרפיה, בידוד רשת ו-tenants, delivery מאובטח ותגובה לאירועים."
+    },
+    audience: {
+      en: "Backend, platform and infra engineers who own production systems. You should know HTTP, basic networking and how your services are deployed.",
+      he: "מהנדסי backend, פלטפורמה ותשתיות שאחראים על מערכות בפרודקשן. כדאי להכיר HTTP, רשתות בסיסיות ואיך השירותים שלך עולים לאוויר."
+    },
+    stages: [
+      st("Stage 1 · Think like an attacker", "שלב 1 · לחשוב כמו תוקף",
+        "Before any control, learn how systems are actually broken. The threat model gives you the map, and the OWASP lists tell you where attackers look first.",
+        "לפני כל control, לומדים איך מערכות באמת נפרצות. ה-threat model נותן לך את המפה, ורשימות OWASP אומרות לך איפה תוקפים מחפשים קודם.",
+        [
+          s("pr-threat-modeling", "Draw the data flow, mark trust boundaries, apply STRIDE.", "מציירים את זרימת המידע, מסמנים trust boundaries ומפעילים STRIDE."),
+          s("pr-owasp-2025", "The current top 10 web risks with vulnerable and fixed code.", "10 הסיכונים המובילים היום, עם קוד פגיע וקוד מתוקן."),
+          s("pr-security-owasp", "The fundamentals behind the list: injection, XSS, SSRF, IDOR.", "היסודות שמאחורי הרשימה: injection, XSS, SSRF, IDOR."),
+          s("pr-owasp-api-llm", "APIs and LLM agents: BOLA, prompt injection, excessive agency.", "APIs ו-LLM agents: BOLA, prompt injection, excessive agency.")
+        ]),
+      st("Stage 2 · Identity and secrets", "שלב 2 · זהות וסודות",
+        "Most breaches start with stolen or over-powered identities. Get authentication, authorization, keys and certificates right and half of the top 10 disappears.",
+        "רוב הפריצות מתחילות בזהות גנובה או עם יותר מדי הרשאות. אם עושים נכון authentication, authorization, מפתחות ותעודות, חצי מה-top 10 נעלם.",
+        [
+          s("pr-auth", "Sessions, JWT, OAuth/OIDC, passkeys and authorization models.", "Sessions, JWT, OAuth/OIDC, passkeys ומודלים של הרשאות."),
+          s("flow-login-sso", "Watch a full OIDC + MFA login, hop by hop.", "לראות login מלא של OIDC + MFA, קפיצה אחר קפיצה."),
+          s("cloud-iam-security", "Cloud IAM: least privilege for humans and workloads.", "IAM בענן: least privilege לאנשים ול-workloads."),
+          s("staff-zero-trust-secrets", "Zero trust and secrets management at scale.", "Zero trust וניהול סודות בסקייל."),
+          s("pr-applied-crypto-pki", "Envelope encryption, PKI, mTLS and signing.", "Envelope encryption, PKI, mTLS וחתימות.")
+        ]),
+      st("Stage 3 · Walls and blast radius", "שלב 3 · חומות ו-blast radius",
+        "Assume something will be breached and make sure it can't spread: isolate networks, tenants and data, and validate everything that crosses a boundary.",
+        "מניחים שמשהו ייפרץ ודואגים שזה לא יתפשט: מבודדים רשתות, tenants ומידע, ובודקים כל מה שחוצה גבול.",
+        [
+          s("pr-network-isolation-deep", "Default-deny from the VPC down to the Pod and the mesh.", "Default-deny מה-VPC ועד ה-Pod וה-mesh."),
+          s("k8s-security-policy", "Pod security, RBAC and admission policies in Kubernetes.", "Pod security, RBAC ו-admission policies ב-Kubernetes."),
+          s("pr-tenant-isolation-deep", "Enforce and test tenant isolation end to end.", "לאכוף ולבדוק בידוד tenants מקצה לקצה."),
+          s("pr-input-validation", "Every boundary validates what comes in.", "כל גבול בודק את מה שנכנס."),
+          s("pr-data-security", "Classify, encrypt and govern access to data.", "לסווג, להצפין ולנהל גישה למידע."),
+          s("pr-privacy", "Privacy by design, GDPR and the right to erasure.", "Privacy by design, GDPR והזכות להימחק.")
+        ]),
+      st("Stage 4 · Secure delivery and operations", "שלב 4 · Delivery ותפעול מאובטחים",
+        "Security has to survive every release and every 3 a.m. alert: sign what you ship, scan continuously, detect what slips through and practice the response.",
+        "האבטחה צריכה לשרוד כל release וכל התראה ב-3 בלילה: חותמים על מה שמשחררים, סורקים כל הזמן, מזהים את מה שחמק ומתרגלים את התגובה.",
+        [
+          s("staff-supply-chain", "SBOMs, SLSA and signed artifacts.", "SBOMs, SLSA ו-artifacts חתומים."),
+          s("flow-commit-to-prod", "Where each security gate sits in the pipeline.", "איפה כל security gate יושב ב-pipeline."),
+          s("pr-error-handling", "Fail closed and never leak internals in errors.", "Fail closed ואף פעם לא לחשוף פרטים פנימיים בשגיאות."),
+          s("pr-security-ops", "Vulnerability management, detections and incident response.", "ניהול חולשות, detections ותגובה לאירועים.")
+        ])
+    ]
+  });
+
+  // ------------------------------------------------------------------ 7. End-to-end flows
+  INFRA.paths.push({
+    id: "e2e-flows", icon: "🔄", color: "#0b7285",
+    title: { en: "End-to-End: Follow the Request", he: "מקצה לקצה: לעקוב אחרי הבקשה" },
+    blurb: {
+      en: "Step through ten real flows hop by hop, with latency, failure modes and what to monitor at each hop, until you can narrate any system from the first click to the database and back.",
+      he: "עוברים על עשרה תהליכים אמיתיים קפיצה אחר קפיצה, עם latency, נקודות כשל ומה לנטר בכל קפיצה, עד שתוכל לספר כל מערכת מהקליק הראשון ועד ה-DB ובחזרה."
+    },
+    audience: {
+      en: "Anyone preparing for system design interviews or joining a new team. Best after the Backend → Senior path, but each flow links to the lessons it uses.",
+      he: "כל מי שמתכונן לראיונות system design או מצטרף לצוות חדש. הכי טוב אחרי המסלול Backend → Senior, אבל כל תהליך מקשר לשיעורים שהוא משתמש בהם."
+    },
+    stages: [
+      st("Stage 1 · A user's request", "שלב 1 · הבקשה של המשתמש",
+        "Start with what users touch: a page load, a login, a purchase, an upload and an AI answer. Each one reuses DNS, TLS, load balancers and databases in a different way.",
+        "מתחילים במה שהמשתמש נוגע בו: טעינת עמוד, login, רכישה, העלאת קובץ ותשובה של AI. כל אחד משתמש מחדש ב-DNS, TLS, load balancers ו-databases בדרך אחרת.",
+        [
+          s("flow-url-to-page", "The base flow every other flow builds on.", "תהליך הבסיס שכל השאר נבנים עליו."),
+          s("flow-login-sso", "Identity in motion: redirects, codes and tokens.", "זהות בתנועה: redirects, codes ו-tokens."),
+          s("flow-checkout-payment", "Money needs idempotency, sagas and verified webhooks.", "כסף דורש idempotency, sagas ו-webhooks מאומתים."),
+          s("flow-file-upload", "Big files go around your servers, not through them.", "קבצים גדולים עוקפים את השרתים שלך, לא עוברים דרכם."),
+          s("flow-llm-request", "RAG, guardrails, streaming and cost per request.", "RAG, guardrails, streaming ועלות לכל בקשה.")
+        ]),
+      st("Stage 2 · The platform behind it", "שלב 2 · הפלטפורמה שמאחורה",
+        "Now the flows users never see: how code reaches production, how a Pod starts serving, how events become dashboards, how a new customer is provisioned and how an outage becomes a postmortem.",
+        "עכשיו התהליכים שהמשתמש לא רואה: איך קוד מגיע לפרודקשן, איך Pod מתחיל לקבל traffic, איך events הופכים לדשבורדים, איך לקוח חדש מוקם, ואיך תקלה הופכת ל-postmortem.",
+        [
+          s("flow-commit-to-prod", "CI, signing, GitOps and canary in one run.", "CI, חתימה, GitOps ו-canary בריצה אחת."),
+          s("flow-k8s-pod-lifecycle", "From kubectl apply to the first request, and back down.", "מ-kubectl apply ועד הבקשה הראשונה, ובחזרה למטה."),
+          s("flow-event-pipeline", "From a click to a chart: Kafka, Flink and the lakehouse.", "מקליק ועד גרף: Kafka, Flink וה-lakehouse."),
+          s("flow-tenant-onboarding", "Provisioning a SaaS tenant with real isolation.", "הקמת tenant ב-SaaS עם בידוד אמיתי."),
+          s("flow-alert-to-postmortem", "The incident from page to action items.", "התקלה מה-page ועד ה-action items.")
         ])
     ]
   });

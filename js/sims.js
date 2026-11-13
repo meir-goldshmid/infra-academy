@@ -778,7 +778,7 @@ Fix properly: raise memory request+limit (e.g. 512Mi) based on measured usage, o
         }
         if (key) print(C[key]()); else print(t(`command not found in this simulator: ${cmd}  (type 'help')`, `הפקודה לא קיימת בסימולטור: ${cmd}  (הקלידו help)`), css("--warn"));
       };
-      print(t("📟 PagerDuty: [P1] checkout — 100% of requests failing. You're on call. Type 'help' to start.", "📟 PagerDuty: [P1] checkout — 100% מהבקשות נכשלות. את/ה בתורנות. הקלידו help כדי להתחיל."), css("--bad"));
+      print(t("📟 PagerDuty: [P1] checkout — 100% of requests failing. You're on call. Type 'help' to start.", "📟 PagerDuty: [P1] checkout — 100% מהבקשות נכשלות. אתה בתורנות. הקלידו help כדי להתחיל."), css("--bad"));
       const inp = $("#in"); const hist = []; let hi = 0;
       inp.onkeydown = (e) => {
         if (e.key === "Enter") { hist.push(inp.value); hi = hist.length; run(inp.value); inp.value = ""; }

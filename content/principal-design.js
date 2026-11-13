@@ -9,7 +9,7 @@ INFRA.lessons.push({
   icon: "❓",
   level: 3,
   minutes: 16,
-  title: { en: "The Questions a Principal Asks Before Drawing a Box", he: "השאלות ש-Principal שואל/ת לפני שמציירים קופסה אחת" },
+  title: { en: "The Questions a Principal Asks Before Drawing a Box", he: "השאלות ש-Principal שואל לפני שמציירים קופסה אחת" },
   tldr: {
     en: "Architecture starts with questions, not boxes: who uses it, how much, how fast, how correct, how available, what it may cost — and, just as important, what we are explicitly NOT building.",
     he: "ארכיטקטורה מתחילה בשאלות, לא בקופסאות: מי משתמש, כמה, כמה מהר, כמה נכון, כמה זמין, כמה מותר לזה לעלות — ולא פחות חשוב, מה אנחנו במפורש לא בונים."
@@ -162,7 +162,7 @@ INFRA.lessons.push({
 <li>מה קורה אם הודעה נמסרת פעמיים? לא לפי הסדר? אף פעם?</li>
 <li>מה קורה אם region/AZ נעלם? אם ה-DB עושה failover באמצע טרנזקציה?</li>
 <li>מה קורה כש-deploy רע יוצא ב-3 בלילה? מי שם לב, כמה מהר, איך עושים rollback?</li>
-<li>מה קורה כשהמהנדס/ת המרכזי/ת עוזב/ת? זה מתועד ומשעמם מספיק בשביל מישהו אחר?</li>
+<li>מה קורה כשהמהנדס המרכזי עוזב? זה מתועד ומשעמם מספיק בשביל מישהו אחר?</li>
 </ul>
 <blockquote>⚠️ טיפ לפרודקשן: תשאלו "מי מקבל page, ומה הוא יראה?" לפני שהתכנון מאושר. אם התשובה היא "אה, צוות הפיתוח, ואולי לוגים", התכנון לא גמור.</blockquote>`
       }
@@ -965,7 +965,7 @@ Prod:        canary 5% for 30 min with auto-rollback; synthetic order every 60 s
 <li><strong>Synthetic probes</strong>: בוט מבצע הזמנת בדיקה אמיתית כל דקה מ-3 regions.</li>
 </ul>
 <p><strong>בדיקות flaky</strong> הן בעיית אמינות, לא מטרד: ברגע שאנשים לומדים "פשוט להריץ שוב", כישלונות אמיתיים מתעלמים מהם. מכניסים להסגר תוך יום (tag + טיקט + בעלים), מתקנים שורש (זמן, סדר, state משותף, sleeps במקום waits, התנגשויות פורטים), ועוקבים אחרי flake rate.</p>
-<p><strong>תוכנית בדיקות לשירות "orders" חדש</strong> (מה ש-Principal כותב/ת ב-design doc):</p>
+<p><strong>תוכנית בדיקות לשירות "orders" חדש</strong> (מה ש-Principal כותב ב-design doc):</p>
 <pre>Unit:        pricing, discounts, state machine transitions, idempotency logic (+ property tests for money)
 Integration: repository vs Postgres (Testcontainers), outbox -&gt; Kafka, migrations up/down
 Contract:    Pact with web/mobile consumers; provider verification vs payments API sandbox
@@ -1039,11 +1039,11 @@ INFRA.lessons.push({
   title: { en: "Validating Your Own Design (Before Production Does It for You)", he: "לאמת את התכנון של עצמך (לפני שהפרודקשן יעשה את זה בשבילך)" },
   tldr: {
     en: "A principal assumes their design is wrong somewhere and goes hunting: write it down, run a pre-mortem, threat-model it, list failure modes, prototype the riskiest part, load-test the estimates, invite skeptics — and after launch, compare reality to the prediction.",
-    he: "Principal מניח/ה שהתכנון שלו/ה שגוי איפשהו ויוצא/ת לצוד: כותבים אותו, עושים pre-mortem, threat model, רשימת failure modes, prototype לחלק הכי מסוכן, load test להערכות, מזמינים ספקנים — ואחרי ההשקה משווים את המציאות לתחזית."
+    he: "Principal מניח שהתכנון שלו שגוי איפשהו ויוצא לצוד: כותבים אותו, עושים pre-mortem, threat model, רשימת failure modes, prototype לחלק הכי מסוכן, load test להערכות, מזמינים ספקנים — ואחרי ההשקה משווים את המציאות לתחזית."
   },
   analogy: {
     en: "A pilot doesn't trust their memory or their confidence — they run a checklist before every takeoff, brief 'what we'll do if an engine fails on the runway' before it happens, practice failures in a simulator, and after landing, the flight data is reviewed. Experienced pilots use checklists more, not less. Self-validation is the engineer's pre-flight checklist and simulator.",
-    he: "טייס/ת לא סומך/ת על הזיכרון או על הביטחון העצמי — עוברים צ'קליסט לפני כל המראה, עושים תדריך 'מה נעשה אם מנוע ייכשל על המסלול' לפני שזה קורה, מתרגלים תקלות בסימולטור, ואחרי הנחיתה מנתחים את נתוני הטיסה. טייסים מנוסים משתמשים יותר בצ'קליסטים, לא פחות. אימות עצמי הוא הצ'קליסט והסימולטור של המהנדס/ת."
+    he: "טייס לא סומך על הזיכרון או על הביטחון העצמי — עוברים צ'קליסט לפני כל המראה, עושים תדריך 'מה נעשה אם מנוע ייכשל על המסלול' לפני שזה קורה, מתרגלים תקלות בסימולטור, ואחרי הנחיתה מנתחים את נתוני הטיסה. טייסים מנוסים משתמשים יותר בצ'קליסטים, לא פחות. אימות עצמי הוא הצ'קליסט והסימולטור של המהנדס."
   },
   sections: [
     {
@@ -1144,7 +1144,7 @@ Deploy        bad config         100% errors            canary analysis     auto
 <li>"p99 יישאר מתחת ל-300 ms עם 3 קריאות סדרתיות לשירותים?" → stubs לשירותים עם התפלגויות latency מציאותיות, מודדים.</li>
 <li>"אפשר להעביר 2 TB online?" → dry-run של ה-backfill על snapshot, מקרינים זמן.</li>
 </ul>
-<p>אחר כך משווים <strong>נמדד מול מוערך</strong>. אם המפית אמרה 800 req/s ל-core וה-prototype נותן 150, התכנון משתנה עכשיו — בזול. Principal לא צודק/ת כמעט אף פעם בכל מספר; הוא/היא צודק/ת בלדעת אילו מספרים חשובים ובלבדוק אותם מוקדם.</p>
+<p>אחר כך משווים <strong>נמדד מול מוערך</strong>. אם המפית אמרה 800 req/s ל-core וה-prototype נותן 150, התכנון משתנה עכשיו — בזול. Principal לא צודק כמעט אף פעם בכל מספר; הוא/היא צודק בלדעת אילו מספרים חשובים ובלבדוק אותם מוקדם.</p>
 <p><strong>Architecture fitness functions</strong> שומרות על תקפות התכנון לאורך זמן: בדיקות אוטומטיות ב-CI כמו "p99 של ה-benchmark של checkout &lt; 300 ms", "אף service לא מייבא את חבילת ה-DB של service אחר" (ArchUnit, dependency-cruiser), "image של container &lt; 300 MB", "אין S3 buckets ציבוריים" (OPA/Conftest).</p>
 <blockquote>💡 מהשטח: ה-"working backwards" של Amazon וה-design review של Google מצפים שההנחה הכי מסוכנת תזוהה במפורש. השאלה האהובה על reviewers: "מה החלק שאתה הכי פחות בטוח בו, ואיך בדקת אותו?"</blockquote>`
       }
@@ -1172,7 +1172,7 @@ Deploy        bad config         100% errors            canary analysis     auto
 <tr><td>Cost not estimated</td><td>Surprise bill in month 2</td></tr>
 </table>`,
         he: `<ul>
-<li><strong>בוחרים reviewers שיחלקו עליכם</strong>: ה-SRE שיקבל את ה-page, מהנדס/ת האבטחה, ה-DBA, principal מארגון אחר. reviewers ידידותיים נותנים reviews ידידותיים.</li>
+<li><strong>בוחרים reviewers שיחלקו עליכם</strong>: ה-SRE שיקבל את ה-page, מהנדס האבטחה, ה-DBA, principal מארגון אחר. reviewers ידידותיים נותנים reviews ידידותיים.</li>
 <li><strong>מבקשים התקפות ספציפיות</strong>: "בבקשה תנסה לשבור את סיפור העקביות בסעיף 4" מקבל פידבק טוב יותר מ-"LGTM?".</li>
 <li><strong>Red team לתכנון</strong>: התפקיד של מישהו לשעה הוא לטעון בעד האופציה שנדחתה. אם הוא ניצח — למדתם משהו.</li>
 <li><strong>להסביר לג'וניור ב-5 דקות</strong> על לוח. אם אי אפשר, זה או לא מובן או מורכב מדי. מורכבות שאי אפשר להסביר תתופעל רע ב-3 בלילה.</li>
@@ -1254,7 +1254,7 @@ pages / week         &lt; 2              6                 x3     4 were noisy l
   interview: [
     { q: { en: "How do you know your design is right before building it?", he: "איך יודעים שהתכנון נכון לפני שבונים אותו?" },
       a: { en: "You never fully know; you reduce risk systematically: write it down with explicit assumptions, identify the riskiest ones and spike them with measurements, run a pre-mortem and threat model, list failure modes with detection/mitigation, get adversarial review from the people who'll operate and secure it, add fitness functions so it stays valid, and after launch compare predictions to actuals.", he: "אף פעם לא יודעים לגמרי; מקטינים סיכון באופן שיטתי: כותבים עם הנחות מפורשות, מזהים את המסוכנות ועושים להן spike עם מדידות, מריצים pre-mortem ו-threat model, רושמים failure modes עם זיהוי/מיטיגציה, מקבלים review עוין מאלה שיתפעלו ויאבטחו, מוסיפים fitness functions כדי שהתכנון יישאר תקף, ואחרי ההשקה משווים תחזיות לבפועל." } },
-    { q: { en: "Tell me about a time your estimate was wrong.", he: "ספר/י על פעם שההערכה שלך הייתה שגויה." },
+    { q: { en: "Tell me about a time your estimate was wrong.", he: "ספר על פעם שההערכה שלך הייתה שגויה." },
       a: { en: "Strong answers own the miss, show detection ('our day-30 review showed peak was 4x not 3x'), the fix, and the systemic change ('we now derive peak factor from p99-per-minute history, not intuition'). The interviewer is testing calibration and learning, not perfection.", he: "תשובות חזקות לוקחות אחריות על הפספוס, מראות איך זוהה ('ה-review של יום 30 הראה שהשיא היה x4 ולא x3'), את התיקון, ואת השינוי המערכתי ('היום אנחנו גוזרים מקדם שיא מהיסטוריית p99 לדקה, לא מאינטואיציה'). המראיין בודק כיול ולמידה, לא שלמות." } }
   ],
   quiz: [
@@ -1525,7 +1525,7 @@ INFRA.lessons.push({
   title: { en: "The Principal Playbook: From Idea to Production (Capstone)", he: "ה-Playbook של Principal: מרעיון לפרודקשן (פרק מסכם)" },
   tldr: {
     en: "A principal runs the same loop every time — discover, require, estimate, compare options, write, review, build with tests, instrument, roll out safely, operate, learn — and at every step thinks in trade-offs, blast radius, reversibility, simplicity, cost and people.",
-    he: "Principal מריץ/ה את אותה לולאה בכל פעם — לגלות, לדרוש, להעריך, להשוות אופציות, לכתוב, לעבור review, לבנות עם בדיקות, להכשיר, להשיק בבטחה, לתפעל, ללמוד — ובכל שלב חושב/ת ב-trade-offs, blast radius, הפיכות, פשטות, עלות ואנשים."
+    he: "Principal מריץ את אותה לולאה בכל פעם — לגלות, לדרוש, להעריך, להשוות אופציות, לכתוב, לעבור review, לבנות עם בדיקות, להכשיר, להשיק בבטחה, לתפעל, ללמוד — ובכל שלב חושב ב-trade-offs, blast radius, הפיכות, פשטות, עלות ואנשים."
   },
   analogy: {
     en: "A head chef opening a new restaurant doesn't just cook well. They ask who the diners are and what they'll pay (requirements), size the kitchen for Friday night (sizing), choose between a wood oven and a convection oven knowing what each costs and breaks (trade-offs), write the recipes so any cook can repeat them (design doc), taste every dish before service (tests), watch ticket times on the pass (observability), open with a soft launch for friends (canary), and change the menu based on what came back uneaten (retro). Great principals are head chefs: the cooking is necessary but the system is the job.",
@@ -1587,7 +1587,7 @@ INFRA.lessons.push({
 <li><strong>הפיכות.</strong> דלתות חד-כיווניות מקבלות החלטות איטיות, כתובות, עם review; דו-כיווניות מקבלות החלטות מהירות ומואצלות. הופכים דלתות לדו-כיווניות כשאפשר (feature flags, מיגרציות expand/contract, אבסטרקציה בתפר האינטגרציה).</li>
 <li><strong>פשטות היא פיצ'ר.</strong> התכנון הכי טוב הוא הפשוט ביותר שעומד ב-NFRs. טכנולוגיה משעממת, פחות חלקים נעים, פחות שירותים. מורכבות צריכה להיות ממומנת ע"י דרישה.</li>
 <li><strong>מודעות לעלות.</strong> יודעים את העלות ליחידה (להזמנה, למשתמש, ל-GB) ואת השורות הכי גדולות. תכנון שעומד ב-SLO בפי 3 מהתקציב — שגוי.</li>
-<li><strong>תפעוליות.</strong> מי מקבל page, מה הוא רואה, מה הוא עושה. מתכננים בשביל המהנדס/ת העייף/ה ב-3 בלילה.</li>
+<li><strong>תפעוליות.</strong> מי מקבל page, מה הוא רואה, מה הוא עושה. מתכננים בשביל המהנדס העייף ב-3 בלילה.</li>
 <li><strong>דאטה חי יותר מקוד.</strong> Schemas, IDs, events וחוזים חיים עשור; שירותים נכתבים מחדש כל 3–5 שנים. מחלקים את מאמץ התכנון בהתאם.</li>
 <li><strong>אנשים וארגון.</strong> חוק Conway: הארכיטקטורה תשקף את מבנה הצוותים. Ownership, סקילים, גיוס ומסלול המיגרציה לצוותים אחרים הם חלק מהתכנון.</li>
 </ol>
@@ -1682,7 +1682,7 @@ INFRA.lessons.push({
 <li><strong>עושים on-call מדי פעם</strong>: שום דבר לא מכייל שיקול דעת תכנוני כמו לקבל page מהתכנון של עצמך.</li>
 <li><strong>מצמיחים אחרים</strong>: עושים review לתכנונים ע"י שאלות, לא הכתבת תשובות. המינוף שלכם הוא איכות ההחלטות שמתקבלות כשאתם לא בחדר.</li>
 </ul>
-<blockquote>⚠️ טיפ לפרודקשן: הדרך הכי מהירה לאבד אמון ברמת principal היא תשובה שגויה בביטחון. "אני לא יודע/ת — ככה הייתי בודק/ת את זה תוך יום" בונה יותר אמון מניחוש שמחופש לוודאות.</blockquote>`
+<blockquote>⚠️ טיפ לפרודקשן: הדרך הכי מהירה לאבד אמון ברמת principal היא תשובה שגויה בביטחון. "אני לא יודע — ככה הייתי בודק את זה תוך יום" בונה יותר אמון מניחוש שמחופש לוודאות.</blockquote>`
       }
     }
   ],
@@ -1716,14 +1716,14 @@ INFRA.lessons.push({
   ],
   interview: [
     { q: { en: "What distinguishes a principal engineer's design approach from a senior engineer's?", he: "מה מבדיל את גישת התכנון של Principal מזו של Senior?" },
-      a: { en: "Scope and starting point: a senior designs a good solution to a given problem; a principal questions the problem, frames goals/non-goals, compares options including buying or not building, quantifies trade-offs (cost, risk, reversibility, blast radius), designs for operations and org structure, validates assumptions early, and closes the loop by comparing predictions to reality — and makes many other engineers' decisions better through docs and reviews.", he: "היקף ונקודת התחלה: Senior מתכנן/ת פתרון טוב לבעיה נתונה; Principal מערער/ת על הבעיה, ממסגר/ת goals/non-goals, משווה אופציות כולל לקנות או לא לבנות, מכמת/ת trade-offs (עלות, סיכון, הפיכות, blast radius), מתכנן/ת לתפעול ולמבנה הארגוני, מאמת/ת הנחות מוקדם, וסוגר/ת את הלולאה בהשוואת תחזיות למציאות — ומשפר/ת את ההחלטות של הרבה מהנדסים אחרים דרך מסמכים ו-reviews." } },
-    { q: { en: "Walk me through how you'd approach 'our system is too slow' as a principal.", he: "תעביר/י אותי איך היית ניגש/ת ל'המערכת שלנו איטית מדי' כ-Principal." },
+      a: { en: "Scope and starting point: a senior designs a good solution to a given problem; a principal questions the problem, frames goals/non-goals, compares options including buying or not building, quantifies trade-offs (cost, risk, reversibility, blast radius), designs for operations and org structure, validates assumptions early, and closes the loop by comparing predictions to reality — and makes many other engineers' decisions better through docs and reviews.", he: "היקף ונקודת התחלה: Senior מתכנן פתרון טוב לבעיה נתונה; Principal מערער על הבעיה, ממסגר goals/non-goals, משווה אופציות כולל לקנות או לא לבנות, מכמת trade-offs (עלות, סיכון, הפיכות, blast radius), מתכנן לתפעול ולמבנה הארגוני, מאמת הנחות מוקדם, וסוגר את הלולאה בהשוואת תחזיות למציאות — ומשפר את ההחלטות של הרבה מהנדסים אחרים דרך מסמכים ו-reviews." } },
+    { q: { en: "Walk me through how you'd approach 'our system is too slow' as a principal.", he: "תעביר אותי איך היית ניגש ל'המערכת שלנו איטית מדי' כ-Principal." },
       a: { en: "Discover: slow for whom, which journey, since when, measured how (p50 vs p99)? Require: what target, what's the business cost? Measure: traces of slow requests, RED per dependency, USE on resources. Options: fix the hot query/index, add caching, remove a sync hop, scale a dependency, or accept and set expectations — with cost and risk for each. Validate with a spike/load test, roll out behind a flag/canary, add an SLO so regressions alert, and review predicted vs actual improvement.", he: "לגלות: איטי למי, איזה מסע, ממתי, נמדד איך (p50 מול p99)? לדרוש: מה היעד, מה העלות העסקית? למדוד: traces של בקשות איטיות, RED לכל dependency, USE על משאבים. אופציות: לתקן query/index חם, להוסיף caching, להוריד hop סינכרוני, להגדיל dependency, או לקבל ולתאם ציפיות — עם עלות וסיכון לכל אחת. לאמת עם spike/load test, להשיק מאחורי flag/canary, להוסיף SLO כדי שרגרסיות יתריעו, ולעשות review של שיפור צפוי מול בפועל." } },
     { q: { en: "How do you decide between building and buying?", he: "איך מחליטים בין לבנות ללקנות?" },
       a: { en: "Is it core to our differentiation? If not, lean buy. Compare total cost of ownership over 3 years (engineers × time + on-call + infra) vs license; check vendor SLA, limits, data residency, exit cost/lock-in, and whether integration is a two-way door (keep an abstraction at the seam). Often: buy now, abstract the interface, revisit when scale or needs change.", he: "זה ליבת הבידול שלנו? אם לא, נוטים לקנות. משווים עלות בעלות כוללת ל-3 שנים (מהנדסים × זמן + on-call + תשתית) מול רישיון; בודקים SLA של הספק, limits, data residency, עלות יציאה/lock-in, והאם האינטגרציה היא דלת דו-כיוונית (שומרים אבסטרקציה בתפר). הרבה פעמים: קונים עכשיו, עוטפים את הממשק, וחוזרים לזה כשהסקייל או הצרכים משתנים." } }
   ],
   quiz: [
-    { q: { en: "Where does a principal typically start?", he: "איפה Principal בדרך כלל מתחיל/ה?" },
+    { q: { en: "Where does a principal typically start?", he: "איפה Principal בדרך כלל מתחיל?" },
       options: [ { en: "Choosing the database", he: "בחירת ה-database" }, { en: "Writing code", he: "כתיבת קוד" }, { en: "Understanding the problem, users and success metric", he: "הבנת הבעיה, המשתמשים ומדד ההצלחה" }, { en: "Drawing the architecture diagram", he: "ציור דיאגרמת ארכיטקטורה" } ],
       answer: 2, explain: { en: "Step 1 is discovery — sometimes it shows no new system is needed.", he: "צעד 1 הוא גילוי — לפעמים הוא מראה שלא צריך מערכת חדשה." } },
     { q: { en: "Why include a 'buy' and a 'do something small now' option in a trade-off matrix?", he: "למה לכלול אופציית 'לקנות' ו'משהו קטן עכשיו' במטריצת trade-offs?" },

@@ -89,6 +89,7 @@ INFRA.scenarios.push({
 | reliability | SLI/SLO/SLA, incidents, HA, BCDR |
 | cloud | Cloud models, IaC, CI/CD, IAM, security, FinOps |
 | staff | Senior & Staff+: distributed systems depth, platform/security at scale, design docs, strategy, migrations, leadership |
+| flows | End-to-End Flows: one request followed hop by hop through every layer (lessons in this track must have a `flow`) |
 | principal | Principal Engineer Playbook: requirements & questions, sizing, testing, validation, DB kinds, scaling, CAP/PACELC, clusters, integration, idempotency, queues, rate limiters, 3rd-party deps, SOLID, design patterns, singletons, concurrency, event loop, async/await, GC, HTTP versions, email/SMS/realtime protocols |
 
 ## Simulator ids (implemented in `js/sims.js`)
@@ -160,3 +161,21 @@ INFRA.paths.push({
 
 Every `lesson` must be an existing lesson id (`node tools/validate.js` checks it).
 Lesson pages also link glossary terms automatically (first mention of each term, to the term's `lesson`), so give new glossary terms a `lesson`.
+
+## End-to-end flow (`flow` field on a lesson)
+
+Required for lessons in the `flows` track, optional elsewhere. The app renders it as an interactive stepper
+(actors strip, one hop at a time with running time total, failure box, Play, full step list).
+
+```js
+flow: {
+  actors: ["Browser", "DNS resolver", "CDN edge", "API service", "Postgres"],   // plain, short, language-neutral
+  steps: [
+    { from: 0, to: 1, ms: 20,                          // actor indexes; ms = time this hop adds (optional; any size, shown as ms/s/min/h/days)
+      label:  { en: "Resolve api.shop.com", he: "..." },                     // plain text
+      detail: { en: "<p>HTML: what happens, real config in <pre></p>", he },   // raw HTML: escape < > inside
+      fail:   { en: "HTML: what breaks, symptom, detection, mitigation", he } } // optional, include on most steps
+  ]
+}
+```
+12-20 steps per flow. `node tools/validate.js` checks indexes, bilingual fields and that `flows` lessons have a flow.

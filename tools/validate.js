@@ -10,7 +10,7 @@ const files = process.argv.slice(2).length
   ? process.argv.slice(2)
   : fs.readdirSync(path.join(root, "content")).filter(f => f.endsWith(".js")).map(f => path.join("content", f));
 
-const TRACKS = ["foundations","linux","containers","kubernetes","networking","architecture","data","observability","reliability","cloud","staff","principal"];
+const TRACKS = ["foundations","linux","containers","kubernetes","networking","architecture","data","observability","reliability","cloud","staff","flows","principal"];
 const SIMS = ["lb","resources","queue","slo","cidr","firewall","scheduler","dr","cache","scaling","terminal","eviction"];
 const errors = [];
 const sandbox = {}; sandbox.window = sandbox; // like a browser: window.INFRA and bare INFRA are the same
@@ -43,6 +43,18 @@ for (const l of I.lessons) {
     (q.options||[]).forEach((o,j) => bi(o, `${w}.quiz[${i}].options[${j}]`));
     if (!(q.answer >= 0 && q.answer < (q.options||[]).length)) errors.push(`${w}.quiz[${i}]: answer out of range`);
   });
+  if (l.flow) {
+    const f = l.flow, n = (f.actors || []).length;
+    if (!Array.isArray(f.actors) || n < 2 || f.actors.some(a => typeof a !== "string" || !a.trim())) errors.push(`${w}.flow: needs >=2 actor names`);
+    if (!Array.isArray(f.steps) || f.steps.length < 4) errors.push(`${w}.flow: needs >=4 steps`);
+    (f.steps || []).forEach((x, i) => {
+      const k = `${w}.flow.steps[${i}]`;
+      if (!(Number.isInteger(x.from) && x.from >= 0 && x.from < n && Number.isInteger(x.to) && x.to >= 0 && x.to < n)) errors.push(`${k}: from/to must be actor indexes`);
+      bi(x.label, `${k}.label`); bi(x.detail, `${k}.detail`); if (x.fail) bi(x.fail, `${k}.fail`);
+      if (x.ms != null && !(typeof x.ms === "number" && x.ms >= 0)) errors.push(`${k}: ms must be a number`);
+    });
+  }
+  if (l.track === "flows" && !l.flow) errors.push(`${w}: flows-track lessons need a flow`);
   if (l.playground && !SIMS.includes(l.playground)) errors.push(`${w}: unknown playground ${l.playground}`);
 }
 for (const g of I.glossary) { if (!g.term) errors.push("glossary term missing"); bi(g.def, `glossary ${g.term}`); }
@@ -109,6 +121,9 @@ for (const pth of I.paths) {
 }
 for (const l of I.lessons) (l.related||[]).forEach(r => { if (!allIds.has(r)) dangling.push(`${l.id} -> ${r}`); });
 console.log(`lessons=${I.lessons.length} glossary=${I.glossary.length} scenarios=${I.scenarios.length} designs=${I.designs.length} problems=${I.problems.length} top=${I.topQuestions.length} paths=${I.paths.length}`);
+{ const seenT = {}, dups = [];
+  for (const g of I.glossary) { const k = String(g.term || "").toLowerCase().replace(/[^a-z0-9֐-׿]/g, ""); if (seenT[k]) dups.push(`${g.term} (${seenT[k]} / ${g.lesson})`); else seenT[k] = g.lesson; }
+  if (dups.length) console.log(`(info) ${dups.length} duplicate glossary terms (the app keeps the first; prefer not adding new ones): ${files.length < 5 ? "" : dups.slice(0, 50).join(", ")}`); }
 if (dangling.length) console.log(`(info) related ids not found in loaded files: ${dangling.length}${files.length < 5 ? " (fine when validating a single file)" : ": " + dangling.join(", ")}`);
 if (errors.length) { console.log(`ERRORS (${errors.length}):\n` + errors.slice(0, 60).join("\n")); process.exit(1); }
 console.log("OK");

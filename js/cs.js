@@ -99,7 +99,7 @@
         if (pos >= queue.length) return finish();
         const s = queue[pos]; const st = $("#stage"); window.scrollTo(0, 0);
         const src = s._src ? `<div class="muted" style="font-size:.85em">${esc(s._src)}</div>` : "";
-        const retry = s._retry ? `<div class="cs-qlabel" style="color:var(--warn)">↻ ${T("Let's try that again", "בוא/י ננסה שוב")}</div>` : "";
+        const retry = s._retry ? `<div class="cs-qlabel" style="color:var(--warn)">↻ ${T("Let's try that again", "בוא ננסה שוב")}</div>` : "";
         if (s.type === "learn") {
           st.innerHTML = `${s.title ? `<h2 style="margin-top:0">${s.title}</h2>` : ""}<div class="learn-body">${s.html}</div>`;
           footer("", "", T("Continue", "המשך"), next);
@@ -109,7 +109,7 @@
           footer("", "", T("Continue", "המשך"), next);
         } else if (s.type === "mcq") {
           const order = shuffle(s.choices.map((c, i) => i)); let sel = null;
-          st.innerHTML = `${retry}${src}<div class="cs-qlabel">${T("Choose the answer", "בחר/י את התשובה")}</div><h2>${s.q}</h2><div class="opts cs-choices">${order.map((i, k) => `<button class="opt" data-i="${i}"><span class="cs-key">${k + 1}</span> ${s.choices[i]}</button>`).join("")}</div>`;
+          st.innerHTML = `${retry}${src}<div class="cs-qlabel">${T("Choose the answer", "בחר את התשובה")}</div><h2>${s.q}</h2><div class="opts cs-choices">${order.map((i, k) => `<button class="opt" data-i="${i}"><span class="cs-key">${k + 1}</span> ${s.choices[i]}</button>`).join("")}</div>`;
           const btn = footer("", "", T("Check", "בדיקה"), () => grade(sel === s.answer, s, () => $$(".opt", st).forEach(c => { c.disabled = true; if (+c.dataset.i === s.answer) c.classList.add("correct"); else if (+c.dataset.i === sel) c.classList.add("wrong"); }), s.choices[s.answer]), true);
           $$(".opt", st).forEach(c => c.onclick = () => { sel = +c.dataset.i; $$(".opt", st).forEach(x => x.classList.toggle("sel", x === c)); btn.disabled = false; });
         } else if (s.type === "tf") {
@@ -118,7 +118,7 @@
           const btn = footer("", "", T("Check", "בדיקה"), () => grade(sel === s.answer, s, () => $$(".opt", st).forEach(c => { c.disabled = true; const v = c.dataset.v === "1"; if (v === s.answer) c.classList.add("correct"); else if (v === sel) c.classList.add("wrong"); }), s.answer ? T("True", "נכון") : T("False", "לא נכון")), true);
           $$(".opt", st).forEach(c => c.onclick = () => { sel = c.dataset.v === "1"; $$(".opt", st).forEach(x => x.classList.toggle("sel", x === c)); btn.disabled = false; });
         } else if (s.type === "input") {
-          st.innerHTML = `${retry}${src}<div class="cs-qlabel">${T("Type the answer", "הקלד/י את התשובה")}</div><h2>${s.q}</h2><input class="cs-input" id="ans" placeholder="${esc(s.placeholder || T("Your answer", "התשובה שלך"))}" autocomplete="off" spellcheck="false">`;
+          st.innerHTML = `${retry}${src}<div class="cs-qlabel">${T("Type the answer", "הקלד את התשובה")}</div><h2>${s.q}</h2><input class="cs-input" id="ans" placeholder="${esc(s.placeholder || T("Your answer", "התשובה שלך"))}" autocomplete="off" spellcheck="false">`;
           const inp = $("#ans");
           const check = () => { if (!inp.value.trim()) return; const ok = inputCorrect(inp.value, s.answer); grade(ok, s, () => { inp.disabled = true; inp.classList.add(ok ? "right" : "wrong"); }, esc([].concat(s.answer)[0])); };
           const btn = footer("", "", T("Check", "בדיקה"), check, true);
@@ -128,7 +128,7 @@
         } else if (s.type === "order") {
           const pool = shuffle(s.items.map((t, i) => ({ t, i }))); if (pool.every((p, k) => p.i === k)) pool.reverse();
           const chosen = [];
-          st.innerHTML = `${retry}${src}<div class="cs-qlabel">${T("Put in order", "סדר/י לפי הסדר")}</div><h2>${s.q}</h2><div class="cs-slots" id="slots"></div><div class="cs-pool" id="pool"></div>`;
+          st.innerHTML = `${retry}${src}<div class="cs-qlabel">${T("Put in order", "סדר לפי הסדר")}</div><h2>${s.q}</h2><div class="cs-slots" id="slots"></div><div class="cs-pool" id="pool"></div>`;
           const btn = footer("", "", T("Check", "בדיקה"), () => { const ok = chosen.every((p, k) => p.i === k); grade(ok, s, () => { $("#slots").classList.add(ok ? "right" : "wrong"); $$(".tok", st).forEach(t => t.disabled = true); }, s.items.join(" → ")); }, true);
           const draw = () => {
             $("#slots").innerHTML = chosen.map((p, k) => `<button class="tok" data-k="${k}"><b>${k + 1}</b> ${p.t}</button>`).join("") || `<span class="muted" style="font-size:.85em">${T("Tap items below in the right order", "הקישו על הפריטים למטה לפי הסדר הנכון")}</span>`;

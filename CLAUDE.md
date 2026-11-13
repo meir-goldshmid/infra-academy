@@ -25,6 +25,8 @@ The user opens Claude Code in this folder **instead of** an AI chat or Google. W
 ## Rules
 
 - Every user-facing string is bilingual `{ en, he }`. Natural Israeli-engineer Hebrew, not literal translation.
+- Hebrew addresses the reader in **masculine singular only** (אתה, בחר, נסה). Never slash forms like את/ה, שאל/י, מהנדס/ת.
+- Keep terms Israeli engineers say in English in English inside Hebrew text: on-call, deploy, rollback, latency, TL;DR, hands-on, prompt, Pod… ("ללמוד תשתיות כאילו אתה on-call מחר", not "בתורנות").
 - Lesson ids are unique kebab-case; `track` must be one of the ids in `CONTENT_SCHEMA.md`; `playground` must be an existing sim id.
 - Content strings are rendered as HTML: escape `<` / `>` inside `<pre>`/`<code>`.
 - No build step, no npm dependencies, no frameworks. Keep it working from `file://` and GitHub Pages.

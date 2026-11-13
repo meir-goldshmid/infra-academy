@@ -985,7 +985,7 @@ window.INFRA.designs.push({
     { en: "Send/receive 1:1 and group messages (groups up to ~1,000 members) in real time.", he: "שליחה וקבלה של הודעות 1:1 ובקבוצות (עד ~1,000 חברים) ב-real time." },
     { en: "Offline delivery: messages queue for offline users and are delivered on reconnect, plus a push notification.", he: "Offline delivery: הודעות נשמרות למשתמש offline ונמסרות כשהוא מתחבר, יחד עם push notification." },
     { en: "Receipts: sent (server ack), delivered (recipient device ack), read.", he: "אישורים: sent (ack מהשרת), delivered (ack מהמכשיר של הנמען), read." },
-    { en: "Presence: online / last seen, typing indicators.", he: "Presence: online / last seen, ואינדיקציית 'מקליד/ה'." },
+    { en: "Presence: online / last seen, typing indicators.", he: "Presence: online / last seen, ואינדיקציית 'מקליד'." },
     { en: "Message history sync when a user opens a conversation or adds a device.", he: "Sync של היסטוריית הודעות כשפותחים שיחה או מוסיפים מכשיר." }
   ],
   nonFunctional: [

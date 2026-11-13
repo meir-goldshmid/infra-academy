@@ -433,3 +433,27 @@ body.wrap-code .code-head .wrap { background: color-mix(in srgb, var(--code-text
   .lesson-item .tag { display: none; }
   .steps li a { padding-inline-end: 6px; }
 }
+
+/* ---------- end-to-end flow stepper ---------- */
+.flowbox { border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); padding: 12px; }
+.fl-actors { display: flex; gap: 6px; overflow-x: auto; padding: 2px 2px 8px; scrollbar-width: thin; }
+.fl-actor { flex-shrink: 0; padding: 5px 10px; border-radius: 9px; border: 1px solid var(--border); background: var(--surface-2); font-size: .85em; font-weight: 600; color: var(--muted); white-space: nowrap; transition: all .2s; }
+.fl-actor.from { border-color: var(--warn); color: var(--text); background: color-mix(in srgb, var(--warn) 14%, var(--surface)); }
+.fl-actor.to { border-color: var(--accent); color: var(--text); background: color-mix(in srgb, var(--accent) 16%, var(--surface)); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 18%, transparent); }
+.fl-actor.from.to { border-color: var(--good); }
+.fl-card { padding: 12px 4px 4px; min-height: 150px; }
+.fl-card h3 { margin: 8px 0 6px; font-size: 1.08em; }
+.fl-hop { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.fl-n { width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center; background: var(--accent); color: var(--accent-ink); font-weight: 800; font-size: .85em; }
+.fl-arrow { color: var(--muted); }
+[dir="rtl"] .fl-arrow { display: inline-block; transform: scaleX(-1); }
+.fl-detail p:first-child { margin-top: 0; }
+.fl-fail { margin-top: 10px; padding: 8px 12px; border-radius: 9px; background: color-mix(in srgb, var(--bad) 9%, var(--surface)); border-inline-start: 4px solid var(--bad); font-size: .94em; }
+.fl-ctrl { margin-top: 8px; }
+.fl-ctrl .btn { min-width: 44px; justify-content: center; }
+.fl-bar { height: 4px; border-radius: 4px; background: var(--surface-2); overflow: hidden; margin: 10px 0 6px; }
+.fl-bar > div { height: 100%; background: var(--accent); transition: width .25s; }
+.fl-all summary { cursor: pointer; color: var(--muted); font-size: .9em; }
+.fl-all ol { margin: 8px 0 0; padding-inline-start: 22px; }
+.fl-all li { margin: 4px 0; font-size: .92em; }
+.fl-all a { color: var(--text); }

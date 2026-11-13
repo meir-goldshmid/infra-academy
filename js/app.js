@@ -3,6 +3,10 @@
   "use strict";
   const I = window.INFRA;
   I.lessons = I.lessons || []; I.glossary = I.glossary || []; I.scenarios = I.scenarios || [];
+  { // one entry per term ("Fail closed" == "Fail-closed"): keeps the glossary, flashcards and auto-links free of duplicates
+    const seenT = new Set();
+    I.glossary = I.glossary.filter(g => { const k = String(g.term || "").toLowerCase().replace(/[^a-z0-9֐-׿]/g, ""); if (seenT.has(k)) return false; seenT.add(k); return true; });
+  }
 
   // ---------------- state ----------------
   const KEY = "infra-academy-v1";
@@ -247,6 +251,54 @@
     const sp = $("#stopPath"); if (sp) sp.onclick = () => { S.path = null; save(); render(); };
   }
 
+  // interactive end-to-end flow stepper: actors strip + one hop at a time + full step list
+  function mountFlow(box, f) {
+    let i = 0, timer = null;
+    const steps = f.steps, total = (k) => steps.slice(0, k + 1).reduce((a, x) => a + (x.ms || 0), 0);
+    const hasMs = steps.some(x => x.ms);
+    const msTxt = (v) => {
+      const he = S.lang === "he", u = (en, h) => he ? h : en, r1 = (x) => (Math.round(x * 10) / 10).toString();
+      if (v < 1000) return Math.round(v) + " ms";
+      if (v < 60e3) return r1(v / 1e3) + " s";
+      if (v < 3600e3) return r1(v / 60e3) + u(" min", " דק'");
+      if (v < 86400e3) return r1(v / 3600e3) + u(" h", " שע'");
+      return r1(v / 86400e3) + u(" days", " ימים");
+    };
+    box.innerHTML = `<div class="fl-actors">${f.actors.map((a, k) => `<span class="fl-actor" data-a="${k}">${esc(a)}</span>`).join("")}</div>
+      <div class="fl-card" aria-live="polite"></div>
+      <div class="row fl-ctrl"><button class="btn small" data-fl="prev">‹</button><button class="btn small primary" data-fl="play"></button><button class="btn small" data-fl="next">›</button>
+        <span class="spacer"></span><span class="muted small fl-count"></span></div>
+      <div class="fl-bar"><div></div></div>
+      <details class="fl-all"><summary>${t("flowAll")} (${steps.length})</summary><ol>${steps.map((x, k) =>
+        `<li><a href="javascript:void 0" data-go="${k}"><b>${esc(f.actors[x.from])} → ${esc(f.actors[x.to])}</b> · ${esc(L(x.label))}${x.ms ? ` <span class="muted small">+${msTxt(x.ms)}</span>` : ""}</a></li>`).join("")}</ol></details>`;
+    const card = $(".fl-card", box), play = $('[data-fl="play"]', box);
+    function show() {
+      const x = steps[i];
+      $$(".fl-actor", box).forEach(el => { const a = +el.dataset.a; el.className = "fl-actor" + (a === x.from ? " from" : "") + (a === x.to ? " to" : ""); });
+      const act = $(`.fl-actor[data-a="${x.to}"]`, box); if (act) act.scrollIntoView({ block: "nearest", inline: "center", behavior: "smooth" });
+      card.innerHTML = `<div class="fl-hop"><span class="fl-n">${i + 1}</span><b>${esc(f.actors[x.from])}</b><span class="fl-arrow">→</span><b>${esc(f.actors[x.to])}</b>
+          ${x.ms ? `<span class="tag">+${msTxt(x.ms)}</span>` : ""}${hasMs ? `<span class="tag on">⏱ ${t("flowTotal")}: ${msTxt(total(i))}</span>` : ""}</div>
+        <h3>${esc(L(x.label))}</h3><div class="fl-detail">${L(x.detail)}</div>
+        ${x.fail ? `<div class="fl-fail">💥 <b>${t("flowFail")}:</b> ${L(x.fail)}</div>` : ""}`;
+      enhanceCode(card);
+      $(".fl-count", box).textContent = fmt("flowStep", i + 1, steps.length);
+      $(".fl-bar > div", box).style.width = ((i + 1) / steps.length * 100) + "%";
+      $('[data-fl="prev"]', box).disabled = i === 0; $('[data-fl="next"]', box).disabled = i === steps.length - 1;
+      play.textContent = timer ? "⏸ " + t("flowPause") : "▶ " + t("flowPlay");
+    }
+    const stopPlay = () => { if (timer) { clearInterval(timer); timer = null; } };
+    $('[data-fl="prev"]', box).onclick = () => { stopPlay(); if (i > 0) { i--; show(); } };
+    $('[data-fl="next"]', box).onclick = () => { stopPlay(); if (i < steps.length - 1) { i++; show(); } };
+    play.onclick = () => {
+      if (timer) { stopPlay(); show(); return; }
+      if (i >= steps.length - 1) i = 0;
+      timer = setInterval(() => { if (i < steps.length - 1) { i++; show(); } else { stopPlay(); show(); } }, 3200); show();
+    };
+    $$("[data-go]", box).forEach(a => a.onclick = () => { stopPlay(); i = +a.dataset.go; show(); card.scrollIntoView({ block: "nearest", behavior: "smooth" }); });
+    show();
+    return stopPlay;
+  }
+
   function pathPos(l) {
     const p = pathById[S.path]; if (!p) return null;
     const steps = pathSteps(p); const i = steps.findIndex(x => x.lesson === l.id);
@@ -298,7 +350,7 @@
     if (!root) return; if (!glossMap) buildGloss(); if (!glossRe) return;
     const used = new Set(); let count = 0;
     const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, { acceptNode: n =>
-      n.parentElement.closest("pre, code, a, h1, h2, h3, summary, .codebox, .cmd, .quiz, button, textarea, .chips") ? NodeFilter.FILTER_REJECT : NodeFilter.FILTER_ACCEPT });
+      n.parentElement.closest("pre, code, a, h1, h2, h3, summary, .codebox, .cmd, .quiz, button, textarea, .chips, .fl-actors, .fl-hop, .fl-all") ? NodeFilter.FILTER_REJECT : NodeFilter.FILTER_ACCEPT });
     const nodes = []; while (walker.nextNode()) nodes.push(walker.currentNode);
     for (const node of nodes) {
       if (count >= 30) break;
@@ -492,6 +544,7 @@
     body += contextBox(l);
     if (l.analogy) body += `<div class="card analogy" style="margin-top:16px"><div class="label">🎭 ${t("analogy")}</div><div>${L(l.analogy)}</div></div>`;
     (l.sections || []).forEach((s, i) => { body += sec("s" + i, esc(L(s.h)), `<div class="section-body">${L(s.body)}</div>`); });
+    if (l.flow && l.flow.steps && l.flow.steps.length) body += sec("flow", "🔄 " + t("flowTitle"), `<div class="flowbox" id="flowBox"></div>`);
     if (l.diagram) body += sec("diagram", "🖼️ " + t("diagram"), `<div class="diagram"><pre>${esc(l.diagram)}</pre></div>`);
     if (l.playground && I.sims && I.sims[l.playground]) body += sec("play", "🎮 " + t("playground") + ` <a class="btn small" href="#/play/${l.playground}">${t("openFull")}</a>`, `<div id="lessonSim"></div>`);
     if (l.handsOn && l.handsOn.length) body += sec("hands", "⌨️ " + t("handsOn"), l.handsOn.map(h => `<div class="cmd"><code>${esc(h.cmd)}</code><button class="btn small" data-copy="${esc(h.cmd)}">${t("copy")}</button><div class="what">${L(h.what)}</div></div>`).join(""));
@@ -528,6 +581,7 @@
     $$("[data-copy]", app).forEach(b => b.onclick = () => copy(b.dataset.copy));
     $$("[data-sec]", app).forEach(a => a.onclick = () => { const s = $("#sec-" + a.dataset.sec); if (s) s.scrollIntoView({ behavior: "smooth" }); const d = a.closest(".toc-m"); if (d) d.open = false; });
     const cb = $("#ctxBox"); if (cb) cb.ontoggle = () => { S.ctxClosed = !cb.open; save(); };
+    if (l.flow && $("#flowBox")) { const stop = mountFlow($("#flowBox"), l.flow); const prev = cleanup; cleanup = () => { stop(); if (prev) prev(); }; }
     linkGlossary($(".lesson", app), l.id);
     readBar(true);
     if (l.quiz) { const qb = $("#quizBox"); l.quiz.forEach((q, i) => { const d = document.createElement("div"); qb.appendChild(d); renderQuizQ(d, q, l.id + ":" + i, 10); }); }
@@ -538,7 +592,7 @@
       const b = $("#doneBtn"); b.textContent = t("done"); b.classList.remove("primary"); b.classList.add("good");
     };
     $("#askCopy").onclick = () => copy(lessonPrompt(l, $("#askQ").value));
-    if (l.playground && I.sims && I.sims[l.playground]) cleanup = mountSim($("#lessonSim"), l.playground);
+    if (l.playground && I.sims && I.sims[l.playground]) { const sc = mountSim($("#lessonSim"), l.playground); const pc = cleanup; cleanup = () => { if (typeof sc === "function") sc(); if (pc) pc(); }; }
   }
 
   function lessonPrompt(l, question) {
@@ -708,7 +762,7 @@ If the answer is worth keeping, also add it as a new lesson (or extend this one)
         <div class="row" style="margin-top:8px">
           <select id="pbStyle" class="btn">
             <option value="eli5">${he ? "🧒 תסביר לי כמו לילד בן 5" : "🧒 Explain like I'm 5"}</option>
-            <option value="eng" selected>${he ? "🧑‍💻 כמו למפתח/ת" : "🧑‍💻 Like to a developer"}</option>
+            <option value="eng" selected>${he ? "🧑‍💻 כמו למפתח" : "🧑‍💻 Like to a developer"}</option>
             <option value="senior">${he ? "🧙 צלילה לעומק (Senior)" : "🧙 Deep dive (senior)"}</option>
             <option value="interview">${he ? "🎤 תכין אותי לראיון" : "🎤 Prep me for an interview"}</option>
             <option value="debug">${he ? "🚒 עזור לי לדבג תקלה" : "🚒 Help me debug an incident"}</option>

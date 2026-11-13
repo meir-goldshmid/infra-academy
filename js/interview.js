@@ -7,32 +7,32 @@
   const $$ = (s, r) => Array.from((r || document).querySelectorAll(s));
 
   const behavioral = [
-    { q: { en: "Tell me about the worst production incident you were part of.", he: "ספר/י על התקלה הכי גרועה בפרודקשן שהיית חלק ממנה." },
-      tip: { en: "STAR: Situation (impact in numbers), Task (your role — IC? responder?), Action (how you detected, mitigated FIRST, then found root cause), Result (MTTR, postmortem action items you drove). Show blamelessness.", he: "STAR: Situation (ההשפעה במספרים), Task (התפקיד שלך — IC? מגיב/ה?), Action (איך זוהה, איך ייצבתם קודם, ואז שורש הבעיה), Result (MTTR, ה-action items מה-postmortem שהובלת). להראות גישה blameless." } },
+    { q: { en: "Tell me about the worst production incident you were part of.", he: "ספר על התקלה הכי גרועה בפרודקשן שהיית חלק ממנה." },
+      tip: { en: "STAR: Situation (impact in numbers), Task (your role — IC? responder?), Action (how you detected, mitigated FIRST, then found root cause), Result (MTTR, postmortem action items you drove). Show blamelessness.", he: "STAR: Situation (ההשפעה במספרים), Task (התפקיד שלך — IC? מגיב?), Action (איך זוהה, איך ייצבתם קודם, ואז שורש הבעיה), Result (MTTR, ה-action items מה-postmortem שהובלת). להראות גישה blameless." } },
     { q: { en: "How do you decide between shipping a feature and improving reliability?", he: "איך מחליטים בין לשחרר פיצ'ר לבין לשפר אמינות?" },
       tip: { en: "Talk SLOs and error budgets: budget left → ship; budget burned → reliability work wins. Data over opinions.", he: "לדבר על SLO ו-error budget: נשאר תקציב → משחררים; נשרף → עבודת אמינות מנצחת. נתונים במקום דעות." } },
-    { q: { en: "Tell me about a time you reduced cloud cost.", he: "ספר/י על פעם שהורדת עלויות ענן." },
+    { q: { en: "Tell me about a time you reduced cloud cost.", he: "ספר על פעם שהורדת עלויות ענן." },
       tip: { en: "Numbers! Baseline → what you measured (tagging, cost explorer) → changes (rightsizing, spot, NAT/egress, log retention) → % saved, with no SLO regression.", he: "מספרים! מצב התחלתי → מה מדדת (tagging, cost explorer) → מה שינית (rightsizing, spot, NAT/egress, retention של לוגים) → כמה % נחסך, בלי פגיעה ב-SLO." } },
-    { q: { en: "You disagree with a senior engineer's architecture. What do you do?", he: "את/ה לא מסכים/ה עם ארכיטקטורה של מהנדס/ת בכיר/ה. מה עושים?" },
+    { q: { en: "You disagree with a senior engineer's architecture. What do you do?", he: "אתה לא מסכים עם ארכיטקטורה של מהנדס בכיר. מה עושים?" },
       tip: { en: "Disagree with data: write a short design doc comparing options against requirements, propose a small experiment/PoC, commit once decided.", he: "חולקים עם נתונים: מסמך design קצר שמשווה אפשרויות מול הדרישות, מציעים ניסוי/PoC קטן, ומתחייבים כשהוחלט (disagree & commit)." } },
-    { q: { en: "How would you onboard a legacy service with no monitoring?", he: "איך היית מכניס/ה שירות legacy בלי ניטור בכלל?" },
+    { q: { en: "How would you onboard a legacy service with no monitoring?", he: "איך היית מכניס שירות legacy בלי ניטור בכלל?" },
       tip: { en: "Start from the user: define 1-2 SLIs (availability, latency) → golden signals dashboard → symptom-based alerts with runbooks → logs with request IDs → traces later.", he: "מתחילים מהמשתמש: 1-2 SLIs (זמינות, latency) → דשבורד golden signals → התראות על סימפטומים עם runbooks → לוגים עם request IDs → traces אחר כך." } },
     { q: { en: "What happens when you type a URL in the browser and press Enter?", he: "מה קורה כשמקלידים URL בדפדפן ולוחצים Enter?" },
       tip: { en: "The classic. Go layer by layer and pick where to go deep: DNS (cache → resolver → root/TLD/authoritative), TCP handshake, TLS, HTTP, LB/CDN, reverse proxy, app, DB, response, rendering.", he: "הקלאסיקה. עוברים שכבה-שכבה ובוחרים איפה להעמיק: DNS (cache → resolver → root/TLD/authoritative), TCP handshake, TLS, HTTP, LB/CDN, reverse proxy, אפליקציה, DB, תשובה, רינדור." } },
-    { q: { en: "A service's p99 latency doubled after a deploy but CPU is low. Walk me through it.", he: "ה-p99 של שירות הוכפל אחרי deploy אבל ה-CPU נמוך. תעבור/י איתי על זה." },
+    { q: { en: "A service's p99 latency doubled after a deploy but CPU is low. Walk me through it.", he: "ה-p99 של שירות הוכפל אחרי deploy אבל ה-CPU נמוך. תעבור איתי על זה." },
       tip: { en: "Mitigate (rollback?) vs investigate. Check: downstream dependency latency (traces), DB slow queries / missing index, connection pool exhaustion, GC pauses, CPU throttling (limits!), lock contention, retries storm.", he: "קודם לייצב (rollback?) או לחקור. לבדוק: latency של תלויות (traces), שאילתות איטיות / אינדקס חסר, מיצוי connection pool, GC pauses, CPU throttling (limits!), נעילות, סערת retries." } },
-    { q: { en: "Why do you want to work in infrastructure / SRE?", he: "למה את/ה רוצה לעבוד בתשתיות / SRE?" },
+    { q: { en: "Why do you want to work in infrastructure / SRE?", he: "למה אתה רוצה לעבוד בתשתיות / SRE?" },
       tip: { en: "Be genuine and specific: a moment you enjoyed debugging a system end-to-end, automating toil, or making something measurably more reliable.", he: "להיות כנים וספציפיים: רגע שנהנית לדבג מערכת מקצה לקצה, לאטמט עבודה שחורה, או להפוך משהו לאמין יותר באופן מדיד." } },
-    { q: { en: "[Staff+] Tell me about a technical decision you drove across multiple teams.", he: "[Staff+] ספר/י על החלטה טכנית שהובלת מול כמה צוותים." },
+    { q: { en: "[Staff+] Tell me about a technical decision you drove across multiple teams.", he: "[Staff+] ספר על החלטה טכנית שהובלת מול כמה צוותים." },
       tip: { en: "Scope is the signal: how many teams/services, what was ambiguous, the options you compared (with a design doc/RFC), how you got buy-in from people who disagreed, and the measurable outcome 6-12 months later.", he: "ה-scope הוא הסיגנל: כמה צוותים/שירותים, מה היה עמום, אילו אופציות השווית (עם design doc/RFC), איך השגת buy-in ממי שהתנגד, ומה התוצאה המדידה אחרי 6-12 חודשים." } },
-    { q: { en: "[Staff+] Tell me about a time you were wrong about a big technical bet.", he: "[Staff+] ספר/י על פעם שטעית בהימור טכני גדול." },
-      tip: { en: "Own it without drama: what signal you missed, when you noticed, how you limited the blast radius (reversible decision? rollback plan?), and what you changed in how you decide now.", he: "לקחת אחריות בלי דרמה: איזה סיגנל פספסת, מתי שמת לב, איך הגבלת את ה-blast radius (החלטה הפיכה? תוכנית rollback?), ומה שינית מאז בדרך שבה את/ה מחליט/ה." } },
+    { q: { en: "[Staff+] Tell me about a time you were wrong about a big technical bet.", he: "[Staff+] ספר על פעם שטעית בהימור טכני גדול." },
+      tip: { en: "Own it without drama: what signal you missed, when you noticed, how you limited the blast radius (reversible decision? rollback plan?), and what you changed in how you decide now.", he: "לקחת אחריות בלי דרמה: איזה סיגנל פספסת, מתי שמת לב, איך הגבלת את ה-blast radius (החלטה הפיכה? תוכנית rollback?), ומה שינית מאז בדרך שבה אתה מחליט." } },
     { q: { en: "[Staff+] How did you raise the engineering bar beyond your own team?", he: "[Staff+] איך הרמת את הרף ההנדסי מעבר לצוות שלך?" },
       tip: { en: "Leverage, not heroics: a paved road, a PRR checklist, an SLO program, a migration tool, mentoring that produced other leads. Show adoption numbers.", he: "מינוף, לא גבורה: paved road, צ'קליסט PRR, תוכנית SLO, כלי מיגרציה, mentoring שהצמיח עוד מובילים. להראות מספרי אימוץ." } },
     { q: { en: "[Staff+] Leadership wants a big rewrite you believe is a mistake. What do you do?", he: "[Staff+] ההנהלה רוצה rewrite גדול שלדעתך הוא טעות. מה עושים?" },
       tip: { en: "Understand the real goal first, quantify cost/risk, offer an incremental alternative (strangler fig), write it down BLUF, then disagree & commit if overruled — and set checkpoints to revisit.", he: "קודם להבין את המטרה האמיתית, לכמת עלות/סיכון, להציע חלופה הדרגתית (strangler fig), לכתוב BLUF, ואם הוחלט אחרת — disagree & commit, עם נקודות בדיקה לחזור להחלטה." } },
-    { q: { en: "[Staff+] Walk me through the most complex system you owned, end to end.", he: "[Staff+] תעבור/י איתי על המערכת הכי מורכבת שהייתה באחריותך, מקצה לקצה." },
-      tip: { en: "Expect to be drilled 3-4 levels deep. Prepare: architecture diagram, numbers (QPS, data size, SLO, cost), the hardest failure you hit, what you'd redesign today and why.", he: "לצפות לחפירה של 3-4 רמות לעומק. להכין: דיאגרמה, מספרים (QPS, נפח נתונים, SLO, עלות), התקלה הכי קשה, ומה היית מתכנן/ת אחרת היום ולמה." } }
+    { q: { en: "[Staff+] Walk me through the most complex system you owned, end to end.", he: "[Staff+] תעבור איתי על המערכת הכי מורכבת שהייתה באחריותך, מקצה לקצה." },
+      tip: { en: "Expect to be drilled 3-4 levels deep. Prepare: architecture diagram, numbers (QPS, data size, SLO, cost), the hardest failure you hit, what you'd redesign today and why.", he: "לצפות לחפירה של 3-4 רמות לעומק. להכין: דיאגרמה, מספרים (QPS, נפח נתונים, SLO, עלות), התקלה הכי קשה, ומה היית מתכנן אחרת היום ולמה." } }
   ];
 
   const checklist = [
@@ -73,7 +73,7 @@
         ${step(6, T("High-level architecture", "ארכיטקטורה ברמה גבוהה"), `<pre>${esc(d.diagram)}</pre>`)}
         ${(d.deepDives || []).map((x, i) => step(7 + i, "🔬 " + esc(L(x.h)), L(x.body))).join("")}
         ${step(7 + (d.deepDives || []).length, T("Trade-offs to say out loud", "Trade-offs שכדאי להגיד בקול"), list(d.tradeoffs))}
-        ${(d.followUps || []).length ? `<h2>🔥 ${T("Interviewer follow-ups", "שאלות המשך של המראיין/ת")}</h2>${d.followUps.map(f => `<details class="qa"><summary>${L(f.q)}</summary><div style="margin-top:8px">${L(f.a)}</div></details>`).join("")}` : ""}
+        ${(d.followUps || []).length ? `<h2>🔥 ${T("Interviewer follow-ups", "שאלות המשך של המראיין")}</h2>${d.followUps.map(f => `<details class="qa"><summary>${L(f.q)}</summary><div style="margin-top:8px">${L(f.a)}</div></details>`).join("")}` : ""}
         ${(d.related || []).filter(r => C.byId[r]).length ? `<h2>📚 ${T("Brush up", "לרענן")}</h2><div class="row">${d.related.filter(r => C.byId[r]).map(r => `<a class="btn small" href="#/lesson/${r}">${C.byId[r].icon} ${esc(L(C.byId[r].title))}</a>`).join("")}</div>` : ""}
         <div class="lesson-footer"><span class="spacer"></span><button class="btn ${iv.design[d.id] ? "good" : "primary"}" id="doneD">${iv.design[d.id] ? T("Practiced ✓", "תורגל ✓") : T("I practiced this ✓", "תרגלתי את זה ✓")}</button></div>`;
       const att = $("#att"); att.oninput = () => { iv.attempts["d:" + d.id] = att.value; C.save(); };
@@ -215,7 +215,7 @@
     }
     if (sub === "behavioral") {
       app.innerHTML = `${crumbs}<h1>🗣️ ${T("Behavioral & scenario questions", "שאלות התנהגותיות ותרחישים")}</h1>
-        <p class="muted">${T("Infra interviews always include 'tell me about a time…' and 'walk me through…'. Practice out loud.", "ראיונות תשתיות תמיד כוללים 'ספר/י על פעם ש…' ו'תעבור/י איתי על…'. מתרגלים בקול.")}</p>
+        <p class="muted">${T("Infra interviews always include 'tell me about a time…' and 'walk me through…'. Practice out loud.", "ראיונות תשתיות תמיד כוללים 'ספר על פעם ש…' ו'תעבור איתי על…'. מתרגלים בקול.")}</p>
         ${behavioral.map(b => `<details class="qa"><summary>${L(b.q)}</summary><div style="margin-top:8px">💡 ${L(b.tip)}</div></details>`).join("")}
         <h2>✅ ${T("Interview-week checklist", "צ'קליסט לשבוע הראיון")}</h2><div class="card">${checklist.map((c, i) => `<label style="display:block;padding:4px 0"><input type="checkbox" data-ck="${i}" ${iv["ck" + i] ? "checked" : ""}> ${L(c)}</label>`).join("")}</div>`;
       $$("[data-ck]").forEach(cb => cb.onchange = () => { iv["ck" + cb.dataset.ck] = cb.checked; C.save(); });
@@ -305,7 +305,7 @@
         ${card("#/interview/coding", "🧩", T("Coding (LeetCode-style)", "קוד (בסגנון LeetCode)"), T("Problems that matter for infra: LRU, rate limiters, consistent hashing, topo sort, heaps, intervals.", "בעיות שרלוונטיות לתשתיות: LRU, rate limiters, consistent hashing, topo sort, heaps, intervals."), `${cDone}/${I.problems.length} ✓`)}
         ${card("#/interview/mock", "🎙️", T("Mock interview", "ראיון מדומה"), T("Timed random questions from everything you learned. Self-graded, tracks your weak spots.", "שאלות אקראיות עם טיימר מכל מה שלמדת. דירוג עצמי, מזהה נקודות חולשה."), lastMock != null ? `${T("last", "אחרון")}: ${lastMock}%` : "")}
         ${card("#/interview/bank", "🗂️", T("Question bank", "מאגר שאלות"), T("All interview Q&A from all lessons, searchable.", "כל שאלות ותשובות הראיון מכל השיעורים, עם חיפוש."), `${bankCount}`)}
-        ${card("#/interview/behavioral", "🗣️", T("Behavioral & scenarios", "התנהגותי ותרחישים"), T("'Tell me about an outage', 'what happens when you type a URL', STAR stories, interview-week checklist.", "'ספר/י על תקלה', 'מה קורה כשמקלידים URL', סיפורי STAR, צ'קליסט לשבוע הראיון."), "")}
+        ${card("#/interview/behavioral", "🗣️", T("Behavioral & scenarios", "התנהגותי ותרחישים"), T("'Tell me about an outage', 'what happens when you type a URL', STAR stories, interview-week checklist.", "'ספר על תקלה', 'מה קורה כשמקלידים URL', סיפורי STAR, צ'קליסט לשבוע הראיון."), "")}
         ${card("#/oncall", "📟", T("Live troubleshooting", "דיבאג חי"), T("On-call scenarios = the 'debug this with me' round.", "תרחישי תורנות = סבב ה'בוא נדבג את זה יחד'."), "")}
       </div>`;
     return null;
