@@ -91,7 +91,7 @@
     $$("[data-i18n]").forEach(el => el.textContent = t(el.dataset.i18n));
     $("#searchInput").placeholder = t("searchPlaceholder");
     $("#nav").innerHTML = [
-      ["#/", "navHome"], ["#/paths", "navPaths"], ["#/learn", "navLearn"], ["#/play", "navPlay"], ["#/oncall", "navOncall"], ["#/interview", "navInterview"], ["#/cs", "navCS"],
+      ["#/", "navHome"], ["#/paths", "navPaths"], ["#/learn", "navLearn"], ["#/play", "navPlay"], ["#/oncall", "navOncall"], ["#/decide", "navDecide"], ["#/interview", "navInterview"], ["#/cs", "navCS"],
       ["#/cards", "navCards"], ["#/glossary", "navGlossary"], ["#/cookbook", "navCookbook"], ["#/ask", "navAsk"]
     ].map(([h, k]) => `<a href="${h}" data-route="${h}">${t(k)}</a>`).join("");
     // phone bottom tab bar: the 4 places you use most + search
@@ -120,7 +120,7 @@
     });
     readBar(false); hideGloss();
     const app = $("#app");
-    const views = { "": home, paths: viewPaths, learn, track: viewTrack, lesson: viewLesson, play, oncall, cards, glossary, cookbook, ask };
+    const views = { "": home, paths: viewPaths, decide, learn, track: viewTrack, lesson: viewLesson, play, oncall, cards, glossary, cookbook, ask };
     if (route === "cs" && window.CQ && CQ.render) { cleanup = CQ.render(app, hash.split("/").map(decodeURIComponent), ctx) || null; }
     else if (route === "interview" && I.interview) { cleanup = I.interview.render(app, hash.split("/").slice(1).map(decodeURIComponent), ctx) || null; }
     else (views[route] || home)(app, arg ? decodeURIComponent(arg) : undefined);
@@ -630,16 +630,19 @@ If the answer is worth keeping, also add it as a new lesson (or extend this one)
   }
 
   // ---------------- on-call ----------------
-  function oncall(app, id) {
-    const sc = I.scenarios.find(s => s.id === id);
+  function decide(app, id) { oncall(app, id, "design"); }
+  function oncall(app, id, kind) {
+    const isDesign = kind === "design", base = isDesign ? "decide" : "oncall";
+    const list = I.scenarios.filter(s => (s.kind === "design") === isDesign);
+    const sc = list.find(s => s.id === id);
     if (!sc) {
-      app.innerHTML = `<h1>📟 ${t("oncallTitle")}</h1><p class="muted">${t("oncallSub")}</p>
-        <div class="grid">${I.scenarios.map(s => `<a class="card track-card" href="#/oncall/${s.id}" style="--tc:var(--bad)"><span class="ticon">${s.icon || "🔥"}</span><h3>${esc(L(s.title))}</h3>
+      app.innerHTML = `<h1>${isDesign ? "🏛️ " + t("decideTitle") : "📟 " + t("oncallTitle")}</h1><p class="muted">${t(isDesign ? "decideSub" : "oncallSub")}</p>
+        <div class="grid">${list.map(s => `<a class="card track-card" href="#/${base}/${s.id}" style="--tc:${isDesign ? "var(--accent)" : "var(--bad)"}"><span class="ticon">${s.icon || "🔥"}</span><h3>${esc(L(s.title))}</h3>
         <p>${S.scen[s.id] != null ? `🏅 ${t("score")}: ${S.scen[s.id]}` : ""}</p></a>`).join("")}</div>`;
       return;
     }
     let score = 0; const hist = [];
-    app.innerHTML = `<div class="crumbs"><a href="#/oncall">${t("oncallTitle")}</a></div><h1>${sc.icon || "🔥"} ${esc(L(sc.title))}</h1><div class="row"><span class="tag" id="scScore"></span></div><div id="scHist" class="history"></div><div id="scBox"></div>`;
+    app.innerHTML = `<div class="crumbs"><a href="#/${base}">${t(isDesign ? "decideTitle" : "oncallTitle")}</a></div><h1>${sc.icon || "🔥"} ${esc(L(sc.title))}</h1><div class="row"><span class="tag" id="scScore"></span></div><div id="scHist" class="history"></div><div id="scBox"></div>`;
     const go = (key, fb) => {
       const st = sc.steps[key]; const box = $("#scBox");
       $("#scScore").textContent = `${t("score")}: ${score}`;
@@ -792,7 +795,7 @@ If the answer is worth keeping, also add it as a new lesson (or extend this one)
       hay: [both(l.title), l.id, both(l.tldr)].join(" ").toLowerCase(), body: strip([(l.sections || []).map(s => both(s.h) + " " + both(s.body)).join(" "), both(l.analogy), both(l.mnemonic)].join(" ")).toLowerCase() }));
     I.glossary.forEach(g => idx.push({ type: "📖", href: g.lesson ? `#/lesson/${g.lesson}` : "#/glossary", title: () => g.term, sub: () => L(g.def), hay: (g.term + " " + both(g.def)).toLowerCase(), body: "" }));
     lessons.forEach(l => (l.handsOn || []).forEach(h => idx.push({ type: "⌨️", href: `#/lesson/${l.id}`, title: () => h.cmd, sub: () => strip(L(h.what)), hay: (h.cmd + " " + strip(both(h.what))).toLowerCase(), body: "" })));
-    I.scenarios.forEach(s => idx.push({ type: "📟", href: `#/oncall/${s.id}`, title: () => L(s.title), sub: () => t("oncallTitle"), hay: both(s.title).toLowerCase(), body: "" }));
+    I.scenarios.forEach(s => idx.push({ type: s.kind === "design" ? "🏛️" : "📟", href: `#/${s.kind === "design" ? "decide" : "oncall"}/${s.id}`, title: () => L(s.title), sub: () => t(s.kind === "design" ? "decideTitle" : "oncallTitle"), hay: both(s.title).toLowerCase(), body: "" }));
     (I.topQuestions || []).forEach(q => idx.push({ type: "🏆", href: `#/interview/top`, title: () => strip(L(q.q)), sub: () => (q.companies || []).join(" · "), hay: (both(q.q) + " " + (q.companies || []).join(" ")).toLowerCase(), body: strip(both(q.signal) + " " + both(q.outline)).toLowerCase() }));
     (I.designs || []).forEach(d => idx.push({ type: "🏛️", href: `#/interview/design/${d.id}`, title: () => `${d.icon || ""} ${L(d.title)}`, sub: () => strip(L(d.prompt)), hay: (both(d.title) + " " + both(d.prompt) + " " + d.id).toLowerCase(), body: strip((d.deepDives || []).map(x => both(x.h) + " " + both(x.body)).join(" ")).toLowerCase() }));
     (I.problems || []).forEach(p => idx.push({ type: "🧩", href: `#/interview/code/${p.id}`, title: () => `${p.icon || ""} ${L(p.title)}${p.leetcode ? " (LC " + p.leetcode + ")" : ""}`, sub: () => (p.tags || []).join(", "), hay: (both(p.title) + " " + (p.tags || []).join(" ") + " " + p.id + " lc" + (p.leetcode || "") + " " + (p.leetcode || "")).toLowerCase(), body: strip(both(p.statement)).toLowerCase() }));

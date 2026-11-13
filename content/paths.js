@@ -281,6 +281,8 @@ INFRA.paths = INFRA.paths || [];
         [
           s("pr-architect-questions", "Start here: the questions, goals vs non-goals and must vs nice-to-have.", "מתחילים כאן: השאלות, goals מול non-goals ו-must מול nice-to-have."),
           s("latency-numbers", "The numbers you'll multiply in every estimate.", "המספרים שתכפילו בכל הערכה."),
+          s("pr-architecture-styles", "Know the menu of architecture styles before choosing one.", "להכיר את התפריט של סגנונות הארכיטקטורה לפני שבוחרים."),
+          s("pr-ddd", "Find service boundaries in the domain, not in the org chart.", "למצוא גבולות של שירותים בדומיין, לא במבנה הארגוני."),
           s("pr-sizing", "Turn requirements into QPS, storage, servers and cost.", "להפוך דרישות ל-QPS, אחסון, שרתים ועלות."),
           s("pr-validate-yourself", "Pre-mortems, threat models and spikes: attack your own design first.", "Pre-mortems, threat models ו-spikes: לתקוף את ה-design שלכם ראשונים."),
           s("pr-principal-playbook", "The end-to-end flow that ties the whole path together; revisit it at the end.", "הזרימה מקצה לקצה שקושרת את כל המסלול; כדאי לחזור אליה בסוף.")
@@ -290,6 +292,7 @@ INFRA.paths = INFRA.paths || [];
         "נתונים הם הדבר הכי קשה לשנות בהמשך, אז בוחרים אותם בכוונה. לומדים כל סוג של store, איך מערכות גדלות ובאיזה סדר, ואיזו עקביות כל פיצ'ר באמת צריך.",
         [
           s("pr-db-landscape", "Every kind of database and the job it was built for.", "כל סוג של database והעבודה שבשבילה הוא נבנה."),
+          s("pr-data-modeling", "Design schemas from access patterns; they outlive every other decision.", "לתכנן schemas לפי access patterns; הם שורדים כל החלטה אחרת."),
           s("pr-scaling-kinds", "All the ways to scale, and the order to apply them.", "כל הדרכים לגדול, והסדר שבו מפעילים אותן."),
           s("db-sharding", "When one database isn't enough: partition keys and hot spots.", "כש-DB אחד לא מספיק: partition keys ו-hot spots."),
           s("pr-cap-pacelc", "Choose consistency per feature instead of per company.", "לבחור עקביות לפי פיצ'ר ולא לפי חברה."),
@@ -306,6 +309,7 @@ INFRA.paths = INFRA.paths || [];
           s("pr-idempotency", "At-least-once plus idempotency equals effectively once.", "At-least-once ועוד אידמפוטנטיות שווה effectively once."),
           s("staff-exactly-once", "Outbox, CDC and sagas vs 2PC: the full correctness story.", "Outbox, CDC ו-sagas מול 2PC: כל סיפור הנכונות."),
           s("pr-rate-limiters", "Protect shared capacity with the right algorithm in the right place.", "להגן על קיבולת משותפת עם האלגוריתם הנכון במקום הנכון."),
+          s("pr-ai-systems-design", "RAG, evals, guardrails and token cost: LLMs as a system component.", "RAG, evals, guardrails ועלות tokens: LLM כרכיב במערכת."),
           s("pr-third-party-deps", "Design for providers that will go down.", "לתכנן לספקים שייפלו.")
         ]),
       st("Stage 4 · Code craft", "שלב 4 · אומנות הקוד",
