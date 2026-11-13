@@ -118,6 +118,56 @@
   }
   window.addEventListener("hashchange", render);
 
+  // ---------------- code blocks: header (language, wrap, copy) + light highlighting ----------------
+  // Content <pre> blocks hold plain escaped text, so we re-tokenize textContent and re-escape every piece.
+  const KW = new Set(("const let var function return async await def class import export lambda yield new try catch finally throw " +
+    "null undefined None True False true false nil func go defer chan struct interface public private static void fn impl mut pub " +
+    "SELECT INSERT UPDATE DELETE FROM WHERE JOIN ON GROUP BY ORDER LIMIT VALUES SET BEGIN COMMIT ROLLBACK CREATE TABLE INDEX " +
+    "PRIMARY KEY REFERENCES FOR AND OR NOT NULL UNIQUE ALTER RETURNING").split(" "));
+  const TOK = /((?<![:\w"'])\/\/[^\n]*|\/\*[\s\S]*?\*\/|(?<=^|[ \t])#(?![!{\d]|[0-9a-fA-F]{3,8}\b)[^\n]*|(?<=^|[ \t])--(?=[ \t])[^\n]*)|("(?:[^"\\\n]|\\.)*"|(?<![\w])'(?:[^'\\\n]|\\.)*')|(\b\d+(?:\.\d+)?\b)|(\b[A-Za-z_]\w*\b)/gm;
+  function highlight(text) {
+    let out = "", last = 0, m;
+    TOK.lastIndex = 0;
+    while ((m = TOK.exec(text))) {
+      out += esc(text.slice(last, m.index)); last = TOK.lastIndex;
+      if (m[1]) out += `<span class="tk-c">${esc(m[1])}</span>`;
+      else if (m[2]) out += `<span class="tk-s">${esc(m[2])}</span>`;
+      else if (m[3]) out += `<span class="tk-n">${esc(m[3])}</span>`;
+      else out += KW.has(m[4]) ? `<span class="tk-k">${esc(m[4])}</span>` : esc(m[4]);
+    }
+    return out + esc(text.slice(last));
+  }
+  function guessLang(s) {
+    if (/^\s*(apiVersion|kind):/m.test(s)) return "yaml";
+    if (/\b(SELECT|INSERT INTO|UPDATE \w+ SET|BEGIN;|CREATE TABLE)\b/.test(s)) return "sql";
+    if (/^\s*[{\[]\s*"/.test(s)) return "json";
+    if (/^\s*(\$ |kubectl |curl |docker |redis-cli|psql |dig |openssl |sudo )/m.test(s)) return "shell";
+    if (/^\s*(def |import \w+$|from \w+ import|async def )/m.test(s)) return "python";
+    if (/^\s*(func |package )/m.test(s)) return "go";
+    if (/\b(const|let|=>|require\(|console\.)/.test(s)) return "js";
+    if (/\b(public (static )?(class|void)|@Override|using System)/.test(s)) return "java/c#";
+    return "code";
+  }
+  function applyWrap() { document.body.classList.toggle("wrap-code", !!S.wrapCode); }
+  function enhanceCode(root) {
+    $$("pre:not([data-enh])", root).forEach(pre => {
+      pre.setAttribute("data-enh", "1");
+      if (pre.closest(".term, .diagram, .scenario-step, .formula")) return;
+      const text = pre.textContent;
+      if (!pre.children.length && text.length < 20000) pre.innerHTML = highlight(text);
+      const box = document.createElement("div"); box.className = "codebox";
+      const head = document.createElement("div"); head.className = "code-head";
+      head.innerHTML = `<span class="lang">${esc(guessLang(text))}</span>` +
+        `<button type="button" class="wrap" title="Wrap long lines">↩ ${S.lang === "he" ? "גלישה" : "Wrap"}</button>` +
+        `<button type="button" class="cp">${t("copy")}</button>`;
+      head.querySelector(".cp").onclick = () => copy(text);
+      head.querySelector(".wrap").onclick = () => { S.wrapCode = !S.wrapCode; save(); applyWrap(); };
+      pre.parentNode.insertBefore(box, pre); box.appendChild(head); box.appendChild(pre);
+    });
+  }
+  applyWrap();
+  new MutationObserver(() => enhanceCode($("#app"))).observe($("#app"), { childList: true, subtree: true });
+
   // ---------------- views ----------------
   function trackCard(tr, i) {
     const ls = trackLessons(tr.id); const d = ls.filter(l => S.done[l.id]).length;

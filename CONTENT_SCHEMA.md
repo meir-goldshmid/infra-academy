@@ -89,6 +89,7 @@ INFRA.scenarios.push({
 | reliability | SLI/SLO/SLA, incidents, HA, BCDR |
 | cloud | Cloud models, IaC, CI/CD, IAM, security, FinOps |
 | staff | Senior & Staff+: distributed systems depth, platform/security at scale, design docs, strategy, migrations, leadership |
+| principal | Principal Engineer Playbook: requirements & questions, sizing, testing, validation, DB kinds, scaling, CAP/PACELC, clusters, integration, idempotency, queues, rate limiters, 3rd-party deps, SOLID, design patterns, singletons, concurrency, event loop, async/await, GC, HTTP versions, email/SMS/realtime protocols |
 
 ## Simulator ids (implemented in `js/sims.js`)
 

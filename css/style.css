@@ -123,7 +123,7 @@ h3 { font-size: 1.1rem; margin: 1.2em 0 .4em; }
 
 /* ---------- lesson ---------- */
 .lesson-layout { display: grid; grid-template-columns: minmax(0, 1fr) 230px; gap: 26px; }
-@media (max-width: 960px) { .lesson-layout { grid-template-columns: 1fr; } .toc { display: none; } }
+@media (max-width: 960px) { .lesson-layout { grid-template-columns: minmax(0, 1fr); } .toc { display: none; } }
 .toc { position: sticky; top: 80px; align-self: start; font-size: .9em; }
 .toc a { display: block; padding: 3px 0; color: var(--muted); }
 .lesson h1 { display: flex; gap: 12px; align-items: center; }
@@ -319,3 +319,29 @@ html[lang="he"] .dev::before { content: '💻 בעולם שלך'; }
 .inline-input { padding: 10px 12px; border-radius: 12px; border: 2px solid var(--line); background: var(--card2); color: var(--text); font-size: 16px; font-weight: 700; width: 120px; }
 @keyframes pop { 0% { transform: scale(.6); opacity: 0; } 70% { transform: scale(1.12); } 100% { transform: scale(1); opacity: 1; } }
 .widget .small { font-size: .85em; } .widget .center { text-align: center; } .widget .grow { flex: 1; min-width: 0; }
+
+/* ---------- code blocks (phone-friendly) ---------- */
+pre { max-width: 100%; -webkit-overflow-scrolling: touch; overscroll-behavior-x: contain; tab-size: 2; scrollbar-width: thin; scrollbar-color: color-mix(in srgb, var(--code-text) 30%, transparent) transparent; }
+pre::-webkit-scrollbar { height: 6px; }
+pre::-webkit-scrollbar-thumb { background: color-mix(in srgb, var(--code-text) 30%, transparent); border-radius: 6px; }
+.codebox { margin: 12px 0; max-width: 100%; border-radius: 10px; overflow: hidden; background: var(--code-bg); border: 1px solid color-mix(in srgb, var(--code-text) 14%, transparent); direction: ltr; text-align: left; }
+.codebox pre { margin: 0; border-radius: 0; }
+.code-head { display: flex; align-items: center; gap: 6px; padding: 4px 6px 4px 12px; background: color-mix(in srgb, var(--code-text) 7%, var(--code-bg)); color: var(--code-text); font: 600 11.5px/1 var(--mono); border-bottom: 1px solid color-mix(in srgb, var(--code-text) 10%, transparent); }
+.code-head .lang { flex: 1; opacity: .6; text-transform: uppercase; letter-spacing: .06em; }
+.code-head button { background: transparent; color: var(--code-text); border: 1px solid color-mix(in srgb, var(--code-text) 25%, transparent); border-radius: 6px; padding: 4px 10px; min-height: 30px; font: 600 11.5px var(--font); }
+.code-head button:active { background: color-mix(in srgb, var(--code-text) 15%, transparent); }
+body.wrap-code .codebox pre { white-space: pre-wrap; overflow-wrap: anywhere; }
+body.wrap-code .code-head .wrap { background: color-mix(in srgb, var(--code-text) 18%, transparent); }
+.tk-c { color: #8792a8; font-style: italic; }
+.tk-s { color: #a8dba8; }
+.tk-n { color: #f7c87a; }
+.tk-k { color: #8fb4ff; font-weight: 600; }
+@media (max-width: 600px) {
+  pre { font-size: 12.5px; padding: 11px 12px; line-height: 1.55; }
+  .diagram pre { font-size: 11px; line-height: 1.4; }
+  .cmd { padding: 8px; }
+  .cmd code { font-size: 12.5px; }
+  table { font-size: .84em; }
+  th, td { padding: 5px 7px; }
+  blockquote { padding: 9px 11px; }
+}

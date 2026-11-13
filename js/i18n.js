@@ -23,7 +23,9 @@ INFRA.tracks = [
   { id: "cloud",        icon: "☁️", color: "#0ca678", title: { en: "Cloud & DevOps", he: "ענן ו-DevOps" },
     blurb: { en: "IaaS/PaaS, regions, AWS/Azure/GCP map, Terraform, CI/CD, IAM, FinOps.", he: "IaaS/PaaS, Regions, מפת AWS/Azure/GCP, Terraform, CI/CD, IAM ו-FinOps." } },
   { id: "staff",        icon: "🧭", color: "#a61e4d", title: { en: "Senior & Staff+", he: "Senior ו-Staff+" },
-    blurb: { en: "Distributed systems depth, platform & security at scale, and the Staff/Principal skills: design docs, strategy, migrations, influence.", he: "עומק במערכות מבוזרות, פלטפורמה ואבטחה בסקייל, והכישורים של Staff/Principal: מסמכי design, אסטרטגיה, מיגרציות והשפעה." } }
+    blurb: { en: "Distributed systems depth, platform & security at scale, and the Staff/Principal skills: design docs, strategy, migrations, influence.", he: "עומק במערכות מבוזרות, פלטפורמה ואבטחה בסקייל, והכישורים של Staff/Principal: מסמכי design, אסטרטגיה, מיגרציות והשפעה." } },
+  { id: "principal",    icon: "👑", color: "#5f3dc4", title: { en: "Principal Engineer Playbook", he: "ארגז הכלים של Principal" },
+    blurb: { en: "The head knowledge: questions to ask, sizing, goals vs non-goals, DB kinds, scaling, CAP/PACELC, idempotency, queues, rate limiters, SOLID & patterns, event loop, GC, concurrency, HTTP/2/3, email/SMS — with analogies and examples.", he: "הידע שבראש: אילו שאלות לשאול, sizing, goals מול non-goals, סוגי DB, סקיילינג, CAP/PACELC, אידמפוטנטיות, תורים, rate limiters, SOLID ו-patterns, event loop, GC, מקביליות, HTTP/2/3, מייל/SMS — עם אנלוגיות ודוגמאות." } }
 ];
 
 INFRA.ranks = [
