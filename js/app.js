@@ -6,7 +6,7 @@
 
   // ---------------- state ----------------
   const KEY = "infra-academy-v1";
-  const defaults = { lang: "he", theme: "auto", done: {}, quiz: {}, xp: 0, days: [], cards: {}, notes: {}, scen: {}, daily: {} };
+  const defaults = { lang: "he", theme: "auto", done: {}, quiz: {}, xp: 0, days: [], cards: {}, notes: {}, scen: {}, daily: {}, last: null, path: null };
   let S;
   try { S = Object.assign({}, defaults, JSON.parse(localStorage.getItem(KEY) || "{}")); } catch (e) { S = Object.assign({}, defaults); }
   const save = () => { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} };
@@ -87,9 +87,14 @@
     $$("[data-i18n]").forEach(el => el.textContent = t(el.dataset.i18n));
     $("#searchInput").placeholder = t("searchPlaceholder");
     $("#nav").innerHTML = [
-      ["#/", "navHome"], ["#/learn", "navLearn"], ["#/play", "navPlay"], ["#/oncall", "navOncall"], ["#/interview", "navInterview"], ["#/cs", "navCS"],
+      ["#/", "navHome"], ["#/paths", "navPaths"], ["#/learn", "navLearn"], ["#/play", "navPlay"], ["#/oncall", "navOncall"], ["#/interview", "navInterview"], ["#/cs", "navCS"],
       ["#/cards", "navCards"], ["#/glossary", "navGlossary"], ["#/cookbook", "navCookbook"], ["#/ask", "navAsk"]
     ].map(([h, k]) => `<a href="${h}" data-route="${h}">${t(k)}</a>`).join("");
+    // phone bottom tab bar: the 4 places you use most + search
+    $("#tabbar").innerHTML = [["#/", "🏠", "navHome"], ["#/paths", "🧭", "navPaths"], ["#/learn", "📚", "navLearn"], ["#/interview", "🎯", "navInterview"]]
+      .map(([h, ic, k]) => `<a href="${h}" data-route="${h}"><span>${ic}</span>${t(k)}</a>`).join("") +
+      `<button type="button" id="tabSearch"><span>🔎</span>${t("navSearch")}</button>`;
+    $("#tabSearch").onclick = () => openSearch();
   }
   function applyTheme() {
     if (S.theme === "auto") document.documentElement.removeAttribute("data-theme");
@@ -105,12 +110,13 @@
     if (cleanup) { try { cleanup(); } catch (e) {} cleanup = null; }
     const hash = location.hash.replace(/^#\/?/, "");
     const [route, arg] = hash.split("/");
-    $$("#nav a").forEach(a => {
+    $$("#nav a, #tabbar a").forEach(a => {
       const r = a.dataset.route.replace("#/", "");
       a.classList.toggle("active", r === route || (r === "learn" && (route === "track" || route === "lesson")) || (r === "" && route === ""));
     });
+    readBar(false); hideGloss();
     const app = $("#app");
-    const views = { "": home, learn, track: viewTrack, lesson: viewLesson, play, oncall, cards, glossary, cookbook, ask };
+    const views = { "": home, paths: viewPaths, learn, track: viewTrack, lesson: viewLesson, play, oncall, cards, glossary, cookbook, ask };
     if (route === "cs" && window.CQ && CQ.render) { cleanup = CQ.render(app, hash.split("/").map(decodeURIComponent), ctx) || null; }
     else if (route === "interview" && I.interview) { cleanup = I.interview.render(app, hash.split("/").slice(1).map(decodeURIComponent), ctx) || null; }
     else (views[route] || home)(app, arg ? decodeURIComponent(arg) : undefined);
@@ -169,6 +175,183 @@
   new MutationObserver(() => enhanceCode($("#app"))).observe($("#app"), { childList: true, subtree: true });
 
   // ---------------- views ----------------
+
+  // ---------------- learning flow: paths, context, cross-links ----------------
+  const PATHS = I.paths || [];
+  const pathById = Object.fromEntries(PATHS.map(p => [p.id, p]));
+  const lessonIdx = Object.fromEntries(lessons.map((l, i) => [l.id, i]));
+  const fmt = (k, a, b) => t(k).replace("{a}", a).replace("{b}", b);
+  function pathSteps(p) {
+    const out = [];
+    (p.stages || []).forEach((st, si) => (st.steps || []).forEach(x => { if (byId[x.lesson]) out.push({ lesson: x.lesson, why: x.why, stage: si }); }));
+    return out;
+  }
+  function pathProgress(p) {
+    const steps = pathSteps(p); const done = steps.filter(x => S.done[x.lesson]).length;
+    return { steps, done, pct: steps.length ? Math.round(done / steps.length * 100) : 0, next: steps.find(x => !S.done[x.lesson]) || steps[0] || null };
+  }
+  const backlinks = {};
+  lessons.forEach(l => (l.related || []).forEach(r => { if (byId[r] && r !== l.id) (backlinks[r] = backlinks[r] || []).push(l.id); }));
+  const chip = (id) => { const l = byId[id]; return l ? `<a class="chip ${S.done[id] ? "done" : ""}" href="#/lesson/${id}">${l.icon || "📄"} ${esc(L(l.title))}${S.done[id] ? " ✓" : ""}</a>` : ""; };
+
+  function pathCard(p) {
+    const pr = pathProgress(p); const active = S.path === p.id;
+    return `<a class="card path-card ${active ? "active" : ""}" href="#/paths/${p.id}" style="--tc:${p.color || "var(--accent)"}">
+      <div class="pc-head"><span class="ticon">${p.icon || "🧭"}</span><h3>${esc(L(p.title))}</h3></div>
+      ${active ? `<span class="tag on">★ ${t("yourPath")}</span>` : ""}
+      <p>${esc(L(p.blurb))}</p>
+      <div class="row"><span class="tag">${pr.steps.length} ${t("pathSteps")}</span><span class="tag">${pr.done}/${pr.steps.length} ✓</span></div>
+      <div class="pb-bar"><div style="width:${pr.pct}%"></div></div></a>`;
+  }
+
+  function viewPaths(app, id) {
+    const p = id && pathById[id];
+    if (!p) {
+      app.innerHTML = `<h1>🧭 ${t("pathsTitle")}</h1><p class="muted">${t("pathsSub")}</p><div class="grid">${PATHS.map(pathCard).join("")}</div>
+        <h2>📚 ${t("navLearn")}</h2><div class="grid">${I.tracks.map(trackCard).join("")}</div>`;
+      return;
+    }
+    const pr = pathProgress(p); const active = S.path === p.id;
+    let n = 0;
+    const stages = (p.stages || []).map((st, si) => {
+      const steps = (st.steps || []).filter(x => byId[x.lesson]);
+      const sd = steps.filter(x => S.done[x.lesson]).length;
+      return `<section class="stage" id="stage-${si}">
+        <div class="stage-head"><h2>${esc(L(st.title))}</h2><span class="tag">${sd}/${steps.length} ✓</span></div>
+        <p class="stage-intro">${esc(L(st.intro))}</p>
+        <ol class="steps">${steps.map(x => { n++; const l = byId[x.lesson]; const isNext = pr.next && pr.next.lesson === x.lesson && !S.done[x.lesson];
+          return `<li class="${S.done[x.lesson] ? "done" : ""} ${isNext ? "next" : ""}"><a href="#/lesson/${l.id}" data-pathstep>
+            <span class="num">${S.done[x.lesson] ? "✓" : n}</span>
+            <span class="st-text"><b>${l.icon || "📄"} ${esc(L(l.title))}</b><span class="why">${esc(L(x.why))}</span>
+            <span class="row" style="gap:6px"><span class="tag">${I.ui.level[S.lang][l.level || 1] || ""}</span><span class="tag">⏱ ${l.minutes || 5} ${t("min")}</span>${isNext ? `<span class="tag on">▶ ${t("nextStep")}</span>` : ""}</span></span></a></li>`; }).join("")}</ol>
+      </section>`;
+    }).join("");
+    const nextL = pr.next && byId[pr.next.lesson];
+    app.innerHTML = `
+      <div class="crumbs"><a href="#/paths">${t("pathsTitle")}</a></div>
+      <div class="card path-hero" style="--tc:${p.color || "var(--accent)"}">
+        <div class="pc-head"><span class="ticon big">${p.icon || "🧭"}</span><div><h1 style="margin:0">${esc(L(p.title))}</h1><p style="margin:.2em 0 0">${esc(L(p.blurb))}</p></div></div>
+        <p class="muted" style="margin:.8em 0">👤 ${esc(L(p.audience))}</p>
+        <div class="row"><span class="tag">${pr.steps.length} ${t("pathSteps")}</span><span class="tag">${(p.stages || []).length} ${S.lang === "he" ? "שלבים מרכזיים" : "stages"}</span><span class="tag">${pr.done}/${pr.steps.length} ✓</span></div>
+        <div class="pb-bar" style="margin:10px 0"><div style="width:${pr.pct}%"></div></div>
+        <div class="row">
+          ${nextL ? `<a class="btn primary" href="#/lesson/${nextL.id}" data-pathstep>${pr.done ? t("continuePath") : t("startPath")}: ${nextL.icon} ${esc(L(nextL.title))}</a>` : ""}
+          ${active ? `<span class="tag on">★ ${t("followingPath")}</span><button class="btn small" id="stopPath">${t("stopPath")}</button>` : `<button class="btn small" id="followPath">★ ${t("followPath")}</button>`}
+        </div>
+        <div class="stage-jump">${(p.stages || []).map((st, si) => `<a href="javascript:void 0" data-stage="${si}" class="chip">${esc(L(st.title))}</a>`).join("")}</div>
+      </div>
+      ${stages}`;
+    $$("[data-pathstep]", app).forEach(a => a.addEventListener("click", () => { S.path = p.id; save(); }));
+    $$("[data-stage]", app).forEach(a => a.onclick = () => { const el = $("#stage-" + a.dataset.stage); if (el) el.scrollIntoView({ behavior: "smooth" }); });
+    const f = $("#followPath"); if (f) f.onclick = () => { S.path = p.id; save(); toast("★ " + L(p.title)); render(); };
+    const sp = $("#stopPath"); if (sp) sp.onclick = () => { S.path = null; save(); render(); };
+  }
+
+  function pathPos(l) {
+    const p = pathById[S.path]; if (!p) return null;
+    const steps = pathSteps(p); const i = steps.findIndex(x => x.lesson === l.id);
+    return i < 0 ? null : { p, steps, i, prev: steps[i - 1], next: steps[i + 1] };
+  }
+  function pathBar(l) {
+    const pp = pathPos(l); if (!pp) return "";
+    const { p, steps, i, prev, next } = pp; const nl = next && byId[next.lesson];
+    return `<div class="card pathbar" style="--tc:${p.color || "var(--accent)"}">
+      <div class="row" style="gap:8px"><a href="#/paths/${p.id}"><b>${p.icon} ${esc(L(p.title))}</b></a><span class="tag">${fmt("stepOf", i + 1, steps.length)}</span><span class="tag">${esc(L(p.stages[steps[i].stage].title))}</span></div>
+      <div class="pb-bar"><div style="width:${Math.round((i + 1) / steps.length * 100)}%"></div></div>
+      <div class="why">💡 ${esc(L(steps[i].why))}</div>
+      <div class="row">${prev ? `<a class="btn small" href="#/lesson/${prev.lesson}">${t("prevStep")}</a>` : ""}<span class="spacer"></span>
+        ${nl ? `<a class="btn small primary" href="#/lesson/${nl.id}">${t("nextStep")}: ${nl.icon} ${esc(L(nl.title))}</a>` : `<span class="tag on">${t("pathDone")}</span>`}</div>
+    </div>`;
+  }
+  function contextBox(l) {
+    const tls = trackLessons(l.track); const tr = trackOf(l.track) || { icon: "", title: { en: "", he: "" } };
+    const me = lessonIdx[l.id]; const lv = l.level || 1;
+    const rel = [...new Set((l.related || []).filter(r => byId[r] && r !== l.id))];
+    const before = rel.filter(r => (byId[r].level || 1) < lv || ((byId[r].level || 1) === lv && lessonIdx[r] < me)).slice(0, 5);
+    const after = [...new Set([...rel.filter(r => !before.includes(r)), ...(backlinks[l.id] || []).filter(r => !before.includes(r))])].slice(0, 5);
+    const inPaths = PATHS.map(p => { const st = pathSteps(p); const i = st.findIndex(x => x.lesson === l.id);
+      return i < 0 ? "" : `<a class="chip path" href="#/paths/${p.id}">${p.icon} ${esc(L(p.title))} · ${i + 1}/${st.length}</a>`; }).join("");
+    return `<details class="card context" id="ctxBox" ${(S.ctxClosed != null ? S.ctxClosed : window.innerWidth < 700) ? "" : "open"}>
+      <summary>🧭 ${t("whereFits")}</summary>
+      <div class="ctx-grid">
+        <div><div class="ctx-h">${fmt("lessonNofM", tls.indexOf(l) + 1, tls.length)}</div><div class="chips"><a class="chip" href="#/track/${l.track}">${tr.icon} ${esc(L(tr.title))}</a></div>
+          ${inPaths ? `<div class="ctx-h">${t("inPaths")}</div><div class="chips">${inPaths}</div>` : ""}</div>
+        ${before.length ? `<div><div class="ctx-h">📌 ${t("beforeThis")}</div><div class="chips">${before.map(chip).join("")}</div></div>` : ""}
+        ${after.length ? `<div><div class="ctx-h">🚀 ${t("leadsTo")}</div><div class="chips">${after.map(chip).join("")}</div></div>` : ""}
+      </div>
+      <p class="muted ctx-hint">🔗 ${t("glossLinkHint")}</p></details>`;
+  }
+
+  // glossary terms inside lesson text become tappable links (first occurrence of each term)
+  let glossRe = null, glossMap = null;
+  function buildGloss() {
+    glossMap = new Map();
+    const clean = (x) => x.replace(/\s*\([^)]*\)\s*/g, " ").trim();
+    I.glossary.forEach(g => {
+      if (!g.term || !g.lesson || !byId[g.lesson]) return;
+      [clean(g.term), ...g.term.split(/\s+\/\s+/).map(clean)].forEach(n => { if (n.length >= 3 && !glossMap.has(n)) glossMap.set(n, g); });
+    });
+    const keys = [...glossMap.keys()].sort((a, b) => b.length - a.length).map(k => k.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"));
+    glossRe = keys.length ? new RegExp("(?<![\\w-])(" + keys.join("|") + ")(?![\\w-])", "g") : null;
+  }
+  function linkGlossary(root, currentId) {
+    if (!root) return; if (!glossMap) buildGloss(); if (!glossRe) return;
+    const used = new Set(); let count = 0;
+    const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, { acceptNode: n =>
+      n.parentElement.closest("pre, code, a, h1, h2, h3, summary, .codebox, .cmd, .quiz, button, textarea, .chips") ? NodeFilter.FILTER_REJECT : NodeFilter.FILTER_ACCEPT });
+    const nodes = []; while (walker.nextNode()) nodes.push(walker.currentNode);
+    for (const node of nodes) {
+      if (count >= 30) break;
+      const text = node.nodeValue; let m, last = 0, frag = null; glossRe.lastIndex = 0;
+      while ((m = glossRe.exec(text)) && count < 30) {
+        const g = glossMap.get(m[1]); if (!g || g.lesson === currentId || used.has(g.term)) continue;
+        used.add(g.term); count++; frag = frag || document.createDocumentFragment();
+        frag.appendChild(document.createTextNode(text.slice(last, m.index)));
+        const a = document.createElement("a"); a.className = "gl-link"; a.href = "#/lesson/" + g.lesson; a.dataset.term = g.term; a.textContent = m[1];
+        frag.appendChild(a); last = m.index + m[1].length;
+      }
+      if (frag) { frag.appendChild(document.createTextNode(text.slice(last))); node.parentNode.replaceChild(frag, node); }
+    }
+  }
+  function showGloss(a) {
+    const g = I.glossary.find(x => x.term === a.dataset.term); const l = g && byId[g.lesson]; if (!l) return;
+    const pop = $("#glPop");
+    pop.innerHTML = `<button type="button" class="gl-x" aria-label="close">✕</button><b>${esc(g.term)}</b><p>${esc(L(g.def))}</p>
+      <a class="btn small primary" href="#/lesson/${l.id}">${t("openLesson")}: ${l.icon || ""} ${esc(L(l.title))}</a>`;
+    pop.hidden = false;
+    const r = a.getBoundingClientRect(); const W = document.documentElement.clientWidth; const w = Math.min(340, W - 24);
+    pop.style.width = w + "px";
+    pop.style.left = Math.min(Math.max(12, r.left + r.width / 2 - w / 2), W - w - 12) + "px";
+    pop.style.top = (window.scrollY + r.bottom + 8) + "px";
+    pop.querySelector(".gl-x").onclick = hideGloss;
+  }
+  function hideGloss() { const p = $("#glPop"); if (p) p.hidden = true; }
+  document.addEventListener("click", (e) => {
+    const a = e.target.closest && e.target.closest(".gl-link");
+    if (a) { e.preventDefault(); showGloss(a); return; }
+    if (!(e.target.closest && e.target.closest(".gl-pop"))) hideGloss();
+  });
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape") hideGloss(); });
+
+  // reading progress bar on lesson pages
+  let readOn = false;
+  function readBar(on) { readOn = on; const b = $("#readbar"); if (b) { b.style.width = "0"; b.hidden = !on; } }
+  window.addEventListener("scroll", () => {
+    if (!readOn) return; const h = document.documentElement; const max = h.scrollHeight - h.clientHeight;
+    $("#readbar").style.width = (max > 0 ? Math.min(100, h.scrollTop / max * 100) : 0) + "%";
+  }, { passive: true });
+
+  function flowRow() {
+    const ap = pathById[S.path]; const pr = ap && pathProgress(ap); const nx = pr && pr.next && byId[pr.next.lesson];
+    const last = S.last && byId[S.last];
+    if (!nx && !last) return "";
+    return `<section class="flow-row">
+      ${nx ? `<a class="card flow-card" href="#/lesson/${nx.id}" style="--tc:${ap.color || "var(--accent)"}"><span class="ctx-h">★ ${t("yourPath")} · ${ap.icon} ${esc(L(ap.title))}</span>
+        <b>▶ ${nx.icon} ${esc(L(nx.title))}</b><span class="muted">${esc(L(pr.next.why))}</span><div class="pb-bar"><div style="width:${pr.pct}%"></div></div><span class="muted small">${pr.done}/${pr.steps.length} ✓</span></a>` : ""}
+      ${last ? `<a class="card flow-card" href="#/lesson/${last.id}"><span class="ctx-h">↩️ ${t("continueWhere")}</span><b>${last.icon} ${esc(L(last.title))}</b><span class="muted">${esc(L(last.tldr))}</span></a>` : ""}
+    </section>`;
+  }
+
   function trackCard(tr, i) {
     const ls = trackLessons(tr.id); const d = ls.filter(l => S.done[l.id]).length;
     const pct = ls.length ? Math.round(d / ls.length * 100) : 0;
@@ -186,7 +369,8 @@
     const { r, next } = rankFor(S.xp);
     const pct = next ? Math.round((S.xp - r.xp) / (next.xp - r.xp) * 100) : 100;
     const doneCount = Object.keys(S.done).filter(k => byId[k]).length;
-    const nl = nextLesson();
+    const ap = pathById[S.path]; const apn = ap && pathProgress(ap).next;
+    const nl = (apn && byId[apn.lesson]) || nextLesson();
     const rnd = seeded(today());
     const dl = lessons.length ? lessons[Math.floor(rnd() * lessons.length)] : null;
     const ql = lessons.filter(l => l.quiz && l.quiz.length);
@@ -194,6 +378,7 @@
     const q = qLesson ? qLesson.quiz[Math.floor(rnd() * qLesson.quiz.length)] : null;
     const g = I.glossary.length ? I.glossary[Math.floor(rnd() * I.glossary.length)] : null;
     app.innerHTML = `
+      ${flowRow()}
       <section class="hero">
         <div class="card hero-main">
           <h1>${t("heroTitle")}</h1><p>${t("heroSub")}</p>
@@ -225,6 +410,7 @@
           ${q ? `<div class="item" id="dailyQuiz"></div>` : ""}
           ${g ? `<div class="item"><details><summary>🃏 <b>${esc(g.term)}</b> — ${S.lang === "he" ? "מה זה?" : "what is it?"}</summary><p style="margin:.4em 0 0">${esc(L(g.def))}</p></details></div>` : ""}
         </div></section>` : ""}
+      ${PATHS.length ? `<h2>🧭 ${t("pathsTitle")}</h2><p class="muted" style="margin-top:-6px">${t("pathsSub")}</p><div class="grid">${PATHS.map(pathCard).join("")}</div>` : ""}
       <h2>🗺️ ${t("path")}</h2>
       <div class="grid">${I.tracks.map(trackCard).join("")}</div>`;
     if (q) renderQuizQ($("#dailyQuiz"), q, "daily:" + today(), 15);
@@ -252,17 +438,25 @@
     const tr = trackOf(id); if (!tr) return home(app);
     const ls = trackLessons(id);
     const sims = Object.entries(I.sims || {}).filter(([, s]) => s.track === id);
+    const dn = ls.filter(l => S.done[l.id]).length; const nx = ls.find(l => !S.done[l.id]);
+    const inPaths = PATHS.filter(p => pathSteps(p).some(x => byId[x.lesson] && byId[x.lesson].track === id));
+    let num = 0, lastLv = 0;
     app.innerHTML = `
       <div class="crumbs"><a href="#/learn">${t("navLearn")}</a></div>
       <div class="track-head"><span class="ticon">${tr.icon}</span><div><h1 style="margin:0">${esc(L(tr.title))}</h1><p class="muted" style="margin:0">${esc(L(tr.blurb))}</p></div></div>
-      <div class="lesson-list">${ls.length ? ls.map(l => `
-        <a class="card lesson-item" href="#/lesson/${l.id}">
+      <div class="card track-progress" style="--tc:${tr.color}">
+        <div class="row"><b>${dn}/${ls.length} ✓</b><span class="spacer"></span>${nx ? `<a class="btn primary" href="#/lesson/${nx.id}">${dn ? t("trackContinue") : t("trackStart")}: ${nx.icon || ""} ${esc(L(nx.title))}</a>` : ""}</div>
+        <div class="pb-bar" style="margin-top:10px"><div style="width:${ls.length ? Math.round(dn / ls.length * 100) : 0}%"></div></div>
+        ${inPaths.length ? `<div class="chips" style="margin-top:10px"><span class="muted small">${t("inPaths")}</span>${inPaths.map(p => `<a class="chip path" href="#/paths/${p.id}">${p.icon} ${esc(L(p.title))}</a>`).join("")}</div>` : ""}
+      </div>
+      <div class="lesson-list">${ls.length ? ls.map(l => { num++; const lv = l.level || 1; const head = lv !== lastLv ? `<h3 class="lv-head">${I.ui.level[S.lang][lv] || ""}</h3>` : ""; lastLv = lv; return head + `
+        <a class="card lesson-item ${nx && nx.id === l.id ? "next" : ""}" href="#/lesson/${l.id}"><span class="lnum">${num}</span>
           <span class="licon">${l.icon || "📄"}</span>
           <span class="ltext"><b>${esc(L(l.title))}</b><span>${esc(L(l.tldr))}</span></span>
           <span class="tag">${I.ui.level[S.lang][l.level || 1] || ""}</span>
           <span class="tag">${l.minutes || 5} ${t("min")}</span>
           <span class="check ${S.done[l.id] ? "on" : ""}">${S.done[l.id] ? "✓" : ""}</span>
-        </a>`).join("") : `<p class="muted">${t("comingSoon")}</p>`}</div>
+        </a>`; }).join("") : `<p class="muted">${t("comingSoon")}</p>`}</div>
       ${sims.length ? `<h2>🎮 ${t("playground")}</h2><div class="grid">${sims.map(([sid, s]) => simCard(sid, s)).join("")}</div>` : ""}`;
   }
 
@@ -286,12 +480,16 @@
   function viewLesson(app, id) {
     const l = byId[id];
     if (!l) { app.innerHTML = `<p>${t("lessonNotFound")}</p>`; return; }
+    S.last = id; save();
+    const pp = pathPos(l);
     const tr = trackOf(l.track) || { title: { en: "", he: "" }, icon: "" };
     const idx = lessons.indexOf(l); const prev = lessons[idx - 1]; const next = lessons[idx + 1];
     const secs = [];
     const sec = (key, title, html, cls) => { secs.push([key, title]); return `<section id="sec-${key}" class="${cls || ""}"><h2>${title}</h2>${html}</section>`; };
     let body = "";
+    body += pathBar(l);
     body += `<div class="tldr">⚡ ${esc(L(l.tldr))}</div>`;
+    body += contextBox(l);
     if (l.analogy) body += `<div class="card analogy" style="margin-top:16px"><div class="label">🎭 ${t("analogy")}</div><div>${L(l.analogy)}</div></div>`;
     (l.sections || []).forEach((s, i) => { body += sec("s" + i, esc(L(s.h)), `<div class="section-body">${L(s.body)}</div>`); });
     if (l.diagram) body += sec("diagram", "🖼️ " + t("diagram"), `<div class="diagram"><pre>${esc(l.diagram)}</pre></div>`);
@@ -305,14 +503,16 @@
     body += `<div class="card ask-box" style="margin-top:20px"><b>🤖 ${t("askClaude")}</b><p class="muted" style="margin:.3em 0 .6em">${t("askClaudeSub")}</p>
       <div class="row"><input id="askQ" type="text" style="flex:1;min-width:200px;padding:8px 10px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--text);font:inherit" placeholder="${S.lang === "he" ? "מה לא ברור? (אופציונלי)" : "What's unclear? (optional)"}"><button class="btn primary" id="askCopy">${t("copyPrompt")}</button></div></div>`;
     if (l.related && l.related.length) {
-      const rel = l.related.map(r => byId[r]).filter(Boolean);
-      if (rel.length) body += `<h2>🔗 ${t("related")}</h2><div class="row">${rel.map(r => `<a class="btn small" href="#/lesson/${r.id}">${r.icon || ""} ${esc(L(r.title))}</a>`).join("")}</div>`;
+      const rel = l.related.filter(r => byId[r]);
+      if (rel.length) body += `<h2>🔗 ${t("related")}</h2><div class="chips">${rel.map(chip).join("")}</div>`;
     }
+    const bl = (backlinks[l.id] || []).filter(r => !(l.related || []).includes(r));
+    if (bl.length) body += `<h2>🔁 ${t("referencedBy")}</h2><div class="chips">${bl.slice(0, 12).map(chip).join("")}</div>`;
     body += `<div class="lesson-footer">
       ${prev ? `<a class="btn" href="#/lesson/${prev.id}">${t("prev")}</a>` : ""}
       <span class="spacer"></span>
       <button class="btn ${S.done[l.id] ? "good" : "primary"}" id="doneBtn">${S.done[l.id] ? t("done") : t("markDone")}</button>
-      ${next ? `<a class="btn" href="#/lesson/${next.id}">${t("next")}</a>` : ""}
+      ${pp && pp.next ? `<a class="btn" href="#/lesson/${pp.next.lesson}">${t("nextStep")} ›</a>` : next ? `<a class="btn" href="#/lesson/${next.id}">${t("next")}</a>` : ""}
     </div>`;
     app.innerHTML = `
       <div class="crumbs"><a href="#/learn">${t("navLearn")}</a> › <a href="#/track/${l.track}">${tr.icon} ${esc(L(tr.title))}</a></div>
@@ -320,12 +520,16 @@
         <article class="lesson">
           <h1><span>${l.icon || "📄"}</span><span>${esc(L(l.title))}</span></h1>
           <div class="row" style="margin-bottom:14px"><span class="tag">${I.ui.level[S.lang][l.level || 1]}</span><span class="tag">⏱ ${l.minutes || 5} ${t("min")}</span>${S.done[l.id] ? `<span class="tag" style="color:var(--good)">✓ ${t("done")}</span>` : ""}</div>
+          <details class="toc-m"><summary>📑 ${t("onThisPage")}</summary>${secs.map(([k, ti]) => `<a href="javascript:void 0" data-sec="${k}">${ti.replace(/<[^>]+>.*$/, "")}</a>`).join("")}</details>
           ${body}
         </article>
         <aside class="toc">${secs.map(([k, ti]) => `<a href="javascript:void 0" data-sec="${k}">${ti.replace(/<[^>]+>.*$/, "")}</a>`).join("")}</aside>
       </div>`;
     $$("[data-copy]", app).forEach(b => b.onclick = () => copy(b.dataset.copy));
-    $$("[data-sec]", app).forEach(a => a.onclick = () => { const s = $("#sec-" + a.dataset.sec); if (s) s.scrollIntoView({ behavior: "smooth" }); });
+    $$("[data-sec]", app).forEach(a => a.onclick = () => { const s = $("#sec-" + a.dataset.sec); if (s) s.scrollIntoView({ behavior: "smooth" }); const d = a.closest(".toc-m"); if (d) d.open = false; });
+    const cb = $("#ctxBox"); if (cb) cb.ontoggle = () => { S.ctxClosed = !cb.open; save(); };
+    linkGlossary($(".lesson", app), l.id);
+    readBar(true);
     if (l.quiz) { const qb = $("#quizBox"); l.quiz.forEach((q, i) => { const d = document.createElement("div"); qb.appendChild(d); renderQuizQ(d, q, l.id + ":" + i, 10); }); }
     const notes = $("#notes"); notes.oninput = () => { S.notes[l.id] = notes.value; save(); };
     $("#doneBtn").onclick = () => {

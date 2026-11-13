@@ -90,8 +90,25 @@ for (const q of I.topQuestions) {
 }
 const allIds = new Set(I.lessons.map(l => l.id));
 const dangling = [];
+// learning paths (content/paths.js): every step must point at a real lesson
+I.paths = I.paths || [];
+const pathIds = new Set();
+for (const pth of I.paths) {
+  const w = `path ${pth.id}`;
+  if (!pth.id || pathIds.has(pth.id)) errors.push(`${w}: missing or duplicate id`); pathIds.add(pth.id);
+  ["title","blurb","audience"].forEach(k => bi(pth[k], `${w}.${k}`));
+  if (!Array.isArray(pth.stages) || !pth.stages.length) errors.push(`${w}: needs stages`);
+  (pth.stages||[]).forEach((st,i) => {
+    bi(st.title, `${w}.stages[${i}].title`); bi(st.intro, `${w}.stages[${i}].intro`);
+    if (!Array.isArray(st.steps) || !st.steps.length) errors.push(`${w}.stages[${i}]: needs steps`);
+    (st.steps||[]).forEach((x,j) => {
+      bi(x.why, `${w}.stages[${i}].steps[${j}].why`);
+      if (files.length >= 5 && !allIds.has(x.lesson)) errors.push(`${w}.stages[${i}].steps[${j}]: unknown lesson ${x.lesson}`);
+    });
+  });
+}
 for (const l of I.lessons) (l.related||[]).forEach(r => { if (!allIds.has(r)) dangling.push(`${l.id} -> ${r}`); });
-console.log(`lessons=${I.lessons.length} glossary=${I.glossary.length} scenarios=${I.scenarios.length} designs=${I.designs.length} problems=${I.problems.length} top=${I.topQuestions.length}`);
+console.log(`lessons=${I.lessons.length} glossary=${I.glossary.length} scenarios=${I.scenarios.length} designs=${I.designs.length} problems=${I.problems.length} top=${I.topQuestions.length} paths=${I.paths.length}`);
 if (dangling.length) console.log(`(info) related ids not found in loaded files: ${dangling.length}${files.length < 5 ? " (fine when validating a single file)" : ": " + dangling.join(", ")}`);
 if (errors.length) { console.log(`ERRORS (${errors.length}):\n` + errors.slice(0, 60).join("\n")); process.exit(1); }
 console.log("OK");

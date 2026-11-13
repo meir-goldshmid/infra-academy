@@ -138,3 +138,25 @@ INFRA.problems.push({
   followUps: [ { q: { en, he }, a: { en, he } } ]              // 1-3
 });
 ```
+
+## Learning path (`INFRA.paths`, in `content/paths.js`)
+
+Guided journeys across tracks. The app shows them at `#/paths`, puts a "next step" bar on lessons in the path the
+learner follows, and lists them in each lesson's "Where this fits" box. Plain strings only (no HTML).
+
+```js
+INFRA.paths = INFRA.paths || [];
+INFRA.paths.push({
+  id: "principal", icon: "👑", color: "#5f3dc4",
+  title: { en, he }, blurb: { en, he },     // blurb: what you can do at the end
+  audience: { en, he },                      // who it's for / what to know first
+  stages: [ {
+    title: { en, he },                       // "Stage 1 · Think before you draw"
+    intro: { en, he },                       // 2-3 sentences: why this stage, how it connects
+    steps: [ { lesson: "pr-architect-questions", why: { en, he } } ]   // why: one sentence, why it comes now
+  } ]
+});
+```
+
+Every `lesson` must be an existing lesson id (`node tools/validate.js` checks it).
+Lesson pages also link glossary terms automatically (first mention of each term, to the term's `lesson`), so give new glossary terms a `lesson`.
