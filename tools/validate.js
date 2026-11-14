@@ -120,6 +120,15 @@ for (const pth of I.paths) {
   });
 }
 for (const l of I.lessons) (l.related||[]).forEach(r => { if (!allIds.has(r)) dangling.push(`${l.id} -> ${r}`); });
+// Hebrew/English (RTL/LTR) rule: a Hebrew letter must never touch a Latin letter directly ("בkubectl", "Podים").
+// Use a maqaf-style hyphen: "ב-kubectl", "Pod-ים". js/bidi.js isolates the English run; the hyphen keeps the Hebrew prefix/suffix outside it.
+{ const bidiFiles = files.concat(process.argv.slice(2).length ? [] :
+    (fs.existsSync(path.join(root, "content/cs-he")) ? fs.readdirSync(path.join(root, "content/cs-he")).filter(f => f.endsWith(".js")).map(f => path.join("content/cs-he", f)) : []));
+  for (const f of bidiFiles) {
+    const src = fs.readFileSync(path.resolve(root, f), "utf8");
+    const re = /(.{0,15})([א-ת][A-Za-z]|[A-Za-z][א-ת])(.{0,15})/g; let m;
+    while ((m = re.exec(src))) errors.push(`${f}: Hebrew glued to English (add a hyphen, e.g. "ב-kubectl", "Pod-ים"): …${m[0]}…`);
+  } }
 console.log(`lessons=${I.lessons.length} glossary=${I.glossary.length} scenarios=${I.scenarios.length} designs=${I.designs.length} problems=${I.problems.length} top=${I.topQuestions.length} paths=${I.paths.length}`);
 { const seenT = {}, dups = [];
   for (const g of I.glossary) { const k = String(g.term || "").toLowerCase().replace(/[^a-z0-9֐-׿]/g, ""); if (seenT[k]) dups.push(`${g.term} (${seenT[k]} / ${g.lesson})`); else seenT[k] = g.lesson; }

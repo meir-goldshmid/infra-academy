@@ -27,6 +27,11 @@ The user opens Claude Code in this folder **instead of** an AI chat or Google. W
 - Every user-facing string is bilingual `{ en, he }`. Natural Israeli-engineer Hebrew, not literal translation.
 - Hebrew addresses the reader in **masculine singular only** (אתה, בחר, נסה). Never slash forms like את/ה, שאל/י, מהנדס/ת.
 - Keep terms Israeli engineers say in English in English inside Hebrew text: on-call, deploy, rollback, latency, TL;DR, hands-on, prompt, Pod… ("ללמוד תשתיות כאילו אתה on-call מחר", not "בתורנות").
+- Mixed Hebrew/English direction (RTL/LTR) — applies to every lesson, glossary term, scenario and CS unit:
+  - Attach Hebrew prefixes/suffixes to an English term with a hyphen, never glued: "ב-kubectl", "ה-Pod", "Pod-ים", "כש-thread" (not "בkubectl", "Podים"). `tools/validate.js` fails on glued text.
+  - Write English terms, commands, paths and numbers naturally; `js/bidi.js` wraps every LTR run in Hebrew text in `<bdi dir="ltr">` at render time so ".NET", "C++", "/etc/fstab", "-o wide", "R+W>N", "99.9%" keep their order. Don't add `<bdi>` by hand except to force a long mixed phrase together.
+  - Put whole commands, YAML and code in `<code>`/`<pre>` (always LTR), not in running Hebrew text.
+  - Don't start or end a Hebrew sentence with a long English phrase when you can rephrase; keep sentence punctuation (. , :) after the English term, outside parentheses.
 - Lesson ids are unique kebab-case; `track` must be one of the ids in `CONTENT_SCHEMA.md`; `playground` must be an existing sim id.
 - Content strings are rendered as HTML: escape `<` / `>` inside `<pre>`/`<code>`.
 - No build step, no npm dependencies, no frameworks. Keep it working from `file://` and GitHub Pages.

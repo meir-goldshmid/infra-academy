@@ -14,7 +14,8 @@ Turn `<topic>` (from the arguments: $ARGUMENTS) into a permanent lesson in the I
    - a vivid analogy, 3-6 substantive sections with at least one `<blockquote>` "💡 Real world" / "⚠️ Production tip";
    - 2-5 `handsOn` commands, a mnemonic, 2-4 pitfalls, 2-3 interview Q&A, 3-4 quiz questions with plausible wrong options;
    - `playground` only if one of the existing sims fits; `related` pointing at existing lesson ids;
-   - natural Israeli-engineer Hebrew (technical terms stay in English).
+   - natural Israeli-engineer Hebrew (technical terms stay in English), masculine singular;
+   - RTL/LTR: Hebrew prefixes/suffixes attach to English with a hyphen ("ב-kubectl", "Pod-ים"), commands/code go in `<code>`/`<pre>`; see the "Mixed Hebrew/English direction" rule in CONTENT_SCHEMA.md.
    Also add 3-8 glossary terms for new concepts.
 4. Append it to `content/my-lessons.js` (pick the best-fitting `track`, and an `order` after the existing lessons in that track, e.g. 50+).
 5. Run `node tools/validate.js` and fix until it prints `OK`.

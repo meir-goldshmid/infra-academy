@@ -13,6 +13,12 @@ and then pushes objects. Every user-facing string is bilingual: `{ en: "...", he
 Hebrew must be natural, written by a Hebrew-speaking engineer: keep technical terms in English
 inside Hebrew text where Israeli engineers would (Pod, Deployment, Load Balancer, latency, SLO, Kafka...).
 
+Mixed Hebrew/English direction (RTL/LTR) — applies to every lesson, glossary term, scenario and CS unit:
+- Attach Hebrew prefixes/suffixes to an English term with a hyphen, never glued: "ב-kubectl", "ה-Pod", "Pod-ים", "כש-thread" (not "בkubectl", "Podים"). `tools/validate.js` fails on glued text.
+- Write English terms, commands, paths and numbers naturally; `js/bidi.js` wraps every LTR run in Hebrew text in `<bdi dir="ltr">` at render time so ".NET", "C++", "/etc/fstab", "-o wide", "R+W>N", "99.9%" keep their order. Don't add `<bdi>` by hand except to force a long mixed phrase together.
+- Put whole commands, YAML and code in `<code>`/`<pre>` (always LTR), not in running Hebrew text.
+- Don't start or end a Hebrew sentence with a long English phrase when you can rephrase; keep sentence punctuation (. , :) after the English term, outside parentheses.
+
 ## Lesson
 
 ```js
