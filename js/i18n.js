@@ -22,6 +22,8 @@ INFRA.tracks = [
     blurb: { en: "SLI/SLO/SLA, error budgets, HA, disaster recovery, incidents, deployments.", he: "SLI/SLO/SLA, Error Budgets, HA, התאוששות מאסון, תקלות ו-Deployments." } },
   { id: "cloud",        icon: "☁️", color: "#0ca678", title: { en: "Cloud & DevOps", he: "ענן ו-DevOps" },
     blurb: { en: "IaaS/PaaS, regions, AWS/Azure/GCP map, Terraform, CI/CD, IAM, FinOps.", he: "IaaS/PaaS, Regions, מפת AWS/Azure/GCP, Terraform, CI/CD, IAM ו-FinOps." } },
+  { id: "git",          icon: "🌿", color: "#e8590c", title: { en: "Git & Code Hosting", he: "Git ואירוח קוד" },
+    blurb: { en: "How Git really works, branching, rebase, undo & rescue, bisect, monorepos, GitHub vs GitLab, and securing your repos.", he: "איך Git באמת עובד, branching, rebase, ביטול והצלה, bisect, monorepo, GitHub מול GitLab, ואבטחת ה-repo-ים." } },
   { id: "staff",        icon: "🧭", color: "#a61e4d", title: { en: "Senior & Staff+", he: "Senior ו-Staff+" },
     blurb: { en: "Distributed systems depth, platform & security at scale, and the Staff/Principal skills: design docs, strategy, migrations, influence.", he: "עומק במערכות מבוזרות, פלטפורמה ואבטחה בסקייל, והכישורים של Staff/Principal: מסמכי design, אסטרטגיה, מיגרציות והשפעה." } },
   { id: "flows",        icon: "🔄", color: "#0b7285", title: { en: "End-to-End Flows", he: "תהליכים מקצה לקצה" },

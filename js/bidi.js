@@ -42,6 +42,9 @@
       if (!tr || /^[A-Za-z0-9].*[A-Za-z0-9)]$/.test(tr) || tr.length === 1) return;
     }
     if (skipped(node)) return;
+    // a bare text node inside a flex/grid container is one anonymous item; splitting it would stack the pieces
+    const pd = node.parentNode && node.parentNode.nodeType === 1 ? getComputedStyle(node.parentNode).display : "";
+    if (/flex|grid/.test(pd)) return;
     RUN.lastIndex = 0;
     const parts = []; let last = 0, m, changed = false;
     while ((m = RUN.exec(s))) {

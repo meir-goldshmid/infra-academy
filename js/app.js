@@ -803,25 +803,110 @@ If the answer is worth keeping, also add it as a new lesson (or extend this one)
     Object.entries(I.sims || {}).forEach(([id, s]) => idx.push({ type: "🎮", href: `#/play/${id}`, title: () => L(s.title), sub: () => L(s.desc), hay: (both(s.title) + " " + both(s.desc)).toLowerCase(), body: "" }));
     return idx;
   }
-  let sel = 0, results = [];
-  function doSearch(q) {
-    searchIndex = searchIndex || buildIndex();
-    const terms = q.toLowerCase().split(/\s+/).filter(Boolean);
-    if (!terms.length) { results = []; $("#searchResults").innerHTML = ""; return; }
-    results = searchIndex.map(e => {
-      let sc = 0;
-      for (const w of terms) {
-        const inH = e.hay.includes(w), inB = e.body.includes(w);
-        if (!inH && !inB) return null;
-        sc += (inH ? 10 : 0) + (inB ? 2 : 0) + (e.title().toLowerCase().includes(w) ? 15 : 0);
+  // ---- smart search: exact > prefix/substring > synonyms > Hebrew prefix letters > typo-tolerant (Damerau-Levenshtein) > wrong keyboard layout
+  const normQ = (s) => String(s).toLowerCase().normalize("NFKD").replace(/[֑-ׇ̀-ͯ]/g, "");
+  const TOKEN_RE = /[a-z0-9א-ת]+/g;
+  let vocab = null; // Map token -> frequency, bucketed by length for fast fuzzy lookups
+  function buildVocab() {
+    const freq = new Map();
+    searchIndex.forEach(e => { (e.hay + " " + e.body).replace(TOKEN_RE, w => { if (w.length > 2 && w.length < 30) freq.set(w, (freq.get(w) || 0) + 1); return w; }); });
+    const byLen = [];
+    freq.forEach((n, w) => { (byLen[w.length] = byLen[w.length] || []).push(w); });
+    vocab = { freq, byLen };
+  }
+  // optimal-string-alignment distance (Levenshtein + adjacent transposition), stops early once it exceeds max
+  function editDist(a, b, max) {
+    if (Math.abs(a.length - b.length) > max) return max + 1;
+    let p2 = null, p1 = Array.from({ length: b.length + 1 }, (_, j) => j);
+    for (let i = 1; i <= a.length; i++) {
+      const cur = [i]; let rowMin = i;
+      for (let j = 1; j <= b.length; j++) {
+        const cost = a[i - 1] === b[j - 1] ? 0 : 1;
+        let v = Math.min(p1[j] + 1, cur[j - 1] + 1, p1[j - 1] + cost);
+        if (p2 && i > 1 && j > 1 && a[i - 1] === b[j - 2] && a[i - 2] === b[j - 1]) v = Math.min(v, p2[j - 2] + 1);
+        cur.push(v); if (v < rowMin) rowMin = v;
+      }
+      if (rowMin > max) return max + 1;
+      p2 = p1; p1 = cur;
+    }
+    return p1[b.length];
+  }
+  const SYN = [["k8s", "kubernetes"], ["db", "database"], ["pg", "postgres", "postgresql"], ["lb", "load balancer"], ["tf", "terraform"], ["gh", "github"], ["gl", "gitlab"],
+    ["mq", "queue"], ["ha", "high availability"], ["dr", "disaster recovery"], ["iac", "infrastructure as code"], ["ci", "cicd"], ["cd", "cicd"], ["ssl", "tls"], ["https", "tls"],
+    ["vm", "virtual machine"], ["sre", "reliability"], ["oom", "out of memory"], ["llm", "model"], ["rag", "retrieval"], ["dns", "domain"], ["ec2", "instance"], ["s3", "object storage"],
+    ["udp", "datagram"], ["raid", "mdadm"], ["nic", "network interface"], ["kv", "key value"], ["ttl", "time to live"], ["mfa", "2fa"], ["sso", "oidc"], ["aks", "azure kubernetes"],
+    ["eks", "elastic kubernetes"], ["gke", "google kubernetes"], ["קוברנטיס", "kubernetes"], ["דוקר", "docker"], ["רשת", "network"], ["דיסק", "disk"], ["זיכרון", "memory"], ["גיבוי", "backup"]];
+  const synOf = (w) => { const out = []; SYN.forEach(g => { if (g.includes(w)) g.forEach(x => { if (x !== w) out.push(x); }); }); return out; };
+  const HE_KEYS = { q: "/", w: "'", e: "ק", r: "ר", t: "א", y: "ט", u: "ו", i: "ן", o: "ם", p: "פ", a: "ש", s: "ד", d: "ג", f: "כ", g: "ע", h: "י", j: "ח", k: "ל", l: "ך", ";": "ף", "'": ",", z: "ז", x: "ס", c: "ב", v: "ה", b: "נ", n: "מ", m: "צ", ",": "ת", ".": "ץ", "/": "." };
+  const EN_KEYS = Object.fromEntries(Object.entries(HE_KEYS).map(([k, v]) => [v, k]));
+  const swapLayout = (q) => /[א-ת]/.test(q) ? [...q].map(c => EN_KEYS[c] || c).join("") : [...q].map(c => HE_KEYS[c] || c).join("");
+  const fuzzyCache = new Map();
+  function fuzzyVariants(w) { // close vocabulary words, best first
+    if (fuzzyCache.has(w)) return fuzzyCache.get(w);
+    const max = w.length >= 8 ? 2 : w.length >= 4 ? 1 : 0, out = [];
+    if (max) for (let len = w.length - max; len <= w.length + max; len++) (vocab.byLen[len] || []).forEach(v => { const d = editDist(w, v, max); if (d <= max && d > 0) out.push({ w: v, d, n: vocab.freq.get(v) }); });
+    out.sort((a, b) => a.d - b.d || b.n - a.n);
+    const res = out.slice(0, 6); fuzzyCache.set(w, res); return res;
+  }
+  // every way a query term may appear: [{w, d}] where d is a penalty (0 = what you typed)
+  function alternatives(term) {
+    const alts = [{ w: term, d: 0 }];
+    const base = [term];
+    if (/^[הבלומשכו][א-ת]{2,}$/.test(term)) { alts.push({ w: term.slice(1), d: 0.2 }); base.push(term.slice(1)); } // Hebrew prefix letters: "בקוברנטיס" -> "קוברנטיס"
+    if (/^[a-z]{4,}s$/.test(term)) alts.push({ w: term.slice(0, -1), d: 0.2 });              // plural: "pods" -> "pod"
+    base.forEach(b => synOf(b).forEach(s => alts.push({ w: s, d: 0 })));                        // k8s == kubernetes
+    const known = searchIndex.some(e => e.hay.includes(term) || e.body.includes(term));
+    if (!known) fuzzyVariants(term).forEach(f => alts.push({ w: f.w, d: f.d, fuzzy: true }));
+    return alts;
+  }
+  function rank(terms) {
+    const altsPer = terms.map(alternatives);
+    const used = terms.map(() => null);
+    const res = searchIndex.map(e => {
+      let sc = 0; const title = e.title().toLowerCase();
+      for (let i = 0; i < terms.length; i++) {
+        let best = null;
+        for (const a of altsPer[i]) {
+          const inH = e.hay.includes(a.w), inB = !inH && e.body.includes(a.w);
+          if (!inH && !inB) continue;
+          const ew = a.w.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), hayText = inH ? e.hay : e.body;
+          const wordStart = new RegExp("(^|[^a-z0-9א-ת])" + ew).test(hayText);
+          const wholeWord = wordStart && new RegExp("(^|[^a-z0-9א-ת])" + ew + "($|[^a-z0-9א-ת])").test(hayText);
+          const inTitle = title.includes(a.w), titleWord = inTitle && new RegExp("(^|[^a-z0-9א-ת])" + ew + "($|[^a-z0-9א-ת])").test(title);
+          const s = ((inH ? 10 : 2) + (inTitle ? 8 : 0) + (titleWord ? 10 : 0) + (wordStart ? 2 : 0) + (wholeWord ? 4 : 0)) / (1 + a.d);
+          if (!best || s > best.s) best = { s, a };
+        }
+        if (!best) return null;
+        sc += best.s;
+        if (best.a.d > 0 && (!used[i] || best.a.d < used[i].d)) used[i] = used[i] || best.a;
       }
       if (e.type === "📄") sc += 3;
       return { e, sc };
     }).filter(Boolean).sort((a, b) => b.sc - a.sc).slice(0, 30);
-    sel = 0;
-    const hl = (s) => { let h = esc(s); terms.forEach(w => { h = h.replace(new RegExp("(" + w.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + ")", "gi"), "<mark>$1</mark>"); }); return h; };
-    $("#searchResults").innerHTML = results.length ? results.map((r, i) => `<a class="sr ${i === 0 ? "sel" : ""}" href="${r.e.href}">${r.e.type} ${hl(r.e.title())}<small>${hl(String(r.e.sub()).slice(0, 140))}</small></a>`).join("")
-      : `<p class="muted" style="padding:12px">${t("noResults")}</p>`;
+    return { res, altsPer };
+  }
+  let sel = 0, results = [];
+  function doSearch(q) {
+    searchIndex = searchIndex || buildIndex();
+    if (!vocab) buildVocab();
+    let terms = normQ(q).split(/\s+/).filter(Boolean);
+    if (!terms.length) { results = []; $("#searchResults").innerHTML = ""; return; }
+    let { res, altsPer } = rank(terms), note = "";
+    const he = S.lang === "he";
+    if (!res.length || (res.length < 3 && altsPer.every(a => a.length === 1 && !searchIndex.some(e => e.hay.includes(a[0].w))))) {
+      const swapped = normQ(swapLayout(q)).split(/\s+/).filter(Boolean), r2 = rank(swapped);
+      if (r2.res.length > res.length) { res = r2.res; altsPer = r2.altsPer; terms = swapped; note = (he ? "⌨️ נראה שהמקלדת הייתה בשפה הלא נכונה — מחפש: " : "⌨️ Looks like the wrong keyboard layout — searching: ") + `<b>${esc(swapped.join(" "))}</b>`; }
+    }
+    // "did you mean": a term that only matched through a typo correction
+    if (!note && res.length) {
+      const fixed = terms.map((w, i) => { const exact = searchIndex.some(e => e.hay.includes(w) || e.body.includes(w)); const f = altsPer[i].find(a => a.fuzzy); return !exact && f ? f.w : w; });
+      if (fixed.join(" ") !== terms.join(" ")) note = (he ? "🔤 האם התכוונת ל: " : "🔤 Did you mean: ") + `<b>${esc(fixed.join(" "))}</b>`;
+    }
+    results = res; sel = 0;
+    const marks = [...new Set(altsPer.flat().map(a => a.w).filter(w => w.length > 1))].sort((a, b) => b.length - a.length);
+    const hl = (s) => { let h = esc(s); if (marks.length) h = h.replace(new RegExp("(" + marks.map(w => esc(w).replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("|") + ")", "gi"), "<mark>$1</mark>"); return h; };
+    $("#searchResults").innerHTML = (note ? `<p class="muted" style="padding:6px 12px;margin:0">${note}</p>` : "") + (results.length ? results.map((r, i) => `<a class="sr ${i === 0 ? "sel" : ""}" href="${r.e.href}">${r.e.type} ${hl(r.e.title())}<small>${hl(String(r.e.sub()).slice(0, 140))}</small></a>`).join("")
+      : `<p class="muted" style="padding:12px">${t("noResults")}</p>`);
   }
   function openSearch() { $("#searchModal").hidden = false; const i = $("#searchInput"); i.value = ""; doSearch(""); setTimeout(() => i.focus(), 10); }
   function closeSearch() { $("#searchModal").hidden = true; }

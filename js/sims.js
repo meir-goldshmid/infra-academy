@@ -878,4 +878,451 @@ Fix properly: raise memory request+limit (e.g. 512Mi) based on measured usage, o
       return () => { if (timer) clearInterval(timer); };
     }
   };
+  // =============== 13. TCP vs UDP: handshake, window, loss ===============
+  I.sims.tcp = {
+    icon: "🤝", track: "networking",
+    title: { en: "TCP vs UDP: handshake, window & loss", he: "TCP מול UDP: handshake, window ו-packet loss" },
+    desc: { en: "Watch SYN / SYN-ACK / ACK, data segments and cumulative ACKs, a sliding window, retransmissions under packet loss and the FIN / TIME_WAIT close. Then switch to UDP and watch lost packets simply vanish.", he: "צפה ב-SYN / SYN-ACK / ACK, ב-segments עם ACK מצטבר, ב-sliding window, ב-retransmissions תחת packet loss ובסגירה עם FIN ו-TIME_WAIT. אחר כך עבור ל-UDP ותראה איך packets שאבדו פשוט נעלמים." },
+    mount(el, H) {
+      const t = T(H);
+      const N = 12, STEP = 0.04, RTO = 75, X0 = 100, X1 = 500;
+      el.innerHTML = `<div class="sim-controls">
+        <label>${t("Protocol", "פרוטוקול")}<select id="proto"><option value="tcp">TCP</option><option value="udp">UDP</option></select></label>
+        ${slider("win", t("Window (segments in flight)", "Window (segments באוויר)"), 1, 8, 1, 4)}
+        ${slider("loss", t("Packet loss %", "Packet loss %"), 0, 50, 5, 10)}
+        <label>${t("Speed", "מהירות")}<select id="spd"><option value="1">1×</option><option value="2" selected>2×</option><option value="4">4×</option></select></label>
+        <button class="btn primary" id="go">▶ ${t("Connect & send 12 segments", "התחבר ושלח 12 segments")}</button>
+        <button class="btn small" id="pause">⏸ ${t("Pause", "השהיה")}</button></div>
+      <div class="sim-stage" style="direction:ltr"><svg id="svg" viewBox="0 0 600 150" style="width:100%;height:auto;display:block"></svg>
+        <div id="strip" style="display:flex;flex-wrap:wrap;gap:3px;margin-top:6px;align-items:center"></div></div>
+      <pre id="log" style="font-size:.78em;max-height:160px;direction:ltr;text-align:left;margin-top:8px"></pre>
+      <div class="sim-out" id="out"></div><div class="sim-lesson" id="lesson"></div>`;
+      const $ = (s) => el.querySelector(s);
+      ["win", "loss"].forEach(id => $("#" + id).oninput = (e) => $("#" + id + "V").textContent = e.target.value);
+      let S, paused = false;
+      const log = (s) => { S.log.push(`[t=${String(S.tick).padStart(4, " ")}] ${s}`); if (S.log.length > 60) S.log.shift(); };
+      const reset = () => {
+        S = { running: false, done: false, mode: $("#proto").value, cs: "CLOSED", ss: "LISTEN", pk: [], seg: Array.from({ length: N }, () => "unsent"),
+          base: 1, next: 1, rcvNext: 1, buf: new Set(), timer: 0, dup: 0, sent: 0, retx: 0, lost: 0, delivered: 0, tick: 0, log: [], tw: 0, finAt: 0, paceAt: 0, estAt: 0, endTick: 0 };
+        if (S.mode === "udp") { S.cs = "—"; S.ss = "—"; }
+      };
+      const send = (type, dir, label, extra) => {
+        const p = Object.assign({ type, dir, label, pos: 0, drop: false, dead: 0 }, extra || {});
+        if ((type === "data" || type === "ack" || type === "udp") && Math.random() * 100 < +$("#loss").value) p.drop = true;
+        if (type === "data" || type === "udp") S.sent++;
+        S.pk.push(p);
+      };
+      const retransmit = (seq, why) => { S.retx++; S.seg[seq - 1] = "flight"; send("data", "c2s", "SEQ " + seq, { seq }); S.timer = S.tick; S.dup = 0; log(`client: retransmit SEQ ${seq} — ${why}`); };
+      const arrive = (p) => {
+        if (p.dir === "c2s") {
+          if (p.type === "syn") { S.ss = "SYN_RCVD"; log("server ← SYN   → SYN_RCVD, replies SYN-ACK"); send("synack", "s2c", "SYN-ACK"); }
+          else if (p.type === "hsack") { S.ss = "ESTABLISHED"; log("server ← ACK   → ESTABLISHED"); }
+          else if (p.type === "data") {
+            if (p.seq >= S.rcvNext) S.buf.add(p.seq);
+            const before = S.rcvNext;
+            while (S.buf.has(S.rcvNext)) { S.buf.delete(S.rcvNext); S.rcvNext++; S.delivered++; }
+            log(`server ← SEQ ${p.seq}${S.rcvNext === before && p.seq > before ? " (out of order, buffered)" : ""} → ACK ${S.rcvNext}`);
+            send("ack", "s2c", "ACK " + S.rcvNext, { ack: S.rcvNext });
+          } else if (p.type === "udp") { S.seg[p.seq - 1] = "recv"; S.delivered++; log(`server ← datagram ${p.seq}`); }
+          else if (p.type === "fin") { S.ss = "CLOSE_WAIT"; log("server ← FIN   → CLOSE_WAIT, replies ACK"); send("finack", "s2c", "ACK"); S.finAt = S.tick + 10; }
+          else if (p.type === "lastack") { S.ss = "CLOSED"; log("server ← ACK   → CLOSED"); }
+        } else {
+          if (p.type === "synack") { S.cs = "ESTABLISHED"; S.estAt = S.tick; S.paceAt = S.tick + 3; log("client ← SYN-ACK → ESTABLISHED, sends ACK (1 RTT spent, 0 bytes sent)"); send("hsack", "c2s", "ACK"); }
+          else if (p.type === "ack") {
+            if (p.ack > S.base) { for (let s = S.base; s < p.ack; s++) S.seg[s - 1] = "acked"; S.base = p.ack; S.timer = S.tick; S.dup = 0; }
+            else if (p.ack === S.base && S.base < S.next) { S.dup++; if (S.dup === 3) retransmit(S.base, "fast retransmit (3 duplicate ACKs)"); }
+          } else if (p.type === "finack") { S.cs = "FIN_WAIT_2"; log("client ← ACK   → FIN_WAIT_2"); }
+          else if (p.type === "fin") { S.cs = "TIME_WAIT"; S.tw = S.tick + 45; log("client ← FIN   → TIME_WAIT (waits 2×MSL, 60s on Linux), sends ACK"); send("lastack", "c2s", "ACK"); }
+        }
+      };
+      const step = () => {
+        if (!S.running || S.done) return;
+        S.tick++;
+        const win = +$("#win").value;
+        if (S.mode === "tcp") {
+          if (S.cs === "ESTABLISHED") {
+            if (S.next <= N && S.next < S.base + win && S.tick >= S.paceAt) {
+              S.seg[S.next - 1] = "flight"; if (S.base === S.next) S.timer = S.tick;
+              send("data", "c2s", "SEQ " + S.next, { seq: S.next }); S.next++; S.paceAt = S.tick + 3;
+            }
+            if (S.base < S.next && S.tick - S.timer > RTO) retransmit(S.base, "timeout (RTO expired)");
+            if (S.base > N) { S.cs = "FIN_WAIT_1"; log("client: all data ACKed → sends FIN, FIN_WAIT_1"); send("fin", "c2s", "FIN"); }
+          }
+          if (S.finAt && S.tick >= S.finAt) { S.finAt = 0; S.ss = "LAST_ACK"; log("server: app closed → sends FIN, LAST_ACK"); send("fin", "s2c", "FIN"); }
+          if (S.tw && S.tick >= S.tw) { S.tw = 0; S.cs = "CLOSED"; log("client: TIME_WAIT expired → CLOSED"); }
+          if (S.cs === "CLOSED" && S.ss === "CLOSED" && !S.pk.length) { S.done = true; S.endTick = S.tick; }
+        } else {
+          if (S.next <= N && S.tick >= S.paceAt) { S.seg[S.next - 1] = "flight"; send("udp", "c2s", "DGRAM " + S.next, { seq: S.next }); S.next++; S.paceAt = S.tick + 3; }
+          if (S.next > N && !S.pk.length) { S.done = true; S.endTick = S.tick; log(`done: ${S.delivered}/${N} datagrams arrived. Nobody noticed the rest.`); }
+        }
+        S.pk.forEach(p => {
+          if (p.dead) { p.dead++; return; }
+          p.pos += STEP;
+          if (p.drop && p.pos >= 0.5) {
+            p.dead = 1; S.lost++;
+            if (p.type === "data" || p.type === "udp") { if (S.seg[p.seq - 1] !== "acked") S.seg[p.seq - 1] = "lost"; }
+            log(`✖ ${p.label} lost in the network`);
+          } else if (!p.drop && p.pos >= 1) { p.arrived = true; arrive(p); }
+        });
+        S.pk = S.pk.filter(p => !p.arrived && p.dead < 12);
+      };
+      const stCol = { unsent: css("--surface-2"), flight: css("--accent"), acked: css("--good"), recv: css("--good"), lost: css("--bad") };
+      const pkCol = (p) => p.type === "data" || p.type === "udp" ? css("--accent") : p.type === "ack" ? css("--good") : /fin|lastack/.test(p.type) ? "#ae3ec9" : css("--warn");
+      const render = () => {
+        const txt = css("--text"), bd = css("--border"), s2 = css("--surface-2");
+        const box = (x, name, st) => `<rect x="${x}" y="15" width="85" height="120" rx="10" fill="${s2}" stroke="${bd}"/><text x="${x + 42}" y="45" text-anchor="middle" font-size="14" font-weight="700" fill="${txt}">${name}</text><text x="${x + 42}" y="70" text-anchor="middle" font-size="10" fill="${txt}">${st}</text>`;
+        let svg = box(8, "💻 client", S.cs) + box(507, "🖥️ server", S.ss);
+        svg += `<line x1="${X0}" y1="55" x2="${X1}" y2="55" stroke="${bd}" stroke-dasharray="4 4"/><line x1="${X0}" y1="105" x2="${X1}" y2="105" stroke="${bd}" stroke-dasharray="4 4"/>`;
+        svg += `<text x="300" y="30" text-anchor="middle" font-size="10" fill="${txt}" opacity=".6">client → server</text><text x="300" y="138" text-anchor="middle" font-size="10" fill="${txt}" opacity=".6">server → client</text>`;
+        S.pk.forEach(p => {
+          const pos = Math.min(p.pos, 1); const x = p.dir === "c2s" ? X0 + pos * (X1 - X0) : X1 - pos * (X1 - X0); const y = p.dir === "c2s" ? 55 : 105;
+          if (p.dead) svg += `<g opacity="${1 - p.dead / 12}"><text x="${x}" y="${y + 6}" text-anchor="middle" font-size="20" fill="${css("--bad")}">✖</text><text x="${x}" y="${y - 12}" text-anchor="middle" font-size="9" fill="${css("--bad")}">${p.label}</text></g>`;
+          else svg += `<rect x="${x - 30}" y="${y - 9}" width="60" height="18" rx="5" fill="${pkCol(p)}"/><text x="${x}" y="${y + 4}" text-anchor="middle" font-size="9.5" font-weight="700" fill="#fff">${p.label}</text>`;
+        });
+        $("#svg").innerHTML = svg;
+        const win = +$("#win").value;
+        $("#strip").innerHTML = `<small style="margin-right:6px">${S.mode === "tcp" ? t("send buffer:", "send buffer:") : t("datagrams:", "datagrams:")}</small>` + S.seg.map((st, i) => {
+          const inWin = S.mode === "tcp" && i + 1 >= S.base && i + 1 < S.base + win;
+          return `<span title="${st}" style="display:inline-block;min-width:26px;text-align:center;padding:3px 0;border-radius:5px;font-size:.78em;font-family:var(--mono);background:${stCol[st]};color:${st === "unsent" ? "inherit" : "#fff"};outline:${inWin ? `2px solid ${css("--warn")}` : "none"};outline-offset:1px">${i + 1}</span>`;
+        }).join("") + (S.mode === "tcp" ? `<small style="margin-left:8px">🟧 = ${t("window", "window")}</small>` : "");
+        $("#log").textContent = S.log.slice(-10).join("\n") || "$ tcpdump -i eth0 'tcp or udp'";
+        const rtt = 2 / STEP, time = S.done ? S.endTick : S.tick;
+        $("#out").innerHTML = (S.mode === "tcp" ? metric(t("Client state", "מצב client"), S.cs, S.cs === "ESTABLISHED" ? "good" : "") + metric(t("Server state", "מצב server"), S.ss, S.ss === "ESTABLISHED" ? "good" : "") : "") +
+          metric(t("Delivered to app", "הגיע לאפליקציה"), `${S.delivered}/${N}`, S.done ? (S.delivered === N ? "good" : "bad") : "") +
+          metric(t("Packets sent", "Packets שנשלחו"), S.sent) + metric(t("Lost on the wire", "אבדו בדרך"), S.lost, S.lost ? "warn" : "good") +
+          (S.mode === "tcp" ? metric(t("Retransmissions", "Retransmissions"), S.retx, S.retx ? "warn" : "good") : "") +
+          metric(t("Elapsed", "זמן"), fmt(time / rtt, 1) + " RTT");
+        let msg;
+        if (!S.running) msg = S.mode === "tcp" ? t("💡 Press Connect. TCP spends one full RTT on the handshake before the first byte of data — then the window decides how many segments may be in flight at once.", "💡 לחץ התחבר. TCP מבזבז RTT שלם על ה-handshake לפני הבייט הראשון של data — ואז ה-window קובע כמה segments יכולים להיות באוויר בבת אחת.")
+          : t("💡 UDP: no connection, no handshake, no ACKs. Press send and the first datagram leaves immediately.", "💡 UDP: אין connection, אין handshake, אין ACKs. לחץ שלח והדאטגרם הראשון יוצא מיד.");
+        else if (S.mode === "udp") msg = S.done ? t(`📦 ${S.delivered}/${N} arrived and nobody retransmitted the rest — UDP leaves reliability to the app. Perfect for DNS, VoIP, video calls and games (a late packet is useless anyway), and QUIC/HTTP3 rebuilds reliability on top of UDP in user space.`, `📦 ${S.delivered}/${N} הגיעו ואף אחד לא שלח מחדש את השאר — UDP משאיר את האמינות לאפליקציה. מושלם ל-DNS, ל-VoIP, לשיחות וידאו ולמשחקים (packet מאוחר ממילא לא שווה כלום), ו-QUIC/HTTP3 בונה אמינות מעל UDP ב-user space.`)
+          : t("📦 Datagrams go out back to back with no handshake. A lost one just vanishes — the sender never knows.", "📦 Datagrams יוצאים אחד אחרי השני בלי handshake. אחד שאבד פשוט נעלם — השולח בכלל לא יודע.");
+        else if (S.cs === "SYN_SENT" || (S.cs === "ESTABLISHED" && S.ss !== "ESTABLISHED" && !S.delivered)) msg = t("🤝 3-way handshake: SYN → SYN-ACK → ACK. A full RTT before any data — that's why keep-alive and connection pooling matter (and TLS adds 1 more RTT on top).", "🤝 3-way handshake: SYN → SYN-ACK → ACK. RTT שלם לפני כל data — בגלל זה keep-alive ו-connection pooling חשובים (ו-TLS מוסיף עוד RTT מעל).");
+        else if (/FIN|TIME_WAIT|CLOSE|LAST/.test(S.cs + S.ss) && !S.done) msg = t("👋 Close: each side sends FIN and gets an ACK. The side that closed first sits in TIME_WAIT for 2×MSL (60s on Linux) so stray old packets can't corrupt a new connection on the same 4-tuple. Thousands of TIME_WAIT sockets on a busy client are normal.", "👋 סגירה: כל צד שולח FIN ומקבל ACK. הצד שסגר ראשון יושב ב-TIME_WAIT למשך 2×MSL (60 שניות ב-Linux) כדי ש-packets ישנים לא ישבשו connection חדש על אותו 4-tuple. אלפי sockets ב-TIME_WAIT על client עמוס זה תקין.");
+        else if (S.done) msg = t(`✅ All ${N} segments delivered in order with ${S.retx} retransmission(s), in ${fmt(S.endTick / rtt, 1)} RTT. Now try window = 1 (stop-and-wait) vs 8: throughput ≈ window ÷ RTT. Then switch to UDP.`, `✅ כל ${N} ה-segments הגיעו לפי הסדר עם ${S.retx} retransmissions, תוך ${fmt(S.endTick / rtt, 1)} RTT. עכשיו נסה window = 1 (stop-and-wait) מול 8: throughput ≈ window ÷ RTT. ואז עבור ל-UDP.`);
+        else if (S.retx || S.lost) msg = t("🔁 A segment was lost: the receiver keeps ACKing the same number (cumulative ACK) and buffers later segments. 3 duplicate ACKs trigger a fast retransmit; otherwise the RTO timer fires. The app gets bytes only in order — that stall is TCP head-of-line blocking.", "🔁 Segment אבד: הצד המקבל ממשיך לשלוח ACK על אותו מספר (ACK מצטבר) ושומר ב-buffer את ה-segments שאחריו. 3 duplicate ACKs מפעילים fast retransmit; אחרת ה-timer של ה-RTO פוקע. האפליקציה מקבלת bytes רק לפי הסדר — התקיעה הזו היא head-of-line blocking של TCP.");
+        else msg = t("🪟 The window (orange) = how many unACKed segments may be in flight. Each ACK slides it forward. Real TCP uses min(receiver window, congestion window) and grows cwnd with slow start.", "🪟 ה-window (כתום) = כמה segments בלי ACK מותר שיהיו באוויר. כל ACK מזיז אותו קדימה. ב-TCP אמיתי זה min(receiver window, congestion window), וה-cwnd גדל עם slow start.");
+        $("#lesson").innerHTML = msg;
+      };
+      $("#go").onclick = () => {
+        reset(); S.running = true; paused = false; $("#pause").textContent = "⏸ " + t("Pause", "השהיה");
+        if (S.mode === "tcp") { S.cs = "SYN_SENT"; log("client: connect() → sends SYN, SYN_SENT"); send("syn", "c2s", "SYN"); }
+        else log("client: sendto() × 12 — no connection needed");
+        render();
+      };
+      $("#pause").onclick = () => { paused = !paused; $("#pause").textContent = paused ? "▶ " + t("Resume", "המשך") : "⏸ " + t("Pause", "השהיה"); };
+      $("#proto").onchange = () => { reset(); render(); };
+      reset(); render();
+      const tick = setInterval(() => { if (paused || !S.running || S.done) return; for (let i = 0; i < +$("#spd").value; i++) step(); render(); }, 80);
+      return () => clearInterval(tick);
+    }
+  };
+
+  // =============== 14. Consistent hashing ring ===============
+  I.sims.hashring = {
+    icon: "💍", track: "data",
+    title: { en: "Consistent hashing ring", he: "Consistent hashing: הטבעת" },
+    desc: { en: "Place keys on a hash ring, add and remove nodes, tune virtual nodes. Compare how many keys move with consistent hashing vs naive hash(key) mod N.", he: "מקם keys על טבעת hash, הוסף והסר nodes, כוונן virtual nodes. השווה כמה keys זזים ב-consistent hashing מול hash(key) mod N נאיבי." },
+    mount(el, H) {
+      const t = T(H);
+      const NAMES = "ABCDEFGHIJ".split(""), COLORS = ["#4c6ef5", "#12b886", "#f76707", "#ae3ec9", "#e64980", "#1098ad", "#fab005", "#82c91e", "#7950f2", "#fa5252"];
+      el.innerHTML = `<div class="sim-controls">
+        ${slider("vn", t("Virtual nodes per node", "Virtual nodes לכל node"), 1, 200, 1, 1)}
+        ${slider("keys", t("Keys", "Keys"), 100, 3000, 100, 1000)}
+        <button class="btn primary" id="add">➕ ${t("Add node", "הוסף node")}</button>
+        <button class="btn small" id="rm">➖ ${t("Remove last node", "הסר את ה-node האחרון")}</button></div>
+      <div id="chips" class="row" style="margin-bottom:6px;direction:ltr"></div>
+      <p class="muted" style="font-size:.85em;margin:0 0 6px">${t("Tip: click a node chip to remove that specific node (simulates a node crash).", "טיפ: לחץ על node כדי להסיר דווקא אותו (סימולציה של node שקרס).")}</p>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px;align-items:start">
+        <div class="sim-stage" style="direction:ltr"><svg id="ring" viewBox="0 0 320 320" style="width:100%;max-width:340px;display:block;margin:auto"></svg></div>
+        <div><div id="bars" style="direction:ltr"></div><div class="sim-out" id="out"></div></div></div>
+      <div class="sim-lesson" id="lesson"></div>`;
+      const $ = (s) => el.querySelector(s);
+      const h32 = (s) => { let h = 0x811c9dc5; for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 0x01000193); } h ^= h >>> 16; h = Math.imul(h, 0x85ebca6b); h ^= h >>> 13; return h >>> 0; };
+      let nodes = ["A", "B", "C", "D"], last = null, keyH = [];
+      const buildKeys = () => { keyH = Array.from({ length: +$("#keys").value }, (_, i) => h32("user:" + i)); };
+      const ringOf = (ns) => { const vn = +$("#vn").value; const pts = []; ns.forEach(n => { for (let v = 0; v < vn; v++) pts.push({ h: h32(`node-${n}#${v}`), n }); }); return pts.sort((a, b) => a.h - b.h); };
+      const ownerRing = (pts, h) => { let lo = 0, hi = pts.length; while (lo < hi) { const m = (lo + hi) >> 1; if (pts[m].h < h) lo = m + 1; else hi = m; } return pts[lo === pts.length ? 0 : lo].n; };
+      const ownersRing = (ns) => { const pts = ringOf(ns); return keyH.map(h => ownerRing(pts, h)); };
+      const ownersMod = (ns) => keyH.map(h => ns[h % ns.length]);
+      const change = (newNodes, op) => {
+        const r0 = ownersRing(nodes), m0 = ownersMod(nodes), r1 = ownersRing(newNodes), m1 = ownersMod(newNodes);
+        const moved = new Set(); let rm = 0, mm = 0;
+        r0.forEach((o, i) => { if (o !== r1[i]) { rm++; moved.add(i); } if (m0[i] !== m1[i]) mm++; });
+        last = { op, ring: rm / keyH.length * 100, mod: mm / keyH.length * 100, moved, from: nodes.length, to: newNodes.length };
+        nodes = newNodes; draw();
+      };
+      const draw = () => {
+        const pts = ringOf(nodes), own = keyH.map(h => ownerRing(pts, h));
+        const col = (n) => COLORS[NAMES.indexOf(n)];
+        const ang = (h) => h / 4294967296 * 2 * Math.PI - Math.PI / 2;
+        const P = (h, r) => [160 + r * Math.cos(ang(h)), 160 + r * Math.sin(ang(h))];
+        const bd = css("--border"), txt = css("--text");
+        let svg = `<circle cx="160" cy="160" r="120" fill="none" stroke="${bd}" stroke-width="6"/>`;
+        const step = Math.max(1, Math.ceil(keyH.length / 600));
+        for (let i = 0; i < keyH.length; i += step) {
+          const mv = last && last.moved.has(i); const [x, y] = P(keyH[i], mv ? 96 : 106 - (i % 3) * 4);
+          svg += `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${mv ? 2.6 : 1.6}" fill="${col(own[i])}"${mv ? ` stroke="${txt}" stroke-width=".7"` : ""}/>`;
+        }
+        const showLabels = pts.length <= 24;
+        pts.forEach(p => { const [x, y] = P(p.h, 120); svg += `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${pts.length > 200 ? 2.5 : 5}" fill="${col(p.n)}" stroke="#fff" stroke-width="1"/>`; if (showLabels) { const [lx, ly] = P(p.h, 138); svg += `<text x="${lx.toFixed(1)}" y="${(ly + 4).toFixed(1)}" text-anchor="middle" font-size="11" font-weight="700" fill="${col(p.n)}">${p.n}</text>`; } });
+        svg += `<text x="160" y="155" text-anchor="middle" font-size="12" fill="${txt}">hash ring</text><text x="160" y="172" text-anchor="middle" font-size="10" fill="${txt}" opacity=".7">0 … 2³²−1</text>`;
+        $("#ring").innerHTML = svg;
+        $("#chips").innerHTML = nodes.map(n => `<button class="btn small" data-n="${n}" style="border-color:${col(n)};color:${col(n)}">● node-${n} ✕</button>`).join("");
+        el.querySelectorAll("[data-n]").forEach(b => b.onclick = () => { if (nodes.length > 1) change(nodes.filter(x => x !== b.dataset.n), "rm-" + b.dataset.n); });
+        const cnt = {}; nodes.forEach(n => cnt[n] = 0); own.forEach(o => cnt[o]++);
+        const ideal = keyH.length / nodes.length, mx = Math.max(...Object.values(cnt));
+        $("#bars").innerHTML = `<small class="muted">${t("Keys per node (dashed = perfect share)", "Keys לכל node (קו מקווקו = חלוקה מושלמת)")}</small>` + nodes.map(n => `<div style="display:flex;align-items:center;gap:6px;margin:3px 0;font-size:.82em"><span style="width:52px">node-${n}</span><div style="flex:1;height:12px;background:${css("--surface-2")};border-radius:4px;position:relative"><div style="width:${cnt[n] / Math.max(mx, ideal) * 100}%;height:100%;background:${col(n)};border-radius:4px"></div><div style="position:absolute;top:-2px;bottom:-2px;left:${ideal / Math.max(mx, ideal) * 100}%;border-left:2px dashed ${txt}"></div></div><span style="width:44px;text-align:right">${cnt[n]}</span></div>`).join("");
+        const imb = mx / ideal;
+        $("#out").innerHTML = metric(t("Nodes", "Nodes"), nodes.length) + metric(t("Points on ring", "נקודות על הטבעת"), pts.length) +
+          metric(t("Hottest node vs fair share", "ה-node הכי עמוס מול חלק הוגן"), "×" + fmt(imb, 2), imb > 1.5 ? "bad" : imb > 1.15 ? "warn" : "good") +
+          (last ? metric(t("Keys moved — ring", "Keys שזזו — טבעת"), fmt(last.ring, 1) + "%", "good") + metric(t("Keys moved — mod N", "Keys שזזו — mod N"), fmt(last.mod, 1) + "%", "bad") : "");
+        let msg;
+        if (last) msg = t(`🔀 ${last.from} → ${last.to} nodes. Consistent hashing moved ${fmt(last.ring, 1)}% of keys (ideal ≈ 1/${Math.max(last.from, last.to)} = ${fmt(100 / Math.max(last.from, last.to), 1)}%) — only the keys between the changed node's points and their neighbours (outlined dots). hash mod N moved ${fmt(last.mod, 1)}% (≈ 1 − 1/${Math.max(last.from, last.to)}): almost every key changes server — a cache cluster would go cold and the DB gets stampeded.`, `🔀 ${last.from} → ${last.to} nodes. Consistent hashing הזיז ${fmt(last.ring, 1)}% מה-keys (אידיאלי ≈ 1/${Math.max(last.from, last.to)} = ${fmt(100 / Math.max(last.from, last.to), 1)}%) — רק ה-keys שבין הנקודות של ה-node שהשתנה לשכנים שלו (הנקודות המודגשות). hash mod N הזיז ${fmt(last.mod, 1)}% (≈ 1 − 1/${Math.max(last.from, last.to)}): כמעט כל key עובר שרת — cluster של cache מתקרר וה-DB נרמס.`);
+        else msg = t("💡 Each key goes to the first node point clockwise from hash(key). Add or remove a node and compare the two percentages.", "💡 כל key הולך לנקודת ה-node הראשונה עם כיוון השעון מ-hash(key). הוסף או הסר node והשווה בין שני האחוזים.");
+        if (+$("#vn").value < 10 && imb > 1.3) msg += "<br>" + t(`⚖️ With ${$("#vn").value} point(s) per node the arcs are uneven — the hottest node holds ×${fmt(imb, 2)} its fair share. Raise virtual nodes: Cassandra uses num_tokens (16 by default since 4.0), Dynamo-style stores and Envoy's ring_hash use many points per host.`, `⚖️ עם ${$("#vn").value} נקודות לכל node הקשתות לא שוות — ה-node הכי עמוס מחזיק פי ${fmt(imb, 2)} מהחלק ההוגן שלו. הגדל את ה-virtual nodes: ב-Cassandra זה num_tokens (ברירת מחדל 16 מאז 4.0), ומערכות בסגנון Dynamo וה-ring_hash של Envoy משתמשים בהרבה נקודות לכל host.`);
+        else if (+$("#vn").value >= 50) msg += "<br>" + t("✅ Many virtual nodes → smooth distribution, and when a node dies its load spreads across ALL survivors instead of dumping it on one neighbour. Cost: a bigger ring to keep in memory and gossip.", "✅ הרבה virtual nodes → חלוקה חלקה, וכש-node מת העומס שלו מתפזר על כל השורדים במקום להיזרק על שכן אחד. המחיר: טבעת גדולה יותר להחזיק בזיכרון ולהפיץ ב-gossip.");
+        $("#lesson").innerHTML = msg;
+      };
+      $("#add").onclick = () => { const n = NAMES.find(x => !nodes.includes(x)); if (n) change(nodes.concat(n), "add-" + n); };
+      $("#rm").onclick = () => { if (nodes.length > 1) change(nodes.slice(0, -1), "rm"); };
+      $("#vn").oninput = (e) => { $("#vnV").textContent = e.target.value; last = null; draw(); };
+      $("#keys").oninput = (e) => { $("#keysV").textContent = e.target.value; buildKeys(); last = null; draw(); };
+      buildKeys(); draw();
+      return null;
+    }
+  };
+
+  // =============== 15. B-tree vs LSM ===============
+  I.sims.lsm = {
+    icon: "🌲", track: "data",
+    title: { en: "Storage engines: B-tree vs LSM tree", he: "Storage engines: B-tree מול LSM tree" },
+    desc: { en: "Insert keys and watch a B-tree rewrite pages in place while an LSM tree buffers in a memtable, flushes SSTables and compacts them. Compare write amplification and files read per lookup, with and without bloom filters.", he: "הכנס keys וראה איך B-tree כותב דפים מחדש במקום, בזמן ש-LSM tree אוסף ב-memtable, עושה flush ל-SSTables ומריץ compaction. השווה write amplification ומספר קבצים שנקראים ב-lookup, עם ובלי bloom filters." },
+    mount(el, H) {
+      const t = T(H);
+      const PAGE = 4, PAGE_U = 8, FANOUT = 8, L1_FILE = 8, FP = 0.05;
+      el.innerHTML = `<div class="sim-controls">
+        <button class="btn primary" id="ins1">➕ ${t("Insert 1 key", "הכנס key אחד")}</button>
+        <button class="btn small" id="ins20">➕➕ ${t("Insert 20", "הכנס 20")}</button>
+        <button class="btn small" id="get">🔍 ${t("Lookup existing key", "חפש key קיים")}</button>
+        <button class="btn small" id="miss">❓ ${t("Lookup missing key", "חפש key שלא קיים")}</button>
+        <label><span><input type="checkbox" id="bloom" checked> ${t("Bloom filters (5% false positives)", "Bloom filters (5% false positives)")}</span></label>
+        ${slider("mem", t("Memtable size (keys)", "גודל memtable (keys)"), 2, 8, 1, 4)}
+        ${slider("l0", t("Compact when L0 has N files", "Compaction כש-L0 מגיע ל-N קבצים"), 2, 6, 1, 4)}
+        <button class="btn small" id="reset">↺ ${t("Reset", "איפוס")}</button></div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(270px,1fr));gap:12px">
+        <div class="sim-stage" style="direction:ltr"><b>🌳 B-tree</b> <small class="muted">${t("(update in place, page = 4 keys)", "(עדכון במקום, דף = 4 keys)")}</small><div id="bt" style="margin-top:8px"></div><div class="sim-out" id="btOut"></div></div>
+        <div class="sim-stage" style="direction:ltr"><b>🪵 LSM tree</b> <small class="muted">${t("(append, flush, compact)", "(append, flush, compaction)")}</small><div id="ls" style="margin-top:8px"></div><div class="sim-out" id="lsOut"></div></div>
+      </div>
+      <pre id="log" style="font-size:.78em;max-height:130px;direction:ltr;text-align:left;margin-top:8px"></pre>
+      <div class="sim-lesson" id="lesson"></div>`;
+      const $ = (s) => el.querySelector(s);
+      ["mem", "l0"].forEach(id => $("#" + id).oninput = (e) => $("#" + id + "V").textContent = e.target.value);
+      let S;
+      const reset = () => {
+        S = { keys: new Set(), bt: [[]], btW: 0, btTouch: new Set(), btReads: [], mem: [], l0: [], l1: [], lsW: 0, flushes: 0, comps: 0, lsReads: [], lsTouch: {}, log: [], lastMsg: "", seq: 0 };
+        draw();
+      };
+      const log = (s) => { S.log.push(s); if (S.log.length > 40) S.log.shift(); };
+      const height = () => S.bt.length === 1 ? 1 : S.bt.length <= FANOUT ? 2 : 3;
+      const leafFor = (k) => { const i = S.bt.findIndex(p => p.length && p[p.length - 1] >= k); return i < 0 ? S.bt.length - 1 : i; };
+      const btInsert = (k) => {
+        const i = leafFor(k), p = S.bt[i]; p.push(k); p.sort((a, b) => a - b);
+        let pages = 1; S.btTouch = new Set([i]);
+        if (p.length > PAGE) { const right = p.splice(Math.ceil(p.length / 2)); S.bt.splice(i + 1, 0, right); pages += 1 + (height() > 1 ? 1 : 0); if (S.bt.length === FANOUT + 1) pages += 2; S.btTouch = new Set([i, i + 1]); log(`B-tree: page split → wrote ${pages} pages`); }
+        S.btW += 1 + pages * PAGE_U; // WAL record + full pages rewritten
+      };
+      const flush = () => {
+        const f = { keys: S.mem.slice().sort((a, b) => a - b), id: ++S.seq };
+        S.l0.unshift(f); S.lsW += f.keys.length; S.flushes++; S.mem = []; S.lsTouch = { ["f" + f.id]: "new" };
+        log(`LSM: memtable full → flush SSTable #${f.id} (${f.keys.length} keys) to L0`);
+        if (S.l0.length >= +$("#l0").value) {
+          const all = [...S.l0.flatMap(x => x.keys), ...S.l1.flatMap(x => x.keys)].sort((a, b) => a - b);
+          S.lsW += all.length; S.comps++;
+          S.l1 = []; for (let i = 0; i < all.length; i += L1_FILE) S.l1.push({ keys: all.slice(i, i + L1_FILE), id: ++S.seq });
+          log(`LSM: compaction — merged ${S.l0.length} L0 files + old L1, rewrote ${all.length} keys into ${S.l1.length} L1 files`);
+          S.l0 = []; S.lsTouch = {}; S.l1.forEach(x => S.lsTouch["f" + x.id] = "new");
+        }
+      };
+      const insert = () => {
+        if (S.keys.size >= 900) return;
+        let k; do { k = 1 + Math.floor(Math.random() * 999); } while (S.keys.has(k));
+        S.keys.add(k); btInsert(k);
+        S.mem.push(k); S.lsW += 1; S.lsTouch = { mem: "new" };
+        if (S.mem.length >= +$("#mem").value) flush();
+        return k;
+      };
+      const lookup = (k) => {
+        const bloom = $("#bloom").checked, found = S.keys.has(k);
+        const bh = S.keys.size ? height() : 0; S.btReads.push(bh); S.btTouch = new Set(S.keys.size ? [leafFor(k)] : []);
+        let files = 0, where = "", skipped = 0; S.lsTouch = {};
+        if (S.mem.includes(k)) where = "memtable";
+        const probe = (f) => {
+          const has = f.keys.includes(k);
+          if (bloom && !has && Math.random() >= FP) { skipped++; S.lsTouch["f" + f.id] = "skip"; return false; }
+          files++; S.lsTouch["f" + f.id] = has ? "hit" : "read"; return has;
+        };
+        if (!where) for (const f of S.l0) if (probe(f)) { where = "L0 #" + f.id; break; }
+        if (!where) { const f = S.l1.find(x => x.keys.length && x.keys[0] <= k && x.keys[x.keys.length - 1] >= k); if (f && probe(f)) where = "L1 #" + f.id; }
+        if (where === "memtable") S.lsTouch.mem = "hit";
+        S.lsReads.push(files);
+        log(`GET ${k} (${found ? "exists" : "missing"}): B-tree read ${bh} page(s) · LSM read ${files} file(s)${bloom ? `, bloom skipped ${skipped}` : ""}${where ? " → found in " + where : " → not found"}`);
+      };
+      const box = (keys, st, label, w) => {
+        const c = st === "hit" ? css("--good") : st === "read" ? css("--bad") : st === "new" ? css("--accent") : st === "skip" ? css("--muted") : css("--border");
+        return `<div style="display:inline-block;vertical-align:top;margin:2px;padding:3px 5px;border:2px ${st === "skip" ? "dashed" : "solid"} ${c};border-radius:6px;font-family:var(--mono);font-size:.72em;min-width:${w || 30}px;opacity:${st === "skip" ? .55 : 1}">${label ? `<small style="opacity:.7">${label}</small><br>` : ""}${keys.length ? keys.join(" ") : "∅"}</div>`;
+      };
+      const avg = (a) => a.length ? a.reduce((x, y) => x + y, 0) / a.length : 0;
+      const draw = () => {
+        const n = S.keys.size;
+        const root = S.bt.length > 1 ? `<div style="text-align:center">${box(S.bt.slice(1).map(p => p[0]), "", t("root / index", "root / index"))}</div>` : "";
+        $("#bt").innerHTML = root + `<div style="text-align:center">${S.bt.map((p, i) => box(p, S.btTouch.has(i) ? (S.btReads.length && S.lastMsg === "get" ? "hit" : "new") : "", "")).join("")}</div>`;
+        const mem = S.mem.slice().sort((a, b) => a - b);
+        $("#ls").innerHTML = `<div>${box(mem, S.lsTouch.mem || "", "🧠 memtable (RAM) + WAL", 120)}</div>
+          <div style="margin-top:6px"><small class="muted">L0 ${t("(overlapping, newest first)", "(חופפים, החדש ראשון)")}</small><br>${S.l0.map(f => box(f.keys, S.lsTouch["f" + f.id] || "", "SST #" + f.id)).join("") || "<small class='muted'>—</small>"}</div>
+          <div style="margin-top:6px"><small class="muted">L1 ${t("(sorted, non-overlapping ranges)", "(ממוינים, טווחים לא חופפים)")}</small><br>${S.l1.map(f => box(f.keys, S.lsTouch["f" + f.id] || "", "SST #" + f.id)).join("") || "<small class='muted'>—</small>"}</div>`;
+        const btWA = n ? S.btW / n : 0, lsWA = n ? S.lsW / n : 0;
+        $("#btOut").innerHTML = metric(t("Keys", "Keys"), n) + metric(t("Pages", "דפים"), S.bt.length) + metric("Write amp.", "×" + fmt(btWA, 1), btWA > lsWA ? "bad" : "good") +
+          metric(t("Pages read / lookup", "דפים לכל lookup"), S.btReads.length ? fmt(S.btReads[S.btReads.length - 1]) + ` (${t("avg", "ממוצע")} ${fmt(avg(S.btReads), 1)})` : "—");
+        $("#lsOut").innerHTML = metric(t("Flushes / compactions", "Flushes / compactions"), `${S.flushes} / ${S.comps}`) + metric(t("SSTable files", "קבצי SSTable"), S.l0.length + S.l1.length) + metric("Write amp.", "×" + fmt(lsWA, 1), lsWA > btWA ? "bad" : "good") +
+          metric(t("Files read / lookup", "קבצים לכל lookup"), S.lsReads.length ? fmt(S.lsReads[S.lsReads.length - 1]) + ` (${t("avg", "ממוצע")} ${fmt(avg(S.lsReads), 1)})` : "—", S.lsReads.length && S.lsReads[S.lsReads.length - 1] > 2 ? "warn" : "");
+        $("#log").textContent = S.log.slice(-8).join("\n") || t("Insert some keys…", "הכנס כמה keys…");
+        let msg;
+        if (!n) msg = t("💡 Insert keys. Write amplification = bytes physically written ÷ bytes of data inserted (toy units: a key = 1, a 4 KB page = 8).", "💡 הכנס keys. Write amplification = כמה bytes נכתבו פיזית ÷ כמה bytes של data הוכנסו (יחידות צעצוע: key = 1, דף של 4KB = 8).");
+        else if (S.lastMsg === "get" && !$("#bloom").checked && S.l0.length > 1) msg = t("🐢 Without bloom filters a lookup must open every overlapping L0 file (newest first), then L1 — read amplification. A missing key is the worst case: every file is checked. Turn bloom filters on.", "🐢 בלי bloom filters, lookup חייב לפתוח כל קובץ חופף ב-L0 (מהחדש לישן) ואז את L1 — read amplification. key שלא קיים זה המקרה הגרוע: בודקים כל קובץ. הדלק bloom filters.");
+        else if (S.lastMsg === "get") msg = t("🔍 B-tree: one root-to-leaf path, always ~log(n) pages (and the upper levels sit in cache). LSM: memtable, then each file that might hold the key; a bloom filter answers 'definitely not here' from RAM and skips the disk read (dashed boxes). False positives still cost a read.", "🔍 B-tree: מסלול אחד מה-root ל-leaf, תמיד בערך log(n) דפים (והרמות העליונות יושבות ב-cache). LSM: קודם memtable, ואז כל קובץ שעשוי להכיל את ה-key; bloom filter עונה 'בטוח לא כאן' מה-RAM ומדלג על הקריאה מהדיסק (הקופסאות המקווקוות). False positive עדיין עולה קריאה.");
+        else if (S.comps) msg = t("🧹 Compaction rewrote the same keys again — that's where LSM write amplification comes from. In real leveled compaction (RocksDB) it's often 10–30×, but writes are big sequential appends, while the B-tree rewrites a whole 4 KB page (plus WAL) for one small row at a random spot.", "🧹 ה-compaction כתב שוב את אותם keys — משם מגיע ה-write amplification של LSM. ב-leveled compaction אמיתי (RocksDB) זה לרוב 10–30×, אבל הכתיבות הן appends גדולים ורציפים, בזמן שה-B-tree כותב מחדש דף שלם של 4KB (ועוד WAL) בשביל שורה קטנה אחת במקום אקראי.");
+        else msg = t("✍️ Each insert: the B-tree finds the right leaf and rewrites that whole page in place (sometimes splitting it). The LSM only appends to the WAL and the in-memory memtable; when full it flushes one sorted, immutable SSTable. Keep inserting to trigger compaction.", "✍️ בכל insert ה-B-tree מוצא את ה-leaf הנכון וכותב מחדש את כל הדף במקום (לפעמים מפצל אותו). ה-LSM רק מוסיף ל-WAL ול-memtable שבזיכרון; כשהוא מתמלא הוא עושה flush ל-SSTable ממוין שלא משתנה. המשך להכניס כדי להפעיל compaction.");
+        $("#lesson").innerHTML = msg;
+      };
+      const pickExisting = () => { const a = [...S.keys]; return a[Math.floor(Math.random() * a.length)]; };
+      const pickMissing = () => { let k; do { k = 1 + Math.floor(Math.random() * 999); } while (S.keys.has(k)); return k; };
+      $("#ins1").onclick = () => { S.lastMsg = "ins"; const k = insert(); if (k) log(`PUT ${k}`); draw(); };
+      $("#ins20").onclick = () => { S.lastMsg = "ins"; for (let i = 0; i < 20; i++) insert(); log("PUT × 20"); draw(); };
+      $("#get").onclick = () => { if (!S.keys.size) return; S.lastMsg = "get"; lookup(pickExisting()); draw(); };
+      $("#miss").onclick = () => { S.lastMsg = "get"; lookup(pickMissing()); draw(); };
+      $("#bloom").onchange = draw;
+      $("#reset").onclick = reset;
+      reset();
+      return null;
+    }
+  };
+
+  // =============== 16. CAP: network partition ===============
+  I.sims.partition = {
+    icon: "✂️", track: "data",
+    title: { en: "CAP lab: network partition", he: "מעבדת CAP: network partition" },
+    desc: { en: "3 replicas, 2 clients. Cut the network, then write from both sides. CP rejects writes on the minority side; AP accepts both and has to reconcile on heal — with last-write-wins or visible conflicts.", he: "3 replicas, 2 clients. חתוך את הרשת וכתוב משני הצדדים. CP דוחה כתיבות בצד של המיעוט; AP מקבל את שתיהן וצריך ליישב כשהרשת חוזרת — עם last-write-wins או קונפליקט גלוי." },
+    mount(el, H) {
+      const t = T(H);
+      el.innerHTML = `<div class="sim-controls">
+        <label>${t("Mode", "מצב")}<select id="mode"><option value="cp">CP — ${t("quorum (W=2, R=2 of 3)", "quorum (W=2, R=2 מתוך 3)")}</option><option value="ap">AP — ${t("write to any reachable replica", "כתיבה לכל replica שזמין")}</option></select></label>
+        <label id="resL">${t("On heal", "כשהרשת חוזרת")}<select id="res"><option value="lww">Last-write-wins (LWW)</option><option value="sib">${t("Keep both (siblings / conflict)", "שמור את שניהם (siblings / קונפליקט)")}</option></select></label>
+        <label id="skewL"><span><input type="checkbox" id="skew"> ${t("C2's clock is 5s behind", "השעון של C2 מפגר ב-5 שניות")}</span></label>
+        <button class="btn bad" id="cut">✂️ ${t("Partition the network", "חתוך את הרשת")}</button>
+        <button class="btn small" id="reset">↺ ${t("Reset", "איפוס")}</button></div>
+      <div class="row" style="margin-bottom:6px">
+        <button class="btn small" id="w1">✍️ ${t("C1 writes", "C1 כותב")}</button><button class="btn small" id="r1">👁️ ${t("C1 reads", "C1 קורא")}</button>
+        <button class="btn small" id="w2">✍️ ${t("C2 writes", "C2 כותב")}</button><button class="btn small" id="r2">👁️ ${t("C2 reads", "C2 קורא")}</button></div>
+      <div class="sim-stage" style="direction:ltr"><svg id="svg" viewBox="0 0 600 220" style="width:100%;height:auto;display:block"></svg></div>
+      <div class="sim-out" id="out"></div>
+      <h3>📜 ${t("Outcome log", "יומן תוצאות")}</h3><div id="log" style="font-size:.85em;max-height:200px;overflow:auto"></div>
+      <div class="sim-lesson" id="lesson"></div>`;
+      const $ = (s) => el.querySelector(s);
+      let S;
+      const reset = () => {
+        S = { part: false, rep: [0, 1, 2].map(() => ({ vals: [{ v: "v0", ts: 0, by: "init" }] })), clock: 100, dirty: { A: false, B: false }, c1: 0, c2: 0, acc: 0, rej: 0, lost: 0, conf: 0, stale: 0, log: [], latest: "v0", last: "" };
+        draw();
+      };
+      const side = (r) => r === 2 ? "B" : "A";
+      const reach = (c) => !S.part ? [0, 1, 2] : c === 1 ? [0, 1] : [2];
+      const add = (cls, en, he) => { S.log.unshift(`<div style="padding:3px 0;border-bottom:1px solid var(--border)"><span style="color:var(--${cls})">●</span> ${t(en, he)}</div>`); if (S.log.length > 30) S.log.pop(); };
+      const show = (vals) => vals.map(x => x.v).join(" | ");
+      const write = (c) => {
+        const R = reach(c), mode = $("#mode").value;
+        S.clock += 1 + Math.floor(Math.random() * 3);
+        const v = c === 1 ? "A" + (++S.c1) : "B" + (++S.c2);
+        const ts = S.clock - (c === 2 && $("#skew").checked ? 5 : 0);
+        if (mode === "cp" && R.length < 2) { S.rej++; S.last = "rej"; add("bad", `❌ C${c} write "${v}" REJECTED — only ${R.length}/3 replicas reachable, quorum needs 2. Consistent, but unavailable on this side.`, `❌ הכתיבה של C${c} ("${v}") נדחתה — רק ${R.length}/3 replicas זמינים, quorum צריך 2. עקבי, אבל לא זמין בצד הזה.`); return draw(); }
+        R.forEach(i => S.rep[i].vals = [{ v, ts, by: "C" + c }]);
+        if (S.part) S.dirty[c === 1 ? "A" : "B"] = true;
+        S.acc++; S.latest = v; S.last = "w";
+        add("good", `✅ C${c} wrote "${v}" (ts=${ts}) to ${R.map(i => "R" + (i + 1)).join(", ")}${R.length < 3 ? ` — ${3 - R.length} replica(s) unreachable, they don't know` : ""}.`, `✅ C${c} כתב "${v}" (ts=${ts}) ל-${R.map(i => "R" + (i + 1)).join(", ")}${R.length < 3 ? ` — ${3 - R.length} replicas לא זמינים ולא יודעים על זה` : ""}.`);
+        draw();
+      };
+      const read = (c) => {
+        const R = reach(c), mode = $("#mode").value;
+        if (mode === "cp" && R.length < 2) { S.rej++; S.last = "rej"; add("bad", `❌ C${c} read REJECTED — no quorum (R=2) on this side. Better an error than a stale answer.`, `❌ הקריאה של C${c} נדחתה — אין quorum (R=2) בצד הזה. עדיף שגיאה מתשובה לא עדכנית.`); return draw(); }
+        const all = R.flatMap(i => S.rep[i].vals); const maxTs = Math.max(...all.map(x => x.ts));
+        const best = R.map(i => S.rep[i].vals).find(vs => vs.some(x => x.ts === maxTs));
+        const vals = best.length > 1 ? best : all.filter(x => x.ts === maxTs).slice(0, 1);
+        const isStale = vals.length === 1 && vals[0].v !== S.latest;
+        if (isStale) S.stale++;
+        S.last = isStale ? "stale" : vals.length > 1 ? "sib" : "r";
+        add(isStale ? "warn" : vals.length > 1 ? "warn" : "good",
+          `👁️ C${c} read "${show(vals)}" from ${R.map(i => "R" + (i + 1)).join(", ")}${isStale ? ` — STALE: the latest write anywhere is "${S.latest}"` : vals.length > 1 ? " — siblings! The app must merge them" : ""}.`,
+          `👁️ C${c} קרא "${show(vals)}" מ-${R.map(i => "R" + (i + 1)).join(", ")}${isStale ? ` — לא עדכני: הכתיבה האחרונה במערכת היא "${S.latest}"` : vals.length > 1 ? " — siblings! האפליקציה צריכה למזג אותם" : ""}.`);
+        draw();
+      };
+      const heal = () => {
+        S.part = false; const dA = S.dirty.A, dB = S.dirty.B; S.dirty = { A: false, B: false };
+        const a = S.rep[0].vals, b = S.rep[2].vals, mode = $("#mode").value;
+        const same = show(a) === show(b) && a[0].ts === b[0].ts;
+        if (same) { add("good", "🔗 Network healed. All replicas already agree.", "🔗 הרשת חזרה. כל ה-replicas כבר מסכימים."); return draw(); }
+        if (mode === "cp" || !(dA && dB)) {
+          const win = dB && !dA ? b : a;
+          S.rep.forEach(r => r.vals = win.map(x => Object.assign({}, x)));
+          add("good", `🔗 Network healed. The side that missed writes catches up → everyone has "${show(win)}". Nothing was lost: only one side accepted writes during the partition.`, `🔗 הרשת חזרה. הצד שפספס כתיבות מתעדכן → לכולם יש "${show(win)}". שום דבר לא אבד: רק צד אחד קיבל כתיבות בזמן ה-partition.`);
+        } else if ($("#res").value === "lww") {
+          const win = a[0].ts >= b[0].ts ? a[0] : b[0], lose = win === a[0] ? b[0] : a[0];
+          S.rep.forEach(r => r.vals = [Object.assign({}, win)]); S.lost++; S.latest = win.v; S.last = "lost";
+          add("bad", `🔗 Healed with LWW: "${win.v}" (ts=${win.ts}) beats "${lose.v}" (ts=${lose.ts}). "${lose.v}" was acknowledged to ${lose.by} and is now SILENTLY LOST.${$("#skew").checked ? " With clock skew the 'last' write may not even be the newest one in real time." : ""}`, `🔗 חזרה עם LWW: "${win.v}" (ts=${win.ts}) מנצח את "${lose.v}" (ts=${lose.ts}). ${lose.by} קיבל אישור על "${lose.v}" — ועכשיו הוא אבד בשקט.${$("#skew").checked ? " עם clock skew הכתיבה ה'אחרונה' אפילו לא בהכרח החדשה ביותר בזמן אמת." : ""}`);
+        } else {
+          const sib = [a[0], b[0]].map(x => Object.assign({}, x));
+          S.rep.forEach(r => r.vals = sib.map(x => Object.assign({}, x))); S.conf++; S.last = "conf";
+          add("warn", `🔗 Healed with a CONFLICT: replicas keep both siblings "${a[0].v}" and "${b[0].v}". The next reader must merge (Dynamo shopping cart = union) or use a CRDT; the next write resolves it.`, `🔗 חזרה עם קונפליקט: ה-replicas שומרים את שני ה-siblings ("${a[0].v}" וגם "${b[0].v}"). הקורא הבא צריך למזג (בעגלת הקניות של Dynamo זה union) או להשתמש ב-CRDT; הכתיבה הבאה פותרת אותו.`);
+        }
+        draw();
+      };
+      const draw = () => {
+        const mode = $("#mode").value, txt = css("--text"), bd = css("--border"), bad = css("--bad"), s2 = css("--surface-2");
+        $("#resL").style.display = mode === "ap" ? "" : "none"; $("#skewL").style.display = mode === "ap" ? "" : "none";
+        $("#cut").textContent = S.part ? "🔗 " + t("Heal the network", "תקן את הרשת") : "✂️ " + t("Partition the network", "חתוך את הרשת");
+        const P = { R1: [230, 50], R2: [230, 170], R3: [400, 110], C1: [70, 110], C2: [540, 110] };
+        const link = (a, b, cut) => `<line x1="${P[a][0]}" y1="${P[a][1]}" x2="${P[b][0]}" y2="${P[b][1]}" stroke="${cut ? bad : bd}" stroke-width="${cut ? 2 : 3}" ${cut ? 'stroke-dasharray="5 5"' : ""}/>`;
+        let svg = link("R1", "R2") + link("R1", "R3", S.part) + link("R2", "R3", S.part) + link("C1", "R1") + link("C1", "R2") + link("C2", "R3");
+        if (S.part) svg += `<line x1="320" y1="5" x2="320" y2="215" stroke="${bad}" stroke-width="3" stroke-dasharray="10 6"/><text x="320" y="16" text-anchor="middle" font-size="16">✂️</text><text x="150" y="212" text-anchor="middle" font-size="11" fill="${txt}" opacity=".7">${t("side A: majority (2/3)", "צד A: רוב (2/3)")}</text><text x="470" y="212" text-anchor="middle" font-size="11" fill="${txt}" opacity=".7">${t("side B: minority (1/3)", "צד B: מיעוט (1/3)")}</text>`;
+        [0, 1, 2].forEach(i => {
+          const [x, y] = P["R" + (i + 1)], vals = S.rep[i].vals, conflict = vals.length > 1;
+          const minority = S.part && i === 2;
+          svg += `<rect x="${x - 55}" y="${y - 26}" width="110" height="52" rx="10" fill="${s2}" stroke="${conflict ? css("--warn") : minority && mode === "cp" ? bad : bd}" stroke-width="2"/>
+            <text x="${x}" y="${y - 8}" text-anchor="middle" font-size="12" font-weight="700" fill="${txt}">🗄️ R${i + 1}${minority && mode === "cp" ? " 🔒" : ""}</text>
+            <text x="${x}" y="${y + 10}" text-anchor="middle" font-size="11" font-family="monospace" fill="${conflict ? css("--warn") : txt}">${show(vals)}</text>
+            <text x="${x}" y="${y + 22}" text-anchor="middle" font-size="8.5" fill="${txt}" opacity=".6">ts=${vals.map(v => v.ts).join("|")}</text>`;
+        });
+        [["C1", 1], ["C2", 2]].forEach(([c]) => { const [x, y] = P[c]; svg += `<circle cx="${x}" cy="${y}" r="26" fill="${css("--accent")}"/><text x="${x}" y="${y + 5}" text-anchor="middle" font-size="13" font-weight="700" fill="#fff">💻 ${c}</text>`; });
+        $("#svg").innerHTML = svg;
+        $("#log").innerHTML = S.log.join("") || `<span class="muted">${t("Write from C1 and C2, cut the network, write again, then heal.", "כתוב מ-C1 ומ-C2, חתוך את הרשת, כתוב שוב, ואז תקן.")}</span>`;
+        $("#out").innerHTML = metric(t("Network", "רשת"), S.part ? t("✂️ partitioned", "✂️ מפוצלת") : t("🔗 healthy", "🔗 תקינה"), S.part ? "bad" : "good") +
+          metric(t("Accepted writes", "כתיבות שהתקבלו"), S.acc, "good") + metric(t("Rejected ops", "פעולות שנדחו"), S.rej, S.rej ? "warn" : "") +
+          metric(t("Stale reads", "קריאות לא עדכניות"), S.stale, S.stale ? "warn" : "") + metric(t("Lost writes (LWW)", "כתיבות שאבדו (LWW)"), S.lost, S.lost ? "bad" : "") + metric(t("Conflicts", "קונפליקטים"), S.conf, S.conf ? "warn" : "");
+        let msg;
+        if (!S.part && !S.log.length) msg = t("💡 No partition: every write reaches all 3 replicas, so C and A come for free. CAP only forces a choice WHEN the network splits — press ✂️.", "💡 בלי partition כל כתיבה מגיעה לכל 3 ה-replicas, אז C ו-A באים בחינם. CAP מכריח לבחור רק כשהרשת מתפצלת — לחץ ✂️.");
+        else if (S.last === "rej") msg = t("🔒 CP: the minority side can't reach a quorum, so it refuses reads and writes. Clients on side B see errors (unavailable), but nobody ever reads stale or conflicting data. etcd, ZooKeeper, Spanner and MongoDB with majority write concern behave like this.", "🔒 CP: הצד של המיעוט לא מגיע ל-quorum, אז הוא מסרב לקריאות ולכתיבות. ה-clients בצד B רואים שגיאות (לא זמין), אבל אף אחד לא קורא data לא עדכני או סותר. etcd, ZooKeeper, Spanner ו-MongoDB עם majority write concern מתנהגים ככה.");
+        else if (S.last === "lost") msg = t("🕳️ LWW 'resolved' the conflict by throwing away an acknowledged write — no error, no alert. Fine for a 'last seen' timestamp, terrible for a bank balance or a shopping cart. Cassandra uses LWW per cell by default.", "🕳️ LWW 'פתר' את הקונפליקט בכך שזרק כתיבה שכבר אושרה — בלי שגיאה ובלי alert. בסדר ל-timestamp של 'נראה לאחרונה', נורא ליתרה בבנק או לעגלת קניות. Cassandra משתמשת ב-LWW לכל cell כברירת מחדל.");
+        else if (S.last === "conf" || S.last === "sib") msg = t("🔀 Keeping siblings is honest: the database admits it doesn't know which write is right and hands both to the app (Riak, Dynamo paper) — or you design the data as a CRDT (counters, sets) so merges are automatic.", "🔀 לשמור siblings זה הוגן: ה-DB מודה שהוא לא יודע איזו כתיבה נכונה ומעביר את שתיהן לאפליקציה (Riak, המאמר של Dynamo) — או שמתכננים את ה-data כ-CRDT (counters, sets) כך שהמיזוג אוטומטי.");
+        else if (S.part && mode === "ap") msg = t("🌍 AP: both sides keep accepting writes — always available, but the replicas now disagree and reads on the other side are stale. The bill arrives when you heal the network.", "🌍 AP: שני הצדדים ממשיכים לקבל כתיבות — תמיד זמין, אבל ה-replicas כבר לא מסכימים וקריאות בצד השני לא עדכניות. החשבון מגיע כשמתקנים את הרשת.");
+        else if (S.part) msg = t("✂️ Partitioned in CP mode: side A still has a quorum (2/3) and keeps working. Now try a write from C2.", "✂️ מפוצל במצב CP: לצד A עדיין יש quorum (2/3) והוא ממשיך לעבוד. עכשיו נסה לכתוב מ-C2.");
+        else msg = t("🧠 PACELC: if Partition → choose A or C; Else → choose Latency or Consistency. Even without a partition, waiting for a quorum costs latency.", "🧠 PACELC: אם יש Partition → בוחרים A או C; אחרת (Else) → בוחרים Latency או Consistency. גם בלי partition, לחכות ל-quorum עולה ב-latency.");
+        $("#lesson").innerHTML = msg;
+      };
+      $("#cut").onclick = () => { if (S.part) heal(); else { S.part = true; S.last = "cut"; add("bad", "✂️ Network partition: R3 + C2 are cut off from R1 + R2 + C1.", "✂️ Network partition: R3 ו-C2 מנותקים מ-R1, R2 ו-C1."); draw(); } };
+      $("#w1").onclick = () => write(1); $("#w2").onclick = () => write(2);
+      $("#r1").onclick = () => read(1); $("#r2").onclick = () => read(2);
+      $("#mode").onchange = reset; $("#reset").onclick = reset;
+      $("#res").onchange = draw; $("#skew").onchange = draw;
+      reset();
+      return null;
+    }
+  };
 })();

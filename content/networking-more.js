@@ -13,6 +13,7 @@ window.INFRA.lessons.push({
   icon: "🤝",
   level: 3,
   minutes: 16,
+  playground: "tcp",
   title: { en: "TCP in depth: handshakes, windows, states and timeouts", he: "TCP לעומק: handshakes, windows, states ו-timeouts" },
   tldr: {
     en: "TCP is a reliable byte stream built from sequence numbers, ACKs, a flow-control window and a congestion window; most production pain is not the protocol itself but its states (TIME_WAIT, CLOSE_WAIT), its timers and the idle timeouts of every box in the middle.",

@@ -22,6 +22,7 @@ INFRA.paths = INFRA.paths || [];
         "Everything in the cloud eventually runs on a CPU, memory and a disk. Start with the physical resources, because every later problem (slowness, OOM, full disk) is one of these three running out.",
         "כל מה שרץ בענן רץ בסוף על CPU, זיכרון ודיסק. מתחילים מהמשאבים הפיזיים, כי כל בעיה בהמשך (איטיות, OOM, דיסק מלא) היא בעצם אחד מהשלושה שנגמר.",
         [
+          s("bits-bytes-units", "Bits, bytes and GiB: the units behind every capacity number you'll read next.", "Bits, bytes ו-GiB: היחידות שמאחורי כל מספר קיבולת שתקרא מכאן והלאה."),
           s("cpu", "The first resource you'll see on every dashboard, and 'load' is not what you think.", "המשאב הראשון שתראו בכל דשבורד, ו-'load' הוא לא מה שחושבים."),
           s("memory", "RSS, page cache and the OOM killer explain most mysterious crashes.", "RSS, page cache וה-OOM killer מסבירים את רוב הקריסות המסתוריות."),
           s("storage-io", "Disks are the slowest part of the machine; IOPS and latency decide database speed.", "הדיסק הוא החלק הכי איטי במכונה; IOPS ו-latency קובעים את מהירות ה-DB."),
@@ -170,6 +171,7 @@ INFRA.paths = INFRA.paths || [];
         "כשההתראה קופצת, שיטה מנצחת גאונות. השיעורים האלה נותנים צ'קליסט שאפשר לחזור עליו: מה-host, דרך הרשת ועד Kubernetes.",
         [
           s("linux-performance-60s", "The first 60 seconds on a sick host.", "60 השניות הראשונות על שרת חולה."),
+          s("net-errors-by-layer", "Read the error message first: it usually names the broken layer.", "קודם קוראים את הודעת השגיאה: בדרך כלל היא כבר מצביעה על השכבה השבורה."),
           s("net-troubleshooting", "Prove or rule out the network fast.", "להוכיח או לשלול את הרשת מהר."),
           s("k8s-resources", "Throttling and OOMKills are the most common pod pain.", "Throttling ו-OOMKills הם הכאב הכי נפוץ של pods."),
           s("k8s-probes", "Bad probes cause restarts and outages by themselves.", "Probes גרועים גורמים לבד ל-restarts ולתקלות."),
@@ -181,6 +183,7 @@ INFRA.paths = INFRA.paths || [];
         "לתקן זה חצי מהעבודה; לתאם וללמוד זה החצי השני. מתרגלים את התפקידים, ואז מבינים למה מערכות קורסות תחת retries ועומס.",
         [
           s("rel-incident-management", "Roles, comms and blameless postmortems.", "תפקידים, תקשורת ו-postmortems בלי האשמות."),
+          s("rel-runbooks-oncall", "Runbooks turn one person's fix into the whole rotation's knowledge.", "Runbooks הופכים תיקון של אדם אחד לידע של כל הרוטציה."),
           s("staff-overload-metastable", "Retry storms and metastable failures: why 'just restart it' fails.", "סערות retries וכשלים metastable: למה 'פשוט תעשה restart' לא עובד."),
           s("staff-large-incidents", "Commanding big, multi-team incidents.", "לפקד על תקלות גדולות בין כמה צוותים."),
           s("rel-chaos-engineering", "Break things on purpose so the real outage isn't the first time.", "לשבור דברים בכוונה כדי שהתקלה האמיתית לא תהיה הפעם הראשונה.")
@@ -507,6 +510,297 @@ INFRA.paths = INFRA.paths || [];
           s("flow-event-pipeline", "From a click to a chart: Kafka, Flink and the lakehouse.", "מקליק ועד גרף: Kafka, Flink וה-lakehouse."),
           s("flow-tenant-onboarding", "Provisioning a SaaS tenant with real isolation.", "הקמת tenant ב-SaaS עם בידוד אמיתי."),
           s("flow-alert-to-postmortem", "The incident from page to action items.", "התקלה מה-page ועד ה-action items.")
+        ])
+    ]
+  });
+
+  // ------------------------------------------------------------------ 8. Git & Delivery
+  INFRA.paths.push({
+    id: "git-and-delivery", icon: "🌿", color: "#e67700",
+    title: { en: "Git & Delivery: From Commit to Production", he: "Git ו-Delivery: מ-commit ועד פרודקשן" },
+    blurb: {
+      en: "Use Git like the people who wrote it, turn source into trusted artifacts, run pipelines and releases that make shipping boring, measure delivery with DORA and manage infrastructure as code.",
+      he: "לעבוד עם Git כמו מי שכתב אותו, להפוך קוד מקור ל-artifacts שאפשר לסמוך עליהם, להריץ pipelines ו-releases שהופכים שחרור למשעמם, למדוד delivery עם DORA ולנהל תשתיות כקוד."
+    },
+    audience: {
+      en: "Developers and DevOps engineers who use Git every day but panic at a detached HEAD, and anyone about to own a CI/CD pipeline or a release process.",
+      he: "מפתחים ומהנדסי DevOps שעובדים עם Git כל יום אבל נלחצים מ-detached HEAD, וכל מי שעומד להיות אחראי על pipeline של CI/CD או על תהליך release."
+    },
+    stages: [
+      st("Stage 1 · Git from the inside", "שלב 1 · Git מבפנים",
+        "Every scary Git situation becomes simple once you see the objects and refs underneath. Learn the model first, then the daily workflow, then how to undo anything and how to use history as a debugging tool.",
+        "כל מצב מפחיד ב-Git הופך לפשוט ברגע שרואים את ה-objects וה-refs שמתחת. לומדים קודם את המודל, אחר כך את ה-workflow היומיומי, ואז איך מבטלים כל דבר ואיך משתמשים בהיסטוריה ככלי דיבאג.",
+        [
+          s("git-internals", "Blobs, trees, commits and refs: the model that explains every other Git command.", "Blobs, trees, commits ו-refs: המודל שמסביר כל פקודת Git אחרת."),
+          s("git-workflow", "With the model clear, merge vs rebase stops being religion and becomes a choice.", "כשהמודל ברור, merge מול rebase מפסיק להיות דת והופך לבחירה."),
+          s("git-undo-rescue", "reset, revert and reflog mean almost nothing is truly lost, except a pushed secret.", "reset, revert ו-reflog אומרים שכמעט שום דבר לא באמת אבד, חוץ מ-secret שעשית לו push."),
+          s("git-debugging", "bisect, blame and pickaxe turn history into the fastest way to find who broke what.", "bisect, blame ו-pickaxe הופכים את ההיסטוריה לדרך הכי מהירה למצוא מה נשבר ומתי.")
+        ]),
+      st("Stage 2 · Git at company scale", "שלב 2 · Git בסקייל של חברה",
+        "One repo on a laptop is easy; hundreds of engineers on one server is not. Here you learn how big repos stay fast, how to choose a hosting platform, and how to lock down the place where all your code lives.",
+        "Repo אחד על לפטופ זה קל; מאות מהנדסים על שרת אחד זה כבר סיפור אחר. כאן לומדים איך repos גדולים נשארים מהירים, איך בוחרים פלטפורמת hosting, ואיך נועלים את המקום שבו כל הקוד שלך יושב.",
+        [
+          s("git-large-repos", "Monorepos, sparse checkout and partial clone keep huge repos usable.", "Monorepos, sparse checkout ו-partial clone שומרים על repos ענקיים שמישים."),
+          s("git-hosting-compare", "GitHub vs GitLab vs Bitbucket: pick the platform your pipelines will live on.", "GitHub מול GitLab מול Bitbucket: לבחור את הפלטפורמה שה-pipelines שלך יחיו עליה."),
+          s("git-repo-security", "Branch protection, signed commits and secret scanning: the repo is the first link in the supply chain.", "Branch protection, commits חתומים ו-secret scanning: ה-repo הוא החוליה הראשונה ב-supply chain.")
+        ]),
+      st("Stage 3 · From source to artifact", "שלב 3 · מקוד מקור ל-artifact",
+        "A pipeline is only as good as the thing it builds. Before automating, understand what a build actually produces, from compiled binaries and bundles to container images, and where those artifacts are stored and pulled from.",
+        "Pipeline טוב רק כמו מה שהוא בונה. לפני שמבצעים אוטומציה, מבינים מה build באמת מייצר, מ-binaries מקומפלים ו-bundles ועד container images, ואיפה ה-artifacts האלה נשמרים ומאיפה מושכים אותם.",
+        [
+          s("compilers-how-code-runs", "Compiled, interpreted or JIT: what 'the build' really does to your code.", "Compiled, interpreted או JIT: מה 'ה-build' באמת עושה לקוד שלך."),
+          s("linking-binaries", "Static vs dynamic linking explains 'works on CI, crashes in the container'.", "Static מול dynamic linking מסביר את 'עובד ב-CI, קורס בקונטיינר'."),
+          s("transpilers-bundlers", "The frontend build: transpiling, bundling and why your JS artifact is a different file.", "ה-build של ה-frontend: transpiling, bundling ולמה ה-artifact של ה-JS הוא קובץ אחר לגמרי."),
+          s("container-builds-buildkit", "BuildKit caching and rootless builds make the image step fast and safe.", "Caching של BuildKit ו-builds בלי root הופכים את שלב ה-image למהיר ובטוח."),
+          s("container-registries", "Registries, tags vs digests and pull-through caches: where artifacts live.", "Registries, tags מול digests ו-pull-through caches: איפה ה-artifacts חיים.")
+        ]),
+      st("Stage 4 · Pipelines and releases", "שלב 4 · Pipelines ו-releases",
+        "Now automate the road from commit to production. Start with the CI/CD concepts, go deep on GitHub Actions, then learn the release engineering and rollout techniques that make deploys small, reversible and boring.",
+        "עכשיו הופכים לאוטומטית את הדרך מ-commit לפרודקשן. מתחילים מהמושגים של CI/CD, נכנסים לעומק של GitHub Actions, ואז לומדים release engineering וטכניקות rollout שהופכות deploys לקטנים, הפיכים ומשעממים.",
+        [
+          s("cloud-cicd", "The pipeline stages and GitOps, the shared vocabulary for everything after.", "שלבי ה-pipeline ו-GitOps, אוצר המילים המשותף לכל מה שבא אחר כך."),
+          s("cicd-github-actions", "OIDC to the cloud, reusable workflows and runner security in a real setup.", "OIDC לענן, reusable workflows ואבטחת runners בהגדרה אמיתית."),
+          s("release-engineering", "Versioning, changelogs and release trains: what happens after the build is green.", "Versioning, changelogs ו-release trains: מה קורה אחרי שה-build ירוק."),
+          s("arch-feature-flags", "Flags separate deploy from release, so you can ship dark and turn on gradually.", "Flags מפרידים בין deploy ל-release, כך שאפשר לשחרר מוסתר ולהדליק בהדרגה."),
+          s("rel-deployments", "Rolling, canary and blue-green: choose the rollout that fits the risk.", "Rolling, canary ו-blue-green: לבחור את ה-rollout שמתאים לסיכון."),
+          s("flow-commit-to-prod", "Watch the whole stage run hop by hop, from git push to a signed canary.", "לראות את כל השלב רץ קפיצה אחר קפיצה, מ-git push ועד canary חתום.")
+        ]),
+      st("Stage 5 · Measure it and codify the platform", "שלב 5 · למדוד ולהפוך את הפלטפורמה לקוד",
+        "A delivery process you can't measure won't improve, and infrastructure clicked in a console can't be reviewed. Finish with DORA metrics, then move the infrastructure itself into Git with the right IaC tool.",
+        "תהליך delivery שאי אפשר למדוד לא ישתפר, ותשתית שנבנתה בקליקים ב-console אי אפשר לעשות לה review. מסיימים עם DORA metrics, ואז מעבירים את התשתית עצמה ל-Git עם כלי ה-IaC הנכון.",
+        [
+          s("dora-metrics", "Lead time, deploy frequency, change failure rate and MTTR show if all of the above works.", "Lead time, תדירות deploy, change failure rate ו-MTTR מראים אם כל מה שלמעלה עובד."),
+          s("cloud-iac", "Terraform basics: plan, apply and state, the same review loop as application code.", "יסודות Terraform: plan, apply ו-state, אותה לולאת review כמו בקוד אפליקציה."),
+          s("iac-landscape", "Terraform, OpenTofu, Pulumi, CDK, Crossplane: choose by team and lifecycle, not hype.", "Terraform, OpenTofu, Pulumi, CDK, Crossplane: לבחור לפי הצוות ומחזור החיים, לא לפי ה-hype."),
+          s("staff-terraform-at-scale", "State splitting, modules, drift and policy when dozens of teams share the code.", "פיצול state, modules, drift ו-policy כשעשרות צוותים חולקים את הקוד."),
+          s("k8s-helm-gitops", "Close the loop: Helm, Kustomize and Argo CD keep clusters in sync with Git.", "סוגרים את המעגל: Helm, Kustomize ו-Argo CD שומרים על ה-clusters מסונכרנים עם Git.")
+        ])
+    ]
+  });
+
+  // ------------------------------------------------------------------ 9. Debugging & Errors
+  INFRA.paths.push({
+    id: "debugging-and-errors", icon: "🩺", color: "#a61e4d",
+    title: { en: "Debugging & Errors: Read the Symptom, Find the Layer", he: "דיבאג ושגיאות: לקרוא את הסימפטום ולמצוא את השכבה" },
+    blurb: {
+      en: "Turn any error message into a location: which layer, which host, which process, which query. Read network, TLS and HTTP errors, trace a sick Linux box, hunt leaks and locks, and debug a cluster from its events.",
+      he: "להפוך כל הודעת שגיאה למיקום: איזו שכבה, איזה host, איזה תהליך, איזה query. לקרוא שגיאות רשת, TLS ו-HTTP, לחקור מכונת Linux חולה, לצוד leaks ו-locks, ולדבג cluster לפי ה-events שלו."
+    },
+    audience: {
+      en: "Engineers who get pulled into incidents and want a method instead of guessing. Comfortable with the terminal; 'Zero to Ops' is the ideal warm-up.",
+      he: "מהנדסים שנגררים לתקלות ורוצים שיטה במקום ניחושים. מרגיש בנוח עם הטרמינל; 'מאפס ל-Ops' הוא חימום מצוין."
+    },
+    stages: [
+      st("Stage 1 · Decode the error message", "שלב 1 · לפענח את הודעת השגיאה",
+        "Most debugging time is lost before it starts, by misreading the error. 'Connection refused', 'timed out', 'certificate unknown' and '502' each point to a different layer. Learn to read them first, and half the incidents solve themselves.",
+        "רוב זמן הדיבאג הולך לאיבוד עוד לפני שמתחילים, כי קוראים את השגיאה לא נכון. 'Connection refused', 'timed out', 'certificate unknown' ו-'502' מצביעים כל אחד על שכבה אחרת. לומדים לקרוא אותן קודם, וחצי מהתקלות פותרות את עצמן.",
+        [
+          s("net-errors-by-layer", "The map: which error belongs to which layer, and the one command that proves it.", "המפה: איזו שגיאה שייכת לאיזו שכבה, והפקודה האחת שמוכיחה את זה."),
+          s("net-tcp-vs-udp", "Know which transport you're on, because UDP fails silently where TCP fails loudly.", "לדעת על איזה transport אתה, כי UDP נכשל בשקט איפה ש-TCP נכשל ברעש."),
+          s("net-https-errors", "Expired, untrusted, wrong name or bad chain: every TLS error has a short checklist.", "פג תוקף, לא מהימן, שם לא נכון או chain שבור: לכל שגיאת TLS יש צ'קליסט קצר."),
+          s("http-status-errors", "502 vs 503 vs 504 tells you exactly which hop gave up.", "502 מול 503 מול 504 אומר לך בדיוק איזו קפיצה ויתרה."),
+          s("net-troubleshooting", "Put it together into a repeatable toolkit for proving or ruling out the network.", "מחברים הכול לארגז כלים קבוע שמוכיח או שולל את הרשת.")
+        ]),
+      st("Stage 2 · Deep in the network path", "שלב 2 · עמוק בתוך מסלול הרשת",
+        "When the quick checks pass and it still fails, go one level down: TCP states and timeouts, the NAT table that silently drops connections, DNS behavior in production and the proxies that sit in every request.",
+        "כשהבדיקות המהירות עוברות וזה עדיין נכשל, יורדים רמה: מצבי TCP ו-timeouts, טבלת ה-NAT שמפילה חיבורים בשקט, איך DNS מתנהג בפרודקשן וה-proxies שיושבים בכל בקשה.",
+        [
+          s("net-tcp-deep", "TIME_WAIT, retransmits and window sizes explain 'slow but not down'.", "TIME_WAIT, retransmits וגודלי window מסבירים את 'איטי אבל לא למטה'."),
+          s("net-nat-conntrack", "A full conntrack table or exhausted SNAT ports drops packets with no error at all.", "טבלת conntrack מלאה או SNAT ports שנגמרו מפילים packets בלי שום שגיאה."),
+          s("net-dns-operations", "TTLs, negative caching and ndots: the DNS problems that only show up in production.", "TTLs, negative caching ו-ndots: בעיות ה-DNS שמופיעות רק בפרודקשן."),
+          s("net-proxies-hands-on", "Read nginx, HAProxy and Envoy logs and timeouts to find which proxy cut the request.", "לקרוא לוגים ו-timeouts של nginx, HAProxy ו-Envoy כדי למצוא איזה proxy חתך את הבקשה.")
+        ]),
+      st("Stage 3 · Inside the sick host", "שלב 3 · בתוך ה-host החולה",
+        "If the network is clean, the problem is on the machine. Start with processes and the 60-second checkup, then use real profilers and tracers to see where CPU and memory actually go, including leaks and cgroup limits.",
+        "אם הרשת נקייה, הבעיה על המכונה. מתחילים מתהליכים ומבדיקת 60 השניות, ואז משתמשים ב-profilers ו-tracers אמיתיים כדי לראות לאן CPU וזיכרון באמת הולכים, כולל leaks ומגבלות cgroup.",
+        [
+          s("linux-processes", "ps, /proc and strace show what a stuck process is really waiting for.", "ps, /proc ו-strace מראים למה תהליך תקוע באמת מחכה."),
+          s("linux-performance-60s", "The first 60 seconds: rule out CPU, memory, disk and network in order.", "60 השניות הראשונות: לשלול CPU, זיכרון, דיסק ורשת לפי הסדר."),
+          s("linux-perf-tracing", "perf and bpftrace answer 'where exactly is the time going?' with evidence.", "perf ו-bpftrace עונים על 'לאן בדיוק הולך הזמן?' עם ראיות."),
+          s("linux-memory-leaks", "Tell a real leak from cache growth, then find the allocation that grows.", "להבדיל בין leak אמיתי לגדילה של cache, ואז למצוא את ההקצאה שגדלה."),
+          s("linux-cgroups-v2", "Containers hit cgroup limits before the host does; read the counters that prove it.", "קונטיינרים נתקלים במגבלות cgroup לפני ה-host; לקרוא את המונים שמוכיחים את זה."),
+          s("obs-profiling-synthetics", "Continuous profiling catches the regression after you've gone home.", "Continuous profiling תופס את הרגרסיה אחרי שכבר הלכת הביתה.")
+        ]),
+      st("Stage 4 · Databases and clusters", "שלב 4 · Databases ו-clusters",
+        "The last two places most incidents end up: a slow query or a lock in the database, and a misbehaving workload in Kubernetes. Learn to read the evidence each one leaves behind, then write it down as a runbook.",
+        "שני המקומות האחרונים שרוב התקלות מגיעות אליהם: query איטי או lock ב-database, ו-workload שמתנהג לא טוב ב-Kubernetes. לומדים לקרוא את הראיות שכל אחד משאיר, ואז כותבים אותן כ-runbook.",
+        [
+          s("db-query-debugging", "EXPLAIN ANALYZE and pg_locks find the slow query and the session blocking everyone.", "EXPLAIN ANALYZE ו-pg_locks מוצאים את ה-query האיטי ואת ה-session שחוסם את כולם."),
+          s("k8s-events-audit", "Events say what Kubernetes did; audit logs say who asked it to.", "Events אומרים מה Kubernetes עשה; audit logs אומרים מי ביקש ממנו."),
+          s("k8s-kubectl-power-tips", "jsonpath, debug containers and field selectors cut minutes off every investigation.", "jsonpath, debug containers ו-field selectors חוסכים דקות בכל חקירה."),
+          s("k8s-troubleshooting-playbook", "The full playbook from Pod to node to control plane, using everything above.", "ה-playbook המלא מה-Pod ל-node ועד ה-control plane, עם כל מה שלמדת למעלה."),
+          s("rel-runbooks-oncall", "Turn what you learned into runbooks so the next person debugs in minutes, not hours.", "להפוך את מה שלמדת ל-runbooks, כדי שהבא בתור ידבג בדקות ולא בשעות.")
+        ])
+    ]
+  });
+
+  // ------------------------------------------------------------------ 10. Storage & Data from the metal up
+  INFRA.paths.push({
+    id: "storage-and-data", icon: "🗄️", color: "#8d6e3f",
+    title: { en: "Storage & Data from the Metal Up", he: "Storage ונתונים מהברזל ומעלה" },
+    blurb: {
+      en: "Follow a byte from the disk platter to the lakehouse: hardware, filesystems and RAID, storage engines and indexes, replication and restores, search and analytics, and the streaming pipelines that move data between them.",
+      he: "לעקוב אחרי byte מהדיסק ועד ה-lakehouse: חומרה, filesystems ו-RAID, storage engines ואינדקסים, replication ושחזורים, חיפוש ואנליטיקה, וה-pipelines של streaming שמזיזים נתונים ביניהם."
+    },
+    audience: {
+      en: "Backend, data and platform engineers who pick and operate data stores, and anyone who wants to know why a database is fast or slow, not just that it is.",
+      he: "מהנדסי backend, data ופלטפורמה שבוחרים ומפעילים data stores, וכל מי שרוצה לדעת למה database מהיר או איטי, ולא רק שהוא כזה."
+    },
+    stages: [
+      st("Stage 1 · The metal", "שלב 1 · הברזל",
+        "Every database promise ends at a physical device. Start with the units and the memory hierarchy, then learn how disks, filesystems and RAID really behave, because fsync latency and rebuild times show up later in every SLA.",
+        "כל הבטחה של database נגמרת במכשיר פיזי. מתחילים מהיחידות ומהיררכיית הזיכרון, ואז לומדים איך דיסקים, filesystems ו-RAID באמת מתנהגים, כי latency של fsync וזמני rebuild צצים אחר כך בכל SLA.",
+        [
+          s("bits-bytes-units", "GB vs GiB and bits vs bytes: get the capacity math right before anything else.", "GB מול GiB ו-bits מול bytes: לסדר את חישובי הקיבולת לפני כל דבר אחר."),
+          s("memory-hierarchy", "Caches, pages and the TLB explain why sequential access beats random by orders of magnitude.", "Caches, pages וה-TLB מסבירים למה גישה רציפה מנצחת גישה אקראית בסדרי גודל."),
+          s("disks-hdd-ssd-nvme", "HDD vs SSD vs NVMe: seek time, write amplification and queue depth.", "HDD מול SSD מול NVMe: זמן seek, write amplification ו-queue depth."),
+          s("filesystems-compared", "ext4, XFS, ZFS and friends: journaling and copy-on-write decide what survives a crash.", "ext4, XFS, ZFS והחברים: journaling ו-copy-on-write קובעים מה שורד קריסה."),
+          s("fs-filesystems-raid", "LVM and RAID in practice: grow a volume and survive a dead disk.", "LVM ו-RAID בפועל: להגדיל volume ולשרוד דיסק מת."),
+          s("raid-levels-deep", "The URE math shows why RAID 5 on big disks is a gamble.", "חישוב ה-URE מראה למה RAID 5 על דיסקים גדולים הוא הימור.")
+        ]),
+      st("Stage 2 · Inside the database engine", "שלב 2 · בתוך מנוע ה-database",
+        "With the hardware understood, see how a database turns it into tables. B-trees vs LSM decide the read/write trade-off, the right index kind decides query speed, and partitioning keeps huge tables manageable.",
+        "כשהחומרה מובנת, רואים איך database הופך אותה לטבלאות. B-tree מול LSM קובעים את ה-trade-off בין קריאה לכתיבה, סוג האינדקס הנכון קובע את מהירות ה-query, ו-partitioning שומר על טבלאות ענקיות ניתנות לניהול.",
+        [
+          s("db-storage-engines", "B-tree vs LSM: why Postgres and Cassandra make opposite trade-offs.", "B-tree מול LSM: למה Postgres ו-Cassandra עושים trade-offs הפוכים."),
+          s("infra-data-structures", "Bloom filters, skip lists and WALs: the structures hiding inside every store.", "Bloom filters, skip lists ו-WALs: מבני הנתונים שמסתתרים בתוך כל store."),
+          s("db-index-kinds", "B-tree, hash, GIN, BRIN and partial indexes, and when an index makes things worse.", "B-tree, hash, GIN, BRIN ואינדקסים חלקיים, ומתי אינדקס דווקא מזיק."),
+          s("db-partitioning", "Partition a table inside one database before you reach for sharding.", "לעשות partitioning לטבלה בתוך DB אחד לפני שקופצים ל-sharding."),
+          s("db-wide-column-kv", "DynamoDB and Cassandra: when the access pattern is the schema.", "DynamoDB ו-Cassandra: כש-access pattern הוא ה-schema.")
+        ]),
+      st("Stage 3 · Durable and available", "שלב 3 · עמיד וזמין",
+        "Data that lives on one disk is data you'll lose. Learn object storage as the durable base layer, then replication and failover, and finally the backups and the restore runbook you will need on the worst day.",
+        "נתונים שחיים על דיסק אחד הם נתונים שתאבד. לומדים object storage כשכבת בסיס עמידה, אחר כך replication ו-failover, ולבסוף את הגיבויים ואת ה-runbook של השחזור שתצטרך ביום הכי גרוע.",
+        [
+          s("s3-deep", "S3's object model, consistency and encryption: the durable layer under backups and lakehouses.", "מודל ה-objects של S3, עקביות והצפנה: השכבה העמידה שמתחת לגיבויים ול-lakehouses."),
+          s("db-postgres-ha-patroni", "Patroni and etcd turn replicas into automatic failover without split brain.", "Patroni ו-etcd הופכים replicas ל-failover אוטומטי בלי split brain."),
+          s("db-managed-cloud", "RDS, Aurora and Cloud SQL: what the provider handles and what's still on you.", "RDS, Aurora ו-Cloud SQL: מה הספק מטפל בו ומה עדיין עליך."),
+          s("db-backups", "Full, incremental and PITR: choose backups by the RPO you promised.", "Full, incremental ו-PITR: בוחרים גיבויים לפי ה-RPO שהבטחת."),
+          s("db-restore-runbook", "A backup is only real once you've restored it; practice the runbook now.", "גיבוי אמיתי רק אחרי ששחזרת אותו; מתרגלים את ה-runbook עכשיו.")
+        ]),
+      st("Stage 4 · Specialized stores and search", "שלב 4 · Stores ייעודיים וחיפוש",
+        "General databases struggle with metrics, text search and analytics. Learn the purpose-built engines and the algorithms behind search, so you know when to add one and what it will cost to run.",
+        "Databases כלליים מתקשים עם metrics, חיפוש טקסט ואנליטיקה. לומדים את המנועים הייעודיים ואת האלגוריתמים שמאחורי החיפוש, כדי לדעת מתי להוסיף אחד וכמה יעלה להפעיל אותו.",
+        [
+          s("db-time-series", "Time-series stores compress metrics and expire them by design.", "Time-series stores דוחסים metrics ומוחקים אותם לפי תכנון."),
+          s("db-search-engines", "Inverted indexes, shards and mappings in Elasticsearch and OpenSearch.", "Inverted indexes, shards ו-mappings ב-Elasticsearch וב-OpenSearch."),
+          s("algo-edit-distance", "Edit distance powers fuzzy matching and typo tolerance in every search box.", "Edit distance מפעיל fuzzy matching וסובלנות לשגיאות הקלדה בכל תיבת חיפוש."),
+          s("algo-search-ranking", "Ranking algorithms like BM25 decide which result comes first, and why.", "אלגוריתמי ranking כמו BM25 קובעים איזו תוצאה מופיעה ראשונה, ולמה."),
+          s("algo-similarity-dedup", "Similarity hashing finds near-duplicates across billions of documents.", "Similarity hashing מוצא מסמכים כמעט זהים בתוך מיליארדי מסמכים."),
+          s("db-olap-columnar", "Columnar warehouses scan billions of rows in seconds; know when OLTP should hand off.", "Warehouses עמודתיים סורקים מיליארדי שורות בשניות; לדעת מתי ה-OLTP צריך להעביר את העבודה.")
+        ]),
+      st("Stage 5 · Data in motion", "שלב 5 · נתונים בתנועה",
+        "Finally connect the stores: CDC pulls changes out of the operational database, stream processors transform them, open table formats land them in the lakehouse, and contracts and quality checks keep the whole chain trustworthy.",
+        "לסיום מחברים את ה-stores: CDC שולף שינויים מה-database התפעולי, stream processors מעבדים אותם, open table formats מנחיתים אותם ב-lakehouse, ו-contracts ובדיקות איכות שומרים על כל השרשרת אמינה.",
+        [
+          s("data-cdc-debezium", "Debezium reads the WAL so changes flow out without dual writes.", "Debezium קורא את ה-WAL כך ששינויים יוצאים החוצה בלי dual writes."),
+          s("data-stream-processing", "Flink and Kafka Streams: windows, state and exactly-once on moving data.", "Flink ו-Kafka Streams: windows, state ו-exactly-once על נתונים בתנועה."),
+          s("data-lakehouse-formats", "Iceberg and Delta add transactions and time travel on top of S3.", "Iceberg ו-Delta מוסיפים transactions ו-time travel מעל S3."),
+          s("data-contracts-schema-registry", "Schema registries stop one producer's change from breaking every consumer.", "Schema registries מונעים משינוי של producer אחד לשבור את כל ה-consumers."),
+          s("data-quality-observability", "Freshness, volume and schema checks catch bad data before the dashboard lies.", "בדיקות freshness, נפח ו-schema תופסות נתונים רעים לפני שהדשבורד משקר.")
+        ])
+    ]
+  });
+
+  // ------------------------------------------------------------------ 11. AI Infra 2026
+  INFRA.paths.push({
+    id: "ai-infra-2026", icon: "🤖", color: "#0ca678",
+    title: { en: "AI Infra 2026", he: "תשתיות AI ב-2026" },
+    blurb: {
+      en: "Build and run AI features as real infrastructure: retrieval and vector search, model serving and GPUs, agents and MCP servers, AI security, LLMOps, and using AI to run your own engineering and on-call.",
+      he: "לבנות ולהריץ פיצ'רים של AI כתשתית אמיתית: retrieval ו-vector search, serving של מודלים ו-GPUs, agents ו-MCP servers, אבטחת AI, LLMOps, ושימוש ב-AI כדי להריץ את ה-engineering וה-on-call שלך."
+    },
+    audience: {
+      en: "Backend and platform engineers asked to 'add AI' or to own the platform behind it. You should know APIs, containers and basic Kubernetes; no ML background needed.",
+      he: "מהנדסי backend ופלטפורמה שהתבקשו 'להוסיף AI' או להיות אחראים על הפלטפורמה שמאחוריו. כדאי להכיר APIs, קונטיינרים ו-Kubernetes בסיסי; לא צריך רקע ב-ML."
+    },
+    stages: [
+      st("Stage 1 · Grounding models in your data", "שלב 1 · לחבר את המודל לנתונים שלך",
+        "Most production AI is retrieval, not training. Start with embeddings and vector databases, go deep on RAG quality, then decide when fine-tuning is actually worth it and which managed platform to build on.",
+        "רוב ה-AI בפרודקשן הוא retrieval, לא אימון. מתחילים מ-embeddings ו-vector databases, נכנסים לעומק של איכות RAG, ואז מחליטים מתי fine-tuning באמת שווה את זה ועל איזו פלטפורמה מנוהלת לבנות.",
+        [
+          s("db-vector", "Embeddings and ANN indexes: the storage layer of every RAG system.", "Embeddings ואינדקסי ANN: שכבת ה-storage של כל מערכת RAG."),
+          s("ai-rag-deep", "Chunking, hybrid search and reranking decide whether answers are right.", "Chunking, hybrid search ו-reranking קובעים אם התשובות נכונות."),
+          s("ai-finetune-vs-rag", "Prompting, RAG or fine-tuning: change the weights only when the cheaper options fail.", "Prompting, RAG או fine-tuning: לשנות את המשקלים רק כשהאפשרויות הזולות נכשלות."),
+          s("cloud-ai-platforms", "Bedrock, Azure AI Foundry and Vertex AI: what you get and what you're locked into.", "Bedrock, Azure AI Foundry ו-Vertex AI: מה מקבלים ולמה ננעלים.")
+        ]),
+      st("Stage 2 · Running the models", "שלב 2 · להריץ את המודלים",
+        "If you host models yourself, GPUs become your most expensive and fragile resource. Learn the serving math first, then how to run inference on Kubernetes, then what changes when you train across a cluster.",
+        "אם אתה מארח מודלים בעצמך, GPUs הופכים למשאב הכי יקר והכי שביר שלך. לומדים קודם את המתמטיקה של serving, אחר כך איך מריצים inference על Kubernetes, ואז מה משתנה כשמאמנים על פני cluster.",
+        [
+          s("ai-llm-serving", "KV cache math, batching and quantization decide tokens per second and cost.", "חישובי KV cache, batching ו-quantization קובעים tokens לשנייה ועלות."),
+          s("k8s-gpu-inference", "GPU nodes, device plugins and autoscaling inference servers on Kubernetes.", "GPU nodes, device plugins ו-autoscaling לשרתי inference על Kubernetes."),
+          s("ai-gpu-clusters", "Parallelism, interconnects and failure handling when training spans hundreds of GPUs.", "Parallelism, interconnects וטיפול בכשלים כשאימון פרוש על מאות GPUs.")
+        ]),
+      st("Stage 3 · Agents and tools", "שלב 3 · Agents וכלים",
+        "Agents turn a model into something that acts, and every tool you give it is a new attack surface. Learn the patterns that work, how to build and host MCP servers, and how to keep the whole thing from leaking data or running wild.",
+        "Agents הופכים מודל למשהו שפועל, וכל כלי שנותנים לו הוא משטח תקיפה חדש. לומדים את התבניות שעובדות, איך בונים ומארחים MCP servers, ואיך מונעים מכל זה לדלוף נתונים או לצאת משליטה.",
+        [
+          s("ai-agents-patterns", "Router, planner and reflection patterns, with the limits that keep agents predictable.", "תבניות router, planner ו-reflection, עם המגבלות ששומרות על agents צפויים."),
+          s("arch-durable-execution", "Long-running agent tasks need durable execution to survive crashes and retries.", "משימות agent ארוכות צריכות durable execution כדי לשרוד קריסות ו-retries."),
+          s("ai-mcp-servers", "Build an MCP server with auth, scoped tools and audit logs.", "לבנות MCP server עם auth, כלים מוגבלים ו-audit logs."),
+          s("ai-agent-infra-mcp", "Run agents and MCP as shared platform infrastructure for many teams.", "להריץ agents ו-MCP כתשתית פלטפורמה משותפת להרבה צוותים."),
+          s("ai-security-practice", "Prompt injection, exfiltration and sandboxes: the controls that actually stop attacks.", "Prompt injection, exfiltration ו-sandboxes: ה-controls שבאמת עוצרים תקיפות.")
+        ]),
+      st("Stage 4 · Operating AI and AI for operations", "שלב 4 · לתפעל AI ו-AI לתפעול",
+        "An AI feature you can't evaluate or price is a liability. Finish with LLMOps, follow a full request end to end, then turn AI on your own work: coding agents in the SDLC and AI in the on-call loop, both with guardrails.",
+        "פיצ'ר AI שאי אפשר למדוד את האיכות או המחיר שלו הוא סיכון. מסיימים עם LLMOps, עוקבים אחרי בקשה מלאה מקצה לקצה, ואז מפנים את ה-AI לעבודה שלך: coding agents ב-SDLC ו-AI בלולאת ה-on-call, שניהם עם guardrails.",
+        [
+          s("ai-llmops", "Evals, tracing, cost tracking and AI gateways: production hygiene for LLM features.", "Evals, tracing, מעקב עלויות ו-AI gateways: היגיינת פרודקשן לפיצ'רים של LLM."),
+          s("flow-llm-request", "See every earlier lesson in one request: gateway, guardrails, RAG, tools and evals.", "לראות כל שיעור קודם בבקשה אחת: gateway, guardrails, RAG, כלים ו-evals."),
+          s("ai-assisted-engineering", "Coding agents in the SDLC without losing review, security or ownership.", "Coding agents ב-SDLC בלי לאבד review, אבטחה או ownership."),
+          s("ai-aiops-oncall", "LLMs in triage and anomaly detection, with humans approving every risky action.", "LLMs ב-triage וב-anomaly detection, כשבן אדם מאשר כל פעולה מסוכנת.")
+        ])
+    ]
+  });
+
+  // ------------------------------------------------------------------ 12. Cloud Done Right: cost & security
+  INFRA.paths.push({
+    id: "cloud-cost-and-security", icon: "🔐", color: "#364fc7",
+    title: { en: "Cloud Done Right: Security & Cost", he: "ענן כמו שצריך: אבטחה ועלויות" },
+    blurb: {
+      en: "Set up a cloud estate that is secure by default and cheap by design: landing zones, IAM, production access, secrets, encryption and certificates, compliance, and the pricing levers that cut the bill without cutting reliability.",
+      he: "להקים סביבת ענן שמאובטחת כברירת מחדל וזולה מעצם התכנון: landing zones, IAM, גישה לפרודקשן, secrets, הצפנה ותעודות, compliance, והמנופים של התמחור שמורידים את החשבון בלי לפגוע באמינות."
+    },
+    audience: {
+      en: "Cloud, platform and DevOps engineers who own accounts and the bill. You should know the basic cloud services; the 'Zero to Ops' cloud stage is enough.",
+      he: "מהנדסי ענן, פלטפורמה ו-DevOps שאחראים על ה-accounts ועל החשבון. כדאי להכיר את שירותי הענן הבסיסיים; שלב הענן ב-'מאפס ל-Ops' מספיק."
+    },
+    stages: [
+      st("Stage 1 · The foundation: accounts and identity", "שלב 1 · היסודות: accounts וזהות",
+        "Security and cost both start from structure. A landing zone gives every team its own blast radius and bill, IAM decides who can do what inside it, and a proper access model removes standing admin rights from humans.",
+        "גם אבטחה וגם עלויות מתחילות ממבנה. Landing zone נותן לכל צוות blast radius וחשבון משלו, IAM קובע מי יכול לעשות מה בתוכו, ומודל גישה נכון מוריד הרשאות admin קבועות מבני אדם.",
+        [
+          s("cloud-landing-zones", "Multi-account structure, SCPs and guardrails: decide this before the first workload lands.", "מבנה multi-account, SCPs ו-guardrails: מחליטים על זה לפני שה-workload הראשון נוחת."),
+          s("cloud-aws-iam-deep", "How policy evaluation really works, so 'AccessDenied' becomes a 5-minute fix.", "איך policy evaluation באמת עובד, כדי ש-'AccessDenied' יהפוך לתיקון של 5 דקות."),
+          s("cloud-engineer-access", "Bastion-less, just-in-time and audited access to production for humans.", "גישה לפרודקשן בלי bastion, just-in-time ועם audit, לבני אדם.")
+        ]),
+      st("Stage 2 · Secrets, crypto and certificates", "שלב 2 · Secrets, קריפטוגרפיה ותעודות",
+        "With identities in place, protect what they guard. Keep secrets out of code and rotate them, use hashing and encryption correctly instead of approximately, and automate certificates so expiry never pages you again.",
+        "כשהזהויות במקום, מגינים על מה שהן שומרות עליו. מוציאים secrets מהקוד ומבצעים להם rotation, משתמשים ב-hashing ובהצפנה נכון ולא בערך, והופכים תעודות לאוטומטיות כדי שפג תוקף לא יעיר אותך יותר.",
+        [
+          s("cloud-secrets-management", "Vault and cloud secret stores with rotation, not a .env file in the repo.", "Vault ו-secret stores בענן עם rotation, לא קובץ .env ב-repo."),
+          s("crypto-hashing-practice", "Password hashing, HMACs and integrity checks, with the right algorithm for each.", "Hashing לסיסמאות, HMACs ובדיקות integrity, עם האלגוריתם הנכון לכל אחד."),
+          s("crypto-encryption-practice", "KMS, envelope encryption and key rotation for data at rest and in transit.", "KMS, envelope encryption ו-key rotation לנתונים במנוחה ובתנועה."),
+          s("rel-cert-operations", "Inventory, automate and monitor certificates so expiry is never an incident.", "לעשות inventory, אוטומציה ו-monitoring לתעודות כדי שפג תוקף לא יהיה תקלה אף פעם.")
+        ]),
+      st("Stage 3 · The bill", "שלב 3 · החשבון",
+        "Now the money. First learn to read the bill, then apply the levers in order of safety: commitments for the steady base, spot for interruptible work, and the hidden costs of data transfer and forgotten storage.",
+        "עכשיו הכסף. קודם לומדים לקרוא את החשבון, ואז מפעילים את המנופים לפי סדר הבטיחות: commitments לבסיס הקבוע, spot לעבודה שאפשר להפסיק, והעלויות הנסתרות של העברת נתונים ו-storage שנשכח.",
+        [
+          s("cloud-finops", "Tags, allocation and unit cost: see where the money goes before cutting.", "Tags, הקצאת עלויות ו-unit cost: לראות לאן הכסף הולך לפני שחותכים."),
+          s("cloud-commitments", "Savings Plans, RIs, CUDs and ARM: the biggest discount for the steady baseline.", "Savings Plans, RIs, CUDs ו-ARM: ההנחה הגדולה ביותר לבסיס הקבוע."),
+          s("cloud-spot-instances", "Spot saves up to 90% if your workload handles a two-minute warning.", "Spot חוסך עד 90% אם ה-workload שלך מתמודד עם התראה של שתי דקות."),
+          s("cloud-data-transfer-costs", "Cross-AZ traffic, NAT gateways and egress: the line items nobody planned.", "תעבורה בין AZs, NAT gateways ו-egress: השורות בחשבון שאף אחד לא תכנן."),
+          s("cloud-storage-lifecycle", "Storage classes, lifecycle rules and versioning stop object storage from growing forever.", "Storage classes, lifecycle rules ו-versioning מונעים מ-object storage לגדול לנצח.")
+        ]),
+      st("Stage 4 · Prove it and keep it right", "שלב 4 · להוכיח ולשמור על זה",
+        "A good setup drifts unless someone checks it. Finish by mapping controls to compliance frameworks, running continuous security operations, and reviewing the whole estate against the Well-Architected pillars on a schedule.",
+        "הגדרה טובה נשחקת אם אף אחד לא בודק אותה. מסיימים במיפוי controls ל-frameworks של compliance, בהפעלת security operations רציפים, ובבדיקה של כל הסביבה מול עמודי ה-Well-Architected באופן קבוע.",
+        [
+          s("compliance-for-engineers", "SOC 2, ISO 27001 and evidence: turn what you built into audit answers.", "SOC 2, ISO 27001 וראיות: להפוך את מה שבנית לתשובות ל-audit."),
+          s("pr-security-ops", "Vulnerability SLAs, detections and response keep the controls honest.", "SLAs לחולשות, detections ותגובה שומרים על ה-controls כנים."),
+          s("cloud-well-architected", "A recurring review across security, cost, reliability and performance ties the path together.", "Review קבוע על פני אבטחה, עלות, אמינות וביצועים קושר את כל המסלול.")
         ])
     ]
   });

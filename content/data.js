@@ -744,6 +744,7 @@ INFRA.lessons.push({
   icon: "🧩",
   level: 3,
   minutes: 12,
+  playground: "hashring",
   title: { en: "Partitioning & Sharding", he: "Partitioning ו-sharding" },
   tldr: {
     en: "Sharding splits one dataset across many database servers by a shard key; it scales writes and storage, but a bad key creates hot shards and cross-shard queries, and resharding is open-heart surgery.",
@@ -923,6 +924,7 @@ INFRA.lessons.push({
   icon: "⚖️",
   level: 3,
   minutes: 10,
+  playground: "partition",
   title: { en: "CAP, PACELC & Consistency", he: "CAP, PACELC ו-consistency" },
   tldr: {
     en: "When the network splits, a distributed DB must choose: refuse some requests (consistency) or answer with possibly stale data (availability). And even when the network is fine, it trades latency for consistency.",

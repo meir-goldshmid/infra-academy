@@ -691,6 +691,7 @@ INFRA.lessons.push({
   icon: "⚙️",
   level: 3,
   minutes: 14,
+  playground: "lsm",
   title: { en: "Storage Engines: B-tree vs LSM", he: "Storage Engines: B-tree מול LSM" },
   tldr: {
     en: "B-trees update pages in place (great reads, random writes); LSM trees append to a memtable and merge sorted files later (great writes, compaction debt) — and amplification (write, read, space) explains most 'mysterious' database behavior in production.",

@@ -94,6 +94,7 @@ INFRA.scenarios.push({
 | observability | Metrics, logs, traces, alerting |
 | reliability | SLI/SLO/SLA, incidents, HA, BCDR |
 | cloud | Cloud models, IaC, CI/CD, IAM, security, FinOps |
+| git | Git & code hosting: internals, branching/rebase, undo & rescue, bisect, monorepos, GitHub vs GitLab, repo security |
 | staff | Senior & Staff+: distributed systems depth, platform/security at scale, design docs, strategy, migrations, leadership |
 | flows | End-to-End Flows: one request followed hop by hop through every layer (lessons in this track must have a `flow`) |
 | principal | Principal Engineer Playbook: requirements & questions, sizing, testing, validation, DB kinds, scaling, CAP/PACELC, clusters, integration, idempotency, queues, rate limiters, 3rd-party deps, SOLID, design patterns, singletons, concurrency, event loop, async/await, GC, HTTP versions, email/SMS/realtime protocols |
@@ -102,7 +103,9 @@ INFRA.scenarios.push({
 
 `lb` (load balancer), `resources` (CPU/memory requests & limits, throttling, OOMKill), `queue` (producer/consumer/backlog/DLQ),
 `slo` (error budget calculator), `cidr` (subnet calculator), `firewall` (ordered rule tester), `scheduler` (k8s scheduling & node failure),
-`dr` (RPO/RTO & DR strategy), `cache` (cache hit ratio & latency), `scaling` (autoscaling vs traffic), `terminal` (fake shell), `eviction` (FIFO vs LRU vs LFU cache eviction side by side).
+`dr` (RPO/RTO & DR strategy), `cache` (cache hit ratio & latency), `scaling` (autoscaling vs traffic), `terminal` (fake shell), `eviction` (FIFO vs LRU vs LFU cache eviction side by side),
+`tcp` (TCP handshake, sliding window, loss & retransmission, FIN/TIME_WAIT vs UDP), `hashring` (consistent hashing ring & virtual nodes vs mod-N),
+`lsm` (B-tree vs LSM writes, compaction, write amplification, bloom filters), `partition` (CAP: network partition, CP quorum vs AP with LWW/conflicts).
 
 ## Interview prep — system design case (`INFRA.designs`)
 
