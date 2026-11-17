@@ -10,7 +10,7 @@ const files = process.argv.slice(2).length
   ? process.argv.slice(2)
   : fs.readdirSync(path.join(root, "content")).filter(f => f.endsWith(".js")).map(f => path.join("content", f));
 
-const TRACKS = ["foundations","linux","containers","kubernetes","networking","architecture","data","observability","reliability","cloud","git","staff","flows","principal"];
+const TRACKS = ["foundations","linux","containers","kubernetes","networking","architecture","data","observability","reliability","cloud","git","staff","flows","principal","ai"];
 const SIMS = ["lb","resources","queue","slo","cidr","firewall","scheduler","dr","cache","scaling","terminal","eviction","tcp","hashring","lsm","partition"];
 const errors = [];
 const sandbox = {}; sandbox.window = sandbox; // like a browser: window.INFRA and bare INFRA are the same

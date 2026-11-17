@@ -9,8 +9,8 @@ window.INFRA = window.INFRA || { lessons: [], glossary: [], scenarios: [] };
 
 INFRA.lessons.push({
   id: "ai-rag-deep",
-  track: "principal",
-  order: 130,
+  track: "ai",
+  order: 2,
   icon: "🔎",
   level: 3,
   minutes: 22,
@@ -266,8 +266,8 @@ hybrid + contextual + rerank   0.94       0.81   195</pre>
 
 INFRA.lessons.push({
   id: "ai-mcp-servers",
-  track: "principal",
-  order: 131,
+  track: "ai",
+  order: 6,
   icon: "🔌",
   level: 3,
   minutes: 22,
@@ -584,8 +584,8 @@ containers:
 
 INFRA.lessons.push({
   id: "ai-llm-serving",
-  track: "principal",
-  order: 132,
+  track: "ai",
+  order: 1,
   icon: "⚡",
   level: 3,
   minutes: 24,
@@ -873,8 +873,8 @@ with zero idle cost, but per-token pricing scales linearly with volume.</pre>
 
 INFRA.lessons.push({
   id: "ai-agents-patterns",
-  track: "principal",
-  order: 133,
+  track: "ai",
+  order: 5,
   icon: "🧭",
   level: 3,
   minutes: 22,
@@ -1175,8 +1175,8 @@ escalations             14%        11%</pre>
 
 INFRA.lessons.push({
   id: "ai-llmops",
-  track: "principal",
-  order: 134,
+  track: "ai",
+  order: 7,
   icon: "📊",
   level: 3,
   minutes: 22,

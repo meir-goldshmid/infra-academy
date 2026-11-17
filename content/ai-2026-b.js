@@ -10,8 +10,8 @@ window.INFRA = window.INFRA || { lessons: [], glossary: [], scenarios: [] };
 
 INFRA.lessons.push({
   id: "ai-finetune-vs-rag",
-  track: "principal",
-  order: 140,
+  track: "ai",
+  order: 3,
   icon: "🎛️",
   level: 3,
   minutes: 20,
@@ -308,8 +308,8 @@ aliases: [candidate]        # promote: candidate -&gt; canary -&gt; prod</pre>
 
 INFRA.lessons.push({
   id: "ai-gpu-clusters",
-  track: "principal",
-  order: 141,
+  track: "ai",
+  order: 4,
   icon: "🧮",
   level: 3,
   minutes: 24,
@@ -649,8 +649,8 @@ kubectl cordon gpu-node-117 &amp;&amp; kubectl drain gpu-node-117 --ignore-daemo
 
 INFRA.lessons.push({
   id: "ai-security-practice",
-  track: "principal",
-  order: 142,
+  track: "ai",
+  order: 8,
   icon: "🛡️",
   level: 3,
   minutes: 22,
@@ -991,8 +991,8 @@ npx promptfoo@latest redteam run</pre>
 
 INFRA.lessons.push({
   id: "ai-assisted-engineering",
-  track: "principal",
-  order: 143,
+  track: "ai",
+  order: 30,
   icon: "🤝",
   level: 2,
   minutes: 18,
@@ -1273,8 +1273,8 @@ gitleaks git -v                             # scan history for committed secrets
 
 INFRA.lessons.push({
   id: "ai-aiops-oncall",
-  track: "principal",
-  order: 144,
+  track: "ai",
+  order: 31,
   icon: "🚨",
   level: 3,
   minutes: 20,

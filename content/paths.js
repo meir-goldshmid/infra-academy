@@ -750,6 +750,14 @@ INFRA.paths = INFRA.paths || [];
           s("flow-llm-request", "See every earlier lesson in one request: gateway, guardrails, RAG, tools and evals.", "לראות כל שיעור קודם בבקשה אחת: gateway, guardrails, RAG, כלים ו-evals."),
           s("ai-assisted-engineering", "Coding agents in the SDLC without losing review, security or ownership.", "Coding agents ב-SDLC בלי לאבד review, אבטחה או ownership."),
           s("ai-aiops-oncall", "LLMs in triage and anomaly detection, with humans approving every risky action.", "LLMs ב-triage וב-anomaly detection, כשבן אדם מאשר כל פעולה מסוכנת.")
+        ]),
+      st("Stage 5 · Classic MLOps", "שלב 5 · MLOps קלאסי",
+        "Not every model is an LLM behind an API. Teams that train their own models need tracking, a registry, reproducible pipelines and drift monitoring, and that platform usually lands on the infra team.",
+        "לא כל מודל הוא LLM מאחורי API. צוותים שמאמנים מודלים משלהם צריכים tracking, model registry, pipelines שאפשר לשחזר וניטור של drift. הפלטפורמה הזאת נוחתת בדרך כלל אצל צוות התשתיות.",
+        [
+          s("mlops-lifecycle", "Code, data and model move together: tracking, the registry and reproducibility.", "קוד, נתונים ומודל זזים יחד: tracking, model registry ושחזוריות."),
+          s("mlops-training-pipelines", "Pipelines, feature stores and distributed training on Kubernetes, without starving the GPUs.", "Pipelines, feature stores ואימון מבוזר על Kubernetes, בלי להרעיב את ה-GPU-ים."),
+          s("mlops-serving-monitoring", "Serve, roll out and watch models for drift, the failure that never throws an error.", "להריץ מודלים, לעשות להם rollout ולנטר drift, התקלה שאף פעם לא זורקת שגיאה.")
         ])
     ]
   });
@@ -801,6 +809,122 @@ INFRA.paths = INFRA.paths || [];
           s("compliance-for-engineers", "SOC 2, ISO 27001 and evidence: turn what you built into audit answers.", "SOC 2, ISO 27001 וראיות: להפוך את מה שבנית לתשובות ל-audit."),
           s("pr-security-ops", "Vulnerability SLAs, detections and response keep the controls honest.", "SLAs לחולשות, detections ותגובה שומרים על ה-controls כנים."),
           s("cloud-well-architected", "A recurring review across security, cost, reliability and performance ties the path together.", "Review קבוע על פני אבטחה, עלות, אמינות וביצועים קושר את כל המסלול.")
+        ])
+    ]
+  });
+
+  // ------------------------------------------------------------------ 13. Production Engineering on AWS
+  INFRA.paths.push({
+    id: "prod-eng-aws", icon: "🚀", color: "#e8590c",
+    title: { en: "Production Engineering on AWS & EKS", he: "Production Engineering על AWS ו-EKS" },
+    blurb: {
+      en: "Run a multi-region EKS fleet as one platform: AWS foundations and edge, cluster lifecycle and fleet upgrades, a service mesh and gateways, GitOps and IaC, observability and AI-assisted operations.",
+      he: "להריץ צי של EKS בכמה regions כפלטפורמה אחת: יסודות AWS וה-edge, מחזור החיים של ה-clusters ו-upgrades לכל הצי, service mesh ו-gateways, GitOps ו-IaC, observability ותפעול בעזרת AI."
+    },
+    audience: {
+      en: "Senior DevOps, SRE and platform engineers preparing for a production-engineering role on AWS, including those coming from Azure and AKS.",
+      he: "מהנדסי DevOps, SRE ופלטפורמה בכירים שמתכוננים לתפקיד production engineering על AWS, כולל מי שמגיע מ-Azure ו-AKS."
+    },
+    stages: [
+      st("Stage 1 · AWS foundations", "שלב 1 · יסודות AWS",
+        "Everything else sits on accounts, IAM and the network. Translate what you know from other clouds first, then go deep on IAM and on multi-region networking and the edge.",
+        "כל השאר יושב על accounts, IAM והרשת. קודם מתרגמים את מה שאתה כבר מכיר מעננים אחרים, ואז נכנסים לעומק של IAM, של רשת ב-multi-region ושל ה-edge.",
+        [
+          s("aws-for-azure-engineers", "Map accounts, IAM, VPCs and the edge onto what you already know, and learn where the analogy breaks.", "למפות accounts, IAM, VPC וה-edge על מה שאתה כבר מכיר, וללמוד איפה האנלוגיה נשברת."),
+          s("cloud-aws-iam-deep", "Policy evaluation, roles and boundaries: the questions every AWS interview asks.", "הערכת policies, roles ו-boundaries: השאלות שכל ראיון AWS שואל."),
+          s("aws-networking-edge", "Transit Gateway, PrivateLink, Route 53 and CloudFront for a multi-region estate.", "Transit Gateway, PrivateLink, Route 53 ו-CloudFront לסביבה של כמה regions."),
+          s("cloud-big3-services-compare", "Know why you would pick AWS over the others, and say it like an architect.", "לדעת למה בוחרים ב-AWS על פני האחרים, ולהסביר את זה כמו ארכיטקט.")
+        ]),
+      st("Stage 2 · EKS and the fleet", "שלב 2 · EKS והצי",
+        "One cluster is a project; fifty clusters is a product. Learn EKS in production, how pods get IPs and nodes, and how to upgrade the whole fleet without an outage.",
+        "Cluster אחד הוא פרויקט; חמישים clusters הם מוצר. לומדים EKS בפרודקשן, איך Pod-ים מקבלים IPs ו-nodes, ואיך משדרגים את כל הצי בלי השבתה.",
+        [
+          s("aws-eks-production", "Add-ons, load balancer controller, Karpenter and Pod Identity: EKS the way production runs it.", "Add-ons, load balancer controller, Karpenter ו-Pod Identity: EKS כמו שהוא רץ בפרודקשן."),
+          s("cloud-managed-k8s-compare", "What changes between EKS, AKS and GKE, so your experience transfers.", "מה משתנה בין EKS, AKS ו-GKE, כדי שהניסיון שלך יעבור איתך."),
+          s("k8s-networking-cni", "VPC CNI, IP exhaustion and DNS: the networking questions behind most EKS incidents.", "VPC CNI, מיצוי IPs ו-DNS: שאלות הרשת שמאחורי רוב התקלות ב-EKS."),
+          s("k8s-node-autoprovisioning", "Karpenter and its alternatives decide your node cost and your scale-up speed.", "Karpenter והחלופות שלו קובעים את עלות ה-nodes ואת מהירות ה-scale-up."),
+          s("k8s-multi-cluster", "Why many clusters, and how to slice them by region, tenant and blast radius.", "למה הרבה clusters, ואיך מחלקים אותם לפי region, לקוח ו-blast radius."),
+          s("k8s-fleet-upgrades", "Waves, gates and deprecated APIs: upgrading the fleet as a routine, not a project.", "גלים, gates ו-APIs שיצאו משימוש: לשדרג את הצי כשגרה ולא כפרויקט.")
+        ]),
+      st("Stage 3 · Traffic: mesh and gateways", "שלב 3 · תעבורה: mesh ו-gateways",
+        "Requests enter through an edge gateway, travel between services through the mesh, and, more and more, leave through an AI gateway to model providers. Learn all three hops.",
+        "בקשות נכנסות דרך gateway ב-edge, עוברות בין services דרך ה-mesh, ויותר ויותר גם יוצאות דרך AI gateway לספקי מודלים. לומדים את שלוש הקפיצות.",
+        [
+          s("api-gateway-production", "Auth, rate limits and routing at the edge, before traffic reaches a Pod.", "Auth, rate limits וניתוב ב-edge, לפני שהתעבורה מגיעה ל-Pod."),
+          s("k8s-ingress-certs-dns", "Ingress, Gateway API, certificates and DNS automation inside the cluster.", "Ingress, Gateway API, תעודות ואוטומציה של DNS בתוך ה-cluster."),
+          s("istio-in-production", "mTLS, traffic splitting and reading the Envoy 503 flags when the mesh misbehaves.", "mTLS, פיצול תעבורה וקריאת דגלי ה-503 של Envoy כשה-mesh מתנהג מוזר."),
+          s("ai-gateway-design", "Governed, observable LLM usage: keys, token limits, fallbacks and cost per team.", "שימוש מבוקר ונצפה ב-LLM: keys, מגבלות token, fallbacks ועלות לכל צוות.")
+        ]),
+      st("Stage 4 · IaC, GitOps and delivery", "שלב 4 · IaC, GitOps ו-delivery",
+        "The fleet is only as consistent as the code that builds it. Learn the Terraform workflow, see the other IaC tools side by side, and wire CI/CD into multi-cluster GitOps.",
+        "הצי עקבי רק כמו הקוד שבונה אותו. לומדים את ה-workflow של Terraform, רואים את כלי ה-IaC האחרים זה לצד זה, ומחברים CI/CD ל-GitOps על כמה clusters.",
+        [
+          s("terraform-production-workflow", "Remote state, PR plans, drift detection and safe refactors.", "Remote state, plan ב-PR, זיהוי drift ו-refactor בטוח."),
+          s("iac-side-by-side", "The same stack in Terraform, Bicep, Pulumi and CDK, so you can discuss any of them.", "אותו stack ב-Terraform, Bicep, Pulumi ו-CDK, כדי שתוכל לדבר על כל אחד מהם."),
+          s("cicd-aws-eks-pipeline", "From commit to canary: ECR, OIDC, signing and Argo CD.", "מ-commit ועד canary: ECR, OIDC, חתימה ו-Argo CD."),
+          s("k8s-gitops-at-scale", "ApplicationSets, sharding and drift across dozens of clusters.", "ApplicationSets, sharding ו-drift על פני עשרות clusters.")
+        ]),
+      st("Stage 5 · Operate it", "שלב 5 · לתפעל",
+        "Owning production means seeing it, debugging it under pressure, and increasingly letting agents do the toil with guardrails.",
+        "להיות אחראי על פרודקשן זה לראות אותו, לדבג אותו תחת לחץ, ויותר ויותר לתת ל-agents לעשות את ה-toil עם guardrails.",
+        [
+          s("obs-datadog-victoriametrics", "Pick and run the observability stack, and keep cardinality from eating the budget.", "לבחור ולהריץ את ה-stack של observability, ולמנוע מ-cardinality לאכול את התקציב."),
+          s("k8s-troubleshooting-playbook", "A repeatable way to debug any cluster incident.", "דרך קבועה לדבג כל תקלה ב-cluster."),
+          s("ai-agent-infra-mcp", "Agents and MCP servers for audits, migrations and drift detection.", "Agents ו-MCP servers ל-audits, למיגרציות ולזיהוי drift."),
+          s("staff-large-incidents", "Lead the incident and write the postmortem that changes things.", "להוביל את התקלה ולכתוב postmortem שבאמת משנה משהו.")
+        ])
+    ]
+  });
+
+  // ------------------------------------------------------------------ 14. AI Platform Engineer
+  INFRA.paths.push({
+    id: "ai-platform-engineer", icon: "🧩", color: "#5f3dc4",
+    title: { en: "AI Platform Engineer", he: "AI Platform Engineer" },
+    blurb: {
+      en: "Build the platform that lets a hundred engineers ship AI features safely: solid TypeScript services, an AI gateway, agent runtimes and evals, and the AWS delivery and observability underneath.",
+      he: "לבנות את הפלטפורמה שמאפשרת למאה מהנדסים לשחרר פיצ'רים של AI בבטחה: services יציבים ב-TypeScript, AI gateway, agent runtimes ו-evals, ומתחת לכל זה delivery ו-observability על AWS."
+    },
+    audience: {
+      en: "Senior backend and platform engineers moving into an AI platform team. You know APIs and the cloud; this path adds the AI-specific layers and the service design behind them.",
+      he: "מהנדסי backend ופלטפורמה בכירים שעוברים לצוות AI platform. אתה מכיר APIs וענן; המסלול מוסיף את השכבות הייחודיות ל-AI ואת תכנון ה-services שמאחוריהן."
+    },
+    stages: [
+      st("Stage 1 · Services that hold up", "שלב 1 · Services שמחזיקים",
+        "The platform is still backend code. Structure services with clear modules and domain boundaries, then make them event-driven without losing or duplicating work.",
+        "הפלטפורמה היא עדיין קוד backend. בונים services עם modules ברורים וגבולות domain, ואז הופכים אותם ל-event-driven בלי לאבד עבודה ובלי לבצע אותה פעמיים.",
+        [
+          s("nestjs-in-depth", "Modules, DI and the request pipeline: guards, interceptors, pipes and filters.", "Modules, DI וה-pipeline של הבקשה: guards, interceptors, pipes ו-filters."),
+          s("nestjs-ddd-event-driven", "DDD, CQRS, the outbox and idempotent consumers in one real service.", "DDD, CQRS, outbox ו-consumers אידמפוטנטיים ב-service אמיתי אחד."),
+          s("arch-event-driven", "The theory behind events, choreography and eventual consistency.", "התיאוריה שמאחורי events, choreography ו-eventual consistency."),
+          s("staff-exactly-once", "Why exactly-once is really at-least-once plus idempotency.", "למה exactly-once הוא בעצם at-least-once ועוד idempotency.")
+        ]),
+      st("Stage 2 · The LLM platform layer", "שלב 2 · שכבת ה-LLM של הפלטפורמה",
+        "Every team calling models directly means leaked keys and surprise bills. Put a gateway in front, then build the paved road that makes the right way the easy way.",
+        "כשכל צוות קורא למודלים ישירות, מקבלים keys שדולפים וחשבונות מפתיעים. שמים gateway מקדימה, ואז בונים paved road שהופך את הדרך הנכונה לדרך הקלה.",
+        [
+          s("ai-gateway-design", "Keys, token-aware limits, routing, fallbacks and per-team cost.", "Keys, מגבלות לפי token-ים, ניתוב, fallbacks ועלות לכל צוות."),
+          s("ai-llmops", "Evals, tracing and prompt versioning: production hygiene for LLM features.", "Evals, tracing וניהול גרסאות של prompts: היגיינת פרודקשן לפיצ'רים של LLM."),
+          s("ai-platform-paved-road", "SDK, templates, quotas and a launch checklist for 100+ engineers.", "SDK, templates, quotas ו-checklist להשקה עבור 100+ מהנדסים.")
+        ]),
+      st("Stage 3 · Agents", "שלב 3 · Agents",
+        "Agents act, so they need a runtime that survives crashes, isolates tenants and can be measured. Learn the patterns, the runtime, the tool bus and the evals.",
+        "Agents מבצעים פעולות, ולכן הם צריכים runtime ששורד קריסות, מבודד בין לקוחות ואפשר למדוד אותו. לומדים את התבניות, את ה-runtime, את ה-tool bus ואת ה-evals.",
+        [
+          s("ai-agents-patterns", "Router, planner and reflection patterns with the limits that keep agents predictable.", "תבניות router, planner ו-reflection עם המגבלות ששומרות על agents צפויים."),
+          s("ai-agent-runtime", "The loop, tool calling, state, budgets and sandboxing.", "הלולאה, tool calling, state, תקציבים ו-sandboxing."),
+          s("arch-durable-execution", "Durable execution keeps long agent runs alive through crashes and retries.", "Durable execution שומר על ריצות ארוכות של agents דרך קריסות ו-retries."),
+          s("ai-mcp-servers", "MCP servers as the tool bus, with auth and audit.", "MCP servers כ-tool bus, עם auth ו-audit."),
+          s("ai-agent-evals", "Trajectory evals, graders and CI gates, so a change cannot silently make the agent worse.", "Evals על trajectories, graders ו-gates ב-CI, כדי ששינוי לא יקלקל את ה-agent בשקט.")
+        ]),
+      st("Stage 4 · Ship and run it on AWS", "שלב 4 · לשחרר ולהריץ על AWS",
+        "Finish with the infrastructure under the platform: Terraform, a container pipeline, and observability that can trace a slow LLM call across services.",
+        "מסיימים בתשתית שמתחת לפלטפורמה: Terraform, pipeline לקונטיינרים, ו-observability שמסוגל לעקוב אחרי קריאת LLM איטית לאורך כמה services.",
+        [
+          s("aws-for-azure-engineers", "The AWS mental model, quickly, if you come from another cloud.", "המודל המנטלי של AWS, מהר, אם אתה מגיע מענן אחר."),
+          s("terraform-production-workflow", "State, PR plans and drift: Terraform the way teams run it.", "State, plan ב-PR ו-drift: Terraform כמו שצוותים מריצים אותו."),
+          s("cicd-aws-eks-pipeline", "Build, sign and roll out containers with GitHub Actions and Argo CD.", "לבנות, לחתום ולעשות rollout לקונטיינרים עם GitHub Actions ו-Argo CD."),
+          s("obs-datadog-victoriametrics", "Traces, metrics and logs, and what they cost.", "Traces, metrics ו-logs, וכמה הם עולים."),
+          s("mlops-serving-monitoring", "When the platform also serves your own models: rollouts and drift.", "כשהפלטפורמה מריצה גם מודלים משלך: rollouts ו-drift.")
         ])
     ]
   });

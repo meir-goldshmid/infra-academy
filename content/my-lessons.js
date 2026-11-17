@@ -232,8 +232,8 @@ tolerations:
 
 INFRA.lessons.push({
   id: "ai-agent-infra-mcp",
-  track: "staff",
-  order: 50,
+  track: "ai",
+  order: 14,
   icon: "🤖",
   level: 3,
   minutes: 10,

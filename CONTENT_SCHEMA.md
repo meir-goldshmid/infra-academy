@@ -61,6 +61,9 @@ Escape `<` and `>` inside `<pre>`/`<code>` as `&lt;` `&gt;`. Strings use JS doub
 INFRA.glossary.push({ term: "Pod", track: "kubernetes", def: { en: "One-line definition", he: "..." }, lesson: "k8s-pods" });
 ```
 
+Optional `aliases: ["pods"]`: other spellings that should open the same hover/tap card in lessons, on-call and decision pages
+(matching is case-insensitive, except for ALL-CAPS acronyms). Aliases for terms defined elsewhere go in `content/glossary-extra.js`.
+
 ## Incident scenario (on-call simulator, choose-your-own-adventure)
 
 ```js
@@ -98,6 +101,7 @@ INFRA.scenarios.push({
 | staff | Senior & Staff+: distributed systems depth, platform/security at scale, design docs, strategy, migrations, leadership |
 | flows | End-to-End Flows: one request followed hop by hop through every layer (lessons in this track must have a `flow`) |
 | principal | Principal Engineer Playbook: requirements & questions, sizing, testing, validation, DB kinds, scaling, CAP/PACELC, clusters, integration, idempotency, queues, rate limiters, 3rd-party deps, SOLID, design patterns, singletons, concurrency, event loop, async/await, GC, HTTP versions, email/SMS/realtime protocols |
+| ai | AI Infra & MLOps: LLM serving, AI gateways, agent runtimes & evals, RAG, GPUs, MLOps lifecycle (tracking, registry, training pipelines, serving, drift) |
 
 ## Simulator ids (implemented in `js/sims.js`)
 

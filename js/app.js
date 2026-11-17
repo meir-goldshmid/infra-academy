@@ -341,11 +341,16 @@
     const clean = (x) => x.replace(/\s*\([^)]*\)\s*/g, " ").trim();
     I.glossary.forEach(g => {
       if (!g.term || !g.lesson || !byId[g.lesson]) return;
-      [clean(g.term), ...g.term.split(/\s+\/\s+/).map(clean)].forEach(n => { if (n.length >= 3 && !glossMap.has(n)) glossMap.set(n, g); });
+      [clean(g.term), ...g.term.split(/\s+\/\s+/).map(clean), ...(g.aliases || [])].forEach(n => {
+        const k = n.toLowerCase(); if (n.length >= 3 && !glossMap.has(k)) glossMap.set(k, { g, acronym: n === n.toUpperCase() && /[A-Z]/.test(n) ? n : null });
+      });
     });
     const keys = [...glossMap.keys()].sort((a, b) => b.length - a.length).map(k => k.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"));
-    glossRe = keys.length ? new RegExp("(?<![\\w-])(" + keys.join("|") + ")(?![\\w-])", "g") : null;
+    // a term may follow a Hebrew prefix ("ה-Pod", "ו-change failure rate") or take a Hebrew suffix ("Pod-ים"),
+    // but not sit inside a longer English token ("pre-Pod", "Pod-name")
+    glossRe = keys.length ? new RegExp("(?<![\\w])(?<![A-Za-z0-9]-)(" + keys.join("|") + ")(?![\\w])(?!-[A-Za-z0-9])", "gi") : null;
   }
+  const glossOf = (s) => { const e = glossMap.get(s.toLowerCase()); return e && (!e.acronym || e.acronym === s) ? e.g : null; };
   function linkGlossary(root, currentId) {
     if (!root) return; if (!glossMap) buildGloss(); if (!glossRe) return;
     const used = new Set(); let count = 0;
@@ -356,7 +361,7 @@
       if (count >= 30) break;
       const text = node.nodeValue; let m, last = 0, frag = null; glossRe.lastIndex = 0;
       while ((m = glossRe.exec(text)) && count < 30) {
-        const g = glossMap.get(m[1]); if (!g || g.lesson === currentId || used.has(g.term)) continue;
+        const g = glossOf(m[1]); if (!g || g.lesson === currentId || used.has(g.term)) continue;
         used.add(g.term); count++; frag = frag || document.createDocumentFragment();
         frag.appendChild(document.createTextNode(text.slice(last, m.index)));
         const a = document.createElement("a"); a.className = "gl-link"; a.href = "#/lesson/" + g.lesson; a.dataset.term = g.term; a.textContent = m[1];
@@ -378,6 +383,19 @@
     pop.querySelector(".gl-x").onclick = hideGloss;
   }
   function hideGloss() { const p = $("#glPop"); if (p) p.hidden = true; }
+  // hover (mouse only) opens the same card a tap opens; it stays while the pointer moves onto it
+  let glHide = 0;
+  const hoverable = () => window.matchMedia && window.matchMedia("(hover: hover)").matches;
+  document.addEventListener("mouseover", (e) => {
+    if (!hoverable() || !e.target.closest) return;
+    const a = e.target.closest(".gl-link"), inPop = e.target.closest(".gl-pop");
+    if (a || inPop) clearTimeout(glHide);
+    if (a && ($("#glPop").hidden || $("#glPop").dataset.for !== a.dataset.term)) { showGloss(a); $("#glPop").dataset.for = a.dataset.term; }
+  });
+  document.addEventListener("mouseout", (e) => {
+    if (!hoverable() || !e.target.closest || !(e.target.closest(".gl-link") || e.target.closest(".gl-pop"))) return;
+    clearTimeout(glHide); glHide = setTimeout(hideGloss, 250);
+  });
   document.addEventListener("click", (e) => {
     const a = e.target.closest && e.target.closest(".gl-link");
     if (a) { e.preventDefault(); showGloss(a); return; }
@@ -660,6 +678,7 @@ If the answer is worth keeping, also add it as a new lesson (or extend this one)
       }
       html += `</div>`;
       box.innerHTML = html;
+      linkGlossary(box);
       if (st.end) {
         const best = S.scen[sc.id];
         if (st.end === "win" && (best == null || score > best)) { S.scen[sc.id] = score; save(); addXP(Math.max(20, score), `+${Math.max(20, score)} XP 📟`); confetti(); }

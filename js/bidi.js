@@ -47,6 +47,15 @@
     if (/flex|grid/.test(pd)) return;
     RUN.lastIndex = 0;
     const parts = []; let last = 0, m, changed = false;
+    // a list marker at the start of Hebrew text ("B. Active-active…", "2. Schema…") is its own unit: without this it joins the
+    // English run that follows and the letter lands in the middle of the line instead of at the right edge
+    const lead = hasHeb && /^\s*(?:[A-Za-z]|\d{1,3})[.)](?=\s)/.exec(s);
+    if (lead) {
+      const ws = lead[0].length - lead[0].trimStart().length;
+      if (ws) parts.push(document.createTextNode(s.slice(0, ws)));
+      const b = document.createElement("bdi"); b.dir = "ltr"; b.textContent = lead[0].slice(ws);
+      parts.push(b); last = RUN.lastIndex = lead[0].length; changed = true;
+    }
     while ((m = RUN.exec(s))) {
       if (!m[0]) { RUN.lastIndex++; continue; }
       const start = m.index, end = start + m[0].length;
