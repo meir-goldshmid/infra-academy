@@ -47,7 +47,7 @@ pt = aes.decrypt(stored[:12], stored[12:], aad)</pre>
 <tr><td>Symmetric AEAD</td><td>AES-256-GCM, ChaCha20-Poly1305</td><td>GB/s (AES-NI)</td><td>נתונים בכמות, דיסקים, רשומות TLS, שדות DB</td></tr>
 <tr><td>Asymmetric encryption / KEM</td><td>RSA-OAEP, ECDH (X25519), ML-KEM</td><td>פי ~1000 יותר איטי</td><td>הסכמה על / עטיפה של מפתח סימטרי</td></tr>
 <tr><td>חתימות</td><td>Ed25519, ECDSA P-256, RSA-PSS</td><td>אימות מהיר</td><td>תעודות, JWTs, artifacts, git commits</td></tr>
-<tr><td>Hash / MAC</td><td>SHA-256, HMAC-SHA256</td><td>מהיר מאוד</td><td>שלמות, webhooks (ראו pr-checksums-hashing)</td></tr>
+<tr><td>Hash / MAC</td><td>SHA-256, HMAC-SHA256</td><td>מהיר מאוד</td><td>שלמות, webhooks (ראה pr-checksums-hashing)</td></tr>
 </table>
 <p><strong>AEAD</strong> (Authenticated Encryption with Associated Data) מצפין <em>וגם</em> מאמת: אם הופך ביט אחד ב-ciphertext, הפענוח נכשל במקום להחזיר זבל. ה-"Associated data" מאומת אבל לא מוצפן — קושרים את ה-ciphertext להקשר שלו (tenant id, שם עמודה) כדי שאי אפשר יהיה להעתיק-להדביק אותו למקום אחר.</p>
 <pre># pip install cryptography
@@ -139,7 +139,7 @@ def decrypt(rec: dict, tenant: str) -&gt; bytes:
 <ul>
 <li><strong>Rotation</strong>: ה-"automatic rotation" של KMS יוצר <em>גרסה</em> חדשה של ה-KEK כל שנה (ב-AWS אפשר להגדיר בין 90 יום ל-7 שנים); גרסאות ישנות נשארות כדי לפענח עטיפות ישנות, ועטיפות חדשות משתמשות בגרסה החדשה. הנתונים לא מוצפנים מחדש — עוטפים מחדש DEKs רק אם צריך להוציא גרסה ישנה משימוש.</li>
 <li><strong>היררכיית מפתחות</strong>: root (HSM) → KEK לכל סביבה/tenant → DEK לכל אובייקט/אצוות שורות. KEK פר-tenant נותן crypto-shredding: מוחקים את ה-KEK של ה-tenant וכל הנתונים שלו בלתי קריאים, כולל גיבויים.</li>
-<li><strong>HSM</strong>: חומרה עמידה לחבלה שבה מפתחות נוצרים ומשמשים אבל אי אפשר לייצא אותם (FIPS 140-3 Level 3). Cloud KMS מגובה HSM; CloudHSM / Azure Dedicated HSM כשצריך חומרה single-tenant או טקס מפתחות משלכם.</li>
+<li><strong>HSM</strong>: חומרה עמידה לחבלה שבה מפתחות נוצרים ומשמשים אבל אי אפשר לייצא אותם (FIPS 140-3 Level 3). Cloud KMS מגובה HSM; CloudHSM / Azure Dedicated HSM כשצריך חומרה single-tenant או טקס מפתחות משלך.</li>
 <li><strong>Caching</strong>: משתמשים ב-DEK cache (ה-caching CMM של AWS Encryption SDK) עם מגבלות (למשל מקסימום 5 דקות / 10k הודעות) — אחרת ה-quotas של KMS (אלפי בקשות לשנייה ל-region) וה-latency (~5-10 ms) נושכים.</li>
 </ul>`
       }
@@ -168,7 +168,7 @@ spec:
   issuerRef: { name: letsencrypt-prod, kind: ClusterIssuer }</pre>
 <p><strong>mTLS</strong>: both sides present certificates, so service B knows <em>which workload</em> is calling. At scale you run an internal CA with very short certs (1–24 h). <strong>SPIFFE</strong> standardizes the identity (<code>spiffe://prod.acme.io/ns/payments/sa/api</code>) and <strong>SPIRE</strong> (or Istio/Linkerd's CA) attests the workload (k8s service account, AWS instance identity) and issues/rotates SVIDs automatically.</p>
 <blockquote>💡 Real world: Expired certificates still cause big outages (Microsoft Teams 2020, Spotify 2020, many Let's Encrypt root-transition breaks in 2021). Monitor <code>notAfter</code> for every endpoint (blackbox exporter <code>probe_ssl_earliest_cert_expiry</code>) and alert at 14 days, not 1.</blockquote>`,
-        he: `<p><strong>תעודה</strong> קושרת public key לשם, חתומה על ידי מנפיק. דפדפנים סומכים על ~150 <strong>root CAs</strong> (שמוחזקים offline); ה-roots חותמים על <strong>intermediates</strong>; ה-intermediates חותמים על ה-<strong>leaf</strong> שלכם. השרת חייב לשלוח leaf + intermediates (השרשרת) — intermediate חסר הוא הבאג הקלאסי של "עובד ב-Chrome, נכשל ב-curl/Java".</p>
+        he: `<p><strong>תעודה</strong> קושרת public key לשם, חתומה על ידי מנפיק. דפדפנים סומכים על ~150 <strong>root CAs</strong> (שמוחזקים offline); ה-roots חותמים על <strong>intermediates</strong>; ה-intermediates חותמים על ה-<strong>leaf</strong> שלך. השרת חייב לשלוח leaf + intermediates (השרשרת) — intermediate חסר הוא הבאג הקלאסי של "עובד ב-Chrome, נכשל ב-curl/Java".</p>
 <pre>$ openssl s_client -connect example.com:443 \\
     -servername example.com -showcerts &lt;/dev/null
  0 s:CN=example.com            i:CN=R11 (Let's Encrypt)
@@ -192,7 +192,7 @@ spec:
       }
     },
     {
-      h: { en: "Signatures, and the 'don't roll your own' list", he: "חתימות, ורשימת ה-'אל תמציאו לבד'" },
+      h: { en: "Signatures, and the 'don't roll your own' list", he: "חתימות, ורשימת ה-'אל תמציא לבד'" },
       body: {
         en: `<p>Signatures prove <em>who</em> produced something and that it wasn't changed: JWTs (JWS), container images (<strong>cosign</strong>/Sigstore — keyless signing with an OIDC identity, logged in the Rekor transparency log), git commits, SBOMs and release artifacts.</p>
 <pre>cosign sign --yes ghcr.io/acme/api@sha256:4f1c...
@@ -252,7 +252,7 @@ cosign verify ghcr.io/acme/api@sha256:4f1c... \\
     { cmd: "echo | openssl s_client -connect example.com:443 2>/dev/null | openssl x509 -noout -dates -issuer -ext subjectAltName", what: { en: "Read expiry dates, issuer and SANs of a live certificate — the three things that break in outages.", he: "קוראים תאריכי תפוגה, מנפיק ו-SANs של תעודה חיה — שלושת הדברים שנשברים בתקלות." } },
     { cmd: "curl -sv https://www.cloudflare.com -o /dev/null 2>&1 | grep -iE 'SSL connection|ALPN|subject:|expire'", what: { en: "See the negotiated TLS version and cipher. Then check pq.cloudflareresearch.com in a browser to see if your client used X25519MLKEM768.", he: "רואים את גרסת ה-TLS וה-cipher שנבחרו. אחר כך בודקים ב-pq.cloudflareresearch.com בדפדפן אם הלקוח השתמש ב-X25519MLKEM768." } },
     { cmd: "python3 -c \"import os;from cryptography.hazmat.primitives.ciphers.aead import AESGCM as A;k=A.generate_key(256);n=os.urandom(12);c=A(k).encrypt(n,b'hi',b'ctx');print(A(k).decrypt(n,c,b'ctx'));A(k).decrypt(n,c,b'other')\"", what: { en: "AEAD in action: decrypting with the wrong associated data raises InvalidTag — integrity, not just secrecy.", he: "AEAD בפעולה: פענוח עם associated data שגוי זורק InvalidTag — שלמות, לא רק סודיות." } },
-    { cmd: "aws kms generate-data-key --key-id alias/app-data --key-spec AES_256 --encryption-context tenant=t-42 --query CiphertextBlob --output text | head -c 60", what: { en: "Get a wrapped data key from KMS (needs an AWS account and a key). Note the encryption context — it shows up in CloudTrail.", he: "מקבלים data key עטוף מ-KMS (צריך חשבון AWS ומפתח). שימו לב ל-encryption context — הוא מופיע ב-CloudTrail." } }
+    { cmd: "aws kms generate-data-key --key-id alias/app-data --key-spec AES_256 --encryption-context tenant=t-42 --query CiphertextBlob --output text | head -c 60", what: { en: "Get a wrapped data key from KMS (needs an AWS account and a key). Note the encryption context — it shows up in CloudTrail.", he: "מקבלים data key עטוף מ-KMS (צריך חשבון AWS ומפתח). שים לב ל-encryption context — הוא מופיע ב-CloudTrail." } }
   ],
   mnemonic: {
     en: "\"AEAD for data, ECDHE for sessions, KMS for keys, ACME for certs, cosign for artifacts — and nonce means NOT-ONCE-again.\"",
@@ -261,7 +261,7 @@ cosign verify ghcr.io/acme/api@sha256:4f1c... \\
   pitfalls: [
     { en: "Encrypting at the disk/TDE layer and calling the data 'encrypted'. Disk encryption only protects a stolen disk; anyone with DB credentials (or SQL injection) reads plaintext. Sensitive fields need application-level or field-level encryption with separate key access.", he: "להצפין בשכבת הדיסק/TDE ולקרוא לנתונים 'מוצפנים'. הצפנת דיסק מגנה רק על דיסק שנגנב; כל מי שיש לו credentials ל-DB (או SQL injection) קורא plaintext. שדות רגישים צריכים הצפנה ברמת האפליקציה/השדה עם גישה נפרדת למפתחות." },
     { en: "Serving only the leaf certificate. Browsers often fill in the missing intermediate from cache (AIA fetching), so it 'works' in Chrome, but Java, Go, curl and mobile apps fail with 'unable to get local issuer certificate'.", he: "להגיש רק את תעודת ה-leaf. דפדפנים משלימים לא פעם את ה-intermediate החסר מה-cache (AIA fetching), אז זה 'עובד' ב-Chrome, אבל Java, Go, curl ואפליקציות מובייל נכשלים עם 'unable to get local issuer certificate'." },
-    { en: "Rotating a KMS key and then deleting the old version 'to clean up'. Every object still wrapped with it becomes unrecoverable — including backups. Scheduled deletion has a 7–30 day waiting period for exactly this reason; alarm on ScheduleKeyDeletion.", he: "לעשות rotation למפתח KMS ואז למחוק את הגרסה הישנה 'בשביל הסדר'. כל אובייקט שעדיין עטוף בה הופך לבלתי ניתן לשחזור — כולל גיבויים. ל-scheduled deletion יש תקופת המתנה של 7–30 יום בדיוק בגלל זה; שימו alarm על ScheduleKeyDeletion." },
+    { en: "Rotating a KMS key and then deleting the old version 'to clean up'. Every object still wrapped with it becomes unrecoverable — including backups. Scheduled deletion has a 7–30 day waiting period for exactly this reason; alarm on ScheduleKeyDeletion.", he: "לעשות rotation למפתח KMS ואז למחוק את הגרסה הישנה 'בשביל הסדר'. כל אובייקט שעדיין עטוף בה הופך לבלתי ניתן לשחזור — כולל גיבויים. ל-scheduled deletion יש תקופת המתנה של 7–30 יום בדיוק בגלל זה; שים alarm על ScheduleKeyDeletion." },
     { en: "Pinning a leaf certificate or public key in a mobile app. When the cert rotates (now every 47–90 days) old app versions break until users update. Pin the CA/intermediate set, or don't pin at all and rely on CT monitoring.", he: "לעשות pinning לתעודת leaf או ל-public key באפליקציית מובייל. כשהתעודה מתחלפת (היום כל 47–90 יום) גרסאות ישנות של האפליקציה נשברות עד שהמשתמשים מעדכנים. נועלים על סט ה-CA/intermediates, או לא עושים pinning בכלל ומסתמכים על ניטור CT." }
   ],
   interview: [
@@ -427,7 +427,7 @@ aws ec2 modify-instance-metadata-options \\
 <blockquote>💡 Real world: In the 2019 Capital One breach, an SSRF in a misconfigured WAF reached the IMDSv1 endpoint, stole the instance role's credentials, and listed and synced 700+ S3 buckets — over the open internet. IMDSv2, a tight role and an S3 endpoint policy each would have broken the chain.</blockquote>`,
         he: `<p>רוב הצוותים מסננים inbound ומשאירים outbound פתוח לגמרי. אבל תוקפים צריכים egress: להוריד כלים, להתקשר הביתה (C2) ולהוציא מידע. שכבות שעוזרות:</p>
 <ul>
-<li><strong>Private endpoints</strong> (AWS PrivateLink / VPC endpoints, Azure Private Link, GCP PSC): מגיעים ל-S3, KMS, ECR וספקי SaaS בלי אינטרנט. מוסיפים <strong>endpoint policy</strong> כך שה-endpoint של S3 מגיע רק ל-buckets <em>שלכם</em> — אחרת credentials גנובים יכולים להעתיק נתונים ל-bucket של התוקף דרך ה-endpoint שלכם.</li>
+<li><strong>Private endpoints</strong> (AWS PrivateLink / VPC endpoints, Azure Private Link, GCP PSC): מגיעים ל-S3, KMS, ECR וספקי SaaS בלי אינטרנט. מוסיפים <strong>endpoint policy</strong> כך שה-endpoint של S3 מגיע רק ל-buckets <em>שלך</em> — אחרת credentials גנובים יכולים להעתיק נתונים ל-bucket של התוקף דרך ה-endpoint שלך.</li>
 <li><strong>Allowlist של FQDNs</strong>: מנתבים את תעבורת ה-NAT דרך AWS Network Firewall / Azure Firewall / egress proxy של Squid או Envoy שמרשה רק <code>api.stripe.com</code>, <code>*.github.com</code> וכו'. רושמים ללוג כל domain שנחסם — זה סיגנל זיהוי מצוין.</li>
 <li><strong>Cloud metadata</strong> (169.254.169.254): אוכפים IMDSv2 (session token דרך PUT) עם hop limit 1 כדי שקונטיינר או SSRF לא יוכלו למשוך את ה-credentials של ה-node.</li>
 </ul>
@@ -602,7 +602,7 @@ spec:
   pitfalls: [
     { en: "Default-deny ingress but no egress policy. The compromised pod can't be reached, but it can reach everything else — including the DB and the internet. Always set both policyTypes.", he: "default-deny ל-ingress בלי מדיניות egress. אי אפשר להגיע ל-pod הפרוץ, אבל הוא יכול להגיע לכל השאר — כולל ה-DB והאינטרנט. תמיד מגדירים את שני ה-policyTypes." },
     { en: "Forgetting DNS when adding default-deny egress — every service breaks with confusing timeouts. Add the allow-dns policy in the same change.", he: "לשכוח DNS כשמוסיפים default-deny ל-egress — כל השירותים נשברים עם timeouts מבלבלים. מוסיפים את מדיניות allow-dns באותו שינוי." },
-    { en: "Peering everything with everything (or one Transit Gateway route table for all VPCs) 'for convenience'. You rebuilt the flat network one level up. Use separate TGW route tables per environment and explicit allowed paths.", he: "לעשות peering לכולם עם כולם (או route table אחת ב-Transit Gateway לכל ה-VPCs) 'בשביל הנוחות'. בניתם מחדש את הרשת השטוחה רמה אחת למעלה. משתמשים ב-route tables נפרדות ב-TGW לכל סביבה ובמסלולים מותרים מפורשים." },
+    { en: "Peering everything with everything (or one Transit Gateway route table for all VPCs) 'for convenience'. You rebuilt the flat network one level up. Use separate TGW route tables per environment and explicit allowed paths.", he: "לעשות peering לכולם עם כולם (או route table אחת ב-Transit Gateway לכל ה-VPCs) 'בשביל הנוחות'. בנית מחדש את הרשת השטוחה רמה אחת למעלה. משתמשים ב-route tables נפרדות ב-TGW לכל סביבה ובמסלולים מותרים מפורשים." },
     { en: "Treating mesh mTLS as authorization. PeerAuthentication STRICT only proves who is calling; without AuthorizationPolicy every authenticated workload can still call every service.", he: "להתייחס ל-mTLS של ה-mesh כאל הרשאה. PeerAuthentication במצב STRICT רק מוכיח מי קורא; בלי AuthorizationPolicy כל workload מאומת עדיין יכול לקרוא לכל שירות." }
   ],
   interview: [
@@ -631,7 +631,7 @@ spec:
     { q: { en: "Why add an endpoint policy to an S3 VPC endpoint?", he: "למה להוסיף endpoint policy ל-VPC endpoint של S3?" },
       options: [
         { en: "To make S3 faster", he: "כדי ש-S3 יהיה מהיר יותר" },
-        { en: "Without it, stolen credentials can copy data to any bucket — including the attacker's — through your private path", he: "בלעדיה, credentials גנובים יכולים להעתיק נתונים לכל bucket — כולל של התוקף — דרך הנתיב הפרטי שלכם" },
+        { en: "Without it, stolen credentials can copy data to any bucket — including the attacker's — through your private path", he: "בלעדיה, credentials גנובים יכולים להעתיק נתונים לכל bucket — כולל של התוקף — דרך הנתיב הפרטי שלך" },
         { en: "It is required for HTTPS", he: "זה נדרש ל-HTTPS" },
         { en: "To enable versioning", he: "כדי להפעיל versioning" }
       ], answer: 1,
@@ -972,7 +972,7 @@ def test_list_never_mixes(tenant_a, tenant_b):
       explain: { en: "From tenant A's point of view the object doesn't exist; 403 would confirm it does.", he: "מנקודת המבט של tenant A האובייקט לא קיים; 403 היה מאשר שהוא קיים." } },
     { q: { en: "Which workload most needs a sandboxed runtime (gVisor/Firecracker)?", he: "לאיזה workload הכי צריך runtime מבודד (gVisor/Firecracker)?" },
       options: [
-        { en: "Your own internal billing service", he: "שירות ה-billing הפנימי שלכם" },
+        { en: "Your own internal billing service", he: "שירות ה-billing הפנימי שלך" },
         { en: "Customer-submitted code in a shared CI runner fleet", he: "קוד שלקוחות שולחים ב-fleet משותף של CI runners" },
         { en: "A static website", he: "אתר סטטי" },
         { en: "A Redis cache", he: "cache של Redis" }

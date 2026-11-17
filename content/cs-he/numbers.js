@@ -150,7 +150,7 @@ flip  11111010
           explain: `−128 + 64 + 32 + 16 + 8 + 4 + 2 = −2. או: הופכים ← 00000001, ‏+1 ← 00000010 = 2, אז זה היה −2.` },
         { type: 'learn', title: 'גלישה (Overflow): אפקט מד-הקילומטרים', html: `
 <p>מוסיפים 1 ל-01111111 (127) ומקבלים 10000000, שנקרא כ-<b>−128</b>. המספר מתגלגל מסביב כמו מד קילומטרים באוטו.</p>
-<div class="dev">את זה אתה כבר מכיר: primary key מסוג <code>SERIAL</code> ב-Postgres (int של 32 ביט) מגיע בסוף ל-2,147,483,647 וה-inserts נכשלים עם "integer out of range". ואז הצוות עושה מיגרציה כואבת ל-<code>BIGINT</code>. תתחילו מראש עם <code>BIGSERIAL</code>/עמודות identity מסוג <code>bigint</code>.</div>
+<div class="dev">את זה אתה כבר מכיר: primary key מסוג <code>SERIAL</code> ב-Postgres (int של 32 ביט) מגיע בסוף ל-2,147,483,647 וה-inserts נכשלים עם "integer out of range". ואז הצוות עושה מיגרציה כואבת ל-<code>BIGINT</code>. תתחיל מראש עם <code>BIGSERIAL</code>/עמודות identity מסוג <code>bigint</code>.</div>
 <div class="fun">🤓 עובדה משעשעת: ב-2014 "Gangnam Style" התקרב ל-2³¹ − 1 צפיות ו-YouTube העבירו את המונה ל-64 ביט. וזמן Unix של 32 ביט גולש ב-19 בינואר 2038.</div>` },
         { type: 'tf', q: 'בחשבון חתום של 8 ביטים, 127 + 1 מתגלגל ל-−128.', answer: true,
           explain: `01111111 + 1 = 10000000, והביט העליון שווה −128.` },

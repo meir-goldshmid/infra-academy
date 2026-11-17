@@ -20,7 +20,7 @@ INFRA.lessons.push({
   },
   analogy: {
     en: "Think of an airport. Pre-commit hooks are you checking your own bag at home. PR checks are the security scanner — every bag, every time, automated. Code review is the passport officer: a human who can ask 'why?'. The signed image is the boarding pass with a hologram: the gate (admission controller) refuses anyone whose pass wasn't issued by the airline. The canary is the first few passengers boarding while ground crew watch for trouble — and the rollback is the gate agent who can stop boarding instantly.",
-    he: "תחשבו על שדה תעופה. pre-commit hooks זה אתם בודקים את המזוודה בבית. בדיקות ה-PR הן מכונת השיקוף — כל תיק, כל פעם, אוטומטית. Code review הוא פקיד הדרכונים: בן אדם שיכול לשאול 'למה?'. ה-image החתום הוא כרטיס העלייה עם הולוגרמה: השער (admission controller) לא מכניס מי שהכרטיס שלו לא הונפק ע\"י חברת התעופה. ה-canary הם הנוסעים הראשונים שעולים בזמן שצוות הקרקע מסתכל אם יש בעיה — וה-rollback הוא נציג השער שיכול לעצור את העלייה מיד."
+    he: "תחשוב על שדה תעופה. pre-commit hooks זה אתה בודק את המזוודה בבית. בדיקות ה-PR הן מכונת השיקוף — כל תיק, כל פעם, אוטומטית. Code review הוא פקיד הדרכונים: בן אדם שיכול לשאול 'למה?'. ה-image החתום הוא כרטיס העלייה עם הולוגרמה: השער (admission controller) לא מכניס מי שהכרטיס שלו לא הונפק ע\"י חברת התעופה. ה-canary הם הנוסעים הראשונים שעולים בזמן שצוות הקרקע מסתכל אם יש בעיה — וה-rollback הוא נציג השער שיכול לעצור את העלייה מיד."
   },
   sections: [
     {
@@ -226,7 +226,7 @@ mypy.............................Passed</pre>` },
     he: "Check, Review, Build-once, Sign, Pull, Admit, Canary, Revert — 'רובוטים זהירים בונים צינורות בטוחים שיודעים לחזור אחורה'."
   },
   pitfalls: [
-    { en: "Rebuilding the image per environment — what you tested is not what you shipped. Build once, promote the digest.", he: "לבנות image מחדש לכל סביבה — מה שבדקתם הוא לא מה ששלחתם. בונים פעם אחת ומקדמים את ה-digest." },
+    { en: "Rebuilding the image per environment — what you tested is not what you shipped. Build once, promote the digest.", he: "לבנות image מחדש לכל סביבה — מה שבדקת הוא לא מה ששלחת. בונים פעם אחת ומקדמים את ה-digest." },
     { en: "Giving CI cluster-admin credentials 'to deploy' — a compromised CI then owns prod. With GitOps the cluster pulls and CI only writes to Git.", he: "לתת ל-CI credentials של cluster-admin 'בשביל deploy' — CI פרוץ שולט אז בפרודקשן. ב-GitOps הקלאסטר מושך וה-CI רק כותב ל-Git." },
     { en: "Canary analysis with no minimum sample size promotes on silence. Require N requests and treat 'no data' as failure.", he: "canary analysis בלי גודל מדגם מינימלי מקדם על שקט. דורשים N בקשות ומתייחסים ל'אין נתונים' ככישלון." },
     { en: "Non-backward-compatible DB migration in the same release as the code — rollback then breaks. Expand, deploy, contract in separate releases.", he: "מיגרציית DB לא תואמת לאחור באותו release עם הקוד — ואז rollback שובר. expand, deploy, contract ב-releases נפרדים." }
@@ -367,7 +367,7 @@ terminationGracePeriodSeconds: 45        # preStop + drain + margin</pre>
       { from: 6, to: 6, ms: 8000,
         label: { en: "Pull the image (by digest)", he: "משיכת ה-image (לפי digest)" },
         detail: { en: "<p>Layers already on the node are reused. <code>imagePullPolicy: IfNotPresent</code> with a digest is the fastest and safest. Private registries need <code>imagePullSecrets</code> or node IAM.</p>", he: "<p>שכבות שכבר נמצאות על ה-node נעשה בהן שימוש חוזר. <code>imagePullPolicy: IfNotPresent</code> עם digest זה הכי מהיר והכי בטוח. registries פרטיים צריכים <code>imagePullSecrets</code> או IAM של ה-node.</p>" },
-        fail: { en: "<code>ErrImagePull</code> / <code>ImagePullBackOff</code>: wrong tag, missing credentials, Docker Hub rate limit (100 pulls/6 h anonymous). Mirror images to your own registry.", he: "<code>ErrImagePull</code> / <code>ImagePullBackOff</code>: tag שגוי, חסרים credentials, rate limit של Docker Hub (100 משיכות ל-6 שעות באנונימי). עושים mirror ל-images ל-registry שלכם." } },
+        fail: { en: "<code>ErrImagePull</code> / <code>ImagePullBackOff</code>: wrong tag, missing credentials, Docker Hub rate limit (100 pulls/6 h anonymous). Mirror images to your own registry.", he: "<code>ErrImagePull</code> / <code>ImagePullBackOff</code>: tag שגוי, חסרים credentials, rate limit של Docker Hub (100 משיכות ל-6 שעות באנונימי). עושים mirror ל-images ל-registry שלך." } },
       { from: 6, to: 5, ms: 3000,
         label: { en: "Init containers, then app containers start", he: "Init containers, ואז קונטיינרי האפליקציה עולים" },
         detail: { en: "<p>Init containers run sequentially to completion (wait for DB, run migrations — careful). Native sidecars (<code>restartPolicy: Always</code> init containers, K8s 1.29+) start before the app and stop after it.</p>", he: "<p>Init containers רצים לפי הסדר עד שהם מסתיימים (מחכים ל-DB, מריצים מיגרציות — בזהירות). native sidecars (init containers עם <code>restartPolicy: Always</code>, K8s 1.29+) עולים לפני האפליקציה ויורדים אחריה.</p>" },

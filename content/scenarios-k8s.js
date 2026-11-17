@@ -283,7 +283,7 @@ REVISION  UPDATED                   STATUS      CHART       APP VERSION  DESCRIP
       },
       s4: {
         text: t("Found it. Chart 3.0.0 moved resources under <code>api.resources</code>; your values file still sets the old top-level <code>resources</code> key, which the new templates silently ignore.",
-                "מצאת. Chart 3.0.0 העביר את ה-resources אל <code>api.resources</code>; קובץ ה-values שלכם עדיין מגדיר את המפתח הישן <code>resources</code> ברמה העליונה, והתבניות החדשות מתעלמות ממנו בשקט."),
+                "מצאת. Chart 3.0.0 העביר את ה-resources אל <code>api.resources</code>; קובץ ה-values שלך עדיין מגדיר את המפתח הישן <code>resources</code> ברמה העליונה, והתבניות החדשות מתעלמות ממנו בשקט."),
         data: `$ helm get values api -n api --revision 42
 image:
   tag: 2.18.0
@@ -670,7 +670,7 @@ PreSync  Job   payments-migrate  Succeeded  Reached expected number of succeeded
             "ה-self-heal עשה את העבודה שלו: אכף את Git. הפער היה בתהליך – שינוי החירום אף פעם לא הגיע ל-Git. הופכים את הדרך הנכונה לדרך הקלה גם ב-3 בלילה."),
           c("Turn selfHeal off permanently so on-call can kubectl edit at night", "לכבות selfHeal לתמיד כדי שה-on-call יוכל לעשות kubectl edit בלילה", "win", -10,
             "You'd accumulate silent drift until Git no longer describes production — and lose the ability to rebuild the cluster from Git.",
-            "תצברו drift שקט עד ש-Git כבר לא יתאר את הפרודקשן – ותאבדו את היכולת לבנות את ה-cluster מחדש מ-Git.")
+            "תצבור drift שקט עד ש-Git כבר לא יתאר את הפרודקשן – ותאבד את היכולת לבנות את ה-cluster מחדש מ-Git.")
         ]
       },
       win: {

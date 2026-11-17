@@ -251,9 +251,9 @@ Next drill: 2027-Q1 (re-verify F1-F3, add fail-back under load)</pre>
     { en: "Only drilling in quiet hours with no load: capacity, cache warmup and connection limits only show up under real traffic.", he: "לתרגל רק בשעות שקטות בלי עומס: capacity, חימום cache ומגבלות connections מתגלים רק תחת traffic אמיתי." }
   ],
   interview: [
-    { q: { en: "How would you prove to an auditor that your RTO of 1 hour is real?", he: "איך תוכיח לאודיטור שה-RTO של שעה שלכם אמיתי?" },
+    { q: { en: "How would you prove to an auditor that your RTO of 1 hour is real?", he: "איך תוכיח לאודיטור שה-RTO של שעה שלך אמיתי?" },
       a: { en: "Show drill reports with measured, timestamped phases from declaration to SLO-good traffic in the DR site, run by an on-call engineer using only the runbook, repeated on a schedule, with findings tracked to closure. A design doc saying 'warm standby' proves nothing.", he: "להראות דו\"חות drill עם שלבים מדודים וחתומי זמן, מההכרזה ועד traffic תקין לפי SLO באתר ה-DR, שהריץ מהנדס on-call רק לפי ה-runbook, שחוזרים לפי לוח זמנים, עם ממצאים שנסגרו. design doc שכתוב בו 'warm standby' לא מוכיח כלום." } },
-    { q: { en: "Your DNS TTL is 60 s, but after a failover 20% of traffic still hits the old region for 30 minutes. Why?", he: "ה-DNS TTL שלכם הוא 60 שניות, אבל אחרי failover עדיין 20% מה-traffic מגיע ל-region הישן במשך 30 דקות. למה?" },
+    { q: { en: "Your DNS TTL is 60 s, but after a failover 20% of traffic still hits the old region for 30 minutes. Why?", he: "ה-DNS TTL שלך הוא 60 שניות, אבל אחרי failover עדיין 20% מה-traffic מגיע ל-region הישן במשך 30 דקות. למה?" },
       a: { en: "Clients that ignore or extend TTL (JVM DNS cache, some resolvers), long-lived keep-alive / HTTP/2 / gRPC connections that never re-resolve, connection pools, and hardcoded IPs or regional endpoints in partner integrations. Fixes: max connection age on servers, client-side re-resolution, and actively draining the old region.", he: "לקוחות שמתעלמים מה-TTL או מאריכים אותו (DNS cache של JVM, חלק מה-resolvers), connections ארוכים של keep-alive, HTTP/2 או gRPC שלא עושים resolve מחדש, connection pools, ו-IP-ים או endpoints אזוריים קשיחים אצל שותפים. תיקונים: max connection age בשרתים, resolve מחדש בצד הלקוח, ו-drain אקטיבי של ה-region הישן." } }
   ],
   quiz: [

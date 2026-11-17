@@ -54,7 +54,7 @@ kubectl get pod web-7d9f8b6c4-2xkqp -n shop -o yaml   # the truth: spec + status
 kubectl events -n shop --for pod/web-7d9f8b6c4-2xkqp   # (or) get events --sort-by=.lastTimestamp
 kubectl logs web-7d9f8b6c4-2xkqp -n shop --previous   # logs of the container that DIED
 kubectl get pod web-7d9f8b6c4-2xkqp -n shop -o yaml   # the truth: spec + status + conditions</pre>
-<p>לכל ה-namespace: <code>kubectl get events -n shop --sort-by=.lastTimestamp --field-selector type=Warning</code>. Events חיים רק <strong>בערך שעה</strong> כברירת מחדל (<code>--event-ttl=1h</code>), אז תתפסו אותם מוקדם או תשלחו אותם החוצה עם events exporter.</p>
+<p>לכל ה-namespace: <code>kubectl get events -n shop --sort-by=.lastTimestamp --field-selector type=Warning</code>. Events חיים רק <strong>בערך שעה</strong> כברירת מחדל (<code>--event-ttl=1h</code>), אז תתפוס אותם מוקדם או תשלח אותם החוצה עם events exporter.</p>
 <blockquote>⚠️ טיפ לפרודקשן: לפני שמוחקים או עושים restart למשהו – שומרים ראיות: <code>kubectl describe</code> ו-<code>logs --previous</code> לתוך ערוץ האינסידנט. Restart מוחק את ה-state של הקונטיינר הקודם – בדיוק פיסת המידע שמסבירה למה הוא קרס.</blockquote>`
       }
     },
@@ -217,7 +217,7 @@ kubectl debug node/ip-10-0-7-12.eu-west-1.compute.internal -it --image=ubuntu --
 <li><strong>auth can-i</strong> – <code>kubectl auth can-i list secrets -n shop --as=system:serviceaccount:shop:checkout</code> סוגר כל ויכוח על "Forbidden".</li>
 <li><strong>stern</strong> – tail ללוגים של כל ה-pods שמתאימים, בצבעים: <code>stern -n shop 'checkout-.*' --since 10m</code>. <strong>k9s</strong> – TUI שמאפשר לקפוץ בין pods, לוגים, events ו-describe בשניות.</li>
 </ul>
-<blockquote>💡 מהשטח: אי אפשר להסיר ephemeral container מ-pod, והוא נשאר עד שה-pod מת – על workload רגיש עדיף <code>--copy-to</code>. בהרבה clusters ההרשאה ל-<code>pods/ephemeralcontainers</code> מוגבלת ב-RBAC, אז תבקשו אותה <em>לפני</em> האינסידנט.</blockquote>`
+<blockquote>💡 מהשטח: אי אפשר להסיר ephemeral container מ-pod, והוא נשאר עד שה-pod מת – על workload רגיש עדיף <code>--copy-to</code>. בהרבה clusters ההרשאה ל-<code>pods/ephemeralcontainers</code> מוגבלת ב-RBAC, אז תבקש אותה <em>לפני</em> האינסידנט.</blockquote>`
       }
     },
     {
@@ -1471,7 +1471,7 @@ spec:
     - namespaceSelector: { matchLabels: { kubernetes.io/metadata.name: ingress-nginx } }
     ports: [{ port: 8080 }]</pre>
 <p>תחקור: הסימפטום הוא <em>timeout</em> (packets נזרקים), לא "connection refused". בודקים מ-pod של netshoot עם אותם labels; עם Cilium, <code>hubble observe --verdict DROPPED -n shop</code> מראה בדיוק איזה policy זרק מה.</p>
-<blockquote>⚠️ טיפ לפרודקשן: שימו לב להבדל בין פריט <code>- to:</code> אחד עם <code>namespaceSelector</code> וגם <code>podSelector</code> (AND) לבין שני פריטים נפרדים (OR). מקף אחד מיותר הופך את "ה-pods של kube-dns ב-kube-system" ל"כל מה שב-kube-system או כל pod עם label של kube-dns".</blockquote>`
+<blockquote>⚠️ טיפ לפרודקשן: שים לב להבדל בין פריט <code>- to:</code> אחד עם <code>namespaceSelector</code> וגם <code>podSelector</code> (AND) לבין שני פריטים נפרדים (OR). מקף אחד מיותר הופך את "ה-pods של kube-dns ב-kube-system" ל"כל מה שב-kube-system או כל pod עם label של kube-dns".</blockquote>`
       }
     },
     {
@@ -1587,7 +1587,7 @@ $ kubectl logs job/kube-bench | grep -E '^\\[(FAIL|WARN)\\]' | head
     { cmd: "kubectl get policyreports -A -o custom-columns=NS:.metadata.namespace,PASS:.summary.pass,FAIL:.summary.fail,WARN:.summary.warn",
       what: { en: "Kyverno background scan results: how many existing resources fail each namespace's policies.", he: "תוצאות סריקת הרקע של Kyverno: כמה משאבים קיימים נכשלים ב-policies בכל namespace." } },
     { cmd: "cosign verify ghcr.io/acme/shop:1.4.2 --certificate-identity-regexp '^https://github.com/acme/' --certificate-oidc-issuer https://token.actions.githubusercontent.com",
-      what: { en: "Verify the image was signed by your CI identity (keyless).", he: "מאמתים שה-image נחתם ע״י ה-identity של ה-CI שלכם (keyless)." } },
+      what: { en: "Verify the image was signed by your CI identity (keyless).", he: "מאמתים שה-image נחתם ע״י ה-identity של ה-CI שלך (keyless)." } },
     { cmd: "kubectl run np-test -n shop --rm -it --restart=Never --labels=app=web --image=nicolaka/netshoot -- curl -m 3 -sv http://orders.orders.svc:8080/healthz",
       what: { en: "Test a NetworkPolicy from a pod with the same labels as the real workload; a 3s timeout = dropped.", he: "בודקים NetworkPolicy מ-pod עם אותם labels כמו ה-workload האמיתי; timeout של 3 שניות = נזרק." } },
     { cmd: "kubectl get externalsecret -A && kubectl describe externalsecret db-creds -n shop | tail -5",
@@ -2232,7 +2232,7 @@ etcdutl snapshot restore /backup/etcd-2026-11-12.db --data-dir /var/lib/etcd-res
 <li><strong>Blue/green clusters</strong> – לקפיצות מסוכנות (החלפת CNI, שדרוג של כמה גרסאות) בונים cluster חדש, פורסים הכל דרך GitOps, מעבירים תעבורה עם משקלים ב-DNS, ומשאירים את הישן ל-rollback.</li>
 </ul>
 <p>מה שהופך את זה לאפשרי זה להתייחס ל-clusters כ-cattle: יצירת cluster ב-Terraform/Crossplane, כל ה-workloads מ-Git (<code>ApplicationSet</code> של Argo CD עם cluster generator פורס את אותן אפליקציות לכל ה-clusters), observability משותף (remote-write ל-Mimir/Thanos אחד), ו-identity/secrets שלא תלויים ב-cluster (workload identity + secret manager חיצוני).</p>
-<blockquote>⚠️ טיפ לפרודקשן: שימו לב לדברים שבסתר ייחודיים לכל cluster – owner IDs של external-dns, חשבונות ACME ו-rate limits של cert-manager, שמות consumer groups של Kafka, cron jobs שחייבים לרוץ בדיוק פעם אחת (שני clusters = מיילים כפולים של חיוב). רושמים אותם לפני ה-cut-over הראשון ל-active/active.</blockquote>`
+<blockquote>⚠️ טיפ לפרודקשן: שים לב לדברים שבסתר ייחודיים לכל cluster – owner IDs של external-dns, חשבונות ACME ו-rate limits של cert-manager, שמות consumer groups של Kafka, cron jobs שחייבים לרוץ בדיוק פעם אחת (שני clusters = מיילים כפולים של חיוב). רושמים אותם לפני ה-cut-over הראשון ל-active/active.</blockquote>`
       }
     }
   ],

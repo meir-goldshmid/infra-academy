@@ -1143,7 +1143,7 @@ $ ss -tanp state time-wait | wc -l
         { label: { en: "Something opens a new TCP connection per request to fraud-check. Check the client code/config of the Pods on this node", he: "משהו פותח חיבור TCP חדש לכל request ל-fraud-check. לבדוק את קוד/קונפיג ה-client של ה-Pods על ה-node" }, next: "s4", score: 15,
           feedback: { en: "Exactly. ~105k TIME_WAIT entries to one ClusterIP = connection churn, not a leak and not an attack.", he: "בדיוק. כ-105 אלף רשומות TIME_WAIT ל-ClusterIP אחד = churn של חיבורים, לא דליפה ולא מתקפה." } },
         { label: { en: "It's a DDoS - block 10.100.41.7 with a NetworkPolicy", he: "זה DDoS - לחסום את 10.100.41.7 עם NetworkPolicy" }, next: "lose", score: -15,
-          feedback: { en: "10.100.41.7 is your own fraud-check Service. Blocking it means every checkout fails the fraud check.", he: "10.100.41.7 זה ה-Service של fraud-check שלכם. לחסום אותו אומר שכל checkout ייכשל בבדיקת ה-fraud." } }
+          feedback: { en: "10.100.41.7 is your own fraud-check Service. Blocking it means every checkout fails the fraud check.", he: "10.100.41.7 זה ה-Service של fraud-check שלך. לחסום אותו אומר שכל checkout ייכשל בבדיקת ה-fraud." } }
       ]
     },
     s4: {

@@ -69,7 +69,7 @@ $ nproc
 <blockquote>💡 Real world: "We added 4x CPUs and p99 didn't move" is the classic sign you were IO-bound all along. Profile before you scale.</blockquote>`,
         he: `<p>עומס <strong>CPU-bound</strong> מוגבל ע"י חישוב: שינוי גודל תמונות, פרסור JSON ענק, דחיסה, הצפנה, ML inference. תן לו עוד ליבות או ליבות מהירות יותר — והוא ירוץ מהר יותר. עומס <strong>IO-bound</strong> מבלה את רוב הזמן בהמתנה — לדאטאבייס, לקריאת HTTP, לדיסק. handler טיפוסי של API זה 5 ms של CPU ו-95 ms של המתנה ל-Postgres. להכפיל ליבות לא יעשה לו כלום; לתקן את ה-query האיטי יעשה הכל.</p>
 <p>איך יודעים: תחת עומס, ה-CPU% של התהליך קרוב ל-100%? CPU-bound. ה-CPU נמוך אבל ה-latency גבוה, ויש המון threads חסומים? IO-bound. זה קובע את אסטרטגיית ה-scaling, את גודל ה-thread pool, והאם async (Node.js, goroutines ב-Go, asyncio בפייתון) יעזור — async מצוין ל-IO-bound ולא עושה כלום ל-CPU-bound (לולאה כבדה חוסמת את ה-event loop של Node לכולם).</p>
-<blockquote>💡 מהשטח: "הוספנו פי 4 CPU וה-p99 לא זז" זה הסימן הקלאסי שהייתם IO-bound כל הזמן. תעשה profiling לפני שאתה עושה scaling.</blockquote>`
+<blockquote>💡 מהשטח: "הוספנו פי 4 CPU וה-p99 לא זז" זה הסימן הקלאסי שהיית IO-bound כל הזמן. תעשה profiling לפני שאתה עושה scaling.</blockquote>`
       }
     },
     {

@@ -568,7 +568,7 @@ spec:
           containers:
           - name: report
             image: myorg/report:1.3</pre>
-<blockquote>⚠️ טיפ לפרודקשן: בלי <code>timeZone</code>, ה-schedule לפי ה-timezone של ה-controller (UTC ב-clusters מנוהלים). ותעשו jobs שהם idempotent – CronJob יכול לפעמים לרוץ פעמיים או לדלג על ריצה.</blockquote>`
+<blockquote>⚠️ טיפ לפרודקשן: בלי <code>timeZone</code>, ה-schedule לפי ה-timezone של ה-controller (UTC ב-clusters מנוהלים). ותעשה jobs שהם idempotent – CronJob יכול לפעמים לרוץ פעמיים או לדלג על ריצה.</blockquote>`
       }
     }
   ],
@@ -938,8 +938,8 @@ data:
     cache:
       ttlSeconds: 300
     upstream: http://orders.billing</pre>
-<p>הערכים תמיד strings (שימו מרכאות על <code>"true"</code> ו-<code>"8080"</code>). ConfigMap מוגבל ל-<strong>1 MiB</strong> כי הוא יושב ב-etcd – הוא לקונפיגורציה, לא למודל ML של 40 MB. יוצרים מהר עם <code>kubectl create configmap api-config --from-file=app.yaml --from-literal=LOG_LEVEL=info</code>.</p>
-<blockquote>💡 מהשטח: שימו <code>immutable: true</code> על ConfigMaps/Secrets שלא משתנים. ה-kubelet מפסיק לעשות להם watch, וזה מוריד משמעותית עומס מה-API server ב-clusters עם אלפי Pods – ואף אחד לא "עורך מהר" config של פרודקשן בטעות.</blockquote>`
+<p>הערכים תמיד strings (שים מרכאות על <code>"true"</code> ו-<code>"8080"</code>). ConfigMap מוגבל ל-<strong>1 MiB</strong> כי הוא יושב ב-etcd – הוא לקונפיגורציה, לא למודל ML של 40 MB. יוצרים מהר עם <code>kubectl create configmap api-config --from-file=app.yaml --from-literal=LOG_LEVEL=info</code>.</p>
+<blockquote>💡 מהשטח: שים <code>immutable: true</code> על ConfigMaps/Secrets שלא משתנים. ה-kubelet מפסיק לעשות להם watch, וזה מוריד משמעותית עומס מה-API server ב-clusters עם אלפי Pods – ואף אחד לא "עורך מהר" config של פרודקשן בטעות.</blockquote>`
       }
     },
     {
@@ -1021,7 +1021,7 @@ data:
 # or use stringData: { password: supersecret } and let k8s encode it</pre>
 <p>כל אחד יכול להריץ <code>echo c3VwZXJzZWNyZXQ= | base64 -d</code>. Base64 קיים כדי שמידע בינארי (תעודות, keystores) ייכנס ל-JSON – זה <strong>קידוד</strong>, לא הגנה. מה שבאמת מגן על Secrets:</p>
 <ul>
-<li><strong>Encryption at rest</strong> ב-etcd (EncryptionConfiguration עם KMS provider; בעננים מנוהלים זו אופציה – תדליקו אותה).</li>
+<li><strong>Encryption at rest</strong> ב-etcd (EncryptionConfiguration עם KMS provider; בעננים מנוהלים זו אופציה – תדליק אותה).</li>
 <li><strong>RBAC</strong>: הרשאת <code>get</code>/<code>list</code> על secrets היא בפועל "לקרוא את כל הסיסמאות". וכל מי שיכול ליצור Pod ב-namespace יכול לעשות mount לכל Secret שם.</li>
 <li>ה-kubelet עושה mount ל-Secret volumes על <strong>tmpfs</strong> (RAM), אף פעם לא על הדיסק של ה-node.</li>
 </ul>
@@ -1182,7 +1182,7 @@ INFRA.lessons.push({
 <pre>rate(container_cpu_cfs_throttled_periods_total[5m])
   / rate(container_cpu_cfs_periods_total[5m])   # > 0.25 = trouble</pre>
 <blockquote>💡 מהשטח: הרבה צוותים (וגם המלצה של maintainers של Kubernetes) שמים <strong>CPU requests בלי CPU limits</strong> ל-services רגישים ל-latency: ה-requests מבטיחים חלק הוגן כשיש תחרות, ו-CPU פנוי זמין ל-burst. אבל memory limits משאירים – זיכרון לא דחיס.</blockquote>
-<p>שימו לב גם: runtimes כמו JVM, Go (<code>GOMAXPROCS</code>) וה-thread pool של Node עשויים לקבוע את הגודל שלהם לפי מספר ה-cores של ה-<em>node</em>, לא לפי ה-limit. אפליקציית Go שרואה 64 cores עם limit של core אחד היא מכונת throttling. משתמשים ב-<code>automaxprocs</code> או מגדירים במפורש.</p>`
+<p>שים לב גם: runtimes כמו JVM, Go (<code>GOMAXPROCS</code>) וה-thread pool של Node עשויים לקבוע את הגודל שלהם לפי מספר ה-cores של ה-<em>node</em>, לא לפי ה-limit. אפליקציית Go שרואה 64 cores עם limit של core אחד היא מכונת throttling. משתמשים ב-<code>automaxprocs</code> או מגדירים במפורש.</p>`
       }
     },
     {
@@ -1203,7 +1203,7 @@ INFRA.lessons.push({
       Exit Code:    137
     Restart Count:  6</pre>
 <p>מקרה נפרד: ל-<strong>node</strong> נגמר הזיכרון (כי Pods משתמשים ביותר ממה שביקשו). אז ה-kubelet עושה <strong>evict</strong> ל-Pods (status <code>Evicted</code>), ומתחיל באלה שהכי חורגים מה-requests שלהם – קודם BestEffort, אחר כך Burstable.</p>
-<blockquote>⚠️ טיפ לפרודקשן: ה-JVM התעלם מ-limits של קונטיינרים לפני Java 10 (backport ל-8u191). גם היום, תגדירו <code>-XX:MaxRAMPercentage=75</code> – ה-heap הוא לא הזיכרון היחיד (metaspace, threads, direct buffers, off-heap). אותו רעיון ב-Node: <code>--max-old-space-size</code> מתחת ל-limit.</blockquote>`
+<blockquote>⚠️ טיפ לפרודקשן: ה-JVM התעלם מ-limits של קונטיינרים לפני Java 10 (backport ל-8u191). גם היום, תגדיר <code>-XX:MaxRAMPercentage=75</code> – ה-heap הוא לא הזיכרון היחיד (metaspace, threads, direct buffers, off-heap). אותו רעיון ב-Node: <code>--max-old-space-size</code> מתחת ל-limit.</blockquote>`
       }
     },
     {
@@ -1340,7 +1340,7 @@ spec:
         { en: "CFS throttling from bursty multi-threaded work hitting the CPU limit within each 100ms period", he: "CFS throttling בגלל עבודה מרובת threads ב-bursts שפוגעת ב-CPU limit בתוך כל period של 100ms" }
       ],
       answer: 3,
-      explain: { en: "Averages hide bursts. Check container_cpu_cfs_throttled_periods_total; consider raising or removing the CPU limit and fixing GOMAXPROCS/thread counts.", he: "ממוצעים מסתירים bursts. תבדקו את container_cpu_cfs_throttled_periods_total; שקלו להעלות או להסיר את ה-CPU limit ולתקן GOMAXPROCS/מספר threads." }
+      explain: { en: "Averages hide bursts. Check container_cpu_cfs_throttled_periods_total; consider raising or removing the CPU limit and fixing GOMAXPROCS/thread counts.", he: "ממוצעים מסתירים bursts. תבדוק את container_cpu_cfs_throttled_periods_total; שקול להעלות או להסיר את ה-CPU limit ולתקן GOMAXPROCS/מספר threads." }
     }
   ],
   playground: "resources",
@@ -1504,7 +1504,7 @@ tolerations:
   labelSelector: { matchLabels: { app: api } }</pre>
 <p>זה אומר: מספר ה-Pods של <code>api</code> בכל zone יכול להיות שונה ב-1 לכל היותר. עם 6 replicas על 3 AZs מקבלים 2/2/2, אז נפילה של AZ שלם עולה לך שליש, לא הכל. זה גמיש יותר מ-anti-affinity, שנשבר ברגע שיש יותר replicas מ-nodes.</p>
 <p><strong>כש-node מת</strong>: ה-kubelet מפסיק לשלוח heartbeats (אובייקטי Lease כל 10 שניות). אחרי כ-40 שניות ה-node controller מסמן אותו <code>NotReady</code> ומוסיף taint של <code>unreachable:NoExecute</code>. ל-Pods יש toleration ברירת מחדל של <strong>300 שניות</strong> אליו – אז בערך 5 דקות אחר כך הם מפונים ותחליפים משובצים במקום אחר. Pods של StatefulSet <em>לא</em> מוחלפים אוטומטית בכוח (כדי לא לקבל שני כותבים על אותו דיסק).</p>
-<blockquote>⚠️ טיפ לפרודקשן: תגנו מפני disruptions <em>רצוניים</em> (drain של nodes, שדרוגים, consolidation של Karpenter) עם PodDisruptionBudget: <code>minAvailable: 2</code> או <code>maxUnavailable: 1</code>. בלי זה, drain יכול לקחת את כל ה-replicas בבת אחת.</blockquote>`
+<blockquote>⚠️ טיפ לפרודקשן: תגן מפני disruptions <em>רצוניים</em> (drain של nodes, שדרוגים, consolidation של Karpenter) עם PodDisruptionBudget: <code>minAvailable: 2</code> או <code>maxUnavailable: 1</code>. בלי זה, drain יכול לקחת את כל ה-replicas בבת אחת.</blockquote>`
       }
     }
   ],
@@ -1642,7 +1642,7 @@ spec:
     scaleDown:
       stabilizationWindowSeconds: 300    # default: wait 5 min before shrinking
       policies: [{ type: Percent, value: 50, periodSeconds: 60 }]</pre>
-<p>יש לו tolerance של 10% (לא עושה כלום בין 0.9 ל-1.1 מה-target) כדי למנוע flapping. מטריקות custom (RPS, latency) מגיעות דרך Prometheus Adapter או KEDA. תגדירו <code>maxReplicas</code> הגיוני – HPA ישמח לעשות scale לדליפת זיכרון עד 30 Pods, או לעשות DDoS ל-DB שלכם עם connections.</p>`
+<p>יש לו tolerance של 10% (לא עושה כלום בין 0.9 ל-1.1 מה-target) כדי למנוע flapping. מטריקות custom (RPS, latency) מגיעות דרך Prometheus Adapter או KEDA. תגדיר <code>maxReplicas</code> הגיוני – HPA ישמח לעשות scale לדליפת זיכרון עד 30 Pods, או לעשות DDoS ל-DB שלך עם connections.</p>`
       }
     },
     {
@@ -1662,8 +1662,8 @@ spec:
 <li><code>Initial</code> – קובע requests רק כש-Pods נוצרים.</li>
 <li><code>Recreate</code> / <code>Auto</code> – מפנה Pods כדי להחיל גדלים חדשים (גרסאות חדשות יכולות לשנות גודל in-place איפה שנתמך).</li>
 </ul>
-<p>אל תתנו ל-HPA ול-VPA להילחם על <em>אותה</em> מטריקה: אם VPA מעלה את ה-CPU request, אחוז ה-utilization של HPA יורד, אז HPA מוריד replicas, אז VPA... הבנתם. הדפוס הנפוץ: HPA על CPU/RPS בשביל replicas, ו-VPA במצב <code>Off</code> להכוונה, או VPA רק על זיכרון.</p>
-<blockquote>💡 מהשטח: Kubernetes תומך היום ב-in-place Pod resize (שינוי requests/limits בלי restart לקונטיינר), מה שהופך scaling אנכי להרבה פחות מפריע – תבדקו את הגרסה וה-runtime שלכם לפני שסומכים על זה.</blockquote>`
+<p>אל תיתן ל-HPA ול-VPA להילחם על <em>אותה</em> מטריקה: אם VPA מעלה את ה-CPU request, אחוז ה-utilization של HPA יורד, אז HPA מוריד replicas, אז VPA... הבנת. הדפוס הנפוץ: HPA על CPU/RPS בשביל replicas, ו-VPA במצב <code>Off</code> להכוונה, או VPA רק על זיכרון.</p>
+<blockquote>💡 מהשטח: Kubernetes תומך היום ב-in-place Pod resize (שינוי requests/limits בלי restart לקונטיינר), מה שהופך scaling אנכי להרבה פחות מפריע – תבדוק את הגרסה וה-runtime שלך לפני שסומכים על זה.</blockquote>`
       }
     },
     {
@@ -1732,8 +1732,8 @@ spec:
   triggers:
   - type: aws-sqs-queue
     metadata: { queueURL: https://sqs.eu-west-1.amazonaws.com/123/emails, queueLength: "20" }</pre>
-<p><strong>מחסנית האיחורים</strong> – תסכמו ל-spike בתעבורה: scrape של מטריקות (15-60 שניות) + sync של HPA (15 שניות) + scheduling (אם אין מקום: הקמת node 45-120 שניות ויותר) + image pull (5-60 שניות) + עליית האפליקציה/חימום JVM (10-60 שניות) + readiness. בפועל <strong>1-4 דקות</strong> עד שקיבולת חדשה מקבלת תעבורה.</p>
-<blockquote>⚠️ טיפ לפרודקשן: autoscaling מטפל בעליות הדרגתיות, לא בצוקים. ל-spikes ידועים (פרסומת בטלוויזיה, Black Friday, סערת logins ב-9:00) תעשו pre-scale עם <code>minReplicas</code> גבוה יותר או KEDA cron trigger, תשאירו headroom (target של 60%, לא 90%), images קטנים, ותשקלו Pods של "balloon" בעדיפות נמוכה ששומרים nodes פנויים ומפונים מיד.</blockquote>`
+<p><strong>מחסנית האיחורים</strong> – תסכם ל-spike בתעבורה: scrape של מטריקות (15-60 שניות) + sync של HPA (15 שניות) + scheduling (אם אין מקום: הקמת node 45-120 שניות ויותר) + image pull (5-60 שניות) + עליית האפליקציה/חימום JVM (10-60 שניות) + readiness. בפועל <strong>1-4 דקות</strong> עד שקיבולת חדשה מקבלת תעבורה.</p>
+<blockquote>⚠️ טיפ לפרודקשן: autoscaling מטפל בעליות הדרגתיות, לא בצוקים. ל-spikes ידועים (פרסומת בטלוויזיה, Black Friday, סערת logins ב-9:00) תעשה pre-scale עם <code>minReplicas</code> גבוה יותר או KEDA cron trigger, תשאיר headroom (target של 60%, לא 90%), images קטנים, ותשקול Pods של "balloon" בעדיפות נמוכה ששומרים nodes פנויים ומפונים מיד.</blockquote>`
       }
     }
   ],
@@ -1943,7 +1943,7 @@ INFRA.lessons.push({
       preStop:
         sleep: { seconds: 10 }     # or exec: ["sleep","10"] on older versions
 # app: on SIGTERM -> stop accepting new conns, finish in-flight, close DB pool, exit 0</pre>
-<blockquote>⚠️ טיפ לפרודקשן: תוודאו שהאפליקציה באמת <em>מקבלת</em> SIGTERM. עם <code>CMD npm start</code> או entrypoint ב-shell form, ה-PID 1 הוא shell שלא מעביר signals – מחכים 30 שניות וחוטפים SIGKILL כל פעם. להשתמש ב-exec form (<code>["node","server.js"]</code>) או ב-tini/dumb-init.</blockquote>`
+<blockquote>⚠️ טיפ לפרודקשן: תוודא שהאפליקציה באמת <em>מקבלת</em> SIGTERM. עם <code>CMD npm start</code> או entrypoint ב-shell form, ה-PID 1 הוא shell שלא מעביר signals – מחכים 30 שניות וחוטפים SIGKILL כל פעם. להשתמש ב-exec form (<code>["node","server.js"]</code>) או ב-tini/dumb-init.</blockquote>`
       }
     }
   ],
@@ -2070,7 +2070,7 @@ INFRA.lessons.push({
 <tr><td>persistentVolumeClaim</td><td>בלתי תלוי ב-Pod</td><td>מידע אמיתי: מסדי נתונים, העלאות, תורים</td></tr>
 </table>
 <p>ה-<strong>CSI</strong> (Container Storage Interface) זה איך דיסקים של ענן מתחברים: ה-EBS CSI driver, GCE PD, Azure Disk, Ceph, Longhorn וכו'. ה-driver מחבר את הדיסק ל-node, מפרמט, עושה mount, ועושה bind-mount לתוך ה-Pod.</p>
-<blockquote>⚠️ טיפ לפרודקשן: emptyDir נספר על ה-ephemeral storage של ה-node. קובץ לוג שיצא משליטה ב-emptyDir יכול למלא את הדיסק של ה-node ולגרום ל-eviction של Pods עם <code>DiskPressure</code>. תגדירו <code>sizeLimit</code> ו-<code>resources.limits.ephemeral-storage</code>.</blockquote>`
+<blockquote>⚠️ טיפ לפרודקשן: emptyDir נספר על ה-ephemeral storage של ה-node. קובץ לוג שיצא משליטה ב-emptyDir יכול למלא את הדיסק של ה-node ולגרום ל-eviction של Pods עם <code>DiskPressure</code>. תגדיר <code>sizeLimit</code> ו-<code>resources.limits.ephemeral-storage</code>.</blockquote>`
       }
     },
     {
@@ -2360,7 +2360,7 @@ subjects:
   namespace: shop
 roleRef: { kind: Role, name: pod-reader, apiGroup: rbac.authorization.k8s.io }</pre>
 <p>ארבעה אובייקטים, שני צירים: <strong>Role</strong>/<strong>ClusterRole</strong> מגדירים הרשאות; <strong>RoleBinding</strong>/<strong>ClusterRoleBinding</strong> מעניקים אותן. RoleBinding יכול להפנות ל-ClusterRole כדי להעניק אותו <em>בתוך namespace אחד</em> – הדרך הסטנדרטית לעשות שימוש חוזר ב-<code>view</code>, <code>edit</code>, <code>admin</code>.</p>
-<p><strong>ServiceAccounts</strong> הם זהויות ל-Pods. כל Pod מקבל token קצר-חיים (projected) ל-SA שלו. אם האפליקציה לא קוראת ל-API של k8s, תגדירו <code>automountServiceAccountToken: false</code>. גם IAM של הענן ל-Pods (IRSA, Workload Identity) ממופה דרך ה-ServiceAccount.</p>`
+<p><strong>ServiceAccounts</strong> הם זהויות ל-Pods. כל Pod מקבל token קצר-חיים (projected) ל-SA שלו. אם האפליקציה לא קוראת ל-API של k8s, תגדיר <code>automountServiceAccountToken: false</code>. גם IAM של הענן ל-Pods (IRSA, Workload Identity) ממופה דרך ה-ServiceAccount.</p>`
       }
     },
     {
@@ -2585,7 +2585,7 @@ helm history shop -n shop
 helm rollback shop 3 -n shop
 helm template ./mychart -f values-prod.yaml   # render locally, apply nothing</pre>
 <p><strong>Release</strong> הוא מופע מותקן אחד של chart, עם revisions ממוספרים שנשמרים כ-Secrets ב-namespace. Charts מגיעים מ-repos/OCI registries (<code>helm install redis oci://registry-1.docker.io/bitnamicharts/redis</code>). Hooks (<code>pre-upgrade</code>, <code>post-install</code>) מריצים Jobs כמו DB migrations ברגע הנכון.</p>
-<blockquote>💡 מהשטח: Helm הוא הדרך הדה-פקטו להתקין תוכנה של <em>צד שלישי</em> (ingress-nginx, cert-manager, Prometheus). לאפליקציות שלכם, הרבה צוותים מוצאים chart פשוט או Kustomize קריאים יותר ממפלצת templates של 2,000 שורות.</blockquote>`
+<blockquote>💡 מהשטח: Helm הוא הדרך הדה-פקטו להתקין תוכנה של <em>צד שלישי</em> (ingress-nginx, cert-manager, Prometheus). לאפליקציות שלך, הרבה צוותים מוצאים chart פשוט או Kustomize קריאים יותר ממפלצת templates של 2,000 שורות.</blockquote>`
       }
     },
     {
@@ -2683,7 +2683,7 @@ spec:
 <li><strong>אבטחה</strong>: ה-CI כבר לא צריך credentials ל-cluster.</li>
 </ul>
 <p>ל-<strong>ArgoCD</strong> יש UI מעולה ו-"app of apps"/ApplicationSets ל-multi-cluster. <strong>Flux</strong> הוא סט של controllers רזים (GitRepository, Kustomization, HelmRelease) עם image-automation חזק. שניהם CNCF graduated.</p>
-<blockquote>⚠️ טיפ לפרודקשן: תחזיקו את קוד האפליקציה ואת קונפיגורציית ה-deploy ב-repos נפרדים (או לפחות paths נפרדים), ואף פעם לא Secrets גלויים ב-repo של GitOps – תשתמשו ב-External Secrets, Sealed Secrets או SOPS.</blockquote>`
+<blockquote>⚠️ טיפ לפרודקשן: תחזיק את קוד האפליקציה ואת קונפיגורציית ה-deploy ב-repos נפרדים (או לפחות paths נפרדים), ואף פעם לא Secrets גלויים ב-repo של GitOps – תשתמש ב-External Secrets, Sealed Secrets או SOPS.</blockquote>`
       }
     }
   ],
@@ -2814,7 +2814,7 @@ kubectl top pod POD --containers             # 7. live CPU/memory</pre>
 <tr><td>137</td><td>SIGKILL: OOMKilled, או נהרג אחרי liveness שנכשל / grace period</td></tr>
 <tr><td>143</td><td>SIGTERM: סיום מסודר רגיל</td></tr>
 </table>
-<blockquote>⚠️ טיפ לפרודקשן: Events נשמרים כברירת מחדל רק כשעה. חוקרים incident של אתמול? תשלחו events למערכת הלוגים (kube-event-exporter, Datadog וכו').</blockquote>`
+<blockquote>⚠️ טיפ לפרודקשן: Events נשמרים כברירת מחדל רק כשעה. חוקרים incident של אתמול? תשלח events למערכת הלוגים (kube-event-exporter, Datadog וכו').</blockquote>`
       }
     },
     {
@@ -2833,7 +2833,7 @@ Error: connect ECONNREFUSED 10.96.0.15:5432
     at TCPConnectWrapper.afterConnect ...</pre>
 <p>החשודים הרגילים: env var או config חסר/שגוי, תלות לא נגישה בעלייה (DB, Kafka) והאפליקציה יוצאת במקום לנסות שוב, command/args שגויים, liveness probe שנכשל (ב-describe רואים events של "Liveness probe failed"), הרשאות (filesystem לקריאה בלבד, משתמש non-root שלא יכול לכתוב ל-<code>/app</code>), או שהתהליך פשוט יוצא עם 0 כי הוא היה סקריפט חד-פעמי.</p>
 <p><strong>OOMKilled</strong>: ב-describe רואים <code>Last State: Terminated, Reason: OOMKilled, Exit Code: 137</code>. הלוגים הרבה פעמים נקטעים בפתאומיות בלי שגיאה. צריך להחליט: זו <em>דליפה</em> (הזיכרון עולה בהתמדה עד ה-kill – לבדוק את גרף הזיכרון) או <em>limit קטן מדי</em> (מת ב-spike צפוי של עומס)? לתקן את הדליפה, או להעלות את ה-limit ולכוון את ה-runtime (<code>-XX:MaxRAMPercentage</code>, <code>--max-old-space-size</code>, <code>GOMEMLIMIT</code>).</p>
-<blockquote>💡 מהשטח: אם הקונטיינר מת מהר מדי בשביל exec, תדרסו את ה-command זמנית: <code>kubectl debug POD -it --copy-to=dbg --container=api -- sh</code> יוצר עותק שאפשר לחטט בו, או <code>command: ["sleep","infinity"]</code> ב-Deployment לבדיקה.</blockquote>`
+<blockquote>💡 מהשטח: אם הקונטיינר מת מהר מדי בשביל exec, תדרוס את ה-command זמנית: <code>kubectl debug POD -it --copy-to=dbg --container=api -- sh</code> יוצר עותק שאפשר לחטט בו, או <code>command: ["sleep","infinity"]</code> ב-Deployment לבדיקה.</blockquote>`
       }
     },
     {
@@ -2854,7 +2854,7 @@ Error: connect ECONNREFUSED 10.96.0.15:5432
 <tr><td>ContainerCreating (תקוע)</td><td><code>FailedMount</code>, <code>Multi-Attach error</code>, שגיאות CNI</td><td>Volume מחובר במקום אחר, בעיות ב-CSI driver, נגמרו IPs ל-Pods ב-subnet</td></tr>
 <tr><td>Pending</td><td><code>FailedScheduling: 0/5 nodes are available: ...</code></td><td>אין מספיק CPU/זיכרון (requests), taints, אי-התאמה ב-affinity/nodeSelector, PVC לא bound או ב-zone שגוי, חריגה מ-ResourceQuota (את זה רואים על ה-ReplicaSet, לא על ה-Pod!)</td></tr>
 </table>
-<p>המלכודת האחרונה שווה חזרה: אם ל-Deployment יש 0 Pods ואין בכלל Pods ב-Pending, תבדקו <code>kubectl describe rs</code> – ResourceQuota או admission webhook עלולים לדחות את <em>יצירת</em> ה-Pod, אז אין Pod לעשות לו describe.</p>`
+<p>המלכודת האחרונה שווה חזרה: אם ל-Deployment יש 0 Pods ואין בכלל Pods ב-Pending, תבדוק <code>kubectl describe rs</code> – ResourceQuota או admission webhook עלולים לדחות את <em>יצירת</em> ה-Pod, אז אין Pod לעשות לו describe.</p>`
       }
     },
     {

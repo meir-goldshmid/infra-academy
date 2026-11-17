@@ -324,7 +324,7 @@ window.INFRA.lessons.push({
 <tr><td>Wall / real-time</td><td><code>CLOCK_REALTIME</code></td><td>להציג timestamp לבני אדם, שורות לוג, קורלציה מקורבת בין hosts</td><td>מדידת משכי זמן, סידור אירועים בין hosts</td></tr>
 <tr><td>Monotonic</td><td><code>CLOCK_MONOTONIC</code></td><td>Timeouts, מדידת latency, ספירה לאחור של lease על host אחד</td><td>השוואה בין hosts (נקודת התחלה שרירותית)</td></tr>
 </table>
-<blockquote>⚠️ טיפ לפרודקשן: תעשו alert על clock offset. עם chrony: <code>chronyc tracking</code> מראה "System time: 0.000012 seconds fast". מייצאים את זה (ב-node_exporter זה <code>node_timex_offset_seconds</code>) ומקפיצים page אם host כלשהו עובר ~100 ms. Cassandra, Kerberos (5 דקות), אימות TLS ו-<code>nbf/exp</code> של JWT נשברים כולם עם skew.</blockquote>`
+<blockquote>⚠️ טיפ לפרודקשן: תעשה alert על clock offset. עם chrony: <code>chronyc tracking</code> מראה "System time: 0.000012 seconds fast". מייצאים את זה (ב-node_exporter זה <code>node_timex_offset_seconds</code>) ומקפיצים page אם host כלשהו עובר ~100 ms. Cassandra, Kerberos (5 דקות), אימות TLS ו-<code>nbf/exp</code> של JWT נשברים כולם עם skew.</blockquote>`
       }
     },
     {
@@ -1326,7 +1326,7 @@ window.INFRA.lessons.push({
 </ul>
 <p>Recovery from a metastable state requires <strong>removing load below the healthy threshold</strong> (not just back to the pre-trigger level): shed traffic, disable retries, block a client, scale far above normal, then ramp up gradually.</p>
 <blockquote>💡 Real world: the AWS us-east-1 outage of December 2021 had exactly this shape: an automated scaling event triggered a surge of connection activity on the internal network, retries and backoff-less clients kept the network devices congested for hours, and internal monitoring itself was impaired.</blockquote>`,
-        he: `<p>תשרטטו <em>goodput</em> (תשובות מוצלחות ושימושיות לשנייה) מול העומס המוצע. מערכת בריאה עולה עד הקיבולת ונשארת שטוחה. מערכת לא מוגנת עולה ואז <strong>קורסת</strong>: בקשות עושות timeout אחרי שכבר צרכו משאבים, לקוחות עושים retry, התורים מתמלאים בעבודה שמי ששלח אותה כבר ויתר, וה-goodput צונח לכמעט אפס כשה-CPU ב-100%.</p>
+        he: `<p>תשרטט <em>goodput</em> (תשובות מוצלחות ושימושיות לשנייה) מול העומס המוצע. מערכת בריאה עולה עד הקיבולת ונשארת שטוחה. מערכת לא מוגנת עולה ואז <strong>קורסת</strong>: בקשות עושות timeout אחרי שכבר צרכו משאבים, לקוחות עושים retry, התורים מתמלאים בעבודה שמי ששלח אותה כבר ויתר, וה-goodput צונח לכמעט אפס כשה-CPU ב-100%.</p>
 <p><strong>Metastable failure</strong> (Bronson ואחרים, HotOS 2021; Huang ואחרים, OSDI 2022) זה מצב שבו למערכת יש שני מצבים יציבים באותו עומס: בריא, ומצב מושפל ש<em>טריגר</em> (deploy, קפיצת תנועה, תקלה רגעית בתלות, ניקוי cache) דוחף אותה אליו, ו<em>אפקט מקיים</em> משאיר אותה בו גם אחרי שהטריגר הוסר. לולאות מקיימות נפוצות:</p>
 <ul>
 <li><strong>הגברת retries:</strong> איטי ← timeouts ← retries ← עוד עומס ← יותר איטי. 3 שכבות שכל אחת עושה 3 ניסיונות = 3³ = <strong>פי 27 עומס</strong> על השירות התחתון.</li>
@@ -1458,7 +1458,7 @@ outlierDetection:
   interval: 10s
   baseEjectionTime: 30s
   maxEjectionPercent: 50     # never eject more than half the pool</pre>
-<p>שימו לב שה-<code>circuit_breakers</code> של Envoy הם בעצם <em>concurrency limits</em> (max_connections, max_pending_requests, max_requests, כולם 1024 כברירת מחדל; max_retries ברירת מחדל 3), ו-<code>outlier_detection</code> הוא המנגנון לכל host של "תפסיק לשלוח לזה שמקולקל". Breakers מגינים על <em>הקורא</em> (אין threads תקועים בהמתנה) ונותנים לנקרא מקום להתאושש. חייבים לשלב אותם עם fallback בעל משמעות: דאטה מה-cache, ערך ברירת מחדל, פיצ'ר מוחלש, או שגיאה מהירה וברורה.</p>`
+<p>שים לב שה-<code>circuit_breakers</code> של Envoy הם בעצם <em>concurrency limits</em> (max_connections, max_pending_requests, max_requests, כולם 1024 כברירת מחדל; max_retries ברירת מחדל 3), ו-<code>outlier_detection</code> הוא המנגנון לכל host של "תפסיק לשלוח לזה שמקולקל". Breakers מגינים על <em>הקורא</em> (אין threads תקועים בהמתנה) ונותנים לנקרא מקום להתאושש. חייבים לשלב אותם עם fallback בעל משמעות: דאטה מה-cache, ערך ברירת מחדל, פיצ'ר מוחלש, או שגיאה מהירה וברורה.</p>`
       }
     },
     {
@@ -1893,7 +1893,7 @@ window.INFRA.lessons.push({
 <tr><td><strong>Consensus סינכרוני</strong> (Spanner, CockroachDB, DynamoDB MRSC)</td><td>כל region</td><td>0</td><td>בערך 0 ל-reads/writes ברוב ששרד</td><td>latency של write = quorum בין regions; צריך 3+ regions</td></tr>
 </table>
 <p>RTTs טיפוסיים בין regions: us-east-1 ↔ us-west-2 בערך 60-70 ms, us-east-1 ↔ eu-west-1 בערך 70-80 ms, eu-west-1 ↔ ap-southeast-1 בערך 150-170 ms, תל אביב (il-central-1) ↔ פרנקפורט בערך 45-55 ms. replication סינכרוני ל-region רחוק מוסיף לפחות RTT אחד לכל commit.</p>
-<blockquote>💡 מהשטח: רוב החברות שאומרות "active-active" מתכוונות ל-active-active ב-<em>compute</em> עם region אחד ל-DB הראשי, ועוד read replicas במקומות אחרים. זה בסדר והרבה יותר פשוט – רק תגידו את זה במפורש ותדעו מה ה-RPO שלכם.</blockquote>`
+<blockquote>💡 מהשטח: רוב החברות שאומרות "active-active" מתכוונות ל-active-active ב-<em>compute</em> עם region אחד ל-DB הראשי, ועוד read replicas במקומות אחרים. זה בסדר והרבה יותר פשוט – רק תגיד את זה במפורש ותדע מה ה-RPO שלך.</blockquote>`
       }
     },
     {

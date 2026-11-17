@@ -176,7 +176,7 @@ CPU-bound (wait ~ 0):  threads ≈ N_cpu (+1)</pre>
 threads = 8 * 0.8 * (1 + 90/10) = 64
 
 CPU-bound (wait ~ 0):  threads ≈ N_cpu (+1)</pre>
-<p>ואז בודקים את ה-<em>downstream</em>: 64 threads × 20 pods = 1,280 שאילתות DB במקביל — וה-Postgres שלכם עם <code>max_connections=200</code> לא מסכים. גודלי pools הם תקציב <strong>של כל המערכת</strong> (Little's Law: concurrency = throughput × latency).</p>
+<p>ואז בודקים את ה-<em>downstream</em>: 64 threads × 20 pods = 1,280 שאילתות DB במקביל — וה-Postgres שלך עם <code>max_connections=200</code> לא מסכים. גודלי pools הם תקציב <strong>של כל המערכת</strong> (Little's Law: concurrency = throughput × latency).</p>
 <p><strong>חוק Amdahl</strong>: אם חלק <em>p</em> מהעבודה ניתן למקבול, ההאצה המקסימלית על N ליבות היא <code>1 / ((1 - p) + p/N)</code>. עם p = 0.95, ‏16 ליבות → פי 9.1, ואינסוף ליבות → רק פי 20. ה-5% הסדרתיים (lock גלובלי, writer יחיד ל-DB, coordinator) תוקעים אותך. <strong>חוק Gustafson</strong> הוא הצד האופטימי: עם יותר ליבות בדרך כלל מעבדים בעיות <em>גדולות יותר</em>, לא את אותה בעיה מהר יותר.</p>
 <blockquote>💡 מהשטח: "הכפלנו את ה-pods וה-throughput לא זז" — Amdahl קלאסי. מחפשים את החלק הסדרתי: partition חם אחד ב-Kafka, row lock על counter, Redis עם thread יחיד שמריץ <code>KEYS *</code> איטי, mutex סביב cache משותף. סקיילינג הוא ציד אחרי החלק הסדרתי.</blockquote>`
       }
@@ -273,7 +273,7 @@ for (;;) {
         handle(events[i]);                                // must be FAST and non-blocking
     run_expired_timers();
 }</pre>
-<p>שרתי event loop שאתם מריצים כל יום: <strong>nginx</strong> (loop לכל worker process, worker לכל ליבה), <strong>Redis</strong> (loop אחד מריץ את כל הפקודות — בגלל זה <code>KEYS *</code> אחד מקפיא את כולם), <strong>Node.js</strong> (libuv), <strong>HAProxy</strong>, <strong>Envoy</strong> (loop לכל worker thread), <strong>asyncio</strong>/uvloop ב-Python, <strong>Netty</strong> ב-Java, <strong>tokio</strong> ב-Rust.</p>
+<p>שרתי event loop שאתה מריץ כל יום: <strong>nginx</strong> (loop לכל worker process, worker לכל ליבה), <strong>Redis</strong> (loop אחד מריץ את כל הפקודות — בגלל זה <code>KEYS *</code> אחד מקפיא את כולם), <strong>Node.js</strong> (libuv), <strong>HAProxy</strong>, <strong>Envoy</strong> (loop לכל worker thread), <strong>asyncio</strong>/uvloop ב-Python, <strong>Netty</strong> ב-Java, <strong>tokio</strong> ב-Rust.</p>
 <blockquote>💡 מהשטח: התבנית "N event loops, אחד לכל ליבה" (nginx workers, Envoy threads, Node cluster, ה-EventLoopGroup של Netty) משלבת concurrency של event loop עם parallelism על כמה ליבות. היום השיא הוא מיליוני connections למכונה (C10M).</blockquote>`
       }
     },
@@ -302,7 +302,7 @@ for (;;) {
 <li><strong>close callbacks</strong> — <code>socket.on('close')</code>.</li>
 </ol>
 <p><strong>בין כל callback ל-callback</strong> Node מרוקן שני תורים בעדיפות גבוהה יותר: קודם <code>process.nextTick</code>, ואז <strong>microtasks</strong> (תגובות של Promise, <code>queueMicrotask</code>, ההמשך אחרי <code>await</code>).</p>
-<p>לא כל IO הוא אסינכרוני ב-kernel. פעולות file system, ‏<code>dns.lookup</code> (getaddrinfo), ‏<code>crypto.pbkdf2</code>/<code>scrypt</code> ו-<code>zlib</code> רצים על <strong>ה-thread pool של libuv</strong> — ברירת מחדל <strong>4 threads</strong> (<code>UV_THREADPOOL_SIZE</code>, מקסימום 1024). ארבעה bcrypt איטיים וה-<code>fs.readFile</code> החמישי שלכם עומד בתור מאחוריהם.</p>
+<p>לא כל IO הוא אסינכרוני ב-kernel. פעולות file system, ‏<code>dns.lookup</code> (getaddrinfo), ‏<code>crypto.pbkdf2</code>/<code>scrypt</code> ו-<code>zlib</code> רצים על <strong>ה-thread pool של libuv</strong> — ברירת מחדל <strong>4 threads</strong> (<code>UV_THREADPOOL_SIZE</code>, מקסימום 1024). ארבעה bcrypt איטיים וה-<code>fs.readFile</code> החמישי שלך עומד בתור מאחוריהם.</p>
 <blockquote>⚠️ טיפ לפרודקשן: שירות שעושה הרבה <code>dns.lookup</code> (כל קריאת HTTP יוצאת בלי keep-alive!) ועוד <code>fs</code> ועוד <code>crypto</code> יכול לרוות את 4 ה-threads ולהיראות כמו "latency רנדומלי". לקבוע <code>UV_THREADPOOL_SIZE=16</code> (לפני ש-Node עולה), לעשות שימוש חוזר ב-connections עם keep-alive agents, ולשמור DNS ב-cache.</blockquote>`
       }
     },
@@ -365,7 +365,7 @@ setInterval(() =&gt; {
 }, 5000);
 // healthy: p99 lag &lt; 10-20 ms, ELU &lt; 0.7. Alert on p99 lag &gt; 100 ms.</pre>
 <p><strong>Fix it</strong>: (1) move CPU work to <code>worker_threads</code> (Piscina pool) or a separate service via a queue; (2) chunk it — process 1,000 items, then <code>setImmediate</code> to yield; (3) stream instead of buffering (streaming JSON parsers); (4) use async APIs; (5) bound input sizes and use safe regex engines (RE2). Tools: <code>clinic doctor</code>/<code>clinic flame</code>, <code>node --cpu-prof</code>, <code>0x</code>.</p>`,
-        he: `<p>בזמן ש-callback אחד רץ, <strong>כל שאר הלקוחות מחכים</strong>. 50 ms של CPU סינכרוני לבקשה על loop אחד מגבילים אתכם ל-20 בקשות בשנייה — לא משנה כמה sockets פתוחים. החשודים הרגילים:</p>
+        he: `<p>בזמן ש-callback אחד רץ, <strong>כל שאר הלקוחות מחכים</strong>. 50 ms של CPU סינכרוני לבקשה על loop אחד מגבילים אותך ל-20 בקשות בשנייה — לא משנה כמה sockets פתוחים. החשודים הרגילים:</p>
 <ul>
 <li><code>JSON.parse</code>/<code>JSON.stringify</code> על payload של 50 MB (מאות ms).</li>
 <li>APIs סינכרוניים: <code>fs.readFileSync</code>, <code>crypto.pbkdf2Sync</code>, <code>zlib.gzipSync</code>, <code>child_process.execSync</code>.</li>
@@ -430,7 +430,7 @@ asyncio.run(main(), debug=True)   # debug mode logs callbacks slower than 100 ms
   blocked loop:  req1 [■■■■■■■■■■ 200ms JSON.parse ■■■■■■■■■■]
                  req2                                          [ok]   <- waited 200 ms for nothing`,
   handsOn: [
-    { cmd: "node -e \"console.log(1);setTimeout(()=>console.log(5));setImmediate(()=>console.log(6));Promise.resolve().then(()=>console.log(4));process.nextTick(()=>console.log(3));console.log(2)\"", what: { en: "Run the ordering puzzle yourself. Run it a few times: 5 and 6 may swap.", he: "להריץ את חידת הסדר בעצמכם. להריץ כמה פעמים: 5 ו-6 יכולים להתחלף." } },
+    { cmd: "node -e \"console.log(1);setTimeout(()=>console.log(5));setImmediate(()=>console.log(6));Promise.resolve().then(()=>console.log(4));process.nextTick(()=>console.log(3));console.log(2)\"", what: { en: "Run the ordering puzzle yourself. Run it a few times: 5 and 6 may swap.", he: "להריץ את חידת הסדר בעצמך. להריץ כמה פעמים: 5 ו-6 יכולים להתחלף." } },
     { cmd: "node -e \"setInterval(()=>{const t=Date.now();setImmediate(()=>console.log('lag',Date.now()-t,'ms'))},1000);setTimeout(()=>{const e=Date.now()+3000;while(Date.now()<e);},2500)\"", what: { en: "Watch the loop lag jump to ~3000 ms while a sync busy-loop blocks it.", he: "לראות את ה-lag של ה-loop קופץ ל-~3000 ms בזמן ש-busy-loop סינכרוני חוסם אותו." } },
     { cmd: "UV_THREADPOOL_SIZE=16 node server.js", what: { en: "Raise the libuv pool for fs/dns/crypto-heavy services (must be set before Node starts).", he: "להגדיל את ה-pool של libuv לשירותים עם הרבה fs/dns/crypto (חייבים לקבוע לפני ש-Node עולה)." } },
     { cmd: "redis-cli --latency ; redis-cli SLOWLOG GET 10", what: { en: "Redis is a single event loop: see latency and the slow commands that blocked it.", he: "Redis הוא event loop יחיד: לראות latency ואת הפקודות האיטיות שחסמו אותו." } }
@@ -482,7 +482,7 @@ INFRA.lessons.push({
   },
   analogy: {
     en: "A Promise/Future is the buzzer the restaurant gives you when you order: not food yet, but a guarantee you'll be notified. 'await' is sitting down and doing nothing else until it buzzes — while the restaurant (the thread) keeps serving others. Sequential awaits is ordering the burger, waiting for the buzz, then ordering the fries, waiting again. Promise.all is ordering both at once and getting two buzzers. A semaphore is the rule 'max 3 open orders per family' so you don't flood the kitchen.",
-    he: "Promise/Future זה הזמזם שנותנים לכם במסעדה כשמזמינים: זה עוד לא אוכל, אבל הבטחה שתקבלו התראה. 'await' זה לשבת ולא לעשות כלום אחר עד שהוא מזמזם — בזמן שהמסעדה (ה-thread) ממשיכה לשרת אחרים. awaits סדרתיים זה להזמין המבורגר, לחכות לזמזום, ואז להזמין צ'יפס ולחכות שוב. Promise.all זה להזמין את שניהם ביחד ולקבל שני זמזמים. Semaphore זה הכלל 'מקסימום 3 הזמנות פתוחות למשפחה' כדי לא להציף את המטבח."
+    he: "Promise/Future זה הזמזם שנותנים לך במסעדה כשאתה מזמין: זה עוד לא אוכל, אבל הבטחה שתקבל התראה. 'await' זה לשבת ולא לעשות כלום אחר עד שהוא מזמזם — בזמן שהמסעדה (ה-thread) ממשיכה לשרת אחרים. awaits סדרתיים זה להזמין המבורגר, לחכות לזמזום, ואז להזמין צ'יפס ולחכות שוב. Promise.all זה להזמין את שניהם ביחד ולקבל שני זמזמים. Semaphore זה הכלל 'מקסימום 3 הזמנות פתוחות למשפחה' כדי לא להציף את המטבח."
   },
   sections: [
     {
@@ -584,9 +584,9 @@ public string Get() =&gt; GetAsync().Result;            // ❌
 public async Task&lt;string&gt; Get() =&gt; await GetAsync(); // ✅</pre>`,
         he: `<ul>
 <li><strong>await שנשכח</strong>: <code>saveAudit(evt);</code> בלי await — fire-and-forget; שגיאות נעלמות, הבקשה חוזרת לפני הכתיבה, וטסטים עוברים באופן לא יציב. לתפוס עם lint: <code>@typescript-eslint/no-floating-promises</code>; ‏Python מזהיר "coroutine was never awaited".</li>
-<li><strong>async בתוך forEach</strong>: <code>items.forEach(async i =&gt; await save(i))</code> לא מחכה לכלום. להשתמש ב-<code>for (const i of items) await save(i)</code> (סדרתי) או <code>await Promise.all(items.map(save))</code> (מקבילי, אבל ראו מגבלות למטה).</li>
+<li><strong>async בתוך forEach</strong>: <code>items.forEach(async i =&gt; await save(i))</code> לא מחכה לכלום. להשתמש ב-<code>for (const i of items) await save(i)</code> (סדרתי) או <code>await Promise.all(items.map(save))</code> (מקבילי, אבל ראה מגבלות למטה).</li>
 <li><strong>Rejections לא מטופלים</strong>: מאז Node 15 הם <em>מפילים את ה-process</em> כברירת מחדל. לכל promise צריך בעלים שעושה לו await או catch.</li>
-<li><strong>חסימה בתוך async</strong>: <code>time.sleep</code>, ‏drivers סינכרוניים ל-DB, ‏<code>fs.readFileSync</code>, ‏CPU כבד — הפונקציה "אסינכרונית" אבל ה-loop קפוא (ראו את השיעור על ה-event loop).</li>
+<li><strong>חסימה בתוך async</strong>: <code>time.sleep</code>, ‏drivers סינכרוניים ל-DB, ‏<code>fs.readFileSync</code>, ‏CPU כבד — הפונקציה "אסינכרונית" אבל ה-loop קפוא (ראה את השיעור על ה-event loop).</li>
 <li><strong>Deadlock של sync-over-async (C#)</strong>: לקרוא ל-<code>.Result</code> או <code>.Wait()</code> על Task בקונטקסט עם SynchronizationContext (‏ASP.NET הקלאסי, ה-UI thread של WinForms/WPF). ה-thread נחסם ומחכה ל-task; ההמשך של ה-task צריך את אותו thread בדיוק → deadlock. התיקון: "async all the way down"; בספריות להשתמש ב-<code>ConfigureAwait(false)</code>. ב-ASP.NET Core אין context, אבל <code>.Result</code> עדיין גורם ל-<strong>thread-pool starvation</strong> תחת עומס.</li>
 </ul>
 <pre>// C# — deadlocks on a UI thread / classic ASP.NET
@@ -615,7 +615,7 @@ sem := make(chan struct{}, 20)
 for _, u := range urls { sem &lt;- struct{}{}; go func(u string){ defer func(){ &lt;-sem }(); get(u) }(u) }</pre>
 <p><strong>Backpressure</strong> is the consumer telling the producer "slow down". Streams do it natively (Node <code>stream.pipeline</code> and <code>highWaterMark</code>; Reactive Streams <code>request(n)</code>; gRPC flow control; Kafka consumers pull). Without it, an unbounded in-memory queue between a fast producer and a slow consumer grows until OOM. Choose: block the producer, drop (load shedding), or buffer to durable storage (a real queue).</p>
 <blockquote>⚠️ Production tip: Size the limit from the downstream's budget, not your appetite: if the API allows 50 req/s at 200 ms latency, Little's Law says ~10 in flight is the max useful concurrency.</blockquote>`,
-        he: `<p><code>await Promise.all(urls.map(fetch))</code> על 100k כתובות פותח 100k sockets בבת אחת: נגמרים לכם ה-file descriptors, אתם מקבלים rate limit, או עושים DDoS לתלות של עצמכם. Concurrency חייב להיות <strong>מוגבל</strong>.</p>
+        he: `<p><code>await Promise.all(urls.map(fetch))</code> על 100k כתובות פותח 100k sockets בבת אחת: נגמרים לך ה-file descriptors, אתה מקבל rate limit, או עושה DDoS לתלות של עצמך. Concurrency חייב להיות <strong>מוגבל</strong>.</p>
 <pre>// JS: p-limit (or a hand-rolled worker pool)
 import pLimit from 'p-limit';
 const limit = pLimit(20);                         // max 20 in flight
@@ -632,7 +632,7 @@ await asyncio.gather(*(fetch_one(u) for u in urls))
 sem := make(chan struct{}, 20)
 for _, u := range urls { sem &lt;- struct{}{}; go func(u string){ defer func(){ &lt;-sem }(); get(u) }(u) }</pre>
 <p><strong>Backpressure</strong> זה ה-consumer שאומר ל-producer "תאט". Streams עושים את זה מובנה (‏<code>stream.pipeline</code> ו-<code>highWaterMark</code> ב-Node; ‏<code>request(n)</code> ב-Reactive Streams; ‏flow control ב-gRPC; ‏Kafka consumers מושכים). בלי זה, תור לא מוגבל בזיכרון בין producer מהיר ל-consumer איטי גדל עד OOM. בוחרים: לחסום את ה-producer, לזרוק (load shedding), או לעשות buffer לאחסון עמיד (תור אמיתי).</p>
-<blockquote>⚠️ טיפ לפרודקשן: קובעים את המגבלה לפי התקציב של ה-downstream, לא לפי התיאבון שלכם: אם ה-API מאפשר 50 req/s עם latency של 200 ms, ‏Little's Law אומר ש-~10 בקשות באוויר זה ה-concurrency המקסימלי שמועיל.</blockquote>`
+<blockquote>⚠️ טיפ לפרודקשן: קובעים את המגבלה לפי התקציב של ה-downstream, לא לפי התיאבון שלך: אם ה-API מאפשר 50 req/s עם latency של 200 ms, ‏Little's Law אומר ש-~10 בקשות באוויר זה ה-concurrency המקסימלי שמועיל.</blockquote>`
       }
     },
     {
@@ -655,7 +655,7 @@ await db.QueryAsync(sql, cancellationToken: cts.Token);
 ctx, cancel := context.WithTimeout(r.Context(), 2*time.Second); defer cancel()
 row := db.QueryRowContext(ctx, q)</pre>
 <p><strong>Propagate deadlines</strong>, don't reset them: if the caller has 800 ms left, your downstream calls get at most ~800 ms minus your own work (gRPC does this with the <code>grpc-timeout</code> header). <strong>Structured concurrency</strong> (Python TaskGroup, Kotlin coroutineScope, Java StructuredTaskScope, Go errgroup) ties child tasks to a scope: when the scope ends or one child fails, the rest are cancelled — no orphaned tasks leaking work.</p>`,
-        he: `<p>משתמש סוגר את הטאב; ה-gateway עושה timeout אחרי 5 שניות — אבל השירות שלכם ממשיך להריץ 3 שאילתות DB בשביל אף אחד. כל קריאה אסינכרונית צריכה deadline ודרך לעצור.</p>
+        he: `<p>משתמש סוגר את הטאב; ה-gateway עושה timeout אחרי 5 שניות — אבל השירות שלך ממשיך להריץ 3 שאילתות DB בשביל אף אחד. כל קריאה אסינכרונית צריכה deadline ודרך לעצור.</p>
 <pre>// JS: AbortController (fetch, Node streams and timers support it)
 const res = await fetch(url, { signal: AbortSignal.timeout(2000) });  // throws TimeoutError
 
@@ -671,7 +671,7 @@ await db.QueryAsync(sql, cancellationToken: cts.Token);
 // Go: context.Context — the gold standard
 ctx, cancel := context.WithTimeout(r.Context(), 2*time.Second); defer cancel()
 row := db.QueryRowContext(ctx, q)</pre>
-<p><strong>מעבירים deadlines הלאה</strong>, לא מאפסים אותם: אם לקורא נשארו 800 ms, הקריאות שלכם ל-downstream מקבלות לכל היותר ~800 ms פחות העבודה שלכם (‏gRPC עושה את זה עם ה-header <code>grpc-timeout</code>). <strong>Structured concurrency</strong> (‏TaskGroup ב-Python, ‏coroutineScope ב-Kotlin, ‏StructuredTaskScope ב-Java, ‏errgroup ב-Go) קושר tasks ילדים ל-scope: כשה-scope נגמר או שילד אחד נכשל, השאר מבוטלים — אין tasks יתומים שממשיכים לעבוד.</p>`
+<p><strong>מעבירים deadlines הלאה</strong>, לא מאפסים אותם: אם לקורא נשארו 800 ms, הקריאות שלך ל-downstream מקבלות לכל היותר ~800 ms פחות העבודה שלך (‏gRPC עושה את זה עם ה-header <code>grpc-timeout</code>). <strong>Structured concurrency</strong> (‏TaskGroup ב-Python, ‏coroutineScope ב-Kotlin, ‏StructuredTaskScope ב-Java, ‏errgroup ב-Go) קושר tasks ילדים ל-scope: כשה-scope נגמר או שילד אחד נכשל, השאר מבוטלים — אין tasks יתומים שממשיכים לעבוד.</p>`
       }
     }
   ],
@@ -788,7 +788,7 @@ INFRA.lessons.push({
       }
     },
     {
-      h: { en: "The runtimes you'll meet in production", he: "ה-runtimes שתפגשו בפרודקשן" },
+      h: { en: "The runtimes you'll meet in production", he: "ה-runtimes שתפגוש בפרודקשן" },
       body: {
         en: `<table>
 <tr><th>Runtime</th><th>Collectors / model</th><th>Key knobs</th></tr>

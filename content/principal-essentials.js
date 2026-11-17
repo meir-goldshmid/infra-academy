@@ -147,7 +147,7 @@ elapsed_ms = (time.monotonic() - start) * 1000
 start = time.time(); ...; time.time() - start</pre>
 <ul>
 <li><strong>NTP / chrony</strong> מחזיקים שרתים בטווח של ~1-10 ms בדאטה-סנטר טוב; ספקי ענן נותנים מקור זמן מקומי (AWS Time Sync 169.254.169.123, NTP של metadata ב-Google). בלי זה VM זוחל שניות ביום.</li>
-<li><strong>Clock skew</strong> בין מכונות אומר שאי אפשר לסדר events מ-hosts שונים לפי timestamp בלבד — שתי כתיבות בהפרש 2 ms על nodes שונים עלולות להירשם בסדר הפוך. משתמשים ב-logical/hybrid clocks או ב-sequencer יחיד (ראו <code>staff-time-ordering</code>).</li>
+<li><strong>Clock skew</strong> בין מכונות אומר שאי אפשר לסדר events מ-hosts שונים לפי timestamp בלבד — שתי כתיבות בהפרש 2 ms על nodes שונים עלולות להירשם בסדר הפוך. משתמשים ב-logical/hybrid clocks או ב-sequencer יחיד (ראה <code>staff-time-ordering</code>).</li>
 <li><strong>Leap seconds</strong>: Google/AWS "מורחים" (smear) את השנייה הנוספת על 24 שעות כך שהשעון אף פעם לא מראה 23:59:60. מתוכנן לבטל leap seconds עד 2035.</li>
 <li><strong>שעונים של לקוחות משקרים</strong>: טלפון יכול להיות בפער של שעות. לעולם לא סומכים על זמן הלקוח ל-expiry, rate limiting או סדר; רושמים גם את זמן הקבלה בשרת.</li>
 </ul>`
@@ -921,7 +921,7 @@ workers=100, size=5 -&gt; 75 million combinations.</pre>`
   ],
   interview: [
     {
-      q: { en: "A big enterprise customer wants isolation, but you run a pooled SaaS. What do you offer?", he: "לקוח enterprise גדול רוצה בידוד אבל אתם SaaS ב-pool. מה מציעים?" },
+      q: { en: "A big enterprise customer wants isolation, but you run a pooled SaaS. What do you offer?", he: "לקוח enterprise גדול רוצה בידוד אבל אתה מריץ SaaS ב-pool. מה מציעים?" },
       a: { en: "A bridge/tier model: same code, but place them on a dedicated cell or database (optionally in their region with their own KMS key), driven by the tenant placement directory. Price the tier to cover the idle capacity. Keep one deploy pipeline so the silo never becomes a fork.", he: "מודל bridge/מדרג: אותו קוד, אבל ממקמים אותם על cell או DB ייעודי (אפשר גם ב-region שלהם ועם מפתח KMS משלהם), דרך ה-placement directory. מתמחרים את ה-tier כך שיכסה קיבולת לא מנוצלת. שומרים pipeline אחד כדי שה-silo לא יהפוך ל-fork." }
     },
     {
@@ -1988,7 +1988,7 @@ if abs(time.time() - int(ts)) &gt; 300:   # replay window
 <ul>
 <li>לכן hashes קצרים בסדר ל-<em>sharding</em> (התנגשויות צפויות) אבל לא ל-<em>זהות</em>.</li>
 <li><strong>Bloom filters</strong> משתמשים ב-k פונקציות hash על מערך ביטים כדי לענות "בטוח לא קיים / אולי קיים" — Cassandra ו-RocksDB חוסכים קריאות מדיסק איתם; ~10 ביט לפריט נותנים ~1% false positives.</li>
-<li>Consistent hashing (ראו בעיית הקוד) ממפה מפתחות ל-nodes כך שהוספת node מזיזה רק ~1/N מהמפתחות.</li>
+<li>Consistent hashing (ראה בעיית הקוד) ממפה מפתחות ל-nodes כך שהוספת node מזיזה רק ~1/N מהמפתחות.</li>
 </ul>`
       }
     }
@@ -2089,7 +2089,7 @@ INFRA.lessons.push({
   },
   analogy: {
     en: "Think of a row of light switches. OR with a mask is 'turn these lights ON, leave the rest'; AND with a mask is a stencil — only lights under the holes stay as they are, everything else goes dark; XOR is 'flip these switches'. Shifting left is sliding the whole row one place to the left — every value doubles. A subnet mask is a stencil laid over an IP address that keeps only the 'street name' (network) and hides the 'house number' (host).",
-    he: "תחשבו על שורה של מתגי אור. OR עם mask זה 'תדליק את האורות האלה, את השאר תשאיר'; AND עם mask זה שבלונה — רק אורות מתחת לחורים נשארים כמו שהם, כל השאר נכבים; XOR זה 'תהפוך את המתגים האלה'. Shift שמאלה זה להזיז את כל השורה מקום אחד שמאלה — כל ערך מוכפל. Subnet mask זה שבלונה על כתובת IP שמשאירה רק את 'שם הרחוב' (network) ומסתירה את 'מספר הבית' (host)."
+    he: "תחשוב על שורה של מתגי אור. OR עם mask זה 'תדליק את האורות האלה, את השאר תשאיר'; AND עם mask זה שבלונה — רק אורות מתחת לחורים נשארים כמו שהם, כל השאר נכבים; XOR זה 'תהפוך את המתגים האלה'. Shift שמאלה זה להזיז את כל השורה מקום אחד שמאלה — כל ערך מוכפל. Subnet mask זה שבלונה על כתובת IP שמשאירה רק את 'שם הרחוב' (network) ומסתירה את 'מספר הבית' (host)."
   },
   sections: [
     {
@@ -2537,7 +2537,7 @@ JSON.parse('{"id":1234567890123456789}').id
 <li>Doubles של IEEE-754 לא יכולים לייצג 0.1 בדיוק. <strong>כסף</strong>: שומרים יחידות מינימליות כמספר שלם (<code>total_cents BIGINT</code>) או <code>NUMERIC(19,4)</code>/<code>decimal</code>; שומרים את המטבע; מגדירים עיגול (banker's rounding) במפורש.</li>
 <li><strong>מספרים גדולים ב-JSON</strong>: ל-JSON עצמו אין מגבלה, אבל ל-parsers של JS יש. שולחים IDs של 64 ביט כמחרוזות (<code>"id_str"</code>), או משתמשים ב-parsers שמכירים <code>BigInt</code>.</li>
 <li><strong>השוואת floats</strong>: עם סבולת (<code>abs(a-b) &lt; 1e-9</code>), לעולם לא <code>==</code>. NaN != NaN.</li>
-<li><strong>תאריכים</strong> ב-JSON הם בלי טיפוס — מסכימים על מחרוזות RFC 3339 (ראו את שיעור הזמן).</li>
+<li><strong>תאריכים</strong> ב-JSON הם בלי טיפוס — מסכימים על מחרוזות RFC 3339 (ראה את שיעור הזמן).</li>
 </ul>
 <blockquote>💡 מהשטח: ה-API של Stripe מייצג כל סכום כמספר שלם ביחידת המטבע הקטנה (<code>"amount": 1999</code> = $19.99), ולמטבעות בלי אגורות (JPY) אין בכלל סנטים — המטבע קובע את החזקה.</blockquote>`
       }

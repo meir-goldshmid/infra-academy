@@ -16,7 +16,7 @@ INFRA.lessons.push({
   },
   analogy: {
     en: "Think of a well-run restaurant kitchen. Each cook owns one station (S). You add a new dish by adding a recipe card, not by rebuilding the stove (O). Any certified sous-chef can cover a shift without the head chef noticing (L). The dishwasher gets a dishwasher's checklist, not the 40-page kitchen manual (I). And the head chef orders 'a fridge that keeps 4°C', not 'the Samsung RT38 in aisle 3' — so the fridge can be swapped (D).",
-    he: "תחשבו על מטבח מסעדה שמתנהל טוב. כל טבח אחראי על עמדה אחת (S). מוסיפים מנה חדשה ע\"י כרטיס מתכון חדש, לא בונים מחדש את הכיריים (O). כל סו-שף מוסמך יכול להחליף משמרת בלי שהשף הראשי ירגיש (L). שוטף הכלים מקבל צ'קליסט של שוטף כלים, לא את המדריך של 40 עמודים (I). והשף הראשי מזמין 'מקרר ששומר על 4°C', לא 'ה-Samsung RT38 במעבר 3' — כך שאפשר להחליף מקרר (D)."
+    he: "תחשוב על מטבח מסעדה שמתנהל טוב. כל טבח אחראי על עמדה אחת (S). מוסיפים מנה חדשה ע\"י כרטיס מתכון חדש, לא בונים מחדש את הכיריים (O). כל סו-שף מוסמך יכול להחליף משמרת בלי שהשף הראשי ירגיש (L). שוטף הכלים מקבל צ'קליסט של שוטף כלים, לא את המדריך של 40 עמודים (I). והשף הראשי מזמין 'מקרר ששומר על 4°C', לא 'ה-Samsung RT38 במעבר 3' — כך שאפשר להחליף מקרר (D)."
   },
   sections: [
     {
@@ -49,7 +49,7 @@ class InvoiceCalculator { total(inv: Invoice): Money { /* ... */ } }
 class InvoiceRepository { save(inv: Invoice): Promise&lt;void&gt; { /* ... */ } }
 class InvoiceMailer     { send(inv: Invoice): Promise&lt;void&gt; { /* ... */ } }</pre>
 <p><strong>ברמת service</strong>: SRP ≈ microservice שמחזיק יכולת עסקית אחת וצוות אחד. Service של "users-וגם-billing-וגם-notifications" אומר שלושה צוותים שנלחמים על merges ועושים deploy ביחד. הגרסה הארגונית היא חוק Conway: מעצבים גבולות לפי בעלות.</p>
-<blockquote>💡 מהשטח: מבחן ריח טוב — תתארו את ה-class/service במשפט אחד בלי המילה "וגם". אם ב-git log רואים צוותים לא קשורים נוגעים באותו קובץ כל שבוע, SRP שבור.</blockquote>`
+<blockquote>💡 מהשטח: מבחן ריח טוב — תתאר את ה-class/service במשפט אחד בלי המילה "וגם". אם ב-git log רואים צוותים לא קשורים נוגעים באותו קובץ כל שבוע, SRP שבור.</blockquote>`
       }
     },
     {
@@ -217,7 +217,7 @@ OrderService(FakeNotifier())                  # unit test, no network</pre>
   Do we add variants regularly (providers, formats)? -&gt; strategy/registry (O)
   Is there an external system behind it?             -&gt; port + adapter (D)
   Only one impl, no tests need a fake, short-lived?  -&gt; keep it concrete (YAGNI)</pre>
-<blockquote>⚠️ טיפ לפרודקשן: ב-design reviews תשאלו "מאיזה שינוי אנחנו מתגוננים?" אם אף אחד לא יכול לנקוב בשינוי סביר — האבסטרקציה ספקולטיבית. אם התשובה היא "החלפת ספק" או "טסטים בלי רשת" — היא מצדיקה את עצמה.</blockquote>`
+<blockquote>⚠️ טיפ לפרודקשן: ב-design reviews תשאל "מאיזה שינוי אנחנו מתגוננים?" אם אף אחד לא יכול לנקוב בשינוי סביר — האבסטרקציה ספקולטיבית. אם התשובה היא "החלפת ספק" או "טסטים בלי רשת" — היא מצדיקה את עצמה.</blockquote>`
       }
     }
   ],
@@ -287,7 +287,7 @@ INFRA.lessons.push({
   title: { en: "Design Patterns That Matter (GoF + DI, Repository, Unit of Work)", he: "Design Patterns שבאמת חשובים (GoF + DI, Repository, Unit of Work)" },
   tldr: {
     en: "Patterns are named solutions to recurring problems: creational patterns control HOW objects are made, structural patterns control how they're WRAPPED and connected, behavioral patterns control who DOES what — and every one of them is already hiding in your infrastructure.",
-    he: "Patterns הם פתרונות עם שם לבעיות חוזרות: creational שולטים ב-איך אובייקטים נוצרים, structural ב-איך עוטפים ומחברים אותם, behavioral ב-מי עושה מה — וכל אחד מהם כבר מסתתר בתשתית שלכם."
+    he: "Patterns הם פתרונות עם שם לבעיות חוזרות: creational שולטים ב-איך אובייקטים נוצרים, structural ב-איך עוטפים ומחברים אותם, behavioral ב-מי עושה מה — וכל אחד מהם כבר מסתתר בתשתית שלך."
   },
   analogy: {
     en: "Patterns are like chess openings. Nobody invents the Sicilian Defense at the board — you recognize the position and reach for a known, battle-tested response, and you can say 'Sicilian' to another player and they instantly understand five moves of intent. Saying 'put a Decorator around the client for retries' in a design review does the same thing: one word, a whole structure, shared understanding.",
@@ -411,7 +411,7 @@ HALF_OPEN --(probe ok)--&gt; CLOSED      HALF_OPEN --(probe fails)--&gt; OPEN</p
 <li><strong>Strategy</strong> — מחליפים אלגוריתם בזמן ריצה מאחורי interface אחד. <em>אנלוגיה</em>: Waze: הכי מהיר / הכי קצר / בלי אגרה. <em>בתשתית</em>: אלגוריתמי load balancing (round robin, least-conn, P2C), eviction של cache (LRU/LFU), codecs של דחיסה, מדיניות retry.</li>
 <li><strong>Observer (pub/sub)</strong> — מנויים מקבלים הודעה כשנושא משתנה. <em>אנלוגיה</em>: "הירשמו + פעמון" ביוטיוב. <em>בתשתית</em>: informers/watches של k8s שמזינים controllers, webhooks, ו-Kafka consumers ברמת מערכת.</li>
 <li><strong>Command</strong> — הופכים בקשה לאובייקט (לשים בתור, לתעד, לבטל, לנסות שוב). <em>אנלוגיה</em>: פתק הזמנה על המסילה במטבח. <em>בתשתית</em>: הודעות ב-job queue, Celery tasks, מיגרציות DB (up/down).</li>
-<li><strong>Template Method</strong> — הבסיס מגדיר שלד, ה-subclasses ממלאים צעדים. <em>אנלוגיה</em>: חתונה — הסדר קבוע, אתם בוחרים מוזיקה. <em>בתשתית</em>: frameworks של טסטים (<code>setUp/test/tearDown</code>), תבניות CI, controller-runtime שקורא ל-<code>Reconcile</code> שלכם.</li>
+<li><strong>Template Method</strong> — הבסיס מגדיר שלד, ה-subclasses ממלאים צעדים. <em>אנלוגיה</em>: חתונה — הסדר קבוע, אתה בוחר מוזיקה. <em>בתשתית</em>: frameworks של טסטים (<code>setUp/test/tearDown</code>), תבניות CI, controller-runtime שקורא ל-<code>Reconcile</code> שלך.</li>
 <li><strong>Chain of Responsibility</strong> — מעבירים בקשה בשרשרת; כל handler מטפל או מעביר. <em>אנלוגיה</em>: תמיכה L1 → L2 → L3. <em>בתשתית</em>: HTTP middleware, filter chains של Envoy, chains של iptables.</li>
 <li><strong>State</strong> — ההתנהגות משתנה לפי המצב הפנימי. <em>אנלוגיה</em>: רמזור. <em>בתשתית</em>: circuit breaker, מצבי חיבור TCP, state machines של הזמנה/תשלום.</li>
 <li><strong>Iterator</strong> — מעבר בלי לחשוף מבנה. <em>אנלוגיה</em>: "ערוץ הבא" בשלט. <em>בתשתית</em>: pagination מבוסס cursor, cursors ב-DB, offsets ב-Kafka, generators שמזרימים קובץ של 50 GB.</li>
@@ -465,11 +465,11 @@ public class PlaceOrderHandler(IOrderRepository orders, ShopDb uow) {
     await uow.SaveChangesAsync();                           // one transaction: order + outbox
   }
 }</pre>
-<blockquote>⚠️ טיפ לפרודקשן: Repository שמחזיר <code>IQueryable</code> מדליף את ה-ORM לכל caller (ומזמין N+1 queries). תחזירו אובייקטי דומיין ממומשים או מתודות query ייעודיות.</blockquote>`
+<blockquote>⚠️ טיפ לפרודקשן: Repository שמחזיר <code>IQueryable</code> מדליף את ה-ORM לכל caller (ומזמין N+1 queries). תחזיר אובייקטי דומיין ממומשים או מתודות query ייעודיות.</blockquote>`
       }
     },
     {
-      h: { en: "Cheat sheet: pattern → where you've already seen it", he: "שליף: pattern → איפה כבר ראיתם אותו" },
+      h: { en: "Cheat sheet: pattern → where you've already seen it", he: "שליף: pattern → איפה כבר ראית אותו" },
       body: {
         en: `<table>
 <tr><th>Pattern</th><th>Family</th><th>Intent</th><th>Lives in infra as…</th></tr>
@@ -510,7 +510,7 @@ public class PlaceOrderHandler(IOrderRepository orders, ShopDb uow) {
 <tr><td>State</td><td>Behavioral</td><td>התנהגות לפי מצב</td><td>Circuit breaker, TCP, workflows</td></tr>
 <tr><td>Iterator</td><td>Behavioral</td><td>מעבר בלי לחשוף</td><td>Cursor pagination, offsets ב-Kafka</td></tr>
 </table>
-<blockquote>💡 מהשטח: בראיונות אל תדקלמו את ספר ה-GoF. תראו שאתם מזהים pattern במערכת אמיתית ויודעים מה הוא עולה: "Decorator נותן retries בלי לגעת ב-SDK, אבל הסדר חשוב — timeout לכל ניסיון בתוך ה-retry, ו-deadline כולל מבחוץ."</blockquote>`
+<blockquote>💡 מהשטח: בראיונות אל תדקלם את ספר ה-GoF. תראה שאתה מזהה pattern במערכת אמיתית ויודע מה הוא עולה: "Decorator נותן retries בלי לגעת ב-SDK, אבל הסדר חשוב — timeout לכל ניסיון בתוך ה-retry, ו-deadline כולל מבחוץ."</blockquote>`
       }
     }
   ],
@@ -549,7 +549,7 @@ Observer + State + Command = k8s controller:
     { q: { en: "Decorator vs Proxy vs Adapter — what's the difference?", he: "Decorator מול Proxy מול Adapter — מה ההבדל?" },
       a: { en: "All three wrap an object. Adapter exposes a DIFFERENT interface to make an incompatible thing fit (a SOAP client behind a REST-like port). Decorator keeps the SAME interface and adds behavior (retries, metrics, caching) and is stackable. Proxy keeps the SAME interface and controls access to the real subject (lazy creation, remote call, auth) — the caller may not know the real object doesn't exist yet.", he: "שלושתם עוטפים אובייקט. Adapter חושף interface שונה כדי להתאים משהו לא תואם (client של SOAP מאחורי port דמוי REST). Decorator שומר על אותו interface ומוסיף התנהגות (retries, metrics, caching) ואפשר לשרשר. Proxy שומר על אותו interface ושולט בגישה לאובייקט האמיתי (יצירה עצלה, קריאה מרוחקת, auth) — ה-caller אולי לא יודע שהאובייקט האמיתי עוד לא קיים." } },
     { q: { en: "Which patterns do you see inside a Kubernetes controller?", he: "אילו patterns רואים בתוך controller של Kubernetes?" },
-      a: { en: "Observer (informers watch the API server and push keys to a work queue), Command (work items to reconcile, retried with backoff), State (desired vs observed status drives actions), Template Method (controller-runtime runs your Reconcile inside a fixed loop), and Iterator semantics via resourceVersion for list+watch.", he: "Observer (informers צופים ב-API server ודוחפים מפתחות ל-work queue), Command (פריטי עבודה ל-reconcile, עם retries ו-backoff), State (desired מול observed מניע פעולות), Template Method (controller-runtime מריץ את ה-Reconcile שלכם בתוך לולאה קבועה), וסמנטיקה של Iterator דרך resourceVersion ב-list+watch." } },
+      a: { en: "Observer (informers watch the API server and push keys to a work queue), Command (work items to reconcile, retried with backoff), State (desired vs observed status drives actions), Template Method (controller-runtime runs your Reconcile inside a fixed loop), and Iterator semantics via resourceVersion for list+watch.", he: "Observer (informers צופים ב-API server ודוחפים מפתחות ל-work queue), Command (פריטי עבודה ל-reconcile, עם retries ו-backoff), State (desired מול observed מניע פעולות), Template Method (controller-runtime מריץ את ה-Reconcile שלך בתוך לולאה קבועה), וסמנטיקה של Iterator דרך resourceVersion ב-list+watch." } },
     { q: { en: "Why use a Repository and Unit of Work if you already have an ORM?", he: "למה Repository ו-Unit of Work אם כבר יש ORM?" },
       a: { en: "The ORM IS a Unit of Work, but exposing it everywhere couples the domain to the ORM and lets anyone build arbitrary queries. A Repository gives a narrow, domain-shaped API that's testable with an in-memory fake; the UoW boundary makes 'one business operation = one transaction' explicit — which is also where the outbox row is written.", he: "ה-ORM הוא כבר Unit of Work, אבל לחשוף אותו בכל מקום מצמיד את הדומיין ל-ORM ומאפשר לכל אחד לבנות queries שרירותיים. Repository נותן API צר בצורת הדומיין, בר-בדיקה עם fake בזיכרון; גבול ה-UoW הופך את 'פעולה עסקית אחת = טרנזקציה אחת' למפורש — וזה גם המקום שבו נכתבת שורת ה-outbox." } }
   ],
@@ -826,7 +826,7 @@ A wakes up               -&gt; writes(token=33) REJECTED (33 &lt; 34)</pre>
 <blockquote>💡 Real world: Martin Kleppmann's critique of Redlock is exactly this: a Redis lock without fencing is fine for <em>efficiency</em> (avoid doing work twice) but not for <em>correctness</em> (never corrupt data). For correctness use a consensus store (etcd/ZooKeeper) + fencing, or make the write itself conditional (<code>UPDATE ... WHERE version = 7</code>).</blockquote>`,
         he: `<p>ברגע שמריצים 3 replicas, ה-scheduler ה"singleton" רץ 3 פעמים ושולח כל מייל 3×. אפשרויות, מהפשוטה:</p>
 <ul>
-<li><strong>לא להריץ את זה ב-replicas</strong>: <code>CronJob</code> ב-k8s עם <code>concurrencyPolicy: Forbid</code> (בלי ריצות חופפות), או Deployment נפרד עם <code>replicas: 1</code> + <code>strategy: Recreate</code> (בלי חפיפה ב-rollout). שימו לב: replicas:1 <em>לא</em> הבטחה — בזמן partition של node ה-pod הישן עשוי לרוץ עדיין בזמן שחדש עולה.</li>
+<li><strong>לא להריץ את זה ב-replicas</strong>: <code>CronJob</code> ב-k8s עם <code>concurrencyPolicy: Forbid</code> (בלי ריצות חופפות), או Deployment נפרד עם <code>replicas: 1</code> + <code>strategy: Recreate</code> (בלי חפיפה ב-rollout). שים לב: replicas:1 <em>לא</em> הבטחה — בזמן partition של node ה-pod הישן עשוי לרוץ עדיין בזמן שחדש עולה.</li>
 <li><strong>Leader election</strong>: כל ה-replicas רצים, אחד מחזיק lease ועושה את העבודה; האחרים בהמתנה. <code>Lease</code> של <code>coordination.k8s.io/v1</code> ב-Kubernetes (בשימוש ע"י kube-controller-manager וכל operator דרך controller-runtime), sessions של etcd/Consul, ephemeral nodes ב-ZooKeeper.</li>
 <li><strong>Distributed lock לכל job</strong>: <code>SET lock:report NX PX 30000</code> ב-Redis, advisory locks ב-Postgres (<code>pg_try_advisory_lock</code>), conditional writes ב-DynamoDB.</li>
 <li><strong>להפוך את העבודה לאידמפוטנטית</strong> כך שכפילויות לא מזיקות — תמיד עושים את זה בכל מקרה.</li>
@@ -915,7 +915,7 @@ app = build_app(mailer=mailer)</pre>`
   handsOn: [
     { cmd: "kubectl get lease -n kube-system", what: { en: "See real cluster-wide singletons: kube-controller-manager and kube-scheduler hold Leases; HOLDER shows the current leader.", he: "רואים singletons אמיתיים ברמת cluster: kube-controller-manager ו-kube-scheduler מחזיקים Leases; HOLDER מראה את ה-leader הנוכחי." } },
     { cmd: "python -c \"import threading,time\nclass S:\n  inst=None\n  @classmethod\n  def get(c):\n    if c.inst is None:\n      time.sleep(0.01); c.inst=object()\n    return c.inst\nr=set()\nts=[threading.Thread(target=lambda: r.add(id(S.get()))) for _ in range(8)]\n[t.start() for t in ts]; [t.join() for t in ts]; print('instances:', len(r))\"", what: { en: "Reproduce the lazy-singleton race: 8 threads, no lock → you'll usually get several 'singletons'. Add a threading.Lock and it drops to 1.", he: "משחזרים את ה-race של lazy singleton: 8 threads בלי lock → בדרך כלל יוצאים כמה 'singletons'. מוסיפים threading.Lock ויורד ל-1." } },
-    { cmd: "redis-cli SET lock:nightly-report $(hostname) NX PX 30000", what: { en: "Acquire a simple distributed lock: OK means you got it, (nil) means someone else holds it. Expires after 30 s if the holder dies.", he: "תופסים distributed lock פשוט: OK — הוא שלכם, (nil) — מישהו אחר מחזיק. פג אחרי 30 שניות אם המחזיק מת." } },
+    { cmd: "redis-cli SET lock:nightly-report $(hostname) NX PX 30000", what: { en: "Acquire a simple distributed lock: OK means you got it, (nil) means someone else holds it. Expires after 30 s if the holder dies.", he: "תופסים distributed lock פשוט: OK — הוא שלך, (nil) — מישהו אחר מחזיק. פג אחרי 30 שניות אם המחזיק מת." } },
     { cmd: "npm ls react", what: { en: "Find duplicate package copies — each copy is its own module-cache 'singleton' (the root cause of 'Invalid hook call' and instanceof bugs).", he: "מוצאים עותקים כפולים של חבילה — כל עותק הוא 'singleton' נפרד ב-module cache (שורש הבעיה של 'Invalid hook call' ובאגים של instanceof)." } }
   ],
   mnemonic: {
@@ -967,7 +967,7 @@ INFRA.lessons.push({
   },
   analogy: {
     en: "Think of a city. A sidecar is the motorcycle sidecar: a passenger bolted onto every vehicle doing the navigation and radio. A strangler fig is building a new highway next to the old road, moving traffic lane by lane, and only then demolishing the old road. A bulkhead is a ship's watertight compartments: one flooded room doesn't sink the ship. A valet key is the car key that only opens the door and starts the engine — not the trunk or glovebox — and only for tonight.",
-    he: "תחשבו על עיר. Sidecar זה סירת צד של אופנוע: נוסע שמוברג לכל רכב ועושה ניווט וקשר. Strangler fig זה לבנות כביש מהיר חדש ליד הכביש הישן, להעביר תנועה נתיב אחרי נתיב, ורק אז להרוס את הישן. Bulkhead זה תאים אטומים במים בספינה: חדר אחד שמוצף לא מטביע את הספינה. Valet key זה מפתח הוולט שפותח רק את הדלת ומניע — לא את תא המטען ולא את תא הכפפות — ורק להערב."
+    he: "תחשוב על עיר. Sidecar זה סירת צד של אופנוע: נוסע שמוברג לכל רכב ועושה ניווט וקשר. Strangler fig זה לבנות כביש מהיר חדש ליד הכביש הישן, להעביר תנועה נתיב אחרי נתיב, ורק אז להרוס את הישן. Bulkhead זה תאים אטומים במים בספינה: חדר אחד שמוצף לא מטביע את הספינה. Valet key זה מפתח הוולט שפותח רק את הדלת ומניע — לא את תא המטען ולא את תא הכפפות — ורק להערב."
   },
   sections: [
     {
@@ -1043,7 +1043,7 @@ location /api/invoices/ { proxy_pass http://invoices-svc; }   # migrated (step 3
 location /api/users/    { proxy_pass http://users-svc; }      # migrated (step 1)
 location /              { proxy_pass http://legacy-monolith; } # everything else, shrinking</pre>
 <p>משלבים עם shadow traffic (שולחים עותקים ל-service החדש ומשווים תשובות) ו-feature flags למעבר לפי tenant; ה-rollback נשאר שינוי של שורת ניתוב אחת.</p>
-<p><strong>Anti-Corruption Layer (ACL)</strong> — <em>בעיה</em>: ל-ERP הישן או ל-API של ספק יש מודל מבולגן (<code>CUST_FLG_3 = 'Y'</code>), ואם ה-service החדש משתמש בו ישירות, הבלגן מתפשט לדומיין שלכם. <em>פתרון</em>: שכבת תרגום שממירה את המודל שלהם לשלכם בגבול. <em>אנלוגיה</em>: מכס בגבול — שום דבר לא נכנס בלי בדיקה ואריזה מחדש.</p>
+<p><strong>Anti-Corruption Layer (ACL)</strong> — <em>בעיה</em>: ל-ERP הישן או ל-API של ספק יש מודל מבולגן (<code>CUST_FLG_3 = 'Y'</code>), ואם ה-service החדש משתמש בו ישירות, הבלגן מתפשט לדומיין שלך. <em>פתרון</em>: שכבת תרגום שממירה את המודל שלהם לשלך בגבול. <em>אנלוגיה</em>: מכס בגבול — שום דבר לא נכנס בלי בדיקה ואריזה מחדש.</p>
 <pre># ACL: the domain never sees SAP field names
 class SapCustomerTranslator:
     def to_domain(self, raw: dict) -&gt; Customer:
@@ -1090,7 +1090,7 @@ def get_product(pid):
 <li><strong>Saga + Compensating Transaction</strong> — טרנזקציה עסקית חוצת-services כרצף טרנזקציות מקומיות, לכל אחת ביטול סמנטי (החזר כספי, שחרור מלאי). Orchestrated (Temporal, Step Functions) או choreographed (events).</li>
 <li><strong>Transactional Outbox</strong> — כותבים את ה-event לטבלת outbox באותה טרנזקציה של ה-DB, ו-relay מעביר ל-broker (Debezium). פותר dual-write.</li>
 <li><strong>Materialized View</strong> — מחשבים מראש view מותאם לקריאה מנתונים שמפוזרים בכמה stores. <em>אנלוגיה</em>: התפריט המודפס במסעדה מול לשאול את המטבח כל פעם. <em>דוגמה</em>: טבלת <code>customer_order_summary</code> שמתעדכנת ע"י consumer; <code>MATERIALIZED VIEW</code> ב-Postgres שמתרענן כל 5 דקות; אינדקס Elasticsearch שמוזן מ-CDC.</li>
-<li><strong>Sharding</strong> — מפצלים נתונים אופקית לפי מפתח (hash של customer_id, אזור, tenant) כדי להגדיל כתיבות ואחסון. שימו לב ל-hot shards, queries חוצי-shards ו-resharding. ראו <code>#/lesson/db-sharding</code>.</li>
+<li><strong>Sharding</strong> — מפצלים נתונים אופקית לפי מפתח (hash של customer_id, אזור, tenant) כדי להגדיל כתיבות ואחסון. שים לב ל-hot shards, queries חוצי-shards ו-resharding. ראה <code>#/lesson/db-sharding</code>.</li>
 <li><strong>Patterns של cache</strong>:
 <table>
 <tr><th>Pattern</th><th>קריאה</th><th>כתיבה</th><th>Trade-off</th></tr>
@@ -1136,7 +1136,7 @@ url = s3.generate_presigned_url(
         he: `<ul>
 <li><strong>Competing Consumers</strong> — הרבה workers מושכים מתור אחד; כל הודעה הולכת ל-worker אחד. מגדיל throughput אופקית ומחליק קפיצות (queue-based load leveling). <em>אנלוגיה</em>: תור אחד בבנק, הרבה פקידים. <em>דוגמה</em>: SQS + Deployment של workers עם autoscaling (KEDA לפי עומק התור). דורש handlers אידמפוטנטיים — הודעות יכולות להימסר שוב.</li>
 <li><strong>Claim Check</strong> — <em>בעיה</em>: וידאו או PDF של 40 MB לא נכנס בהודעה (מקסימום 256 KB ב-SQS, ברירת מחדל 1 MB ב-Kafka). <em>פתרון</em>: שומרים את ה-payload ב-blob storage, ושולחים הודעה קטנה עם הפניה. <em>אנלוגיה</em>: מלתחה — מחזיקים את הפתק, לא את המעיל.</li>
-<li><strong>Leader Election</strong> — מופע אחד מתאם (מתזמן, עושה compaction, מחלק partitions) ואחרים בהמתנה. Lease ב-k8s, etcd, ZooKeeper; תמיד עם fencing בשביל נכונות. ראו <code>#/lesson/pr-singletons</code>.</li>
+<li><strong>Leader Election</strong> — מופע אחד מתאם (מתזמן, עושה compaction, מחלק partitions) ואחרים בהמתנה. Lease ב-k8s, etcd, ZooKeeper; תמיד עם fencing בשביל נכונות. ראה <code>#/lesson/pr-singletons</code>.</li>
 <li><strong>Valet Key</strong> — <em>בעיה</em>: להעביר העלאות של 2 GB דרך שרתי ה-API מבזבז רוחב פס ו-CPU. <em>פתרון</em>: ה-API מנפיק token קצר-חיים ומוגבל (pre-signed URL ב-S3, SAS ב-Azure, signed URL ב-GCS) והלקוח מדבר ישירות עם האחסון.</li>
 <li><strong>Priority Queue / Queue-based load leveling / Scheduler-agent-supervisor</strong> — תורים נפרדים לפי עדיפות, מאגר לקפיצות כדי שה-backend יראה קצב יציב, ו-supervisor שמנסה שוב או מפצה על עבודה תקועה.</li>
 </ul>
@@ -1180,7 +1180,7 @@ builder.Services.AddHttpClient("payments")
 <tr><td><strong>Circuit Breaker</strong></td><td>להפציץ תלות מתה; threads נערמים</td><td>הפיוז בלוח החשמל</td><td>נפתח ב-50% שגיאות/10 שניות, half-open אחרי 30 שניות (Resilience4j, Polly, outlier detection ב-Envoy)</td></tr>
 <tr><td><strong>Bulkhead</strong></td><td>תלות איטית אחת אוכלת את כל ה-threads/connections</td><td>תאים בספינה</td><td>pools נפרדים: 20 connections ל-payments, 10 ל-recommendations; מגבלת concurrency לכל tenant</td></tr>
 <tr><td><strong>Timeout + deadline propagation</strong></td><td>בקשות מחכות לנצח</td><td>"אם האוטובוס לא מגיע תוך 10 דקות, לוקחים מונית"</td><td>deadlines של gRPC שעוברים הלאה; כל hop מקבל את התקציב שנשאר</td></tr>
-<tr><td><strong>Throttling / rate limiting</strong></td><td>לקוח אחד או קפיצה מכלים את הקיבולת</td><td>סלקטור במועדון</td><td>Token bucket לכל API key, 429 + Retry-After. ראו <code>#/lesson/pr-rate-limiters</code></td></tr>
+<tr><td><strong>Throttling / rate limiting</strong></td><td>לקוח אחד או קפיצה מכלים את הקיבולת</td><td>סלקטור במועדון</td><td>Token bucket לכל API key, 429 + Retry-After. ראה <code>#/lesson/pr-rate-limiters</code></td></tr>
 <tr><td><strong>Load shedding / graceful degradation</strong></td><td>עומס יתר גורם לקריסה טוטאלית</td><td>מסעדה שמגישה תפריט מצומצם בערב עמוס</td><td>זורקים קודם תנועה בעדיפות נמוכה, מגישים fallbacks מ-cache/סטטיים</td></tr>
 <tr><td><strong>Health Endpoint Monitoring</strong></td><td>ה-LB/orchestrator לא יודע אם מופע עובד</td><td>אחות שבודקת סימנים חיוניים</td><td><code>/livez</code> (התהליך חי), <code>/readyz</code> (יכול לשרת: התלויות תקינות), probes סינתטיים מבחוץ</td></tr>
 </table>
@@ -1219,12 +1219,12 @@ builder.Services.AddHttpClient("payments")
 </table>
 <blockquote>💡 Real world: Microsoft's "Cloud Design Patterns" catalog (Azure Architecture Center) and AWS Prescriptive Guidance list ~40 of these with diagrams — vendor-neutral enough to be the shared vocabulary in most design reviews.</blockquote>`,
         he: `<table>
-<tr><th>אם הבעיה שלכם היא…</th><th>מושיטים יד ל</th></tr>
+<tr><th>אם הבעיה שלך היא…</th><th>מושיטים יד ל</th></tr>
 <tr><td>אותו cross-cutting concern בכל service/שפה</td><td>Sidecar / service mesh</td></tr>
 <tr><td>קישוריות יוצאת מורכבת (Redis עם shards, auth ל-DB)</td><td>Ambassador</td></tr>
 <tr><td>כל סוג לקוח רוצה צורת נתונים אחרת</td><td>BFF / gateway aggregation</td></tr>
 <tr><td>החלפת מערכת legacy בלי big bang</td><td>Strangler fig + shadow traffic</td></tr>
-<tr><td>מודל של ספק/legacy דולף לדומיין שלכם</td><td>Anti-corruption layer</td></tr>
+<tr><td>מודל של ספק/legacy דולף לדומיין שלך</td><td>Anti-corruption layer</td></tr>
 <tr><td>לעומס הקריאה ולעומס הכתיבה יש צורות שונות</td><td>CQRS + materialized views</td></tr>
 <tr><td>טרנזקציה עסקית שחוצה services</td><td>Saga + compensating transactions</td></tr>
 <tr><td>חייבים לעדכן DB ולפרסם event באופן אטומי</td><td>Transactional outbox</td></tr>
@@ -1290,7 +1290,7 @@ builder.Services.AddHttpClient("payments")
       answer: 0, explain: { en: "Store the payload in blob storage and send a small message with the reference.", he: "שומרים את ה-payload ב-blob storage ושולחים הודעה קטנה עם ההפניה." } },
     { q: { en: "Your new service must consume a legacy ERP API with cryptic field names without polluting your domain model. Pattern?", he: "ה-service החדש צריך לצרוך API של ERP ישן עם שמות שדות מוצפנים בלי לזהם את מודל הדומיין. איזה pattern?" },
       options: [ { en: "Sidecar", he: "Sidecar" }, { en: "Anti-corruption layer", he: "Anti-corruption layer" }, { en: "Competing consumers", he: "Competing consumers" }, { en: "Leader election", he: "Leader election" } ],
-      answer: 1, explain: { en: "An ACL translates the foreign model to your domain model at the boundary.", he: "ACL מתרגם את המודל הזר למודל הדומיין שלכם בגבול." } },
+      answer: 1, explain: { en: "An ACL translates the foreign model to your domain model at the boundary.", he: "ACL מתרגם את המודל הזר למודל הדומיין שלך בגבול." } },
     { q: { en: "Which cache pattern risks losing acknowledged writes if the cache node crashes?", he: "איזה pattern של cache מסתכן באובדן כתיבות שאושרו אם ה-node של ה-cache קורס?" },
       options: [ { en: "Cache-aside", he: "Cache-aside" }, { en: "Read-through", he: "Read-through" }, { en: "Write-through", he: "Write-through" }, { en: "Write-behind", he: "Write-behind" } ],
       answer: 3, explain: { en: "Write-behind acknowledges after writing the cache and flushes to the DB later — a crash before flush loses data.", he: "Write-behind מאשר אחרי כתיבה ל-cache ועושה flush ל-DB מאוחר יותר — קריסה לפני ה-flush מאבדת נתונים." } }
@@ -1307,6 +1307,6 @@ INFRA.glossary.push(
   { term: "Captive dependency", track: "principal", def: { en: "A longer-lived service (singleton) holding a shorter-lived one (scoped), keeping it alive and shared incorrectly.", he: "Service עם חיים ארוכים (singleton) שמחזיק service קצר-חיים (scoped), ומשאיר אותו חי ומשותף באופן שגוי." }, lesson: "pr-singletons" },
   { term: "Fencing token", track: "principal", def: { en: "Monotonic number issued with each lock/lease; storage rejects writes with an older token, blocking stale leaders.", he: "מספר מונוטוני שמונפק עם כל lock/lease; האחסון דוחה כתיבות עם token ישן יותר וחוסם leaders מעופשים." }, lesson: "pr-singletons" },
   { term: "Strangler fig", track: "principal", def: { en: "Incrementally replace a legacy system by routing one capability at a time to new code behind a facade.", he: "מחליפים מערכת legacy בהדרגה ע\"י ניתוב יכולת אחת בכל פעם לקוד חדש מאחורי facade." }, lesson: "pr-cloud-patterns" },
-  { term: "Anti-corruption layer", track: "principal", def: { en: "A translation layer at the boundary with a legacy/vendor system so its model doesn't leak into your domain.", he: "שכבת תרגום בגבול מול מערכת legacy/ספק כדי שהמודל שלה לא ידלוף לדומיין שלכם." }, lesson: "pr-cloud-patterns" },
+  { term: "Anti-corruption layer", track: "principal", def: { en: "A translation layer at the boundary with a legacy/vendor system so its model doesn't leak into your domain.", he: "שכבת תרגום בגבול מול מערכת legacy/ספק כדי שהמודל שלה לא ידלוף לדומיין שלך." }, lesson: "pr-cloud-patterns" },
   { term: "Valet key", track: "principal", def: { en: "A short-lived, narrowly scoped token (pre-signed URL, SAS) letting clients access storage directly.", he: "Token קצר-חיים ומוגבל (pre-signed URL, SAS) שמאפשר ללקוחות לגשת לאחסון ישירות." }, lesson: "pr-cloud-patterns" }
 );

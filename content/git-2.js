@@ -287,7 +287,7 @@ git subtree pull --prefix=vendor/proto git@github.com:acme/proto.git main --squa
       he: "להפעיל LFS ב-checkout של ה-CI כברירת מחדל ולגלות חשבון bandwidth — כל runner ephemeral מוריד את כל אובייקטי ה-LFS בכל job." }
   ],
   interview: [
-    { q: { en: "Your monorepo CI takes 50 minutes per PR. What do you do?", he: "ה-CI של ה-monorepo שלכם לוקח 50 דקות לכל PR. מה אתה עושה?" },
+    { q: { en: "Your monorepo CI takes 50 minutes per PR. What do you do?", he: "ה-CI של ה-monorepo שלך לוקח 50 דקות לכל PR. מה אתה עושה?" },
       a: { en: "Measure where time goes (checkout, install, build, test). Then: affected-only builds using the dependency graph (Nx/Turbo/Bazel/Pants), a shared remote cache, partial clone or warm self-hosted runners for checkout, test sharding, and a full build on main nightly plus when root config changes as the safety net. Target: p50 under 10 minutes.",
            he: "קודם מודד איפה הולך הזמן (checkout, install, build, test). אחר כך: build של affected-only לפי גרף התלויות (Nx/Turbo/Bazel/Pants), remote cache משותף, partial clone או runners חמים בניהול עצמי ל-checkout, sharding לטסטים, ו-build מלא על main כל לילה וכשמשתנה config ב-root כרשת ביטחון. היעד: p50 מתחת ל-10 דקות." } },
     { q: { en: "Partial clone vs shallow clone — when do you use which?", he: "Partial clone מול shallow clone — מתי משתמשים בכל אחד?" },
@@ -1083,7 +1083,7 @@ INFRA.glossary.push(
     steps: {
       s1: {
         text: t("16:07, Thursday. A junior engineer pushed a 'quick fix' straight to main of your open-source SDK repo 9 minutes ago. Then three emails arrive at once.",
-                "16:07, יום חמישי. מהנדס ג'וניור דחף 'תיקון מהיר' ישר ל-main של ה-repo הציבורי של ה-SDK שלכם לפני 9 דקות. ואז מגיעים שלושה מיילים בבת אחת."),
+                "16:07, יום חמישי. מהנדס ג'וניור דחף 'תיקון מהיר' ישר ל-main של ה-repo הציבורי של ה-SDK שלך לפני 9 דקות. ואז מגיעים שלושה מיילים בבת אחת."),
         data: `16:01  github.com/acme/acme-sdk  main  a41c9e2  "fix upload retries"  (+3 -1)  config/test_settings.py
          +AWS_ACCESS_KEY_ID = "AKIA4XQ7EXAMPLE7KQ2Z"
          +AWS_SECRET_ACCESS_KEY = "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"

@@ -282,7 +282,7 @@ window.INFRA.lessons.push({
   10.20.96.0/19    private-c
   10.20.128.0/17   רזרבה - אתה של העתיד יגיד תודה</pre>
 <p>כללי אצבע: subnets ציבוריים יכולים להיות קטנים (רק LBs ו-NAT גרים שם); subnets פרטיים צריכים להיות גדולים, במיוחד עם EKS שבו כל Pod מקבל IP מה-VPC כברירת מחדל. תשאיר מקום פנוי. ו-<strong>אף פעם לא לחפוף</strong> CIDRs עם VPCs אחרים, רשת המשרד או רשתות של שותפים - טווחים חופפים אי אפשר לחבר ב-peering או לנתב, ו-renumbering של VPC חי זה פרויקט של כמה רבעונים.</p>
-<blockquote>💡 מהשטח: צוותים בוחרים 10.0.0.0/16 לכל VPC "כי זה הדיפולט", ושנה אחרי צריכים peering ביניהם. תחזיקו טבלת IPAM פשוטה (או AWS VPC IPAM) מהיום הראשון.</blockquote>`
+<blockquote>💡 מהשטח: צוותים בוחרים 10.0.0.0/16 לכל VPC "כי זה הדיפולט", ושנה אחרי צריכים peering ביניהם. תחזיק טבלת IPAM פשוטה (או AWS VPC IPAM) מהיום הראשון.</blockquote>`
       }
     },
     {
@@ -460,7 +460,7 @@ window.INFRA.lessons.push({
         he: `<p>לכל רשומה יש <strong>TTL</strong> בשניות: "מותר לשמור את זה ב-cache ל-3600 שניות". יש caches בכל מקום - ה-recursive resolver, מערכת ההפעלה (systemd-resolved), ה-JVM (שהיסטורית שמר לנצח!), דפדפנים, וה-connection pool של ה-HTTP client שממשיך לדבר עם ה-IP הישן.</p>
 <p>הפלייבוק למיגרציה: <strong>קודם להוריד את ה-TTL</strong> (למשל מ-86400 ל-60) לפחות TTL ישן אחד לפני השינוי, לעשות את השינוי, לוודא, ואז להחזיר את ה-TTL למעלה. לשנות רשומה כשב-caches עדיין יושב TTL של 24 שעות אומר שחלק מהמשתמשים יגיעו לשרת הישן במשך יום.</p>
 <p>גם תשובות שליליות נשמרות ב-cache: אם שאלת על שם <em>לפני</em> שיצרת אותו, ה-NXDOMAIN נשמר לפי ה-negative TTL של ה-SOA. "יצרתי את הרשומה והיא עדיין לא עובדת" זה הרבה פעמים בדיוק זה.</p>
-<blockquote>💡 מהשטח: ב-Kubernetes, <code>ndots:5</code> ב-resolv.conf אומר ש-lookup ל-<code>api.stripe.com</code> מנסה קודם את <code>api.stripe.com.default.svc.cluster.local</code>, <code>...svc.cluster.local</code>, <code>...cluster.local</code> ועוד - כמה שאילתות מבוזבזות לכל קריאה. תשתמשו בשמות מלאים עם נקודה בסוף או תכווננו את ndots לקריאות חיצוניות רועשות.</blockquote>`
+<blockquote>💡 מהשטח: ב-Kubernetes, <code>ndots:5</code> ב-resolv.conf אומר ש-lookup ל-<code>api.stripe.com</code> מנסה קודם את <code>api.stripe.com.default.svc.cluster.local</code>, <code>...svc.cluster.local</code>, <code>...cluster.local</code> ועוד - כמה שאילתות מבוזבזות לכל קריאה. תשתמש בשמות מלאים עם נקודה בסוף או תכוונן את ndots לקריאות חיצוניות רועשות.</blockquote>`
       }
     },
     {
@@ -614,7 +614,7 @@ window.INFRA.lessons.push({
 <tr><td>503</td><td>service unavailable - אין backends בריאים / עומס</td><td>קיבולת, health checks</td></tr>
 <tr><td>504</td><td>gateway timeout - ה-upstream איטי מדי</td><td>upstream איטי / timeouts לא מתואמים</td></tr>
 </table>
-<p>Idempotency חשוב ל-retries: proxy שעושה retry ל-<code>POST /payments</code> שנתקע ב-timeout יכול לחייב פעמיים. תשתמשו ב-idempotency keys.</p>`
+<p>Idempotency חשוב ל-retries: proxy שעושה retry ל-<code>POST /payments</code> שנתקע ב-timeout יכול לחייב פעמיים. תשתמש ב-idempotency keys.</p>`
       }
     },
     {
@@ -627,7 +627,7 @@ window.INFRA.lessons.push({
         he: `<p><strong>HTTP/1.1</strong> (1997): מבוסס טקסט, בקשה אחת בכל פעם לכל חיבור. <strong>Keep-alive</strong> ממחזר את חיבור ה-TCP+TLS לבקשה הבאה וחוסך handshakes, אבל התשובות עדיין עומדות בתור (head-of-line blocking), אז דפדפנים פותחים בערך 6 חיבורים לכל host.</p>
 <p><strong>HTTP/2</strong> (2015): framing בינארי, <strong>multiplexing</strong> של הרבה streams על חיבור TCP אחד, דחיסת headers (HPACK). gRPC רץ עליו. הקאץ': packet אחד שאבד ב-TCP עוצר את <em>כל</em> ה-streams, כי TCP חייב למסור בתים לפי הסדר - ה-head-of-line blocking פשוט ירד שכבה.</p>
 <p><strong>HTTP/3</strong> (2022): רץ על <strong>QUIC מעל UDP</strong>. כל stream אמין בפני עצמו, אז packet שאבד עוצר רק את ה-stream שלו. TLS 1.3 מובנה, הקמת חיבור היא 1 RTT (0-RTT בחידוש), וחיבורים שורדים מעבר רשת (מ-Wi-Fi ל-5G) בזכות connection IDs במקום ה-5-tuple.</p>
-<blockquote>💡 מהשטח: gRPC מעל HTTP/2 מחזיק חיבור אחד ארוך, אז load balancer ב-L4 נועץ את כל הבקשות של קליינט ב-backend אחד. בגלל זה gRPC צריך LB ב-L7 או balancing בצד הקליינט - ראו את שיעור Load Balancing.</blockquote>`
+<blockquote>💡 מהשטח: gRPC מעל HTTP/2 מחזיק חיבור אחד ארוך, אז load balancer ב-L4 נועץ את כל הבקשות של קליינט ב-backend אחד. בגלל זה gRPC צריך LB ב-L7 או balancing בצד הקליינט - ראה את שיעור Load Balancing.</blockquote>`
       }
     },
     {
@@ -823,10 +823,10 @@ window.INFRA.lessons.push({
 <p>What should <code>/healthz</code> check? Keep it about <em>this instance</em> (process up, can serve). If it also checks the shared database, one DB blip marks <strong>every</strong> backend unhealthy at once and the LB returns 503 to everyone - you turned a partial outage into a total one. Also implement <strong>connection draining</strong> (deregistration delay) so in-flight requests finish during deploys.</p>
 <p><strong>Sticky sessions</strong> pin a user to one backend via a cookie. They make in-memory sessions "work", but cause uneven load, break when that instance dies (user logged out), and fight autoscaling. Better: make servers stateless and keep sessions in Redis or a signed JWT.</p>
 <blockquote>⚠️ Production tip: a deep health check that calls the DB is great for <em>alerting</em>, terrible for <em>LB routing</em>. Have two endpoints: <code>/livez</code> (shallow) for the LB, <code>/readyz</code> or a separate monitor for dependencies.</blockquote>`,
-        he: `<p>Health check זה ה-LB ששואל כל backend, למשל <code>GET /healthz</code> כל 10 שניות, מסמן unhealthy אחרי 3 כישלונות ו-healthy שוב אחרי 2 הצלחות. כלומר instance מת יכול לקבל תעבורה בערך 30 שניות לפני שמוציאים אותו - כווננו interval כפול threshold לפי מה שאתם מוכנים לסבול.</p>
-<p>מה <code>/healthz</code> צריך לבדוק? שיישאר על <em>ה-instance הזה</em> (התהליך למעלה, מסוגל להגיש). אם הוא בודק גם את הדאטהבייס המשותף, תקלה רגעית ב-DB מסמנת את <strong>כל</strong> ה-backends כ-unhealthy בבת אחת וה-LB מחזיר 503 לכולם - הפכתם תקלה חלקית לתקלה מלאה. תממשו גם <strong>connection draining</strong> (deregistration delay) כדי שבקשות באמצע יסתיימו בזמן deploy.</p>
+        he: `<p>Health check זה ה-LB ששואל כל backend, למשל <code>GET /healthz</code> כל 10 שניות, מסמן unhealthy אחרי 3 כישלונות ו-healthy שוב אחרי 2 הצלחות. כלומר instance מת יכול לקבל תעבורה בערך 30 שניות לפני שמוציאים אותו - כוונן interval כפול threshold לפי מה שאתה מוכן לסבול.</p>
+<p>מה <code>/healthz</code> צריך לבדוק? שיישאר על <em>ה-instance הזה</em> (התהליך למעלה, מסוגל להגיש). אם הוא בודק גם את הדאטהבייס המשותף, תקלה רגעית ב-DB מסמנת את <strong>כל</strong> ה-backends כ-unhealthy בבת אחת וה-LB מחזיר 503 לכולם - הפכת תקלה חלקית לתקלה מלאה. תממש גם <strong>connection draining</strong> (deregistration delay) כדי שבקשות באמצע יסתיימו בזמן deploy.</p>
 <p><strong>Sticky sessions</strong> נועצות משתמש ל-backend אחד דרך cookie. הן גורמות ל-sessions בזיכרון "לעבוד", אבל יוצרות עומס לא מאוזן, נשברות כשה-instance מת (המשתמש מתנתק), ומתנגשות ב-autoscaling. עדיף: שרתים stateless ו-sessions ב-Redis או ב-JWT חתום.</p>
-<blockquote>⚠️ טיפ לפרודקשן: health check עמוק שקורא ל-DB מעולה ל-<em>התראות</em>, גרוע ל-<em>ניתוב ב-LB</em>. תחזיקו שני endpoints: <code>/livez</code> (רדוד) ל-LB, ו-<code>/readyz</code> או מוניטור נפרד ל-dependencies.</blockquote>`
+<blockquote>⚠️ טיפ לפרודקשן: health check עמוק שקורא ל-DB מעולה ל-<em>התראות</em>, גרוע ל-<em>ניתוב ב-LB</em>. תחזיק שני endpoints: <code>/livez</code> (רדוד) ל-LB, ו-<code>/readyz</code> או מוניטור נפרד ל-dependencies.</blockquote>`
       }
     },
     {
@@ -866,7 +866,7 @@ window.INFRA.lessons.push({
   ],
   mnemonic: {
     en: "\"L4 counts cars, L7 reads the mail\": L4 balances connections, L7 opens requests. And for stickiness: \"Sticky is icky - store state elsewhere.\"",
-    he: "\"L4 סופר מכוניות, L7 קורא את הדואר\": L4 מאזן חיבורים, L7 פותח בקשות. ולגבי sticky: \"Sticky זה יאקי - תשמרו state במקום אחר.\""
+    he: "\"L4 סופר מכוניות, L7 קורא את הדואר\": L4 מאזן חיבורים, L7 פותח בקשות. ולגבי sticky: \"Sticky זה יאקי - תשמור state במקום אחר.\""
   },
   pitfalls: [
     { en: "Health checks that depend on shared dependencies (DB, Redis) - one dependency blip marks all backends unhealthy and causes a full outage.", he: "Health checks שתלויים ב-dependencies משותפים (DB, Redis) - תקלה רגעית אחת מסמנת את כל ה-backends כ-unhealthy וגורמת להשבתה מלאה." },
@@ -905,7 +905,7 @@ window.INFRA.lessons.push({
         { en: "The LB automatically fails over to another region", he: "ה-LB עובר אוטומטית ל-region אחר" }
       ],
       answer: 0,
-      explain: { en: "A shared dependency failing fails every instance's check simultaneously. Keep LB health checks shallow.", he: "כשתלות משותפת נופלת, הבדיקה של כל ה-instances נכשלת בבת אחת. תשאירו את ה-health checks של ה-LB רדודים." }
+      explain: { en: "A shared dependency failing fails every instance's check simultaneously. Keep LB health checks shallow.", he: "כשתלות משותפת נופלת, הבדיקה של כל ה-instances נכשלת בבת אחת. תשאיר את ה-health checks של ה-LB רדודים." }
     },
     {
       q: { en: "Which technique lets one IP address be served from dozens of locations worldwide?", he: "איזו טכניקה מאפשרת לכתובת IP אחת להיות מוגשת מעשרות מקומות בעולם?" },
@@ -946,9 +946,9 @@ window.INFRA.lessons.push({
         en: `<p>A <strong>forward proxy</strong> sits in front of <em>clients</em>. Corporate egress proxies (Squid, Zscaler) filter and log outbound traffic; servers see the proxy's IP. Your tools honor it via <code>HTTPS_PROXY=http://proxy:3128</code> and skip it with <code>NO_PROXY=.internal,10.0.0.0/8</code>.</p>
 <p>A <strong>reverse proxy</strong> sits in front of <em>servers</em>. Clients think it <em>is</em> the server. It terminates TLS, routes, load balances, compresses, caches, rate limits, and hides your topology. nginx, HAProxy, Envoy, Traefik, Kubernetes Ingress controllers, API gateways and CDNs are all reverse proxies.</p>
 <p>Because the backend now sees the proxy's IP, the real client IP travels in <code>X-Forwarded-For: client, proxy1, proxy2</code> (and <code>X-Forwarded-Proto</code> for the original scheme). Only trust that header from your own proxies - anyone can send a fake one, and an IP allowlist built on a spoofable header is no allowlist at all.</p>`,
-        he: `<p><strong>Forward proxy</strong> יושב מול <em>הקליינטים</em>. Egress proxies ארגוניים (Squid, Zscaler) מסננים ומתעדים תעבורה יוצאת; השרתים רואים את ה-IP של ה-proxy. הכלים שלכם מכבדים אותו דרך <code>HTTPS_PROXY=http://proxy:3128</code> ומדלגים עליו עם <code>NO_PROXY=.internal,10.0.0.0/8</code>.</p>
-<p><strong>Reverse proxy</strong> יושב מול <em>השרתים</em>. הקליינטים חושבים שהוא <em>השרת</em>. הוא עושה TLS termination, ניתוב, load balancing, דחיסה, caching, rate limiting ומסתיר את הטופולוגיה שלכם. nginx, HAProxy, Envoy, Traefik, Ingress controllers ב-Kubernetes, API gateways ו-CDNs - כולם reverse proxies.</p>
-<p>כיוון שה-backend רואה עכשיו את ה-IP של ה-proxy, ה-IP האמיתי של הקליינט עובר ב-<code>X-Forwarded-For: client, proxy1, proxy2</code> (ו-<code>X-Forwarded-Proto</code> בשביל ה-scheme המקורי). לסמוך על ה-header הזה רק כשהוא מגיע מה-proxies שלכם - כל אחד יכול לשלוח אחד מזויף, ו-allowlist של IPs שמבוסס על header שאפשר לזייף הוא לא allowlist.</p>`
+        he: `<p><strong>Forward proxy</strong> יושב מול <em>הקליינטים</em>. Egress proxies ארגוניים (Squid, Zscaler) מסננים ומתעדים תעבורה יוצאת; השרתים רואים את ה-IP של ה-proxy. הכלים שלך מכבדים אותו דרך <code>HTTPS_PROXY=http://proxy:3128</code> ומדלגים עליו עם <code>NO_PROXY=.internal,10.0.0.0/8</code>.</p>
+<p><strong>Reverse proxy</strong> יושב מול <em>השרתים</em>. הקליינטים חושבים שהוא <em>השרת</em>. הוא עושה TLS termination, ניתוב, load balancing, דחיסה, caching, rate limiting ומסתיר את הטופולוגיה שלך. nginx, HAProxy, Envoy, Traefik, Ingress controllers ב-Kubernetes, API gateways ו-CDNs - כולם reverse proxies.</p>
+<p>כיוון שה-backend רואה עכשיו את ה-IP של ה-proxy, ה-IP האמיתי של הקליינט עובר ב-<code>X-Forwarded-For: client, proxy1, proxy2</code> (ו-<code>X-Forwarded-Proto</code> בשביל ה-scheme המקורי). לסמוך על ה-header הזה רק כשהוא מגיע מה-proxies שלך - כל אחד יכול לשלוח אחד מזויף, ו-allowlist של IPs שמבוסס על header שאפשר לזייף הוא לא allowlist.</p>`
       }
     },
     {
@@ -1026,7 +1026,7 @@ server {
 <tr><td><code>ETag</code> + <code>If-None-Match</code></td><td>Revalidation: לא השתנה, אז השרת עונה 304 בלי body</td></tr>
 <tr><td><code>Vary: Accept-Encoding</code></td><td>לשמור עותק נפרד לכל ערך של ה-header</td></tr>
 </table>
-<blockquote>⚠️ טיפ לפרודקשן: לעולם לא לתת ל-CDN לשמור תשובה שיש בה <code>Set-Cookie</code> או מידע של משתמש. התקלות המפורסמות של "משתמש A רואה את עמוד החשבון של משתמש B" הן טעויות ב-cache key. סמנו תשובות אישיות כ-<code>private, no-store</code>.</blockquote>`
+<blockquote>⚠️ טיפ לפרודקשן: לעולם לא לתת ל-CDN לשמור תשובה שיש בה <code>Set-Cookie</code> או מידע של משתמש. התקלות המפורסמות של "משתמש A רואה את עמוד החשבון של משתמש B" הן טעויות ב-cache key. סמן תשובות אישיות כ-<code>private, no-store</code>.</blockquote>`
       }
     },
     {
@@ -1047,7 +1047,7 @@ location /api/ {
     limit_req_status 429;
 }</pre>
 <p>הבחירה של המפתח חשובה: הגבלה לפי IP מענישה משרד שלם שיושב מאחורי NAT אחד; הגבלה לפי API key או user ID הוגנת יותר. הגבלות מבוזרות על פני הרבה edge nodes הן מקורבות - וזה בסדר. משלבים עם <strong>WAF</strong> לדפוסי תקיפה מוכרים ועם יכולת ספיגת ה-DDoS של ה-CDN להצפות נפחיות.</p>
-<blockquote>💡 מהשטח: שימו הגבלות זולות וגסות ב-CDN/WAF (למשל 2,000 בקשות ל-5 דקות לכל IP על /login) והגבלות עסקיות מדויקות (quotas לפי תוכנית) ב-API gateway, שם יודעים מי הלקוח.</blockquote>`
+<blockquote>💡 מהשטח: שים הגבלות זולות וגסות ב-CDN/WAF (למשל 2,000 בקשות ל-5 דקות לכל IP על /login) והגבלות עסקיות מדויקות (quotas לפי תוכנית) ב-API gateway, שם יודעים מי הלקוח.</blockquote>`
       }
     }
   ],
@@ -1072,9 +1072,9 @@ location /api/ {
     he: "\"Forward מסתיר את הקליינט, Reverse מסתיר את השרת.\" ול-caching: \"no-cache אומר לבדוק, no-store אומר אף פעם.\""
   },
   pitfalls: [
-    { en: "Trusting X-Forwarded-For from anyone - attackers spoof it to bypass IP allowlists and rate limits. Only accept it from your own proxy hops.", he: "לסמוך על X-Forwarded-For מכל אחד - תוקפים מזייפים אותו כדי לעקוף allowlists ו-rate limits. לקבל אותו רק מה-proxies שלכם." },
+    { en: "Trusting X-Forwarded-For from anyone - attackers spoof it to bypass IP allowlists and rate limits. Only accept it from your own proxy hops.", he: "לסמוך על X-Forwarded-For מכל אחד - תוקפים מזייפים אותו כדי לעקוף allowlists ו-rate limits. לקבל אותו רק מה-proxies שלך." },
     { en: "Thinking no-cache means 'don't cache'. It means 'revalidate'. Use no-store for sensitive responses.", he: "לחשוב ש-no-cache אומר 'אל תשמור'. הוא אומר 'תעשה revalidate'. ל-תשובות רגישות משתמשים ב-no-store." },
-    { en: "Long max-age on non-fingerprinted files (index.html, app.js) - after a deploy, users get stale code for days. Fingerprint asset names, keep HTML short-lived.", he: "max-age ארוך על קבצים בלי fingerprint (index.html, app.js) - אחרי deploy משתמשים מקבלים קוד ישן לימים. תנו ל-assets שמות עם fingerprint, ול-HTML זמן חיים קצר." },
+    { en: "Long max-age on non-fingerprinted files (index.html, app.js) - after a deploy, users get stale code for days. Fingerprint asset names, keep HTML short-lived.", he: "max-age ארוך על קבצים בלי fingerprint (index.html, app.js) - אחרי deploy משתמשים מקבלים קוד ישן לימים. תן ל-assets שמות עם fingerprint, ול-HTML זמן חיים קצר." },
     { en: "Rate limiting only by IP: corporate NATs and mobile carriers put thousands of users behind one IP.", he: "Rate limiting רק לפי IP: NATs ארגוניים וספקים סלולריים שמים אלפי משתמשים מאחורי IP אחד." }
   ],
   interview: [
@@ -1111,7 +1111,7 @@ location /api/ {
       explain: { en: "It acts on behalf of clients going out. Reverse proxies, CDNs and LBs act on behalf of servers receiving traffic.", he: "הוא פועל בשם הקליינטים שיוצאים החוצה. Reverse proxies, CDNs ו-LBs פועלים בשם שרתים שמקבלים תעבורה." }
     },
     {
-      q: { en: "Users report seeing other users' dashboards after you put the app behind a CDN. Most likely cause?", he: "משתמשים מדווחים שהם רואים דשבורדים של משתמשים אחרים אחרי שהכנסתם את האפליקציה מאחורי CDN. מה הסיבה הכי סבירה?" },
+      q: { en: "Users report seeing other users' dashboards after you put the app behind a CDN. Most likely cause?", he: "משתמשים מדווחים שהם רואים דשבורדים של משתמשים אחרים אחרי שהכנסת את האפליקציה מאחורי CDN. מה הסיבה הכי סבירה?" },
       options: [
         { en: "The TLS certificate is shared across users", he: "תעודת ה-TLS משותפת לכל המשתמשים" },
         { en: "Personalized responses were cached because they lacked private/no-store", he: "תשובות אישיות נשמרו ב-cache כי חסר להן private/no-store" },
@@ -1168,8 +1168,8 @@ window.INFRA.lessons.push({
 <p>Alternatives: NAT instances (cheaper, you babysit them), IPv6 with an egress-only IGW (no NAT charge), or simply not routing big flows through NAT.</p>`,
         he: `<p>instances פרטיים עדיין צריכים גישה החוצה: למשוך Docker images, לקרוא ל-Stripe, להתקין חבילות. <strong>NAT Gateway</strong> יושב ב-subnet ציבורי, משכתב את ה-IP של המקור ל-Elastic IP שלו, ועוקב אחרי חיבורים כדי שהתשובות יחזרו. חיבורים שנוזמים מבחוץ פנימה - בלתי אפשריים דרכו.</p>
 <p>ההפתעה בחשבון (בערך, AWS us-east-1): <strong>כ-$0.045 לשעה לכל NAT GW (כ-$32 לחודש)</strong> <em>ועוד</em> <strong>כ-$0.045 לכל GB שעובר</strong>. אחד לכל AZ בשביל HA = כ-$100 לחודש עוד לפני דאטה. ואז שירות מושך 10TB בחודש של images ואובייקטים מ-S3 דרכו: עוד $450. תעבורה בין AZs ל-NAT ב-AZ אחר מוסיפה כ-$0.01 ל-GB לכל כיוון.</p>
-<blockquote>⚠️ טיפ לפרודקשן: התיקון מספר 1 לחשבון ה-NAT הוא <strong>VPC Gateway Endpoints ל-S3 ול-DynamoDB</strong> - חינם, והתעבורה לשירותים האלה עוקפת את ה-NAT לגמרי. תוסיפו interface endpoints ל-ECR, ותבדקו ב-VPC Flow Logs מי הכי מדבר דרך ה-NAT. צוותים מגלים שוב ושוב שה-NAT הוא שורת ה-networking הכי יקרה שלהם.</blockquote>
-<p>חלופות: NAT instances (זול יותר, אבל אתם הבייביסיטר), IPv6 עם egress-only IGW (בלי חיוב NAT), או פשוט לא להעביר זרמים גדולים דרך NAT.</p>`
+<blockquote>⚠️ טיפ לפרודקשן: התיקון מספר 1 לחשבון ה-NAT הוא <strong>VPC Gateway Endpoints ל-S3 ול-DynamoDB</strong> - חינם, והתעבורה לשירותים האלה עוקפת את ה-NAT לגמרי. תוסיף interface endpoints ל-ECR, ותבדוק ב-VPC Flow Logs מי הכי מדבר דרך ה-NAT. צוותים מגלים שוב ושוב שה-NAT הוא שורת ה-networking הכי יקרה שלהם.</blockquote>
+<p>חלופות: NAT instances (זול יותר, אבל אתה הבייביסיטר), IPv6 עם egress-only IGW (בלי חיוב NAT), או פשוט לא להעביר זרמים גדולים דרך NAT.</p>`
       }
     },
     {
@@ -1236,7 +1236,7 @@ window.INFRA.lessons.push({
     he: "\"לציבורי יש שער, לפרטי יש סניף דואר\": IGW ל-subnets ציבוריים, NAT לפרטיים. ו-\"Peering לא מעביר חבילות הלאה\" - הוא לא טרנזיטיבי."
   },
   pitfalls: [
-    { en: "Routing S3/ECR traffic through the NAT Gateway and paying per GB for it - add gateway/interface endpoints.", he: "להעביר תעבורת S3/ECR דרך ה-NAT Gateway ולשלם עליה לפי GB - תוסיפו gateway/interface endpoints." },
+    { en: "Routing S3/ECR traffic through the NAT Gateway and paying per GB for it - add gateway/interface endpoints.", he: "להעביר תעבורת S3/ECR דרך ה-NAT Gateway ולשלם עליה לפי GB - תוסיף gateway/interface endpoints." },
     { en: "A single NAT Gateway for all AZs: if its AZ fails, every private subnet loses outbound access (and you pay cross-AZ fees meanwhile).", he: "NAT Gateway אחד לכל ה-AZs: אם ה-AZ שלו נופל, כל ה-subnets הפרטיים מאבדים גישה החוצה (ובינתיים משלמים על cross-AZ)." },
     { en: "Expecting VPC peering to be transitive (A-B-C) - it isn't; use Transit Gateway for hub-and-spoke.", he: "לצפות ש-VPC peering יהיה טרנזיטיבי (A-B-C) - הוא לא; ל-hub-and-spoke משתמשים ב-Transit Gateway." },
     { en: "Putting databases in public subnets 'temporarily' with a public IP. Temporary infrastructure is the most permanent kind.", he: "לשים דאטהבייסים ב-subnets ציבוריים 'זמנית' עם IP ציבורי. תשתית זמנית היא הכי קבועה שיש." }
@@ -1388,7 +1388,7 @@ iptables -A INPUT -p tcp --dport 22  -s 203.0.113.0/24 -j ACCEPT
 iptables -A INPUT -p tcp --dport 443 -j ACCEPT
 iptables -P INPUT DROP</pre>
 <blockquote>⚠️ Production tip: setting <code>-P INPUT DROP</code> over SSH before allowing your own session is the classic way to lock yourself out of a server. Add the ESTABLISHED and SSH rules first, or use a "revert in 5 minutes unless confirmed" safety net.</blockquote>`,
-        he: `<p><strong>WAF (Web Application Firewall)</strong> עובד ב-L7: הוא מפענח HTTP וחוסם SQL injection (<code>' OR 1=1--</code>), XSS, path traversal, בוטים רעים והצפות לפי קצב. AWS WAF, Cloudflare ו-Azure Front Door מגיעים עם managed rule sets (OWASP Top 10). חוקים חדשים מריצים קודם ב-<strong>count mode</strong>: WAF שחוסם את ה-JSON של טופס התשלום שלכם הוא השבתה שגרמתם לעצמכם. WAF הוא רשת ביטחון, לא תחליף ל-parameterized queries.</p>
+        he: `<p><strong>WAF (Web Application Firewall)</strong> עובד ב-L7: הוא מפענח HTTP וחוסם SQL injection (<code>' OR 1=1--</code>), XSS, path traversal, בוטים רעים והצפות לפי קצב. AWS WAF, Cloudflare ו-Azure Front Door מגיעים עם managed rule sets (OWASP Top 10). חוקים חדשים מריצים קודם ב-<strong>count mode</strong>: WAF שחוסם את ה-JSON של טופס התשלום שלך הוא השבתה שגרמת לעצמך. WAF הוא רשת ביטחון, לא תחליף ל-parameterized queries.</p>
 <p><strong>Firewalls על המכונה</strong> רצים ב-kernel של לינוקס (netfilter). iptables הוא ה-CLI הקלאסי, nftables היורש המודרני; ufw ו-firewalld הם עטיפות ידידותיות. גם kube-proxy של Kubernetes ו-Docker כותבים חוקי iptables - ובגלל זה <code>iptables -L</code> על node של k8s זה אלפי שורות.</p>
 <pre># allow established replies, SSH from office, HTTPS from anyone, drop the rest
 iptables -A INPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
@@ -1396,7 +1396,7 @@ iptables -A INPUT -i lo -j ACCEPT
 iptables -A INPUT -p tcp --dport 22  -s 203.0.113.0/24 -j ACCEPT
 iptables -A INPUT -p tcp --dport 443 -j ACCEPT
 iptables -P INPUT DROP</pre>
-<blockquote>⚠️ טיפ לפרודקשן: להגדיר <code>-P INPUT DROP</code> דרך SSH לפני שהתרתם את ה-session שלכם זו הדרך הקלאסית לנעול את עצמכם מחוץ לשרת. קודם מוסיפים את החוקים של ESTABLISHED ו-SSH, או משתמשים ברשת ביטחון של "revert בעוד 5 דקות אם לא אישרתי".</blockquote>`
+<blockquote>⚠️ טיפ לפרודקשן: להגדיר <code>-P INPUT DROP</code> דרך SSH לפני שהתרת את ה-session שלך זו הדרך הקלאסית לנעול את עצמך מחוץ לשרת. קודם מוסיפים את החוקים של ESTABLISHED ו-SSH, או משתמשים ברשת ביטחון של "revert בעוד 5 דקות אם לא אישרתי".</blockquote>`
       }
     }
   ],
@@ -1514,7 +1514,7 @@ window.INFRA.lessons.push({
 <li><strong>שכבת data</strong>: מקבלת רק ports של DB, רק משכבת ה-app. בלי שום route לאינטרנט, אפילו לא דרך NAT אם אפשר.</li>
 </ul>
 <p>כל חץ הוא allow מפורש; כל השאר חסום. סביבות מפרידים עוד יותר: prod ו-dev ב-VPCs שונים, ועדיף ב-cloud accounts שונים, כך ש-credential שדלף מ-dev בכלל לא <em>רואה</em> את prod.</p>
-<p>יש שני כיוונים. תעבורת <strong>north-south</strong> נכנסת או יוצאת מהסביבה (משתמשים ל-LB, אפליקציה ל-Stripe). תעבורת <strong>east-west</strong> זורמת בין השירותים שלכם - ובמיקרו-שירותים זה 80% ומעלה מכל התעבורה, והמסלול שתוקפים משתמשים בו ל-<em>lateral movement</em>. Firewalls של ה-perimeter רואים רק north-south.</p>`
+<p>יש שני כיוונים. תעבורת <strong>north-south</strong> נכנסת או יוצאת מהסביבה (משתמשים ל-LB, אפליקציה ל-Stripe). תעבורת <strong>east-west</strong> זורמת בין השירותים שלך - ובמיקרו-שירותים זה 80% ומעלה מכל התעבורה, והמסלול שתוקפים משתמשים בו ל-<em>lateral movement</em>. Firewalls של ה-perimeter רואים רק north-south.</p>`
       }
     },
     {
@@ -1754,8 +1754,8 @@ window.INFRA.lessons.push({
 <li><strong>ה-TLS תקין?</strong> <code>openssl s_client -connect host:443 -servername host</code> - שרשרת תקינה, hostname נכון, לא פג?</li>
 <li><strong>האפליקציה עונה?</strong> <code>curl -v</code> - status code, headers, body, וכמה זמן לקח כל שלב.</li>
 </ol>
-<p>שימו לב גם <em>מאיפה</em> בודקים. "עובד מהלפטופ, נכשל מה-Pod" מצביע על DNS בתוך הקלאסטר, NetworkPolicy או חוקי egress; "נכשל מכל מקום" מצביע על השירות או ה-LB שלו.</p>
-<blockquote>💡 מהשטח: טקסט השגיאה אומר לכם את השכבה. <em>Could not resolve host</em> = DNS. <em>Connection timed out</em> = route/firewall שזורק. <em>Connection refused</em> = המכונה למעלה, אף אחד לא מאזין. <em>SSL certificate problem</em> = TLS. <em>HTTP 502/503/504</em> = הגעתם עד proxy, הבעיה מאחוריו.</blockquote>`
+<p>שים לב גם <em>מאיפה</em> בודקים. "עובד מהלפטופ, נכשל מה-Pod" מצביע על DNS בתוך הקלאסטר, NetworkPolicy או חוקי egress; "נכשל מכל מקום" מצביע על השירות או ה-LB שלו.</p>
+<blockquote>💡 מהשטח: טקסט השגיאה אומר לך את השכבה. <em>Could not resolve host</em> = DNS. <em>Connection timed out</em> = route/firewall שזורק. <em>Connection refused</em> = המכונה למעלה, אף אחד לא מאזין. <em>SSL certificate problem</em> = TLS. <em>HTTP 502/503/504</em> = הגעת עד proxy, הבעיה מאחוריו.</blockquote>`
       }
     },
     {
@@ -1792,12 +1792,12 @@ HOST                    Loss%  Snt  Last   Avg  Best  Wrst
 
 dns:0.004 tcp:0.135 tls:0.270 ttfb:2.910 total:2.915</pre>
 <p>The values are cumulative from the start. Reading this one: DNS fast (4 ms), TCP took 131 ms (one RTT to a far region), TLS another 135 ms (one more RTT, TLS 1.3), then <strong>2.6 s waiting for the first byte</strong> - the server is slow, not the network. If <code>dns</code> were 5 s, you'd look at resolvers (a 5 s value smells like a UDP timeout and retry). If <code>tcp</code> were huge, look at routing, distance or SYN drops.</p>`,
-        he: `<p><code>curl -v</code> מספר הכל: ה-IP שהתקבל, חיבור ה-TCP, גרסת ה-TLS והתעודה, ה-headers של הבקשה (<code>&gt;</code>) ושל התשובה (<code>&lt;</code>). הוסיפו <code>--resolve api.example.com:443:10.0.2.11</code> כדי לפנות ל-backend ספציפי ועדיין לשמור Host/SNI נכונים - מושלם לבדיקת שרת בודד מאחורי LB.</p>
+        he: `<p><code>curl -v</code> מספר הכל: ה-IP שהתקבל, חיבור ה-TCP, גרסת ה-TLS והתעודה, ה-headers של הבקשה (<code>&gt;</code>) ושל התשובה (<code>&lt;</code>). הוסף <code>--resolve api.example.com:443:10.0.2.11</code> כדי לפנות ל-backend ספציפי ועדיין לשמור Host/SNI נכונים - מושלם לבדיקת שרת בודד מאחורי LB.</p>
 <p>כשמשהו "איטי", מפרקים לאן הזמן הולך:</p>
 <pre>curl -o /dev/null -s -w 'dns:%{time_namelookup} tcp:%{time_connect} tls:%{time_appconnect} ttfb:%{time_starttransfer} total:%{time_total}\n' https://api.example.com/health
 
 dns:0.004 tcp:0.135 tls:0.270 ttfb:2.910 total:2.915</pre>
-<p>הערכים מצטברים מההתחלה. קריאה של הדוגמה: DNS מהיר (4ms), TCP לקח 131ms (RTT אחד ל-region רחוק), TLS עוד 135ms (עוד RTT, TLS 1.3), ואז <strong>2.6 שניות של המתנה לבייט הראשון</strong> - השרת איטי, לא הרשת. אם <code>dns</code> היה 5 שניות, הייתם בודקים את ה-resolvers (5 שניות מריח כמו timeout של UDP ו-retry). אם <code>tcp</code> היה ענק, בודקים routing, מרחק או SYNs שנזרקים.</p>`
+<p>הערכים מצטברים מההתחלה. קריאה של הדוגמה: DNS מהיר (4ms), TCP לקח 131ms (RTT אחד ל-region רחוק), TLS עוד 135ms (עוד RTT, TLS 1.3), ואז <strong>2.6 שניות של המתנה לבייט הראשון</strong> - השרת איטי, לא הרשת. אם <code>dns</code> היה 5 שניות, היית בודק את ה-resolvers (5 שניות מריח כמו timeout של UDP ו-retry). אם <code>tcp</code> היה ענק, בודקים routing, מרחק או SYNs שנזרקים.</p>`
       }
     },
     {
@@ -1842,7 +1842,7 @@ dns:0.004 tcp:0.135 tls:0.270 ttfb:2.910 total:2.915</pre>
   interview: [
     {
       q: { en: "A service in Kubernetes can't reach an external API. Walk through your debugging.", he: "שירות ב-Kubernetes לא מצליח להגיע ל-API חיצוני. תעבור על הדיבאג שלך." },
-      a: { en: "Exec or kubectl debug into the Pod's network namespace. dig the hostname (CoreDNS, ndots, egress policy to DNS). nc -zv to the IP:443 - timeout suggests NetworkPolicy, SG or NAT/route issues; refused is unusual for a public API. Then curl -v for TLS (corporate CA, SNI) and HTTP status. Compare against the same commands from the node, and check the NAT Gateway and egress allowlists (the partner may allowlist only your NAT's IP).", he: "להיכנס עם exec או kubectl debug ל-network namespace של ה-Pod. dig ל-hostname (CoreDNS, ndots, egress policy ל-DNS). nc -zv ל-IP:443 - timeout מרמז על NetworkPolicy, SG או בעיית NAT/route; refused לא סביר ל-API ציבורי. אחר כך curl -v בשביל TLS (CA ארגוני, SNI) וה-status של HTTP. להשוות לאותן פקודות מה-node, ולבדוק את ה-NAT Gateway ו-allowlists של egress (השותף אולי מתיר רק את ה-IP של ה-NAT שלכם)." }
+      a: { en: "Exec or kubectl debug into the Pod's network namespace. dig the hostname (CoreDNS, ndots, egress policy to DNS). nc -zv to the IP:443 - timeout suggests NetworkPolicy, SG or NAT/route issues; refused is unusual for a public API. Then curl -v for TLS (corporate CA, SNI) and HTTP status. Compare against the same commands from the node, and check the NAT Gateway and egress allowlists (the partner may allowlist only your NAT's IP).", he: "להיכנס עם exec או kubectl debug ל-network namespace של ה-Pod. dig ל-hostname (CoreDNS, ndots, egress policy ל-DNS). nc -zv ל-IP:443 - timeout מרמז על NetworkPolicy, SG או בעיית NAT/route; refused לא סביר ל-API ציבורי. אחר כך curl -v בשביל TLS (CA ארגוני, SNI) וה-status של HTTP. להשוות לאותן פקודות מה-node, ולבדוק את ה-NAT Gateway ו-allowlists של egress (השותף אולי מתיר רק את ה-IP של ה-NAT שלך)." }
     },
     {
       q: { en: "Users say the API is slow. How do you tell network slowness from app slowness?", he: "משתמשים אומרים שה-API איטי. איך מבדילים בין איטיות רשת לאיטיות של האפליקציה?" },

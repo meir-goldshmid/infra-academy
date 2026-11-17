@@ -87,7 +87,7 @@ window.INFRA.lessons.push({
 <li>API סטייטלס ב-HTTP עם תעבורה קופצנית → FaaS או PaaS לקונטיינרים (Cloud Run, App Runner, Azure Container Apps).</li>
 <li>הרבה סרוויסים, צריך networking מותאם, sidecars, operators → Kubernetes מנוהל.</li>
 <li>אפליקציה legacy שצריכה kernel module מסוים או רישיון שקשור ל-MAC address → VM ב-IaaS.</li>
-<li>מייל, CRM, טיקטים → SaaS. אף פעם אל תבנו Jira משלכם.</li>
+<li>מייל, CRM, טיקטים → SaaS. אף פעם אל תבנה Jira משלך.</li>
 </ul>
 <p>הטרייד-אוף תמיד הוא <strong>שליטה מול עומס תפעולי</strong>. אבסטרקציה גבוהה = פחות שליטה, יותר lock-in, אבל הרבה פחות pages ב-3 בלילה.</p>`
       }
@@ -187,7 +187,7 @@ window.INFRA.lessons.push({
   },
   analogy: {
     en: "Think of a hospital chain. A region is the city (Frankfurt). Availability zones are separate hospital buildings across town — each with its own power, generators and water, close enough that an ambulance gets between them in minutes. If one building floods, the others keep operating. Edge locations are the pharmacies on every corner: they don't do surgery, but they hand out the common stuff fast.",
-    he: "תחשבו על רשת בתי חולים. Region זו העיר (פרנקפורט). Availability zones הם בניינים נפרדים ברחבי העיר — לכל אחד חשמל, גנרטורים ומים משלו, קרובים מספיק שאמבולנס יעבור ביניהם בדקות. אם בניין אחד מוצף, השאר ממשיכים לעבוד. Edge locations הם בתי המרקחת בכל פינה: לא עושים שם ניתוחים, אבל נותנים את הדברים הנפוצים מהר."
+    he: "תחשוב על רשת בתי חולים. Region זו העיר (פרנקפורט). Availability zones הם בניינים נפרדים ברחבי העיר — לכל אחד חשמל, גנרטורים ומים משלו, קרובים מספיק שאמבולנס יעבור ביניהם בדקות. אם בניין אחד מוצף, השאר ממשיכים לעבוד. Edge locations הם בתי המרקחת בכל פינה: לא עושים שם ניתוחים, אבל נותנים את הדברים הנפוצים מהר."
   },
   sections: [
     {
@@ -200,7 +200,7 @@ window.INFRA.lessons.push({
         he: `<p><strong>Region</strong> זה אזור גיאוגרפי (<code>us-east-1</code>, <code>westeurope</code>, <code>europe-west1</code>, <code>il-central-1</code> בתל אביב). Regions מבודדים בכוונה: תקלה באחד לא אמורה לזלוג לאחר, ורוב השירותים הם regional (S3 bucket, VPC, RDS — כולם חיים ב-region אחד).</p>
 <p><strong>Availability zone</strong> (AZ) זה datacenter אחד או יותר עם חשמל, קירור ורשת עצמאיים, בדרך כלל עשרות ק"מ זה מזה בתוך ה-region. ברוב ה-regions יש 3+ AZs (<code>us-east-1a</code> … <code>us-east-1f</code>). ה-AZs מחוברים בסיבים פרטיים עם latency נמוך: <strong>~1-2 ms round trip</strong>, מספיק טוב לרפליקציה סינכרונית של DB.</p>
 <p>בין regions ה-latency הוא פיזיקה: פרנקפורט ↔ וירג'יניה ~90 ms RTT, תל אביב ↔ פרנקפורט ~45-55 ms, וירג'יניה ↔ סידני ~200 ms. בגלל זה רפליקציה בין regions היא בדרך כלל <em>אסינכרונית</em>.</p>
-<blockquote>⚠️ Production tip: ב-AWS שמות ה-AZs מעורבבים לכל account — ה-<code>us-east-1a</code> שלך הוא לא ה-<code>us-east-1a</code> שלי. כשמתאמים בין accounts, תשתמשו ב-AZ IDs (<code>use1-az1</code>).</blockquote>`
+<blockquote>⚠️ Production tip: ב-AWS שמות ה-AZs מעורבבים לכל account — ה-<code>us-east-1a</code> שלך הוא לא ה-<code>us-east-1a</code> שלי. כשמתאמים בין accounts, תשתמש ב-AZ IDs (<code>use1-az1</code>).</blockquote>`
       }
     },
     {
@@ -217,7 +217,7 @@ window.INFRA.lessons.push({
 <li><strong>Multi-region = disaster recovery</strong> (וגם latency גלובלי). שורד נפילה של region שלם, אבל עולה כסף ומורכבות אמיתיים: רפליקציית data, DNS failover, עמלות egress בין regions.</li>
 </ul>
 <p>טוויסט בעלויות: תעבורה <em>בין AZs</em> לא בחינם ב-AWS — בערך <strong>$0.01/GB לכל כיוון</strong>. mesh פטפטן של microservices על 3 AZs יכול להגיע לאלפי דולרים בחודש. topology-aware routing ב-Kubernetes עוזר לשמור את התעבורה בתוך ה-zone.</p>
-<p>חלק מהשירותים הם <strong>global</strong> ולא regional: IAM, Route 53, CloudFront (AWS); Azure Front Door; GCP global HTTP(S) LB. שימו לב שגם control planes "גלובליים" חיים הרבה פעמים ב-region אחד — התלות המפורסמת ב-us-east-1.</p>`
+<p>חלק מהשירותים הם <strong>global</strong> ולא regional: IAM, Route 53, CloudFront (AWS); Azure Front Door; GCP global HTTP(S) LB. שים לב שגם control planes "גלובליים" חיים הרבה פעמים ב-region אחד — התלות המפורסמת ב-us-east-1.</p>`
       }
     },
     {
@@ -228,7 +228,7 @@ window.INFRA.lessons.push({
 <blockquote>💡 Real world: AWS us-east-1 had major outages in Dec 2021 and Oct 2025 that took down large chunks of the internet — including companies that "weren't even in us-east-1", because they depended on services whose control plane lived there. Know your hidden regional dependencies.</blockquote>`,
         he: `<p><strong>Edge locations / PoPs</strong> הם מאות אתרים קטנים בהרבה יותר ערים מאשר regions (ל-CloudFront יש 600+ PoPs לעומת ~35 regions). הם מריצים CDN cache, DNS (Route 53 עונה מה-edge), הגנת DDoS, ו-compute קטן (CloudFront Functions, Lambda@Edge, Cloudflare Workers).</p>
 <p>למה זה חשוב: משתמש בתל אביב שמוריד JS bundle של 2 MB מ-<code>us-east-1</code> משלם ~140 ms לכל round trip, כפול ה-handshakes של TCP+TLS. מ-PoP בתל אביב זה ~5 ms. assets סטטיים שייכים ל-CDN, תמיד.</p>
-<blockquote>💡 Real world: ל-AWS us-east-1 היו נפילות גדולות בדצמבר 2021 ובאוקטובר 2025 שהפילו חלקים גדולים מהאינטרנט — כולל חברות ש"בכלל לא היו ב-us-east-1", כי הן היו תלויות בשירותים שה-control plane שלהם יושב שם. תכירו את התלויות הנסתרות שלכם.</blockquote>`
+<blockquote>💡 Real world: ל-AWS us-east-1 היו נפילות גדולות בדצמבר 2021 ובאוקטובר 2025 שהפילו חלקים גדולים מהאינטרנט — כולל חברות ש"בכלל לא היו ב-us-east-1", כי הן היו תלויות בשירותים שה-control plane שלהם יושב שם. תכיר את התלויות הנסתרות שלך.</blockquote>`
       }
     },
     {
@@ -273,8 +273,8 @@ window.INFRA.lessons.push({
     he: "\"AZ ל-HA, Region ל-DR, Edge למהירות.\" ו-latency: 1 ms בין בניינים, ~90 ms מעבר לאוקיינוס."
   },
   pitfalls: [
-    { en: "Running 'HA' with 3 replicas that all landed in one AZ. Use topology spread constraints / placement across subnets in different AZs.", he: "להריץ \"HA\" עם 3 replicas שכולן נחתו באותו AZ. תשתמשו ב-topology spread constraints / פיזור על subnets ב-AZs שונים." },
-    { en: "Synchronous cross-region calls in the request path: every request pays 90+ ms and you've made two regions a single point of failure.", he: "קריאות סינכרוניות בין regions בתוך מסלול הבקשה: כל בקשה משלמת 90+ ms ועשיתם משני regions נקודת כשל אחת." },
+    { en: "Running 'HA' with 3 replicas that all landed in one AZ. Use topology spread constraints / placement across subnets in different AZs.", he: "להריץ \"HA\" עם 3 replicas שכולן נחתו באותו AZ. תשתמש ב-topology spread constraints / פיזור על subnets ב-AZs שונים." },
+    { en: "Synchronous cross-region calls in the request path: every request pays 90+ ms and you've made two regions a single point of failure.", he: "קריאות סינכרוניות בין regions בתוך מסלול הבקשה: כל בקשה משלמת 90+ ms ועשית משני regions נקודת כשל אחת." },
     { en: "Ignoring cross-AZ data transfer cost — a Kafka cluster replicating across 3 AZs can cost more in transfer than in brokers.", he: "להתעלם מעלות תעבורה בין AZs — Kafka cluster שמשכפל על 3 AZs יכול לעלות יותר בתעבורה מאשר ב-brokers." }
   ],
   interview: [
@@ -366,7 +366,7 @@ window.INFRA.lessons.push({
 <tr><td>PaaS לאפליקציות web</td><td>Elastic Beanstalk</td><td>App Service</td><td>App Engine</td></tr>
 <tr><td>Container registry</td><td>ECR</td><td>ACR</td><td>Artifact Registry</td></tr>
 </table>
-<p>GKE נחשב ל-K8s הכי מלוטש (גוגל המציאו אותו); ב-AKS יש tier חינמי ל-control plane; EKS גובה ~$0.10 לשעה לכל cluster (~$73 בחודש) עוד לפני שהרצתם pod אחד.</p>`
+<p>GKE נחשב ל-K8s הכי מלוטש (גוגל המציאו אותו); ב-AKS יש tier חינמי ל-control plane; EKS גובה ~$0.10 לשעה לכל cluster (~$73 בחודש) עוד לפני שהרצת pod אחד.</p>`
       }
     },
     {
@@ -471,7 +471,7 @@ window.INFRA.lessons.push({
   },
   pitfalls: [
     { en: "Assuming 'equivalent' means identical: SQS is a pull queue, GCP Pub/Sub is push-or-pull with different ordering and retry semantics. Read the guarantees, not just the name.", he: "להניח ש\"מקביל\" זה זהה: SQS זה תור pull, ו-Pub/Sub של GCP זה push או pull עם סמנטיקה שונה של ordering ו-retries. קוראים את ההבטחות, לא רק את השם." },
-    { en: "Using one AWS account for prod, staging and dev. The account is the blast-radius boundary — use separate accounts via AWS Organizations.", he: "להשתמש ב-account אחד של AWS לפרוד, staging ו-dev. ה-account הוא גבול ה-blast radius — תשתמשו ב-accounts נפרדים דרך AWS Organizations." },
+    { en: "Using one AWS account for prod, staging and dev. The account is the blast-radius boundary — use separate accounts via AWS Organizations.", he: "להשתמש ב-account אחד של AWS לפרוד, staging ו-dev. ה-account הוא גבול ה-blast radius — תשתמש ב-accounts נפרדים דרך AWS Organizations." },
     { en: "Confusing Azure Entra ID roles (directory: who can manage users) with Azure RBAC roles (resources: who can manage VMs).", he: "לבלבל בין roles של Entra ID (directory: מי מנהל משתמשים) לבין roles של Azure RBAC (משאבים: מי מנהל VMs)." }
   ],
   interview: [
@@ -587,7 +587,7 @@ window.INFRA.lessons.push({
         he: `<p><strong>Durability</strong> = ההסתברות שה-data לא יאבד. S3 Standard מתוכנן ל-<strong>99.999999999%</strong> (11 תשיעיות): שומרים 10 מיליון אובייקטים ומצפים לאבד אחד כל ~10,000 שנה. זה מושג ע"י שמירת עותקים על ≥3 AZs ובדיקת checksum ותיקון כל הזמן.</p>
 <p><strong>Availability</strong> = ההסתברות שאפשר לקרוא אותו <em>עכשיו</em>. S3 Standard מתוכנן ל-99.99% (~52 דקות בשנה של שגיאות אפשריות), עם SLA של 99.9%. S3 One Zone-IA חי ב-AZ אחד — אותן 11 תשיעיות על הנייר, אבל אסון ב-AZ יכול למחוק אותו.</p>
 <p>Block storage שונה מאוד: ה-durability של EBS gp3 הוא ~99.8-99.9% בשנה (שיעור כשל שנתי 0.1-0.2%), ו-io2 הוא 99.999%. בגלל זה <strong>עושים snapshots ל-EBS</strong> — ה-snapshots נשמרים ב-S3.</p>
-<blockquote>⚠️ Production tip: 11 תשיעיות של durability לא מגינות עליך מ-<code>aws s3 rm --recursive</code>. הענן שומר בנאמנות ובעמידות גם את הטעויות שלך. תפעילו <strong>versioning</strong>, MFA delete או Object Lock לכל מה שאסור לאבד.</blockquote>`
+<blockquote>⚠️ Production tip: 11 תשיעיות של durability לא מגינות עליך מ-<code>aws s3 rm --recursive</code>. הענן שומר בנאמנות ובעמידות גם את הטעויות שלך. תפעיל <strong>versioning</strong>, MFA delete או Object Lock לכל מה שאסור לאבד.</blockquote>`
       }
     },
     {
@@ -821,7 +821,7 @@ output "bucket_arn" { value = aws_s3_bucket.assets.arn }</pre>
   }
 }</pre>
 <p>ב-Azure: backend של <code>azurerm</code> (blob lease = lock). ב-GCP: backend של <code>gcs</code>. או Terraform Cloud / Spacelift / env0. מפצלים state לפי סביבה ולפי שכבה (network, data, apps) כדי לשמור על blast radius קטן ו-plans מהירים.</p>
-<blockquote>⚠️ Production tip: אם ה-plan מראה <code>-/+ destroy and then create replacement</code> על database — עוצרים. יש attributes (engine, AZ, identifier) שמכריחים החלפה. תוסיפו <code>lifecycle { prevent_destroy = true }</code> למשאבים stateful.</blockquote>`
+<blockquote>⚠️ Production tip: אם ה-plan מראה <code>-/+ destroy and then create replacement</code> על database — עוצרים. יש attributes (engine, AZ, identifier) שמכריחים החלפה. תוסיף <code>lifecycle { prevent_destroy = true }</code> למשאבים stateful.</blockquote>`
       }
     },
     {
@@ -861,7 +861,7 @@ output "bucket_arn" { value = aws_s3_bucket.assets.arn }</pre>
 <tr><td>Crossplane</td><td>Kubernetes CRDs</td><td>כל ענן</td><td>ה-API של K8s</td></tr>
 </table>
 <p>OpenTofu הוא ה-fork הקוד-פתוח של Terraform שנוצר אחרי שינוי הרישיון של HashiCorp ב-2023 (BSL); הוא תואם ב-CLI. בוחרים לפי הכישורים בצוות והענן: multi-cloud או SaaS providers → Terraform/OpenTofu; חנות Azure-only → Bicep מקסים; מפתחים ששונאים HCL → Pulumi או CDK.</p>
-<blockquote>💡 Real world: לא משנה איזה כלי בחרתם, מבחן הבגרות האמיתי של IaC הוא "אפשר לנעול את הקונסול ל-read-only בפרוד?" אם אנשים עדיין צריכים לקלוק, ה-IaC שלכם לא גמור.</blockquote>`
+<blockquote>💡 Real world: לא משנה איזה כלי בחרת, מבחן הבגרות האמיתי של IaC הוא "אפשר לנעול את הקונסול ל-read-only בפרוד?" אם אנשים עדיין צריכים לקלוק, ה-IaC שלך לא גמור.</blockquote>`
       }
     }
   ],
@@ -982,7 +982,7 @@ window.INFRA.lessons.push({
 <li><strong>Continuous Delivery</strong>: כל build ירוק של main מייצר artifact מוכן לשחרור ונפרס אוטומטית ל-staging. העלייה לפרוד היא <em>החלטה עסקית</em> — קליק/אישור אחד.</li>
 <li><strong>Continuous Deployment</strong>: אין שער אנושי. כל commit ירוק עולה לפרוד אוטומטית, מוגן ע"י טסטים, canaries ו-rollback אוטומטי.</li>
 </ul>
-<p>מדדי DORA מודדים כמה טובים אתם בזה: <strong>deployment frequency</strong>, <strong>lead time for changes</strong>, <strong>change failure rate</strong>, ו-<strong>time to restore</strong>. צוותי elite פורסים on demand, כמה פעמים ביום, עם lead time של פחות מיום — ובאופן מפתיע, עם <em>פחות</em> תקלות, כי שינויים קטנים קל להבין ולהחזיר.</p>`
+<p>מדדי DORA מודדים כמה טוב אתה בזה: <strong>deployment frequency</strong>, <strong>lead time for changes</strong>, <strong>change failure rate</strong>, ו-<strong>time to restore</strong>. צוותי elite פורסים on demand, כמה פעמים ביום, עם lead time של פחות מיום — ובאופן מפתיע, עם <em>פחות</em> תקלות, כי שינויים קטנים קל להבין ולהחזיר.</p>`
       }
     },
     {
@@ -1064,7 +1064,7 @@ jobs:
       - run: |
           IMAGE=123456789012.dkr.ecr.eu-central-1.amazonaws.com/app:\${{ github.sha }}
           docker build -t $IMAGE . &amp;&amp; docker push $IMAGE</pre>
-<p>שימו לב: אין <code>AWS_ACCESS_KEY_ID</code> בשום מקום. ה-job מקבל token קצר-מועד דרך OIDC (בסעיף הבא).</p>`
+<p>שים לב: אין <code>AWS_ACCESS_KEY_ID</code> בשום מקום. ה-job מקבל token קצר-מועד דרך OIDC (בסעיף הבא).</p>`
       }
     },
     {
@@ -1268,7 +1268,7 @@ window.INFRA.lessons.push({
 <li><strong>שינויים ב-DB</strong>: DynamoDB Streams, Cosmos DB change feed.</li>
 </ul>
 <p>Event-driven אומר <strong>at-least-once delivery</strong> — הפונקציה לפעמים תופעל פעמיים על אותו event. עושים handlers <strong>idempotent</strong> (dedupe לפי event ID, conditional writes) ומגדירים <strong>DLQ / on-failure destination</strong> כדי ש-events רעילים לא ינסו שוב לנצח.</p>
-<blockquote>⚠️ Production tip: אף פעם אל תכתבו Lambda שמופעלת מהעלאה ל-bucket X וכותבת את הפלט בחזרה ל-bucket X באותו prefix. רקורסיה אינסופית, חשבון אינסופי. (AWS מזהים היום חלק מהלולאות, אל תסמכו על זה.)</blockquote>`
+<blockquote>⚠️ Production tip: אף פעם אל תכתוב Lambda שמופעלת מהעלאה ל-bucket X וכותבת את הפלט בחזרה ל-bucket X באותו prefix. רקורסיה אינסופית, חשבון אינסופי. (AWS מזהים היום חלק מהלולאות, אל תסמוך על זה.)</blockquote>`
       }
     },
     {
@@ -1283,7 +1283,7 @@ window.INFRA.lessons.push({
 <p>דוגמה: API שמקבל <strong>מיליון בקשות בחודש</strong>, 200 ms כל אחת ב-512 MB = 100,000 GB-s → ~$1.67 + $0.20 ≈ <strong>$2 בחודש</strong>. t3.small שרץ 24/7 עולה ~$15. Serverless מנצח בגדול.</p>
 <p>עכשיו <strong>100 בקשות בשנייה קבוע</strong> (~260 מיליון בחודש), אותו פרופיל: 26M GB-s → ~$433 + $52 ≈ <strong>$485 בחודש</strong> (ועוד API Gateway ב-~$1 למיליון = עוד $260). שני c7g.large מאחורי LB יטפלו בזה ב-~$150. עומס קבוע הופך את החשבון.</p>
 <p>כלל אצבע: serverless זול יותר כשה-utilization הממוצע של השרת המקביל היה מתחת ל-~20-30%. וגם סופרים עלויות נסתרות: API Gateway, NAT לפונקציות בתוך VPC, ingestion ל-CloudWatch Logs ($0.50 ל-GB) — לפעמים יותר מה-compute.</p>
-<p>ואל תשכחו את הצד האנושי: בלי patching ובלי תכנון קיבולת זה חיסכון אמיתי בזמן מהנדסים.</p>`
+<p>ואל תשכח את הצד האנושי: בלי patching ובלי תכנון קיבולת זה חיסכון אמיתי בזמן מהנדסים.</p>`
       }
     }
   ],
@@ -1467,7 +1467,7 @@ metadata:
   annotations:
     eks.amazonaws.com/role-arn: arn:aws:iam::123456789012:role/web-uploader</pre>
 <p>ה-default credential chain של ה-SDK של AWS מרים את זה בלי שינוי קוד. ה-credentials מתחלפים אוטומטית; אין מה שידלוף ב-git או ב-layer של Docker image.</p>
-<blockquote>⚠️ Production tip: תאכפו IMDSv2 (<code>HttpTokens=required</code>) על EC2. הפריצה ל-Capital One ב-2019 השתמשה ב-SSRF כדי לקרוא credentials של role מ-IMDSv1 ולהוריד מ-S3 יותר מ-100 מיליון רשומות לקוחות.</blockquote>`
+<blockquote>⚠️ Production tip: תאכוף IMDSv2 (<code>HttpTokens=required</code>) על EC2. הפריצה ל-Capital One ב-2019 השתמשה ב-SSRF כדי לקרוא credentials של role מ-IMDSv1 ולהוריד מ-S3 יותר מ-100 מיליון רשומות לקוחות.</blockquote>`
       }
     },
     {
@@ -1726,7 +1726,7 @@ window.INFRA.lessons.push({
   pitfalls: [
     { en: "Sending S3/ECR traffic through a NAT gateway instead of VPC endpoints — paying $0.045/GB for traffic that could be free.", he: "להעביר תעבורת S3/ECR דרך NAT gateway במקום VPC endpoints — משלמים $0.045 ל-GB על תעבורה שיכולה להיות בחינם." },
     { en: "Leaving DEBUG logging on after an incident. At $0.50/GB ingest, an extra 1 TB/day is ~$15K/month.", he: "להשאיר DEBUG logging אחרי אינסידנט. ב-$0.50 ל-GB ingest, עוד 1 TB ביום זה ~$15K בחודש." },
-    { en: "Buying 3-year reservations for instance types you'll migrate off in 6 months. Prefer flexible Compute Savings Plans.", he: "לקנות reservations ל-3 שנים על instance types שתעברו מהם בעוד חצי שנה. עדיף Compute Savings Plans גמישים." },
+    { en: "Buying 3-year reservations for instance types you'll migrate off in 6 months. Prefer flexible Compute Savings Plans.", he: "לקנות reservations ל-3 שנים על instance types שתעבור מהם בעוד חצי שנה. עדיף Compute Savings Plans גמישים." },
     { en: "Running stateful single-replica workloads on spot without handling interruptions.", he: "להריץ workloads stateful עם replica אחת על spot בלי לטפל ב-interruptions." }
   ],
   interview: [

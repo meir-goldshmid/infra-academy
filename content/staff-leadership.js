@@ -350,7 +350,7 @@ window.INFRA.lessons.push({
     { en: "Comparing only infrastructure invoices. People, on-call and upgrades usually dominate TCO — 1 FTE costs more than most managed services.", he: "להשוות רק חשבוניות תשתית. אנשים, on-call ושדרוגים בדרך כלל שולטים ב-TCO — FTE אחד עולה יותר מרוב השירותים המנוהלים." },
     { en: "Treating every decision as a one-way door. Six weeks of debate over a dashboard tool is a failure of judgment; the slowness itself is a cost.", he: "להתייחס לכל החלטה כ-one-way door. שישה שבועות דיון על כלי דשבורדים זה כישלון שיקול דעת; האיטיות עצמה היא עלות." },
     { en: "Résumé-driven development — adopting a shiny technology because engineers want to learn it. Route that energy to Assess/Trial with an owner, not straight to production.", he: "Résumé-driven development — לאמץ טכנולוגיה נוצצת כי מהנדסים רוצים ללמוד אותה. תנתב את האנרגיה הזאת ל-Assess/Trial עם owner, לא ישר לפרודקשן." },
-    { en: "A strategy doc that is a list of wishes. Real strategy names the trade-off: what you will stop doing to fund what you start.", he: "Strategy doc שהוא רשימת משאלות. אסטרטגיה אמיתית מציינת את ה-trade-off: מה תפסיקו לעשות כדי לממן את מה שמתחילים." }
+    { en: "A strategy doc that is a list of wishes. Real strategy names the trade-off: what you will stop doing to fund what you start.", he: "Strategy doc שהוא רשימת משאלות. אסטרטגיה אמיתית מציינת את ה-trade-off: מה מפסיקים לעשות כדי לממן את מה שמתחילים." }
   ],
   interview: [
     {

@@ -4,7 +4,7 @@ CQ.unitHe({
   title: 'גרפים ואלגוריתמים על גרפים',
   emoji: '🕸️',
   color: '#0ca678',
-  tagline: 'התשתית שלכם הייתה גרף כל הזמן הזה',
+  tagline: 'התשתית שלך הייתה גרף כל הזמן הזה',
   lessons: [
     // ───────────────────────────── Lesson 1 ─────────────────────────────
     {
@@ -20,12 +20,12 @@ CQ.unitHe({
 <g fill="var(--accent)"><circle cx="30" cy="25" r="14"/><circle cx="130" cy="25" r="14"/><circle cx="80" cy="95" r="14"/><circle cx="180" cy="95" r="14"/></g>
 <g fill="#fff" font-weight="bold"><text x="30" y="30">A</text><text x="130" y="30">B</text><text x="80" y="100">C</text><text x="180" y="100">D</text></g></svg>
 <p>כאן: V = {A, B, C, D} ו-E = {A–B, A–C, B–C, C–D}. כותבים |V| = 4 ו-|E| = 4.</p>
-<div class="dev">אתם כבר חיים בתוך גרפים: microservices (מי קורא למי), טופולוגיית רשת (נתבים ולינקים), commits ב-Git (מצביעים להורים), resources ב-Terraform (תלויות), follows ברשתות חברתיות, foreign keys בין טבלאות ב-Postgres.</div>`
+<div class="dev">אתה כבר חי בתוך גרפים: microservices (מי קורא למי), טופולוגיית רשת (נתבים ולינקים), commits ב-Git (מצביעים להורים), resources ב-Terraform (תלויות), follows ברשתות חברתיות, foreign keys בין טבלאות ב-Postgres.</div>`
         },
         {
           type: 'learn', title: 'טעמים של גרפים',
           html: `<ul><li><b>Undirected</b> (לא מכוון): קשתות הולכות לשני הכיוונים. A–B אומר גם B–A. (כבל רשת, חברות בפייסבוק.)</li>
-<li><b>Directed</b> (מכוון, digraph): לקשתות יש חצים. A→B לא גורר B→A. (service A קורא ל-service B; אתם עוקבים אחרי מישהו ב-X.)</li>
+<li><b>Directed</b> (מכוון, digraph): לקשתות יש חצים. A→B לא גורר B→A. (service A קורא ל-service B; אתה עוקב אחרי מישהו ב-X.)</li>
 <li><b>Weighted</b> (ממושקל): על הקשתות יש מספר: latency, עלות, מרחק, bandwidth.</li></ul>
 <div class="dev">מפת service mesh ב-Kiali או service map ב-Datadog היא גרף <b>מכוון וממושקל</b>: החצים מראים את כיוון הקריאה, המשקלים מראים requests/sec או p99 latency.</div>`
         },
@@ -38,7 +38,7 @@ CQ.unitHe({
         {
           type: 'learn', title: 'דרגה (Degree)',
           html: `<p>ה-<b>degree</b> (דרגה) של צומת הוא כמה קשתות נוגעות בו. בתמונה למעלה: ל-A דרגה 2, ל-B דרגה 2, ל-C דרגה 3, ל-D דרגה 1.</p>
-<p>תחברו: 2 + 2 + 3 + 1 = <b>8</b>. מספר הקשתות: <b>4</b>. צירוף מקרים?</p>
+<p>תחבר: 2 + 2 + 3 + 1 = <b>8</b>. מספר הקשתות: <b>4</b>. צירוף מקרים?</p>
 <div class="formula">∑ deg(v) = 2 · |E|</div>
 <p>זו <b>handshake lemma</b> (למת לחיצות הידיים): לכל קשת יש שני קצוות, אז כל קשת מוסיפה בדיוק 1 לדרגה של <i>שני</i> צמתים. במסיבה, סך לחיצות הידיים כשסופרים לפי כל אדם הוא פי שניים ממספר לחיצות הידיים.</p>`
         },
@@ -61,7 +61,7 @@ CQ.unitHe({
 <g fill="var(--accent)"><rect x="4" y="12" width="48" height="26" rx="6"/><rect x="94" y="12" width="46" height="26" rx="6"/><rect x="183" y="10" width="54" height="26" rx="6"/><rect x="4" y="82" width="48" height="26" rx="6"/><rect x="179" y="82" width="46" height="26" rx="6"/></g>
 <g fill="#fff" font-weight="bold"><text x="28" y="29">web</text><text x="117" y="29">api</text><text x="210" y="27">cache</text><text x="28" y="99">worker</text><text x="202" y="99">db</text></g></svg>
 <p>api: in-degree 1, out-degree 2. db: in-degree 2, out-degree 0.</p>
-<div class="dev">In-degree גבוה = הרבה דברים תלויים בכם = blast radius ענק. זה ה-db שלכם, שירות ה-auth, ה-DNS. Out-degree גבוה = אתם תלויים בהרבה דברים = אתם נופלים בכל פעם שאחד מהם מתעטש.</div>
+<div class="dev">In-degree גבוה = הרבה דברים תלויים בך = blast radius ענק. זה ה-db שלך, שירות ה-auth, ה-DNS. Out-degree גבוה = אתה תלוי בהרבה דברים = אתה נופל בכל פעם שאחד מהם מתעטש.</div>
 <p>Handshake בגרף מכוון: ∑ in-degrees = ∑ out-degrees = |E|.</p>`
         },
         {
@@ -78,7 +78,7 @@ CQ.unitHe({
         {
           type: 'learn', title: 'איפה הכול התחיל',
           html: `<div class="fun">🤓 עובדה משעשעת: תורת הגרפים התחילה ב-1736, כשלאונרד אוילר הוכיח שאי אפשר לעבור על כל שבעת הגשרים של קניגסברג בדיוק פעם אחת. הטיעון שלו? דרגות! הליכה שעוברת על כל קשת פעם אחת צריכה 0 או 2 צמתים עם דרגה אי-זוגית, ובקניגסברג היו 4.</div>
-<p>אותו היגיון אומר לכם אם טכנאי רשת יכול לעקוב אחרי כל כבל בבניין בדיוק פעם אחת בלי לחזור על עקבותיו.</p>`
+<p>אותו היגיון אומר לך אם טכנאי רשת יכול לעקוב אחרי כל כבל בבניין בדיוק פעם אחת בלי לחזור על עקבותיו.</p>`
         },
         {
           type: 'tf', q: 'בגרף מכוון, סכום כל ה-in-degrees תמיד שווה לסכום כל ה-out-degrees.',
@@ -143,7 +143,7 @@ CQ.unitHe({
           explain: `אם A→B קיים אבל B→A לא, אז בתא [A][B] יש 1 וב-[B][A] יש 0. רק גרפים לא מכוונים מובטחים להיות סימטריים.`
         },
         {
-          type: 'learn', title: 'גרפים בתוך ה-database שלכם',
+          type: 'learn', title: 'גרפים בתוך ה-database שלך',
           html: `<p>ב-Postgres הדרך הקלאסית היא <b>edge table</b>: שורה אחת לכל קשת.</p>
 <pre><code>CREATE TABLE edges (src int, dst int, weight int);
 CREATE INDEX ON edges (src);  -- fast "neighbours of src"</code></pre>
@@ -151,7 +151,7 @@ CREATE INDEX ON edges (src);  -- fast "neighbours of src"</code></pre>
 <div class="dev">ה-ownerReferences של Kubernetes (Pod → ReplicaSet → Deployment) הם גרף ששמור כ-edge list על כל אובייקט. ה-garbage collector מטייל על הקשתות האלה כדי לעשות cascade-delete.</div>`
         },
         {
-          type: 'mcq', q: 'גרף של 500 nodes שבו כמעט כל זוג nodes מחובר, וה-hot loop שלכם כל הזמן שואל "האם u ו-v מחוברים?". מה הבחירה הכי טובה?',
+          type: 'mcq', q: 'גרף של 500 nodes שבו כמעט כל זוג nodes מחובר, וה-hot loop שלך כל הזמן שואל "האם u ו-v מחוברים?". מה הבחירה הכי טובה?',
           choices: ['Adjacency matrix', 'Adjacency list', 'מערך ממוין אחד של כל הצמתים'],
           answer: 0,
           explain: `גרף צפוף (E קרוב ל-V²) ועוד בדיקות קשת בזמן קבוע: ה-sweet spot של ה-matrix. 500 × 500 = 250,000 תאים זה קטנטן.`
@@ -192,15 +192,15 @@ def bfs(graph, start):
             if v not in visited:
                 visited.add(v)
                 queue.append(v)</code></pre>
-<p>תחליפו את <code>deque.popleft()</code> ב-<code>list.pop()</code> (stack) ותקבלו מעבר איטרטיבי בסגנון DFS. בחירת מבנה הנתונים = אסטרטגיית החיפוש.</p>`
+<p>תחליף את <code>deque.popleft()</code> ב-<code>list.pop()</code> (stack) ותקבל מעבר איטרטיבי בסגנון DFS. בחירת מבנה הנתונים = אסטרטגיית החיפוש.</p>`
         },
         {
-          type: 'widget', widget: 'graph', title: 'הריצו BFS ו-DFS צעד אחרי צעד',
-          html: `<p>הריצו BFS, ואז DFS, מאותה נקודת התחלה. תסתכלו על ה-queue מול ה-stack, ואיך BFS מתפרס רמה אחרי רמה בזמן ש-DFS צולל לעומק של ענף אחד.</p>`
+          type: 'widget', widget: 'graph', title: 'הרץ BFS ו-DFS צעד אחרי צעד',
+          html: `<p>הרץ BFS, ואז DFS, מאותה נקודת התחלה. תסתכל על ה-queue מול ה-stack, ואיך BFS מתפרס רמה אחרי רמה בזמן ש-DFS צולל לעומק של ענף אחד.</p>`
         },
         {
           type: 'learn', title: 'גרף לתרגול',
-          html: `<p>השתמשו בגרף הזה לשאלות הבאות. מבקרים בשכנים תמיד לפי סדר אלפביתי.</p>
+          html: `<p>השתמש בגרף הזה לשאלות הבאות. מבקרים בשכנים תמיד לפי סדר אלפביתי.</p>
 <svg viewBox="0 0 270 120" width="100%" style="max-width:300px" font-size="14" text-anchor="middle">
 <g stroke="currentColor" stroke-width="2"><line x1="30" y1="60" x2="100" y2="25"/><line x1="30" y1="60" x2="100" y2="95"/><line x1="100" y1="25" x2="170" y2="25"/><line x1="100" y1="95" x2="170" y2="95"/><line x1="170" y1="25" x2="240" y2="25"/></g>
 <g fill="var(--accent)"><circle cx="30" cy="60" r="14"/><circle cx="100" cy="25" r="14"/><circle cx="100" cy="95" r="14"/><circle cx="170" cy="25" r="14"/><circle cx="170" cy="95" r="14"/><circle cx="240" cy="25" r="14"/></g>
@@ -208,23 +208,23 @@ def bfs(graph, start):
 <p>קשתות: A–B, A–D, B–E, E–F, D–C.</p>`
         },
         {
-          type: 'order', q: 'מתחילים מ-A: סדרו את הצמתים לפי סדר הביקור של BFS.',
+          type: 'order', q: 'מתחילים מ-A: סדר את הצמתים לפי סדר הביקור של BFS.',
           items: ['A', 'B', 'D', 'E', 'C', 'F'],
           explain: `Queue: [A] → מבקרים ב-A, מכניסים לתור את B ו-D. מבקרים ב-B, מכניסים את E. מבקרים ב-D, מכניסים את C. מבקרים ב-E, מכניסים את F. מבקרים ב-C. מבקרים ב-F. רמה אחרי רמה: {A}, {B, D}, {E, C}, {F}.`
         },
         {
-          type: 'order', q: 'עכשיו DFS רקורסיבי מ-A (שכנים לפי סדר אלפביתי). סדרו את הצמתים לפי סדר הביקור.',
+          type: 'order', q: 'עכשיו DFS רקורסיבי מ-A (שכנים לפי סדר אלפביתי). סדר את הצמתים לפי סדר הביקור.',
           items: ['A', 'B', 'E', 'F', 'D', 'C'],
           explain: `A → B (השכן הראשון) → E → F, מבוי סתום. חוזרים אחורה עד A, שהשכן הבא שלו הוא D → C. DFS מסיים ענף אחד לגמרי לפני שהוא מתחיל את הבא.`
         },
         {
           type: 'learn', title: 'BFS מוצא את הכי מעט hops',
           html: `<p>מכיוון ש-BFS מעבד צמתים לפי סדר המרחק (כל מי שבמרחק hop אחד, אז כל מי שבמרחק 2...), הפעם הראשונה שהוא מגיע לצומת היא דרך <b>shortest path</b> (המסלול הקצר ביותר) במספר קשתות.</p>
-<div class="dev"><code>traceroute</code> מראה לכם hops. "קשר מדרגה 2" בלינקדאין זה מרחק BFS של 2. Crawler שמכבד "max depth 3" הוא BFS עם הגבלת רמות. וה-garbage collector של Kubernetes שמטייל על ownerReferences? מעבר על גרף.</div>
+<div class="dev"><code>traceroute</code> מראה לך hops. "קשר מדרגה 2" בלינקדאין זה מרחק BFS של 2. Crawler שמכבד "max depth 3" הוא BFS עם הגבלת רמות. וה-garbage collector של Kubernetes שמטייל על ownerReferences? מעבר על גרף.</div>
 <p>DFS לא נותן מסלולים קצרים ביותר, אבל הוא מצטיין בחקירה של הכול, בזיהוי מעגלים וב-topological sort (מיד מגיע).</p>`
         },
         {
-          type: 'mcq', q: 'אתם רוצים את המספר המינימלי של hops בין services מה-edge gateway עד ל-payments service. איזה מעבר?',
+          type: 'mcq', q: 'אתה רוצה את המספר המינימלי של hops בין services מה-edge gateway עד ל-payments service. איזה מעבר?',
           choices: ['BFS', 'DFS', 'כל אחד מהם: שניהם מוצאים את המסלול הקצר ביותר'],
           answer: 0,
           explain: `BFS חוקר לפי סדר מספר ה-hops, אז הפעם הראשונה שהוא מגיע ל-payments היא דרך מסלול עם מינימום hops. DFS עלול לשוטט קודם במסלול ארוך.`
@@ -258,7 +258,7 @@ def bfs(graph, start):
 <div class="callout">Dijkstra = BFS שבו התור הוא <b>priority queue</b> (min-heap) שממוין לפי מרחק. זה אלגוריתם greedy שמוכח כנכון, כל עוד אין אף קשת עם משקל שלילי.</div>`
         },
         {
-          type: 'learn', title: 'הריצו ביד',
+          type: 'learn', title: 'הרץ ביד',
           html: `<svg viewBox="0 0 220 135" width="100%" style="max-width:280px" font-size="13" text-anchor="middle">
 <defs><marker id="g4arr" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="currentColor"/></marker></defs>
 <g stroke="currentColor" stroke-width="1.8" marker-end="url(#g4arr)"><line x1="32" y1="58" x2="96" y2="25"/><line x1="32" y1="76" x2="96" y2="110"/><line x1="110" y1="102" x2="110" y2="34"/><line x1="124" y1="25" x2="188" y2="58"/><line x1="124" y1="110" x2="188" y2="76"/></g>
@@ -282,7 +282,7 @@ def bfs(graph, start):
           explain: `תמיד המרחק הזמני הקטן ביותר הוא הבא: A ב-0, אז C ב-1, אז B (השתפר מ-4 ל-3 דרך C), אז D (השתפר מ-6 ל-4 דרך B).`
         },
         {
-          type: 'learn', title: 'הנתבים שלכם מריצים Dijkstra',
+          type: 'learn', title: 'הנתבים שלך מריצים Dijkstra',
           html: `<div class="dev"><b>OSPF</b> (ו-IS-IS), פרוטוקולי הניתוב שבתוך רוב רשתות ה-data center והארגונים, הם פרוטוקולי "link-state": כל נתב מציף את כולם בלינקים שלו ובעלויות שלהם, כך שכל נתב מחזיק את הגרף כולו. ואז כל אחד מריץ <b>Dijkstra</b> (ב-OSPF זה ממש נקרא חישוב SPF, "shortest path first") כדי לבנות את טבלת הניתוב שלו. כשלינק עושה flap, הנתבים מריצים SPF מחדש. על זה בדיוק הטיימרים של "SPF throttling".</div>
 <p>גם בטעם Dijkstra: Google Maps (עם האצות כבדות כמו A*), מציאת מסלולים במשחקים, ורעיונות של load balancing שמודע ל-latency.</p>
 <p>עם binary heap, Dijkstra רץ ב-<b>O((V + E) log V)</b>.</p>`
@@ -300,7 +300,7 @@ def bfs(graph, start):
           explain: `הוא עלול לסגור צומת מוקדם מדי, לפני שמתגלה מסלול זול יותר דרך קשת שלילית. למשקלים שליליים משתמשים ב-Bellman-Ford.`
         },
         {
-          type: 'mcq', q: 'לכל הקשתות בגרף שלכם אותו משקל (נגיד 1). מה האלגוריתם הנכון הכי פשוט למסלול קצר ביותר?',
+          type: 'mcq', q: 'לכל הקשתות בגרף שלך אותו משקל (נגיד 1). מה האלגוריתם הנכון הכי פשוט למסלול קצר ביותר?',
           choices: ['BFS רגיל', 'חייבים Dijkstra', 'חייבים Bellman-Ford', 'DFS'],
           answer: 0,
           explain: `כשכל קשת עולה אותו דבר, הכי מעט hops = המסלול הזול ביותר, ו-BFS מוצא הכי מעט hops ב-O(V + E) בלי heap.`
@@ -322,7 +322,7 @@ def bfs(graph, start):
       steps: [
         {
           type: 'learn', title: 'Directed Acyclic Graphs',
-          html: `<p><b>DAG</b> הוא גרף מכוון <b>בלי מעגלים</b>: תלכו לפי החצים מכל מקום, ולעולם לא תחזרו לנקודת ההתחלה.</p>
+          html: `<p><b>DAG</b> הוא גרף מכוון <b>בלי מעגלים</b>: תלך לפי החצים מכל מקום, ולעולם לא תחזור לנקודת ההתחלה.</p>
 <p>DAGs הם הדרך שבה העולם מבטא <b>תלויות</b>:</p>
 <ul><li>Terraform: subnet תלוי ב-VPC (<code>terraform graph</code> ממש מדפיס את זה).</li>
 <li>מערכות build: Make, Bazel, Docker multi-stage builds.</li>
@@ -351,7 +351,7 @@ def bfs(graph, start):
 <div class="dev">ככה בדיוק Terraform מתכנן apply: כל מה שאין לו תלויות פתוחות "מוכן" ורץ במקביל (עד <code>-parallelism=10</code> כברירת מחדל). Airflow מתזמן tasks באותה צורה.</div>`
         },
         {
-          type: 'order', q: 'Resources ב-Terraform: ה-subnet מפנה ל-VPC, ה-instance מפנה ל-subnet, רשומת ה-DNS מפנה ל-IP של ה-instance. סדרו אותם בסדר יצירה תקין.',
+          type: 'order', q: 'Resources ב-Terraform: ה-subnet מפנה ל-VPC, ה-instance מפנה ל-subnet, רשומת ה-DNS מפנה ל-IP של ה-instance. סדר אותם בסדר יצירה תקין.',
           items: ['aws_vpc', 'aws_subnet', 'aws_instance', 'aws_route53_record'],
           explain: `כל resource חייב להיווצר אחרי זה שהוא מפנה אליו. לשרשרת הזו יש בדיוק סדר טופולוגי אחד. ו-destroy מריץ אותו הפוך!`
         },
@@ -366,10 +366,10 @@ def bfs(graph, start):
 <ul><li>Terraform: <code>Error: Cycle: aws_security_group.a, aws_security_group.b</code></li>
 <li>Python: <code>ImportError: cannot import name ... (most likely due to a circular import)</code></li>
 <li>Databases: <b>deadlock</b>. טרנזקציה T1 מחכה ל-lock ש-T2 מחזיקה, ו-T2 מחכה ל-T1. Postgres בונה גרף "wait-for" ואחרי <code>deadlock_timeout</code> (שנייה אחת כברירת מחדל) מחפש בו מעגל והורג קורבן אחד.</li></ul>
-<p><b>איך מוצאים מעגל עם DFS:</b> מסמנים צמתים כ-unvisited, "in progress" (על מסלול ה-DFS הנוכחי) או done. אם DFS מגיע לצומת <b>in-progress</b>, מצאתם back edge: מעגל.</p>`
+<p><b>איך מוצאים מעגל עם DFS:</b> מסמנים צמתים כ-unvisited, "in progress" (על מסלול ה-DFS הנוכחי) או done. אם DFS מגיע לצומת <b>in-progress</b>, מצאת back edge: מעגל.</p>`
         },
         {
-          type: 'mcq', q: 'האלגוריתם של Kahn מסתיים אבל הוציא לפלט רק 5 מתוך 8 צמתים. מה זה אומר לכם?',
+          type: 'mcq', q: 'האלגוריתם של Kahn מסתיים אבל הוציא לפלט רק 5 מתוך 8 צמתים. מה זה אומר לך?',
           choices: ['יש בגרף מעגל', 'הגרף לא קשיר', 'יש בגרף משקלים שליליים', 'לשלושה צמתים אין קשתות'],
           answer: 0,
           explain: `צמתים על מעגל מחכים זה לזה לנצח, אז ה-in-degree שלהם אף פעם לא מגיע ל-0 והם אף פעם לא יוצאים לפלט. חלקים לא קשירים או צמתים מבודדים זה בסדר: צמתים מבודדים מתחילים עם in-degree 0.`
@@ -399,7 +399,7 @@ def bfs(graph, start):
           html: `<p>במונחי גרפים, <b>עץ</b> (tree) הוא גרף לא מכוון שהוא <b>קשיר</b> (connected) ו<b>בלי מעגלים</b>. שתי העובדות האלה גוררות עוד שורה של עובדות:</p>
 <ul><li>לעץ עם n צמתים יש בדיוק <b>n − 1 קשתות</b>.</li>
 <li>יש בדיוק <b>מסלול אחד</b> בין כל שני צמתים.</li>
-<li>תסירו קשת כלשהי והוא מתפרק לשני חלקים. תוסיפו קשת כלשהי ותיצרו בדיוק מעגל אחד.</li></ul>
+<li>תסיר קשת כלשהי והוא מתפרק לשני חלקים. תוסיף קשת כלשהי ותיצור בדיוק מעגל אחד.</li></ul>
 <div class="dev">מערכת הקבצים של לינוקס (אם מתעלמים מ-hard links ו-symlinks), ה-DOM, מסמך JSON, עץ התהליכים (<code>pstree</code>): כולם עצים. ו-spanning-tree protocol (STP) על Ethernet switches קיים בדיוק כדי להפוך רשת עם לולאות לעץ, כדי ש-broadcast frames לא יסתובבו לנצח.</div>`
         },
         {
@@ -409,7 +409,7 @@ def bfs(graph, start):
         },
         {
           type: 'learn', title: 'Minimum spanning tree',
-          html: `<p>צריך לחווט 4 בניינים. לכל כבל אפשרי יש עלות. תחברו את <b>כולם</b>, הכי <b>בזול</b> שאפשר. התשובה היא <b>minimum spanning tree (MST)</b> (עץ פורש מינימלי): עץ שנוגע בכל צומת עם המשקל הכולל הקטן ביותר.</p>
+          html: `<p>צריך לחווט 4 בניינים. לכל כבל אפשרי יש עלות. חבר את <b>כולם</b>, הכי <b>בזול</b> שאפשר. התשובה היא <b>minimum spanning tree (MST)</b> (עץ פורש מינימלי): עץ שנוגע בכל צומת עם המשקל הכולל הקטן ביותר.</p>
 <svg viewBox="0 0 220 130" width="100%" style="max-width:280px" font-size="13" text-anchor="middle">
 <g stroke="currentColor" stroke-width="2"><line x1="20" y1="65" x2="110" y2="18"/><line x1="110" y1="18" x2="110" y2="112"/><line x1="20" y1="65" x2="110" y2="112"/><line x1="110" y1="112" x2="200" y2="65"/><line x1="110" y1="18" x2="200" y2="65"/></g>
 <g fill="var(--accent)"><circle cx="20" cy="65" r="13"/><circle cx="110" cy="18" r="13"/><circle cx="110" cy="112" r="13"/><circle cx="200" cy="65" r="13"/></g>
@@ -442,13 +442,13 @@ def find(x):                 # who is x's group leader?
     return x
 def union(a, b):             # merge two groups
     parent[find(a)] = find(b)</code></pre>
-<p>כל קבוצה היא עץ קטן; <code>find</code> הולך עד השורש. עם path compression ו-"union by rank" (מחברים את העץ הנמוך מתחת לגבוה), הפעולות הן <b>כמעט בזמן קבוע</b> (ההופכית של Ackermann, α(n) ≤ 4 לכל n שתפגשו אי פעם).</p>`
+<p>כל קבוצה היא עץ קטן; <code>find</code> הולך עד השורש. עם path compression ו-"union by rank" (מחברים את העץ הנמוך מתחת לגבוה), הפעולות הן <b>כמעט בזמן קבוע</b> (ההופכית של Ackermann, α(n) ≤ 4 לכל n שתפגוש אי פעם).</p>`
         },
         {
           type: 'mcq', q: 'באלגוריתם של Kruskal, find(u) == find(v) עבור הקשת הזולה הבאה u–v. מה עושים?',
           choices: ['מוסיפים את הקשת', 'מדלגים על הקשת: היא תיצור מעגל', 'עוצרים את האלגוריתם', 'מתחילים מחדש עם סדר קשתות אחר'],
           answer: 1,
-          explain: `אותו leader אומר ש-u ו-v כבר מחוברים דרך קשתות שבחרתם. הוספת u–v תיצור מעגל, ולעץ אסור שיהיה מעגל.`
+          explain: `אותו leader אומר ש-u ו-v כבר מחוברים דרך קשתות שבחרת. הוספת u–v תיצור מעגל, ולעץ אסור שיהיה מעגל.`
         },
         {
           type: 'tf', q: 'Minimum spanning tree נותן גם את המסלול הקצר ביותר בין כל זוג צמתים.',
@@ -468,7 +468,7 @@ def union(a, b):             # merge two groups
           type: 'learn', title: 'רכיבי קשירות (Connected components)',
           html: `<p><b>Connected component</b> (רכיב קשירות) הוא קבוצה מקסימלית של צמתים שכולם יכולים להגיע זה לזה. גרף לא מכוון מתפצל לרכיב אחד או יותר.</p>
 <p>איך סופרים אותם: עוברים בלולאה על כל צומת; אם עוד לא ביקרנו בו, זה רכיב חדש, אז מריצים ממנו BFS/DFS כדי לסמן את כל הקבוצה שלו. O(V + E). או: עושים union לכל קשת עם union-find, ואז סופרים כמה leaders שונים יש.</p>
-<div class="dev">Network partition זה הקלאסטר שלכם שמתפצל לרכיבים. etcd ו-Consul משתמשים ב-Raft כך שרק הרכיב שמחזיק <b>רוב</b> מהחברים ממשיך לקבל כתיבות, והצד של המיעוט עוצר. "האם הגרף קשיר?" זו השאלה שה-monitoring שלכם שואל כשהוא מתריע על split brain.</div>`
+<div class="dev">Network partition זה הקלאסטר שלך שמתפצל לרכיבים. etcd ו-Consul משתמשים ב-Raft כך שרק הרכיב שמחזיק <b>רוב</b> מהחברים ממשיך לקבל כתיבות, והצד של המיעוט עוצר. "האם הגרף קשיר?" זו השאלה שה-monitoring שלך שואל כשהוא מתריע על split brain.</div>`
         },
         {
           type: 'input', q: 'צמתים 1 עד 7, קשתות 1–2, 2–3, 4–5. לצמתים 6 ו-7 אין קשתות. כמה רכיבי קשירות יש?',
@@ -492,23 +492,23 @@ def union(a, b):             # merge two groups
           html: `<ul><li><b>OSPF / IS-IS</b> (בתוך רשת): link-state, כל נתב מריץ Dijkstra.</li>
 <li><b>RIP</b>: distance-vector, Bellman-Ford מבוזר.</li>
 <li><b>BGP</b> (בין ספקי אינטרנט): path-vector, בוחר מסלולים לפי policy, לא רק לפי הקצר ביותר. האינטרנט עצמו הוא גרף של עשרות אלפי רשתות (autonomous systems).</li></ul>
-<div class="dev">בפעם הבאה שתראו "BGP route leak הפיל חצי אינטרנט", זו קשת שהופיעה בגרף במקום שאסור לה להיות, והתעבורה הולכת אחריה בצייתנות.</div>
+<div class="dev">בפעם הבאה שתראה "BGP route leak הפיל חצי אינטרנט", זו קשת שהופיעה בגרף במקום שאסור לה להיות, והתעבורה הולכת אחריה בצייתנות.</div>
 <div class="fun">🤓 עובדה משעשעת: "שש דרגות של הפרדה" היא טענה על מרחקי BFS בגרף החברויות האנושי. פייסבוק מדדה את הגרף שלה ב-2016: בממוצע, כל שני משתמשים היו מחוברים דרך בערך 3.5 אנשים באמצע.</div>`
         },
         {
-          type: 'mcq', q: 'התאימו את הבעיה לכלי: "לפרוס סיבים בין 12 משרדים כך שכולם מחוברים בעלות כוללת מינימלית."',
+          type: 'mcq', q: 'התאם את הבעיה לכלי: "לפרוס סיבים בין 12 משרדים כך שכולם מחוברים בעלות כוללת מינימלית."',
           choices: ['Dijkstra', 'Topological sort', 'Minimum spanning tree (Kruskal/Prim)', 'PageRank'],
           answer: 2,
           explain: `"לחבר הכול, בעלות כוללת מינימלית" זו בדיוק בעיית ה-MST. Dijkstra ממזער מסלול ממקור אחד, לא את סך הכבילה.`
         },
         {
-          type: 'mcq', q: 'התאימו את הבעיה לכלי: "להריץ 200 tasks ב-Airflow, כל אחד רק אחרי שה-tasks שהוא צריך סיימו."',
+          type: 'mcq', q: 'התאם את הבעיה לכלי: "להריץ 200 tasks ב-Airflow, כל אחד רק אחרי שה-tasks שהוא צריך סיימו."',
           choices: ['Topological sort על DAG', 'BFS למסלול הקצר ביותר', 'Union-find', 'Bellman-Ford'],
           answer: 0,
           explain: `תלויות + "להריץ אחרי הדרישות המוקדמות" = סדר טופולוגי של ה-DAG. ה-scheduler של Airflow הוא לולאה בסגנון האלגוריתם של Kahn: "מה מוכן עכשיו?".`
         },
         {
-          type: 'order', q: 'סדרו את אלגוריתמי הגרפים האלה לפי זמן ריצה טיפוסי על גרף דליל, מהמהיר ביותר.',
+          type: 'order', q: 'סדר את אלגוריתמי הגרפים האלה לפי זמן ריצה טיפוסי על גרף דליל, מהמהיר ביותר.',
           items: ['BFS: O(V + E)', 'Dijkstra עם heap: O((V + E) log V)', 'Bellman-Ford: O(V · E)'],
           explain: `BFS נוגע בכל דבר פעם אחת. Dijkstra מוסיף פקטור log בשביל ה-heap. Bellman-Ford עושה relax לכל קשת עד V−1 פעמים, וזה הרבה יותר איטי.`
         },

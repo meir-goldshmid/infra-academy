@@ -42,8 +42,8 @@ INFRA.lessons.push({
 <tr><td>POST</td><td>❌</td><td>❌</td><td>ליצור תשלום</td></tr>
 <tr><td>PATCH</td><td>❌</td><td>❌ (תלוי)</td><td><code>{"op":"increment"}</code> לא; <code>{"status":"PAID"}</code> כן</td></tr>
 </table>
-<p>למה זו חובה: client שולח <code>POST /payments</code>, השרת מחייב את הכרטיס, והתשובה הולכת לאיבוד (timeout, reset ב-LB, pod שנהרג). ה-client <em>לא יכול לדעת</em> אם זה הצליח — בעיית "שני הגנרלים". יש לו שתי אפשרויות: לוותר (אולי להפסיד כסף) או retry (אולי לחייב פעמיים). אידמפוטנטיות הופכת את ה-retry לתשובה הבטוחה. כל שכבה עושה retry: דפדפנים, SDKs, service mesh (Envoy עושה retry על 5xx), load balancers, Kafka consumers אחרי rebalance, Lambda בשגיאה, SQS אחרי visibility timeout. אם לא תכננתם לכפילויות — כבר יש לכם אותן.</p>
-<blockquote>💡 מהשטח: at-least-once delivery + עיבוד אידמפוטנטי = <strong>effectively-once</strong>. ככה עובדת כל מערכת תשלומים, ledger או messaging רצינית — exactly-once delivery אמיתי על פני רשת לא קיים (ראו <code>#/lesson/staff-exactly-once</code>).</blockquote>`
+<p>למה זו חובה: client שולח <code>POST /payments</code>, השרת מחייב את הכרטיס, והתשובה הולכת לאיבוד (timeout, reset ב-LB, pod שנהרג). ה-client <em>לא יכול לדעת</em> אם זה הצליח — בעיית "שני הגנרלים". יש לו שתי אפשרויות: לוותר (אולי להפסיד כסף) או retry (אולי לחייב פעמיים). אידמפוטנטיות הופכת את ה-retry לתשובה הבטוחה. כל שכבה עושה retry: דפדפנים, SDKs, service mesh (Envoy עושה retry על 5xx), load balancers, Kafka consumers אחרי rebalance, Lambda בשגיאה, SQS אחרי visibility timeout. אם לא תכננת לכפילויות — כבר יש לך אותן.</p>
+<blockquote>💡 מהשטח: at-least-once delivery + עיבוד אידמפוטנטי = <strong>effectively-once</strong>. ככה עובדת כל מערכת תשלומים, ledger או messaging רצינית — exactly-once delivery אמיתי על פני רשת לא קיים (ראה <code>#/lesson/staff-exactly-once</code>).</blockquote>`
       }
     },
     {
@@ -94,11 +94,11 @@ CREATE INDEX ON idempotency_keys (created_at); -- for TTL cleanup (e.g. 24h)</pr
 <li>Conflict → קוראים את השורה הקיימת:
   <ul><li><code>request_hash</code> שונה → <strong>422</strong> "key שומש עם body אחר" (באג אצל ה-client).</li>
   <li><code>completed</code> → מחזירים את הקוד וה-body השמורים (עם header <code>Idempotent-Replayed: true</code>).</li>
-  <li><code>in_progress</code> וה-lock עוד בתוקף → <strong>409 Conflict</strong> "בקשה בטיפול, נסו שוב" (כפילות במקביל — למשל double-click).</li>
+  <li><code>in_progress</code> וה-lock עוד בתוקף → <strong>409 Conflict</strong> "בקשה בטיפול, נסה שוב" (כפילות במקביל — למשל double-click).</li>
   <li><code>in_progress</code> וה-lock פג → ה-worker הקודם קרס; משתלטים עם <code>UPDATE ... WHERE locked_until &lt; now()</code>.</li></ul></li>
 </ol>
-<p>אם העבודה קוראת למערכת חיצונית (רשת כרטיסי אשראי), מעבירים את ה-key גם <em>הלאה</em> (Stripe, Adyen, PayPal כולם מקבלים כזה) — האידמפוטנטיות שלכם חזקה רק כמו ה-hop החלש ביותר.</p>
-<blockquote>⚠️ טיפ לפרודקשן: תיזהרו בשמירת כשלונות. שומרים שגיאות <strong>4xx</strong> של ולידציה (דטרמיניסטיות), אבל <em>לא</em> שומרים <strong>5xx</strong>/timeouts כסופיים — משחררים את ה-key כדי ש-retry באמת ינסה שוב. Stripe שומרים keys ל-24 שעות; בחרו TTL ארוך מחלון ה-retry המקסימלי של ה-clients.</blockquote>`
+<p>אם העבודה קוראת למערכת חיצונית (רשת כרטיסי אשראי), מעבירים את ה-key גם <em>הלאה</em> (Stripe, Adyen, PayPal כולם מקבלים כזה) — האידמפוטנטיות שלך חזקה רק כמו ה-hop החלש ביותר.</p>
+<blockquote>⚠️ טיפ לפרודקשן: היזהר בשמירת כשלונות. שומרים שגיאות <strong>4xx</strong> של ולידציה (דטרמיניסטיות), אבל <em>לא</em> שומרים <strong>5xx</strong>/timeouts כסופיים — משחררים את ה-key כדי ש-retry באמת ינסה שוב. Stripe שומרים keys ל-24 שעות; בחר TTL ארוך מחלון ה-retry המקסימלי של ה-clients.</blockquote>`
       }
     },
     {
@@ -211,7 +211,7 @@ def create_payment(body, max_attempts=5, base=0.2, cap=5.0):
 <tr><td>הקמת VM</td><td>VMs יתומים ועלות</td><td>Client token (ב-AWS: <code>ClientToken</code> ב-RunInstances) + reconciliation לפי tags</td></tr>
 <tr><td>Terraform / k8s apply</td><td>—</td><td>Desired state דקלרטיבי אידמפוטנטי מעצם הגדרתו: apply פעמיים, שום דבר לא משתנה</td></tr>
 </table>
-<blockquote>💡 מהשטח: השיעור הכי עמוק של Kubernetes ו-Terraform הוא ש-<strong>דקלרטיבי + reconcile loops = אידמפוטנטי מעצם המבנה</strong>. כשאתם מתכננים control plane, תעדיפו "תדאג שזה יהיה ככה" (desired state) על פני "תעשה את זה" (פקודות אימפרטיביות).</blockquote>`
+<blockquote>💡 מהשטח: השיעור הכי עמוק של Kubernetes ו-Terraform הוא ש-<strong>דקלרטיבי + reconcile loops = אידמפוטנטי מעצם המבנה</strong>. כשאתה מתכנן control plane, העדף "תדאג שזה יהיה ככה" (desired state) על פני "תעשה את זה" (פקודות אימפרטיביות).</blockquote>`
       }
     }
   ],
@@ -227,9 +227,9 @@ def create_payment(body, max_attempts=5, base=0.2, cap=5.0):
                   201 {payment_id}   ✖ response lost ─▶ client retries with SAME K`,
   handsOn: [
     { cmd: `curl -X POST https://api.stripe.com/v1/payment_intents -u sk_test_xxx: -H "Idempotency-Key: 3f0c6e5a-2d7b-4f7e-9a51-1b2c3d4e5f60" -d amount=2000 -d currency=usd`,
-      what: { en: "Run it twice with the same key against Stripe's test mode: the second response is identical (same id) and carries the header Idempotent-Replayed: true.", he: "הריצו פעמיים עם אותו key מול ה-test mode של Stripe: התשובה השנייה זהה (אותו id) ומגיעה עם header ‏Idempotent-Replayed: true." } },
+      what: { en: "Run it twice with the same key against Stripe's test mode: the second response is identical (same id) and carries the header Idempotent-Replayed: true.", he: "הרץ פעמיים עם אותו key מול ה-test mode של Stripe: התשובה השנייה זהה (אותו id) ומגיעה עם header ‏Idempotent-Replayed: true." } },
     { cmd: `psql -c "INSERT INTO idempotency_keys(account_id,idem_key,request_hash,status) VALUES (1,'k1','h','in_progress') ON CONFLICT DO NOTHING RETURNING idem_key;"`,
-      what: { en: "Run twice: first returns the row (you own it), second returns 0 rows (duplicate). That one line is the heart of the pattern.", he: "הריצו פעמיים: הראשונה מחזירה את השורה (היא שלכם), השנייה מחזירה 0 שורות (כפילות). השורה הזאת היא לב התבנית." } },
+      what: { en: "Run twice: first returns the row (you own it), second returns 0 rows (duplicate). That one line is the heart of the pattern.", he: "הרץ פעמיים: הראשונה מחזירה את השורה (היא שלך), השנייה מחזירה 0 שורות (כפילות). השורה הזאת היא לב התבנית." } },
     { cmd: `redis-cli SET idem:acct1:k1 in_progress NX EX 86400`,
       what: { en: "Redis variant: SET NX returns OK only for the first caller, (nil) for duplicates; EX gives a 24h TTL. Good for dedupe, but not transactional with your DB write.", he: "גרסת Redis: ‏SET NX מחזיר OK רק לקורא הראשון, ו-(nil) לכפילויות; EX נותן TTL של 24 שעות. טוב ל-dedupe, אבל לא טרנזקציוני יחד עם הכתיבה ל-DB." } },
     { cmd: `curl -i -X PUT https://httpbin.org/put -H 'If-Match: "v7"' -d '{"status":"SHIPPED"}'`,
@@ -238,16 +238,16 @@ def create_payment(body, max_attempts=5, base=0.2, cap=5.0):
   mnemonic: { en: "\"Same key, same effect, same answer\" — and the key is born with the intent, not with the attempt.", he: "\"אותו key, אותה השפעה, אותה תשובה\" — וה-key נולד עם הכוונה, לא עם הניסיון." },
   pitfalls: [
     { en: "New idempotency key per retry attempt — generated inside the loop or by a middleware. Zero protection; the duplicates look like distinct requests.", he: "Idempotency key חדש בכל ניסיון — שנוצר בתוך הלולאה או ע\"י middleware. אפס הגנה; הכפילויות נראות כמו בקשות שונות." },
-    { en: "Checking the dedupe table and doing the side effect in separate transactions (check-then-act race): two concurrent duplicates both see 'not found' and both charge. Use a unique constraint / INSERT ... ON CONFLICT as the lock.", he: "בדיקה בטבלת ה-dedupe וביצוע ה-side effect בטרנזקציות נפרדות (race של check-then-act): שתי כפילויות במקביל רואות 'לא נמצא' ושתיהן מחייבות. השתמשו ב-unique constraint / INSERT ... ON CONFLICT בתור ה-lock." },
+    { en: "Checking the dedupe table and doing the side effect in separate transactions (check-then-act race): two concurrent duplicates both see 'not found' and both charge. Use a unique constraint / INSERT ... ON CONFLICT as the lock.", he: "בדיקה בטבלת ה-dedupe וביצוע ה-side effect בטרנזקציות נפרדות (race של check-then-act): שתי כפילויות במקביל רואות 'לא נמצא' ושתיהן מחייבות. השתמש ב-unique constraint / INSERT ... ON CONFLICT בתור ה-lock." },
     { en: "Caching a 500 or timeout as the final answer for the key — the client can never succeed again with that key.", he: "לשמור 500 או timeout כתשובה הסופית של ה-key — ה-client לא יוכל להצליח עם ה-key הזה לעולם." },
     { en: "Global (unscoped) keys: tenant A's key collides with tenant B's, and A gets B's stored response — a data leak. Scope keys by account.", he: "Keys גלובליים (לא מוגבלים ל-tenant): ה-key של לקוח A מתנגש בשל לקוח B, ו-A מקבל את התשובה השמורה של B — דליפת מידע. מגבילים keys לפי חשבון." }
   ],
   interview: [
-    { q: { en: "Design the idempotency layer for a payments API.", he: "תכננו את שכבת האידמפוטנטיות ל-API של תשלומים." },
+    { q: { en: "Design the idempotency layer for a payments API.", he: "תכנן את שכבת האידמפוטנטיות ל-API של תשלומים." },
       a: { en: "Client sends Idempotency-Key per logical payment. Table keyed by (account_id, key) with request hash, status, stored response, lock expiry, 24h TTL. INSERT ON CONFLICT to claim; on conflict replay completed, 409 in-progress, 422 on body mismatch, take over expired locks. Business write + key completion in one transaction. Pass the key to the PSP. Don't persist 5xx as final. Plus a unique constraint on order_id as defense in depth, and reconciliation against the PSP's settlement file nightly.", he: "ה-client שולח Idempotency-Key לכל תשלום לוגי. טבלה לפי (account_id, key) עם hash של הבקשה, סטטוס, תשובה שמורה, תוקף lock ו-TTL של 24 שעות. ‏INSERT ON CONFLICT כדי לתפוס; ב-conflict — replay אם completed, ‏409 אם in-progress, ‏422 אם ה-body שונה, השתלטות על locks שפגו. הכתיבה העסקית וסגירת ה-key בטרנזקציה אחת. מעבירים את ה-key ל-PSP. לא שומרים 5xx כסופי. בנוסף unique constraint על order_id כהגנה נוספת, ו-reconciliation לילי מול קובץ ה-settlement של ה-PSP." } },
     { q: { en: "Is DELETE idempotent if the second call returns 404?", he: "האם DELETE אידמפוטנטי אם הקריאה השנייה מחזירה 404?" },
       a: { en: "Yes. Idempotency is about server state, not the response code. After one or many DELETEs, the resource is gone. Many APIs return 204 for both to make client logic simpler.", he: "כן. אידמפוטנטיות מתייחסת ל-state בשרת, לא לקוד התשובה. אחרי DELETE אחד או הרבה — המשאב לא קיים. הרבה APIs מחזירים 204 בשני המקרים כדי לפשט את הלוגיקה אצל ה-client." } },
-    { q: { en: "Your Kafka consumer sends emails. How do you avoid duplicates after rebalances?", he: "ה-Kafka consumer שלכם שולח מיילים. איך נמנעים מכפילויות אחרי rebalance?" },
+    { q: { en: "Your Kafka consumer sends emails. How do you avoid duplicates after rebalances?", he: "ה-Kafka consumer שלך שולח מיילים. איך נמנעים מכפילויות אחרי rebalance?" },
       a: { en: "Accept at-least-once. Derive a deterministic email id from the event id; record it with a unique constraint before/with sending (outbox to the mail provider) and pass it as the provider's idempotency key/message-id. Commit offsets after processing. Duplicates then become no-ops.", he: "מקבלים at-least-once. גוזרים email id דטרמיניסטי מה-event id; רושמים אותו עם unique constraint לפני/יחד עם השליחה (outbox לספק המייל) ומעבירים אותו כ-idempotency key/message-id לספק. עושים commit ל-offsets אחרי העיבוד. ככה כפילויות הופכות ל-no-ops." } }
   ],
   quiz: [
@@ -258,7 +258,7 @@ def create_payment(body, max_attempts=5, base=0.2, cap=5.0):
       options: [ { en: "By the server on each request", he: "בשרת בכל בקשה" }, { en: "Inside the client's retry loop, per attempt", he: "בתוך לולאת ה-retry של ה-client, לכל ניסיון" }, { en: "By the client once per logical operation, reused for every retry", he: "ב-client פעם אחת לכל פעולה לוגית, ומשומש בכל retry" }, { en: "By the load balancer", he: "ב-load balancer" } ],
       answer: 2, explain: { en: "The key represents the user's intent; it must stay the same across retries or the server can't recognize duplicates.", he: "ה-key מייצג את כוונת המשתמש; הוא חייב להישאר זהה בין retries, אחרת השרת לא יזהה כפילויות." } },
     { q: { en: "Two identical requests with the same key arrive 5 ms apart while the first is still processing. Best response to the second?", he: "שתי בקשות זהות עם אותו key מגיעות בהפרש 5ms בזמן שהראשונה עוד בעיבוד. מה התשובה הטובה לשנייה?" },
-      options: [ { en: "Process it too", he: "לעבד גם אותה" }, { en: "409 Conflict — in flight, retry later", he: "409 Conflict — בטיפול, נסו שוב אחר כך" }, { en: "200 with empty body", he: "200 עם body ריק" }, { en: "500", he: "500" } ],
+      options: [ { en: "Process it too", he: "לעבד גם אותה" }, { en: "409 Conflict — in flight, retry later", he: "409 Conflict — בטיפול, נסה שוב אחר כך" }, { en: "200 with empty body", he: "200 עם body ריק" }, { en: "500", he: "500" } ],
       answer: 1, explain: { en: "The key row is in_progress with a valid lock; telling the client to retry later avoids double execution and gives it the real result shortly.", he: "שורת ה-key במצב in_progress עם lock בתוקף; להגיד ל-client לנסות שוב מונע ביצוע כפול ונותן לו את התוצאה האמיתית בקרוב." } },
     { q: { en: "Which update is naturally idempotent?", he: "איזה עדכון אידמפוטנטי באופן טבעי?" },
       options: [ { en: "UPDATE stock SET qty = qty - 1", he: "UPDATE stock SET qty = qty - 1" }, { en: "INSERT INTO log VALUES (...) without a key", he: "INSERT INTO log VALUES (...) בלי key" }, { en: "UPDATE orders SET status='PAID' WHERE id=81", he: "UPDATE orders SET status='PAID' WHERE id=81" }, { en: "Sending an SMS", he: "שליחת SMS" } ],
@@ -281,7 +281,7 @@ INFRA.lessons.push({
   },
   analogy: {
     en: "A phone call (REST/gRPC) needs both people available right now. A letter (queue) waits in the mailbox until you read it. A newsletter subscription (pub/sub, webhooks) arrives without you asking. Checking the mailbox every 5 minutes is polling. Letting your neighbor walk into your kitchen and take what they need is a shared database — convenient until you rearrange the kitchen and they can't find anything. A translator at the border who converts the old country's forms into yours is an anti-corruption layer.",
-    he: "שיחת טלפון (REST/gRPC) דורשת ששני הצדדים יהיו זמינים עכשיו. מכתב (תור) מחכה בתיבה עד שתקראו. מנוי לניוזלטר (pub/sub, webhooks) מגיע בלי שתבקשו. לבדוק את תיבת הדואר כל 5 דקות זה polling. לתת לשכן להיכנס למטבח ולקחת מה שהוא צריך זה DB משותף — נוח עד שמסדרים מחדש את המטבח והוא לא מוצא כלום. מתורגמן בגבול שממיר את הטפסים של המדינה הישנה לשלכם זה anti-corruption layer."
+    he: "שיחת טלפון (REST/gRPC) דורשת ששני הצדדים יהיו זמינים עכשיו. מכתב (תור) מחכה בתיבה עד שתקרא. מנוי לניוזלטר (pub/sub, webhooks) מגיע בלי שתבקש. לבדוק את תיבת הדואר כל 5 דקות זה polling. לתת לשכן להיכנס למטבח ולקחת מה שהוא צריך זה DB משותף — נוח עד שמסדרים מחדש את המטבח והוא לא מוצא כלום. מתורגמן בגבול שממיר את הטפסים של המדינה הישנה לשלך זה anti-corruption layer."
   },
   sections: [
     {
@@ -309,7 +309,7 @@ INFRA.lessons.push({
 <tr><td>דפדפן</td><td>מובנה</td><td>צריך proxy של gRPC-Web</td><td>מובנה</td></tr>
 <tr><td>מלכודות</td><td>Over/under-fetching, הרבה קריאות</td><td>לא קריא על הרשת, LB חייב L7 (multiplexing של HTTP/2)</td><td>N+1 ב-resolvers, queries יקרות → צריך מגבלות depth/cost</td></tr>
 </table>
-<p>קריאות sync מצמידות אתכם <strong>בזמן</strong>: אם הצד השני למטה או איטי — גם אתם. זמינות מוכפלת: בקשה שנוגעת באופן סינכרוני ב-5 שירותים של 99.9% כל אחד היא לכל היותר 99.5% זמינה. Latency מצטבר (או המקסימום, אם במקביל). לכן: sync ל-queries שהמשתמש מחכה לתשובה שלהן; async ל-commands שההשפעה שלהם יכולה לקרות אחר כך.</p>
+<p>קריאות sync מצמידות אותך <strong>בזמן</strong>: אם הצד השני למטה או איטי — גם אתה. זמינות מוכפלת: בקשה שנוגעת באופן סינכרוני ב-5 שירותים של 99.9% כל אחד היא לכל היותר 99.5% זמינה. Latency מצטבר (או המקסימום, אם במקביל). לכן: sync ל-queries שהמשתמש מחכה לתשובה שלהן; async ל-commands שההשפעה שלהם יכולה לקרות אחר כך.</p>
 <blockquote>💡 מהשטח: נקודת איזון נפוצה היא REST/JSON בקצה (API ציבורי, שותפים), gRPC בין שירותים פנימיים, GraphQL או BFF ל-UI של web/mobile, ו-events לכל מה ש"צריך לקרות אחרי".</blockquote>`
       }
     },
@@ -340,7 +340,7 @@ def verify(secret: bytes, body: bytes, header_sig: str, ts: int) -&gt; bool:
         he: `<ul>
 <li><strong>Polling</strong>: <code>GET /jobs/42</code> כל 5 שניות. פשוט, ידידותי ל-firewalls, אבל 99% מהקריאות מחזירות "אין חדש" וה-latency הוא בממוצע חצי מהאינטרוול. משתמשים ב-<code>ETag</code>/<code>If-None-Match</code> → <code>304</code> כדי שיהיה זול, וב-<code>?since=cursor</code> ל-change feeds.</li>
 <li><strong>Long polling</strong>: השרת מחזיק את הבקשה פתוחה (למשל 30 שניות) עד שיש מידע. כמעט real-time על HTTP רגיל; משמש ב-SQS עם <code>WaitTimeSeconds=20</code>, ב-blocking queries של Consul וב-<code>watch</code> של Kubernetes.</li>
-<li><strong>Webhooks</strong>: הספק קורא ל-URL <em>שלכם</em> כשמשהו קורה (Stripe ‏<code>payment_intent.succeeded</code>, GitHub ‏<code>push</code>). Real-time ויעיל, אבל עכשיו אתם מריצים endpoint ציבורי שחייב להיות מאובטח, מהיר ואידמפוטנטי.</li>
+<li><strong>Webhooks</strong>: הספק קורא ל-URL <em>שלך</em> כשמשהו קורה (Stripe ‏<code>payment_intent.succeeded</code>, GitHub ‏<code>push</code>). Real-time ויעיל, אבל עכשיו אתה מריץ endpoint ציבורי שחייב להיות מאובטח, מהיר ואידמפוטנטי.</li>
 </ul>
 <p>צ'קליסט למקבל webhooks:</p>
 <pre># verify an HMAC-SHA256 signature over "timestamp.body"
@@ -355,9 +355,9 @@ def verify(secret: bytes, body: bytes, header_sig: str, ts: int) -&gt; bool:
 <li>מאמתים את החתימה על ה-body ה<strong>גולמי</strong> (JSON שעבר serialize מחדש שובר אותה) + סבילות timestamp נגד replay.</li>
 <li>שומרים את ה-event (dedupe לפי event id של הספק) ומחזירים <strong>2xx תוך 1–3 שניות</strong>; מעבדים async מתור.</li>
 <li>מניחים כפילויות וסדר לא נכון; אם הסדר חשוב — מושכים את ה-state העדכני מה-API של הספק.</li>
-<li>מריצים reconciliation poll (למשל כל שעה "list events since") — webhooks <em>יפוספסו</em> בזמן התקלות שלכם.</li>
+<li>מריצים reconciliation poll (למשל כל שעה "list events since") — webhooks <em>יפוספסו</em> בזמן התקלות שלך.</li>
 </ol>
-<blockquote>⚠️ טיפ לפרודקשן: אם <em>אתם</em> שולחים webhooks — חותמים, עושים retry עם exponential backoff במשך 24–72 שעות, נותנים id לכל event, חושפים כפתור "שלח שוב" ו-delivery log, ומנטרלים אוטומטית endpoints שנכשלים כמה ימים — בדיוק מה ש-Stripe ו-GitHub עושים.</blockquote>`
+<blockquote>⚠️ טיפ לפרודקשן: אם <em>אתה</em> שולח webhooks — חותמים, עושים retry עם exponential backoff במשך 24–72 שעות, נותנים id לכל event, חושפים כפתור "שלח שוב" ו-delivery log, ומנטרלים אוטומטית endpoints שנכשלים כמה ימים — בדיוק מה ש-Stripe ו-GitHub עושים.</blockquote>`
       }
     },
     {
@@ -386,7 +386,7 @@ def verify(secret: bytes, body: bytes, header_sig: str, ts: int) -&gt; bool:
     "table.include.list": "public.orders,public.outbox",
     "topic.prefix": "orders" } }</pre>
 <p><strong>העברת קבצים/batch</strong> (SFTP, ‏"drop zones" ב-S3, ‏CSV/Parquet לילי) זו עדיין הדרך שבה בנקים, חברות ביטוח, ממשלות והרבה שותפים מתממשקים. עושים את זה נכון: כותבים לשם זמני ואז rename אטומי (או סמן <code>_SUCCESS</code>), מצרפים manifest עם ספירת שורות + checksums, טעינה אידמפוטנטית לפי שם הקובץ, והתראה על "הקובץ לא הגיע עד 06:00".</p>
-<blockquote>⚠️ טיפ לפרודקשן: events גולמיים של CDC חושפים את ה-schema הפנימי שלכם בדיוק כמו DB משותף. לצרכנים מחוץ לצוות — עדיף CDC של טבלת <strong>outbox</strong> (events מנוהלים עם גרסאות); CDC על טבלאות גולמיות מתאים ל-stores נגזרים שלכם.</blockquote>`
+<blockquote>⚠️ טיפ לפרודקשן: events גולמיים של CDC חושפים את ה-schema הפנימי שלך בדיוק כמו DB משותף. לצרכנים מחוץ לצוות — עדיף CDC של טבלת <strong>outbox</strong> (events מנוהלים עם גרסאות); CDC על טבלאות גולמיות מתאים ל-stores נגזרים שלך.</blockquote>`
       }
     },
     {
@@ -413,7 +413,7 @@ def verify(secret: bytes, body: bytes, header_sig: str, ts: int) -&gt; bool:
 <tr><td>Protobuf</td><td>package <code>orders.v1</code></td><td>אף פעם לא ממחזרים מספרי שדות; <code>reserved 4;</code> לשדות שהוסרו</td></tr>
 </table>
 <p><strong>Deprecation</strong> הוא תהליך: מכריזים, מוסיפים headers של <code>Deprecation</code>/<code>Sunset</code>, מודדים מי עוד קורא לגרסה הישנה (metrics לפי client!), פונים אליהם, עושים brown-out (מכשילים 1% מהקריאות לשעה) לפני שמכבים. Expand → migrate → contract: משחררים את השדה החדש לצד הישן, מעבירים את הצרכנים, ואז מסירים.</p>
-<blockquote>💡 מהשטח: מדריך ה-API של Google ‏(AIP) וה-versioning של Stripe הם המקורות הציבוריים הכי טובים. בפנים, "אי אפשר להימנע משבירת צרכנים שאתם לא מכירים" — לכן כל client חייב להזדהות (header עם שם השירות / זהות mTLS).</blockquote>`
+<blockquote>💡 מהשטח: מדריך ה-API של Google ‏(AIP) וה-versioning של Stripe הם המקורות הציבוריים הכי טובים. בפנים, "אי אפשר להימנע משבירת צרכנים שאתה לא מכיר" — לכן כל client חייב להזדהות (header עם שם השירות / זהות mTLS).</blockquote>`
       }
     },
     {
@@ -436,9 +436,9 @@ def verify(secret: bytes, body: bytes, header_sig: str, ts: int) -&gt; bool:
 </table>
 <blockquote>💡 Real world: the question a principal asks is not "REST or Kafka?" but "what happens to <em>my</em> system when <em>theirs</em> is down for an hour, slow for a day, or changes its schema next quarter?" — the answer picks the integration style for you.</blockquote>`,
         he: `<ul>
-<li><strong>API gateway</strong>: דלת כניסה אחת ל-auth, ‏rate limits, ‏routing, ‏TLS ו-request ids (ראו <code>#/lesson/arch-api-gateway</code>).</li>
+<li><strong>API gateway</strong>: דלת כניסה אחת ל-auth, ‏rate limits, ‏routing, ‏TLS ו-request ids (ראה <code>#/lesson/arch-api-gateway</code>).</li>
 <li><strong>BFF (Backend for Frontend)</strong>: שירות דק לכל סוג client (web, iOS, שותף) שמרכז קריאות פנימיות ומעצב תשובות למסך הספציפי. בבעלות צוות ה-frontend; חוסך מהמובייל 12 קריאות על חיבור 3G.</li>
-<li><strong>Anti-corruption layer (ACL)</strong>: מתורגמן בין המודל הנקי שלכם למודל legacy/של ספק (SOAP, ‏COBOL copybooks ב-mainframe, ‏IDocs של SAP). המושגים המוזרים שלהם (<code>CUST_STAT_CD='Q'</code>) לא דולפים לדומיין שלכם — רק ה-ACL מכיר אותם, כך שהחלפת ספק נוגעת במקום אחד.</li>
+<li><strong>Anti-corruption layer (ACL)</strong>: מתורגמן בין המודל הנקי שלך למודל legacy/של ספק (SOAP, ‏COBOL copybooks ב-mainframe, ‏IDocs של SAP). המושגים המוזרים שלהם (<code>CUST_STAT_CD='Q'</code>) לא דולפים לדומיין שלך — רק ה-ACL מכיר אותם, כך שהחלפת ספק נוגעת במקום אחד.</li>
 </ul>
 <table>
 <tr><th>צורך</th><th>בחירה</th><th>צימוד</th></tr>
@@ -450,7 +450,7 @@ def verify(secret: bytes, body: bytes, header_sig: str, ts: int) -&gt; bool:
 <tr><td>בנק שותף, מיליוני שורות בלילה</td><td>העברת קבצים עם manifest</td><td>פורמט קובץ + לוח זמנים</td></tr>
 <tr><td>מערכת legacy שאי אפשר לשנות</td><td>ACL לפניה</td><td>מבודד בתוך ה-ACL</td></tr>
 </table>
-<blockquote>💡 מהשטח: השאלה ש-principal שואל היא לא "REST או Kafka?" אלא "מה קורה למערכת <em>שלי</em> כשהמערכת <em>שלהם</em> למטה לשעה, איטית ליום, או משנה schema ברבעון הבא?" — התשובה בוחרת בשבילכם את סגנון האינטגרציה.</blockquote>`
+<blockquote>💡 מהשטח: השאלה ש-principal שואל היא לא "REST או Kafka?" אלא "מה קורה למערכת <em>שלי</em> כשהמערכת <em>שלהם</em> למטה לשעה, איטית ליום, או משנה schema ברבעון הבא?" — התשובה בוחרת בשבילך את סגנון האינטגרציה.</blockquote>`
       }
     }
   ],
@@ -474,14 +474,14 @@ def verify(secret: bytes, body: bytes, header_sig: str, ts: int) -&gt; bool:
   mnemonic: { en: "\"Coupled in TIME, DATA or CHANGE?\" — sync couples time, shared DB couples data, missing contracts couple change.", he: "\"צימוד בזמן, בנתונים או בשינוי?\" — sync מצמיד זמן, DB משותף מצמיד נתונים, היעדר חוזים מצמיד שינוי." },
   pitfalls: [
     { en: "Integrating through another team's database 'just for this report' — six months later five services depend on its schema and it can never change.", he: "להתממשק דרך ה-DB של צוות אחר 'רק בשביל הדוח הזה' — חצי שנה אחר כך חמישה שירותים תלויים ב-schema שלו והוא לא יכול להשתנות לעולם." },
-    { en: "Webhook handlers that do the slow work inline: the provider times out at 10–30 s, retries, and you process the same event three times in parallel.", he: "Webhook handlers שעושים את העבודה האיטית inline: הספק מגיע ל-timeout אחרי 10–30 שניות, עושה retry, ואתם מעבדים את אותו event שלוש פעמים במקביל." },
+    { en: "Webhook handlers that do the slow work inline: the provider times out at 10–30 s, retries, and you process the same event three times in parallel.", he: "Webhook handlers שעושים את העבודה האיטית inline: הספק מגיע ל-timeout אחרי 10–30 שניות, עושה retry, ואתה מעבד את אותו event שלוש פעמים במקביל." },
     { en: "Adding a new enum value and calling it 'non-breaking' — strict clients with exhaustive switches crash on the unknown value.", he: "להוסיף ערך חדש ל-enum ולקרוא לזה 'לא שובר' — clients קשוחים עם switch מלא קורסים על הערך הלא מוכר." },
     { en: "Long synchronous call chains (A→B→C→D→E): latency adds up, availability multiplies down, and one slow leaf stalls everything.", he: "שרשראות קריאות סינכרוניות ארוכות (A→B→C→D→E): ה-latency מצטבר, הזמינות מוכפלת כלפי מטה, ועלה איטי אחד תוקע הכול." }
   ],
   interview: [
-    { q: { en: "When would you choose gRPC over REST, and what infrastructure changes does it require?", he: "מתי תבחרו gRPC על פני REST, ואילו שינויי תשתית זה דורש?" },
+    { q: { en: "When would you choose gRPC over REST, and what infrastructure changes does it require?", he: "מתי תבחר gRPC על פני REST, ואילו שינויי תשתית זה דורש?" },
       a: { en: "Internal, high-QPS, latency-sensitive service-to-service calls, polyglot codegen, streaming. Needs L7 load balancing that understands HTTP/2 (long-lived connections defeat L4 LBs — one pod gets all traffic), gRPC health checks, a proto registry with breaking-change checks, gRPC-Web or a REST transcoding gateway for browsers, and tooling like grpcurl for debugging.", he: "קריאות פנימיות service-to-service עם QPS גבוה ורגישות ל-latency, codegen לכמה שפות, streaming. דורש load balancing ב-L7 שמבין HTTP/2 (חיבורים ארוכים שוברים LB ב-L4 — pod אחד מקבל את כל התעבורה), health checks של gRPC, ‏proto registry עם בדיקות breaking-change, ‏gRPC-Web או gateway שמתרגם ל-REST לדפדפנים, וכלים כמו grpcurl לדיבאג." } },
-    { q: { en: "A team wants to read your service's tables directly for analytics. What do you offer instead?", he: "צוות רוצה לקרוא ישירות את הטבלאות של השירות שלכם לאנליטיקה. מה תציעו במקום?" },
+    { q: { en: "A team wants to read your service's tables directly for analytics. What do you offer instead?", he: "צוות רוצה לקרוא ישירות את הטבלאות של השירות שלך לאנליטיקה. מה תציע במקום?" },
       a: { en: "A published data contract: CDC (Debezium) or outbox events into Kafka/the warehouse, or a versioned read-only view on a replica. They get fresh data, I keep the freedom to change my schema, and their heavy queries never touch my primary.", he: "חוזה נתונים מפורסם: CDC ‏(Debezium) או outbox events ל-Kafka/ל-warehouse, או view קריאה-בלבד עם גרסה על replica. הם מקבלים נתונים טריים, אני שומר על החופש לשנות את ה-schema, וה-queries הכבדות שלהם לא נוגעות ב-primary שלי." } },
     { q: { en: "How do you remove a field from a public API used by hundreds of customers?", he: "איך מסירים שדה מ-API ציבורי שמשמש מאות לקוחות?" },
       a: { en: "Expand-migrate-contract: introduce the replacement, mark the old field deprecated in docs and with Deprecation/Sunset headers, measure usage per API key, contact the remaining callers, brown-out, then remove it in a new version (or date-version) while old pinned versions keep working via response transformation.", he: "Expand-migrate-contract: מוסיפים תחליף, מסמנים את השדה הישן כ-deprecated בתיעוד וב-headers של Deprecation/Sunset, מודדים שימוש לפי API key, פונים למי שנשאר, עושים brown-out, ומסירים בגרסה חדשה (או גרסת תאריך) כשגרסאות ישנות מקובעות ממשיכות לעבוד דרך המרת התשובות." } }
@@ -497,8 +497,8 @@ def verify(secret: bytes, body: bytes, header_sig: str, ts: int) -&gt; bool:
       options: [ { en: "Renaming 'total' to 'amount'", he: "לשנות את 'total' ל-'amount'" }, { en: "Changing 'price' from number to string", he: "לשנות את 'price' ממספר למחרוזת" }, { en: "Adding a new optional field 'currency'", he: "להוסיף שדה אופציונלי חדש 'currency'" }, { en: "Making 'coupon' required in requests", he: "להפוך את 'coupon' לשדה חובה בבקשות" } ],
       answer: 2, explain: { en: "Additive optional fields are safe for tolerant readers; renames, type changes and new requirements break clients.", he: "שדות אופציונליים חדשים בטוחים ל-tolerant readers; שינויי שם, טיפוס ודרישות חדשות שוברים clients." } },
     { q: { en: "What's the main purpose of an anti-corruption layer?", he: "מה המטרה העיקרית של anti-corruption layer?" },
-      options: [ { en: "Encrypting traffic to legacy systems", he: "הצפנת תעבורה למערכות legacy" }, { en: "Translating a legacy/vendor model so its concepts don't leak into your domain", he: "תרגום מודל legacy/ספק כדי שהמושגים שלו לא ידלפו לדומיין שלכם" }, { en: "Rate limiting partners", he: "Rate limiting לשותפים" }, { en: "Detecting data corruption on disk", he: "גילוי השחתת נתונים בדיסק" } ],
-      answer: 1, explain: { en: "The ACL isolates foreign models in one place, so your model stays clean and the vendor is replaceable.", he: "ה-ACL מבודד מודלים זרים במקום אחד, כך שהמודל שלכם נשאר נקי ואפשר להחליף את הספק." } }
+      options: [ { en: "Encrypting traffic to legacy systems", he: "הצפנת תעבורה למערכות legacy" }, { en: "Translating a legacy/vendor model so its concepts don't leak into your domain", he: "תרגום מודל legacy/ספק כדי שהמושגים שלו לא ידלפו לדומיין שלך" }, { en: "Rate limiting partners", he: "Rate limiting לשותפים" }, { en: "Detecting data corruption on disk", he: "גילוי השחתת נתונים בדיסק" } ],
+      answer: 1, explain: { en: "The ACL isolates foreign models in one place, so your model stays clean and the vendor is replaceable.", he: "ה-ACL מבודד מודלים זרים במקום אחד, כך שהמודל שלך נשאר נקי ואפשר להחליף את הספק." } }
   ],
   related: ["arch-sync-vs-async", "arch-api-gateway", "arch-event-driven", "arch-monolith-vs-microservices", "pr-idempotency", "pr-queue-kinds", "pr-http-versions", "pr-realtime-protocols"]
 });
@@ -538,7 +538,7 @@ INFRA.lessons.push({
 <tr><td><strong>Log / stream</strong></td><td>כל consumer <em>group</em> קורא הכול; בתוך group, ה-partitions מחלקים את העבודה</td><td>נשמר לפי retention (7 ימים, לנצח)</td><td>כן — מאפסים offsets</td><td>Kafka, ‏Kinesis, ‏Redis Streams, ‏Pulsar, ‏Event Hubs, ‏NATS JetStream</td></tr>
 </table>
 <p>שילובים הם סטנדרט: <strong>SNS → N × SQS</strong> = fan-out עמיד, לכל subscriber תור עבודה משלו עם retries ו-DLQ. ב-Kafka, topic אחד + consumer groups נותן את שניהם: fan-out בין groups, חלוקת עבודה בתוך group (מקביליות מקסימלית = מספר ה-partitions).</p>
-<blockquote>💡 מהשטח: השאלה המכריעה היא "האם אני צריך <strong>לקרוא שוב היסטוריה</strong>?" — בנייה מחדש של search index, ‏consumer חדש שצריך את 7 הימים האחרונים, עיבוד מחדש אחרי תיקון באג. אם כן → log. אם ההודעות הן משימות שצריך לבצע פעם אחת → work queue. ראו <code>#/lesson/arch-brokers</code> לפנים של ה-brokers.</blockquote>`
+<blockquote>💡 מהשטח: השאלה המכריעה היא "האם אני צריך <strong>לקרוא שוב היסטוריה</strong>?" — בנייה מחדש של search index, ‏consumer חדש שצריך את 7 הימים האחרונים, עיבוד מחדש אחרי תיקון באג. אם כן → log. אם ההודעות הן משימות שצריך לבצע פעם אחת → work queue. ראה <code>#/lesson/arch-brokers</code> לפנים של ה-brokers.</blockquote>`
       }
     },
     {
@@ -558,10 +558,10 @@ order-81:{"type":"Paid"}       # guaranteed after Created for order-81
 order-99:{"type":"Created"}    # may interleave freely with order-81</pre>
 <blockquote>⚠️ Production tip: ordering + retries fight each other. If message 2 for a key fails and you move on to message 3, you've broken order; if you block, one poison message stalls the whole partition. Decide per use-case: block-and-alert, or park the key's messages in a retry topic together.</blockquote>`,
         he: `<ul>
-<li><strong>Priority queue</strong>: הודעות בעדיפות גבוהה עוקפות. RabbitMQ תומך ב-<code>x-max-priority</code> (תשאירו ≤ 10 רמות). SQS/Kafka לא — משתמשים ב-<strong>תורים נפרדים לכל עדיפות</strong> ונותנים לתור הדחוף יותר consumers או קוראים ממנו קודם (שימו לב ל-starvation של התור הנמוך). דוגמה: מיילים לאיפוס סיסמה מול ניוזלטר שיווקי.</li>
+<li><strong>Priority queue</strong>: הודעות בעדיפות גבוהה עוקפות. RabbitMQ תומך ב-<code>x-max-priority</code> (תשאיר ≤ 10 רמות). SQS/Kafka לא — משתמשים ב-<strong>תורים נפרדים לכל עדיפות</strong> ונותנים לתור הדחוף יותר consumers או קוראים ממנו קודם (שים לב ל-starvation של התור הנמוך). דוגמה: מיילים לאיפוס סיסמה מול ניוזלטר שיווקי.</li>
 <li><strong>Delay / scheduled queue</strong>: למסור לא לפני T. ב-SQS ‏<code>DelaySeconds</code> (עד 15 דקות) להודעה; ב-RabbitMQ ה-delayed-message plugin או טריק TTL + dead-letter; ב-Azure Service Bus ‏<code>ScheduledEnqueueTimeUtc</code>; ב-Redis ‏sorted set עם score = זמן היעד (<code>ZADD</code> + poll עם <code>ZRANGEBYSCORE</code>). לשעות/ימים — scheduler/טיימר עמיד (Temporal, ‏EventBridge Scheduler).</li>
 <li><strong>FIFO מול standard</strong>: SQS standard = throughput כמעט בלי הגבלה, at-least-once, סדר best-effort. SQS FIFO = סדר קשיח לכל <code>MessageGroupId</code>, חלון dedup של 5 דקות לפי <code>MessageDeduplicationId</code>, ‏300 הודעות/שנייה (3,000 עם batching; יותר ב-high-throughput mode). סדר גלובלי קשיח הורג throughput — כמעט תמיד רוצים סדר <em>לכל key</em> (לקוח, הזמנה).</li>
-<li><strong>Request-reply על תורים</strong>: הבקשה נושאת <code>reply_to</code> + ‏<code>correlation_id</code>; המגיב מפרסם לתור התשובה. משמש ל-RPC על RabbitMQ או כשחוצים אזורי רשת; שימו לב ל-timeouts ולתשובות יתומות.</li>
+<li><strong>Request-reply על תורים</strong>: הבקשה נושאת <code>reply_to</code> + ‏<code>correlation_id</code>; המגיב מפרסם לתור התשובה. משמש ל-RPC על RabbitMQ או כשחוצים אזורי רשת; שים לב ל-timeouts ולתשובות יתומות.</li>
 </ul>
 <pre># per-key ordering in Kafka: same key -&gt; same partition -&gt; ordered
 kafka-console-producer --bootstrap-server localhost:9092 --topic orders \
@@ -569,7 +569,7 @@ kafka-console-producer --bootstrap-server localhost:9092 --topic orders \
 order-81:{"type":"Created"}
 order-81:{"type":"Paid"}       # guaranteed after Created for order-81
 order-99:{"type":"Created"}    # may interleave freely with order-81</pre>
-<blockquote>⚠️ טיפ לפרודקשן: סדר ו-retries נלחמים אחד בשני. אם הודעה 2 של key נכשלת וממשיכים להודעה 3 — שברתם את הסדר; אם חוסמים — הודעת poison אחת תוקעת את כל ה-partition. מחליטים לפי use-case: לחסום ולהתריע, או להעביר את כל ההודעות של ה-key יחד ל-retry topic.</blockquote>`
+<blockquote>⚠️ טיפ לפרודקשן: סדר ו-retries נלחמים אחד בשני. אם הודעה 2 של key נכשלת וממשיכים להודעה 3 — שברת את הסדר; אם חוסמים — הודעת poison אחת תוקעת את כל ה-partition. מחליטים לפי use-case: לחסום ולהתריע, או להעביר את כל ההודעות של ה-key יחד ל-retry topic.</blockquote>`
       }
     },
     {
@@ -592,8 +592,8 @@ aws sqs create-queue --queue-name orders --attributes '{
 aws sqs start-message-move-task --source-arn arn:aws:sqs:eu-west-1:123456789012:orders-dlq</pre>
 <p><strong>Backpressure</strong>: the queue absorbs bursts, but if consumers are slower than producers on average, the backlog grows forever. Watch <em>age of oldest message</em> (not just depth), autoscale consumers on lag (KEDA, <code>#/lesson/k8s-keda</code>), and cap the queue or shed load at the producer before it's hours behind.</p>`,
         he: `<ul>
-<li><strong>Ack modes</strong>: auto-ack בקבלה = <em>at-most-once</em> (קריסה באמצע העיבוד מאבדת את ההודעה). ack אחרי עיבוד = <em>at-least-once</em> (קריסה לפני ack ← מסירה חוזרת ← כפילויות ← להיות אידמפוטנטיים, ראו <code>#/lesson/pr-idempotency</code>). ב-Kafka: commit ל-offsets אחרי העיבוד.</li>
-<li><strong>Visibility timeout / lease</strong> (ב-SQS ברירת מחדל 30 שניות, מקסימום 12 שעות): הודעה שהתקבלה מוסתרת מאחרים; אם לא נמחקה בזמן — היא חוזרת. קובעים בערך פי 6 מזמן העיבוד ב-p99, ומאריכים (<code>ChangeMessageVisibility</code>) ל-jobs ארוכים, אחרת תעבדו את אותה הודעה פעמיים <em>במקביל</em>.</li>
+<li><strong>Ack modes</strong>: auto-ack בקבלה = <em>at-most-once</em> (קריסה באמצע העיבוד מאבדת את ההודעה). ack אחרי עיבוד = <em>at-least-once</em> (קריסה לפני ack ← מסירה חוזרת ← כפילויות ← להיות אידמפוטנטיים, ראה <code>#/lesson/pr-idempotency</code>). ב-Kafka: commit ל-offsets אחרי העיבוד.</li>
+<li><strong>Visibility timeout / lease</strong> (ב-SQS ברירת מחדל 30 שניות, מקסימום 12 שעות): הודעה שהתקבלה מוסתרת מאחרים; אם לא נמחקה בזמן — היא חוזרת. קובעים בערך פי 6 מזמן העיבוד ב-p99, ומאריכים (<code>ChangeMessageVisibility</code>) ל-jobs ארוכים, אחרת תעבד את אותה הודעה פעמיים <em>במקביל</em>.</li>
 <li><strong>Push מול pull</strong>: push (‏basic.consume ב-RabbitMQ, ‏Pub/Sub push ל-HTTPS) מוסר מהר אבל צריך <code>prefetch</code>/flow control כדי לא להציף consumers; pull (‏SQS, ‏Kafka) נותן ל-consumers לקחת כמה שהם מסוגלים — backpressure טבעי.</li>
 <li><strong>DLQ והודעות poison</strong>: אחרי N ניסיונות כושלים (ב-SQS ‏<code>maxReceiveCount</code>, ב-RabbitMQ ‏<code>x-dead-letter-exchange</code>, ב-Service Bus ‏<code>MaxDeliveryCount</code>=10) מעבירים את ההודעה הצידה כדי שתפסיק לחסום/לשרוף CPU. DLQ בלי התראה ובלי נוהל <strong>redrive</strong> הוא פח שקט לאובדן נתונים.</li>
 </ul>
@@ -625,7 +625,7 @@ aws sqs start-message-move-task --source-arn arn:aws:sqs:eu-west-1:123456789012:
 </table>
 <blockquote>💡 Real world: a principal's default on a cloud: managed work queue (SQS/Service Bus/Pub/Sub) for tasks, managed Kafka (MSK/Confluent/Event Hubs) only when you need replay, many consumer groups or CDC. Don't run Kafka for 50 messages per second of background jobs.</blockquote>`,
         he: `<table>
-<tr><th>מוצר</th><th>מודל</th><th>סדר</th><th>Replay</th><th>הכי מתאים ל</th><th>שימו לב</th></tr>
+<tr><th>מוצר</th><th>מודל</th><th>סדר</th><th>Replay</th><th>הכי מתאים ל</th><th>שים לב</th></tr>
 <tr><td>AWS SQS</td><td>Work queue (pull)</td><td>Standard: אין; FIFO: לכל group</td><td>לא</td><td>תורי משימות בלי תפעול ב-AWS</td><td>הודעה עד 256KB, השהיה עד 15 דקות, אין fan-out לבד</td></tr>
 <tr><td>AWS SNS</td><td>Pub/sub (push)</td><td>FIFO topics לכל group</td><td>לא (archive ב-FIFO)</td><td>Fan-out ל-SQS/Lambda/HTTP/SMS/email</td><td>לא עמיד ל-subscribers איטיים → לצרף SQS</td></tr>
 <tr><td>RabbitMQ</td><td>Exchanges → queues ‏(push), ‏streams</td><td>לכל תור</td><td>רק streams</td><td>Routing גמיש, עדיפויות, RPC, ‏on-prem</td><td>Backlogs גדולים מזיקים; quorum queues ל-HA</td></tr>
@@ -665,10 +665,10 @@ producer              publisher                  producer ─▶ [p0|0 1 2 3 4 5
     { en: "Demanding global FIFO 'to be safe' — throughput collapses to one consumer. You almost always need order per entity, not global.", he: "לדרוש FIFO גלובלי 'ליתר ביטחון' — ה-throughput קורס ל-consumer אחד. כמעט תמיד צריך סדר לכל ישות, לא גלובלי." }
   ],
   interview: [
-    { q: { en: "SQS or Kafka for a new order-processing pipeline? Walk through the decision.", he: "SQS או Kafka ל-pipeline חדש של עיבוד הזמנות? תעברו על ההחלטה." },
+    { q: { en: "SQS or Kafka for a new order-processing pipeline? Walk through the decision.", he: "SQS או Kafka ל-pipeline חדש של עיבוד הזמנות? עבור על ההחלטה." },
       a: { en: "Ask: how many independent consumers now and later? Need replay/backfill? Throughput? Per-message delay/retry/DLQ? Team ops capacity? If it's tasks with 1–3 consumers, per-message retries and no replay → SNS+SQS (zero ops, DLQ built in). If many teams will consume the same order events, need replay for new projections/CDC, or 100k+ msg/s → Kafka (managed), keyed by order_id for per-order ordering, with retry topics and DLQ built by hand.", he: "שואלים: כמה consumers עצמאיים עכשיו ובעתיד? צריך replay/backfill? throughput? השהיה/retry/DLQ לכל הודעה? יכולת תפעול של הצוות? אם אלה משימות עם 1–3 consumers, retries לכל הודעה ובלי replay → SNS+SQS (בלי תפעול, DLQ מובנה). אם הרבה צוותים יצרכו את אותם events, צריך replay ל-projections חדשים/CDC, או 100k+ הודעות בשנייה → Kafka (מנוהל), עם key לפי order_id לסדר לכל הזמנה, ו-retry topics ו-DLQ שבונים לבד." } },
     { q: { en: "How do you implement retries with delay in Kafka, which has no per-message delay?", he: "איך מממשים retries עם השהיה ב-Kafka, שאין בו delay להודעה?" },
-      a: { en: "Retry topics: on failure publish to orders.retry.1m (then .10m, .1h) with attempt count in headers; a consumer on each retry topic pauses until the message's due time before processing; after the last tier → orders.dlq. Commit the original offset so the main partition isn't blocked. (Spring Kafka and Uber's pattern work this way.) Note it breaks per-key ordering.", he: "Retry topics: בכשל מפרסמים ל-orders.retry.1m (ואחר כך ‎.10m, ‎.1h) עם מספר הניסיון ב-headers; consumer על כל retry topic ממתין עד זמן היעד של ההודעה לפני העיבוד; אחרי השלב האחרון → orders.dlq. עושים commit ל-offset המקורי כדי שה-partition הראשי לא ייחסם. (Spring Kafka והתבנית של Uber עובדים ככה.) שימו לב שזה שובר סדר לכל key." } }
+      a: { en: "Retry topics: on failure publish to orders.retry.1m (then .10m, .1h) with attempt count in headers; a consumer on each retry topic pauses until the message's due time before processing; after the last tier → orders.dlq. Commit the original offset so the main partition isn't blocked. (Spring Kafka and Uber's pattern work this way.) Note it breaks per-key ordering.", he: "Retry topics: בכשל מפרסמים ל-orders.retry.1m (ואחר כך ‎.10m, ‎.1h) עם מספר הניסיון ב-headers; consumer על כל retry topic ממתין עד זמן היעד של ההודעה לפני העיבוד; אחרי השלב האחרון → orders.dlq. עושים commit ל-offset המקורי כדי שה-partition הראשי לא ייחסם. (Spring Kafka והתבנית של Uber עובדים ככה.) שים לב שזה שובר סדר לכל key." } }
   ],
   quiz: [
     { q: { en: "You need a new analytics service to process the last 7 days of order events. Which kind fits?", he: "צריך ששירות אנליטיקה חדש יעבד את 7 הימים האחרונים של events הזמנות. איזה סוג מתאים?" },
@@ -676,7 +676,7 @@ producer              publisher                  producer ─▶ [p0|0 1 2 3 4 5
       answer: 1, explain: { en: "Only a retained log lets a new consumer group start from an older offset/time.", he: "רק log עם retention מאפשר ל-consumer group חדש להתחיל מ-offset/זמן ישן." } },
     { q: { en: "What happens if an SQS consumer takes longer than the visibility timeout?", he: "מה קורה אם consumer של SQS לוקח יותר זמן מה-visibility timeout?" },
       options: [ { en: "The message is deleted", he: "ההודעה נמחקת" }, { en: "The message becomes visible again and may be processed concurrently by another consumer", he: "ההודעה חוזרת להיות גלויה ועלולה להיות מעובדת במקביל ע\"י consumer אחר" }, { en: "SQS extends it automatically", he: "SQS מאריך אוטומטית" }, { en: "It goes straight to the DLQ", he: "היא עוברת ישר ל-DLQ" } ],
-      answer: 1, explain: { en: "SQS doesn't know you're still working; extend visibility or size the timeout to ~6× p99.", he: "SQS לא יודע שאתם עוד עובדים; מאריכים את ה-visibility או קובעים timeout של בערך פי 6 מ-p99." } },
+      answer: 1, explain: { en: "SQS doesn't know you're still working; extend visibility or size the timeout to ~6× p99.", he: "SQS לא יודע שאתה עוד עובד; מאריכים את ה-visibility או קובעים timeout של בערך פי 6 מ-p99." } },
     { q: { en: "How do you get strict ordering for each customer while keeping high parallelism?", he: "איך מקבלים סדר קשיח לכל לקוח ועדיין מקביליות גבוהה?" },
       options: [ { en: "Single partition / single consumer", he: "Partition אחד / consumer אחד" }, { en: "Use customer_id as the partition key / MessageGroupId", he: "להשתמש ב-customer_id כ-partition key / ‏MessageGroupId" }, { en: "Random keys", he: "Keys אקראיים" }, { en: "Priority queue", he: "Priority queue" } ],
       answer: 1, explain: { en: "Same key → same partition/group → ordered; different customers spread across partitions in parallel.", he: "אותו key → אותו partition/group → מסודר; לקוחות שונים מתפזרים על partitions במקביל." } },
@@ -698,7 +698,7 @@ INFRA.lessons.push({
   title: { en: "Rate Limiters: Algorithms, Placement, Distributed Limits & Load Shedding", he: "Rate limiters: אלגוריתמים, מיקום, מגבלות מבוזרות ו-load shedding" },
   tldr: {
     en: "A rate limiter decides who gets served when demand exceeds what you're willing to give — token bucket for bursts, sliding window for fairness, concurrency limits for slow work — enforced at several layers and always answered with 429 + Retry-After.",
-    he: "Rate limiter מחליט מי מקבל שירות כשהביקוש גדול ממה שאתם מוכנים לתת — token bucket לפיקים, sliding window להוגנות, concurrency limits לעבודה איטית — נאכף בכמה שכבות ותמיד עונה 429 + Retry-After."
+    he: "Rate limiter מחליט מי מקבל שירות כשהביקוש גדול ממה שאתה מוכן לתת — token bucket לפיקים, sliding window להוגנות, concurrency limits לעבודה איטית — נאכף בכמה שכבות ותמיד עונה 429 + Retry-After."
   },
   analogy: {
     en: "A nightclub bouncer. Fixed window: 'max 100 people per hour, counter resets on the hour' — so 100 rush in at 9:59 and another 100 at 10:00. Token bucket: the bouncer gets one wristband every 36 seconds and can hold up to 20 — a group of 20 can enter at once if the bouncer saved wristbands, but the long-run rate is fixed. Leaky bucket: a turnstile that lets exactly one person through every 36 seconds, everyone else lines up. A concurrency limiter: 'max 300 people inside right now' — doesn't matter how fast they arrive, only how many are in. Load shedding: on a packed night, VIPs still get in and everyone else is turned away politely.",
@@ -725,7 +725,7 @@ INFRA.lessons.push({
 <li><strong>Tiers מסחריים</strong>: חינם = 60 בקשות לדקה, pro = 1,000 — ה-limiter הוא חלק מהמוצר.</li>
 </ul>
 <p>מחליטים על ה-<strong>key</strong> (API key, ‏user id, ‏tenant, ‏IP, ‏IP+route, גלובלי), על ה-<strong>יחידה</strong> (בקשות, tokens, bytes, נקודות עלות — GraphQL של GitHub גובה נקודות לפי מורכבות ה-query; ‏APIs של LLM מגבילים tokens לדקה), ועל ה-<strong>חלון</strong>. Quota (10,000 ליום, חיוב) ו-throttle (20 לשנייה, הגנה) הן מגבלות שונות ובדרך כלל יש את שתיהן.</p>
-<blockquote>💡 מהשטח: GitHub REST = 5,000 בקשות לשעה ל-token; ‏Stripe ≈ 100 קריאה + 100 כתיבה בשנייה ב-live mode; ‏OpenAI/Anthropic מגבילים גם בקשות לדקה וגם tokens לדקה לכל tier. תקראו את המגבלות של הספקים לפני שאתם מתכננים, ותפרסמו את שלכם.</blockquote>`
+<blockquote>💡 מהשטח: GitHub REST = 5,000 בקשות לשעה ל-token; ‏Stripe ≈ 100 קריאה + 100 כתיבה בשנייה ב-live mode; ‏OpenAI/Anthropic מגבילים גם בקשות לדקה וגם tokens לדקה לכל tier. קרא את המגבלות של הספקים לפני שאתה מתכנן, ופרסם את שלך.</blockquote>`
       }
     },
     {
@@ -874,7 +874,7 @@ Content-Type: application/problem+json
 
 {"type":"https://api.example.com/errors/rate-limited","title":"Too many requests",
  "detail":"Limit 100 requests per 60s for key ak_...c123. Retry in 12s."}</pre>
-<p>(ה-headers של IETF ‏<code>RateLimit</code>/<code>RateLimit-Policy</code> מחליפים את השלישייה הישנה <code>X-RateLimit-Limit/Remaining/Reset</code> ש-GitHub ורבים אחרים עדיין שולחים.) משתמשים ב-<strong>429</strong> כש-client חורג מהמגבלה שלו; ‏<strong>503</strong> + Retry-After כש<em>אתם</em> בעומס בלי קשר ל-client.</p>
+<p>(ה-headers של IETF ‏<code>RateLimit</code>/<code>RateLimit-Policy</code> מחליפים את השלישייה הישנה <code>X-RateLimit-Limit/Remaining/Reset</code> ש-GitHub ורבים אחרים עדיין שולחים.) משתמשים ב-<strong>429</strong> כש-client חורג מהמגבלה שלו; ‏<strong>503</strong> + Retry-After כש<em>אתה</em> בעומס בלי קשר ל-client.</p>
 <pre># NGINX: 10 r/s per IP, burst 20 served immediately, excess -&gt; 429
 limit_req_zone $binary_remote_addr zone=perip:10m rate=10r/s;
 server {
@@ -896,14 +896,14 @@ server {
 </ul>
 <p><strong>Being a good client</strong> of someone else's limit: read their headers, pace yourself proactively with your own token bucket set slightly below their limit, back off with jitter on 429, honor Retry-After, batch requests, cache responses, and spread scheduled jobs (don't fire everything at :00).</p>
 <blockquote>💡 Real world: Google SRE's "client-side throttling" has clients track their own accept ratio and locally reject with probability max(0, (requests − K×accepts)/(requests+1)) — overloaded backends stop receiving traffic that would be rejected anyway. See <code>#/lesson/staff-overload-metastable</code>.</blockquote>`,
-        he: `<p>קצב (בקשות לשנייה) הוא יחידה שגויה כשעלות הבקשות משתנה: 100 בקשות לשנייה של lookups של 5ms זה קל, 100 לשנייה של דוחות של 3 שניות ממיס אתכם. <strong>Concurrency limiting</strong> מגביל עבודה in-flight (semaphore / bulkhead): לפי חוק Little, ‏in-flight = throughput × latency, כך שאם ה-latency עולה, ה-limiter אוטומטית מקבל פחות בקשות לשנייה.</p>
+        he: `<p>קצב (בקשות לשנייה) הוא יחידה שגויה כשעלות הבקשות משתנה: 100 בקשות לשנייה של lookups של 5ms זה קל, 100 לשנייה של דוחות של 3 שניות ממיס אותך. <strong>Concurrency limiting</strong> מגביל עבודה in-flight (semaphore / bulkhead): לפי חוק Little, ‏in-flight = throughput × latency, כך שאם ה-latency עולה, ה-limiter אוטומטית מקבל פחות בקשות לשנייה.</p>
 <ul>
 <li><strong>Adaptive concurrency</strong> (‏<code>concurrency-limits</code> של Netflix, ה-adaptive concurrency filter של Envoy): מודדים latency, מגדילים את המגבלה כל עוד ה-latency קרוב למינימום (בסגנון TCP-Vegas/AIMD), ומקטינים כשתורים נבנים. בלי מספר קסם שמכוונים ידנית.</li>
 <li><strong>Load shedding לפי עדיפות</strong>: בעומס, זורקים קודם את התעבורה הכי פחות חשובה — סנכרון ברקע &lt; prefetch &lt; גלישה &lt; checkout &lt; health checks. דוחים מוקדם (בקצה) ובזול; בקשה שנדחתה צריכה לעלות ~1% מבקשה שקיבלה שירות.</li>
 <li><strong>Deadline propagation</strong>: זורקים עבודה שה-caller שלה כבר ויתר (gRPC deadlines) — זה בזבוז טהור בזמן עומס.</li>
 </ul>
-<p><strong>להיות client טוב</strong> של מגבלה של מישהו אחר: לקרוא את ה-headers שלהם, לווסת את עצמכם מראש עם token bucket משלכם מעט מתחת למגבלה שלהם, backoff עם jitter על 429, לכבד Retry-After, לאגד בקשות ל-batch, לעשות cache לתשובות, ולפזר jobs מתוזמנים (לא לירות הכול ב-:00).</p>
-<blockquote>💡 מהשטח: ה-"client-side throttling" של Google SRE גורם ל-clients לעקוב אחרי יחס הקבלה שלהם ולדחות מקומית בהסתברות max(0, (requests − K×accepts)/(requests+1)) — backends בעומס מפסיקים לקבל תעבורה שממילא הייתה נדחית. ראו <code>#/lesson/staff-overload-metastable</code>.</blockquote>`
+<p><strong>להיות client טוב</strong> של מגבלה של מישהו אחר: לקרוא את ה-headers שלהם, לווסת את עצמך מראש עם token bucket משלך מעט מתחת למגבלה שלהם, backoff עם jitter על 429, לכבד Retry-After, לאגד בקשות ל-batch, לעשות cache לתשובות, ולפזר jobs מתוזמנים (לא לירות הכול ב-:00).</p>
+<blockquote>💡 מהשטח: ה-"client-side throttling" של Google SRE גורם ל-clients לעקוב אחרי יחס הקבלה שלהם ולדחות מקומית בהסתברות max(0, (requests − K×accepts)/(requests+1)) — backends בעומס מפסיקים לקבל תעבורה שממילא הייתה נדחית. ראה <code>#/lesson/staff-overload-metastable</code>.</blockquote>`
       }
     }
   ],
@@ -922,7 +922,7 @@ server {
     { cmd: "curl -sI https://api.github.com/rate_limit | grep -i ratelimit",
       what: { en: "See a real provider's limit headers: x-ratelimit-limit, -remaining, -used, -reset (epoch seconds).", he: "רואים את ה-headers של ספק אמיתי: x-ratelimit-limit, ‏-remaining, ‏-used, ‏-reset (שניות epoch)." } },
     { cmd: "redis-cli --eval token_bucket.lua rl:apikey:abc123 , 10 20 $(date +%s%3N) 1",
-      what: { en: "Run the Lua token bucket repeatedly; tokens drop by 1 per call and refill at 10/s. Try cost=5 for an expensive endpoint.", he: "מריצים את ה-token bucket ב-Lua שוב ושוב; ה-tokens יורדים ב-1 בכל קריאה ומתמלאים ב-10 לשנייה. נסו cost=5 ל-endpoint יקר." } },
+      what: { en: "Run the Lua token bucket repeatedly; tokens drop by 1 per call and refill at 10/s. Try cost=5 for an expensive endpoint.", he: "מריצים את ה-token bucket ב-Lua שוב ושוב; ה-tokens יורדים ב-1 בכל קריאה ומתמלאים ב-10 לשנייה. נסה cost=5 ל-endpoint יקר." } },
     { cmd: "hey -z 20s -q 50 -c 10 http://localhost:8080/api/orders",
       what: { en: "Load-test at a controlled rate (10 workers × 50 qps) and check the status-code distribution and latency histogram hey prints.", he: "בדיקת עומס בקצב מבוקר (10 workers × 50 qps) ובודקים את התפלגות קודי הסטטוס וה-histogram של ה-latency ש-hey מדפיס." } }
   ],
@@ -934,9 +934,9 @@ server {
     { en: "Limiting only requests/s for endpoints with wildly different cost (search vs export) — use cost-weighted tokens or concurrency limits.", he: "להגביל רק בקשות לשנייה ל-endpoints עם עלות שונה מאוד (חיפוש מול export) — משתמשים ב-tokens משוקללים לפי עלות או ב-concurrency limits." }
   ],
   interview: [
-    { q: { en: "Design a rate limiter for a public API with free and paid tiers across 3 regions.", he: "תכננו rate limiter ל-API ציבורי עם tiers חינמי ובתשלום על פני 3 regions." },
+    { q: { en: "Design a rate limiter for a public API with free and paid tiers across 3 regions.", he: "תכנן rate limiter ל-API ציבורי עם tiers חינמי ובתשלום על פני 3 regions." },
       a: { en: "Key = API key; policy from the plan (cached config). Token bucket per key in a regional Redis cluster via Lua (sub-ms), enforced at the gateway. Per-region limits = global/3 or dynamic shares synced every few seconds — exact global counting across regions costs 50–150 ms per request, not worth it. Fail-open on Redis errors with a local fallback limiter. Return 429 + Retry-After + RateLimit headers. Separate daily quotas counted async for billing. Edge WAF per-IP limits against floods, and metrics on rejections per key to spot abuse or customers who need an upgrade.", he: "Key = API key; ה-policy מהתוכנית (config ב-cache). ‏Token bucket לכל key ב-Redis cluster אזורי דרך Lua (פחות ממילישנייה), נאכף ב-gateway. מגבלה לכל region = גלובלי/3 או נתחים דינמיים שמסונכרנים כל כמה שניות — ספירה גלובלית מדויקת בין regions עולה 50–150ms לבקשה, לא שווה. Fail-open בשגיאות Redis עם limiter מקומי כגיבוי. מחזירים 429 + Retry-After + RateLimit headers. Quotas יומיות נפרדות שנספרות async לחיוב. מגבלות WAF לפי IP בקצה נגד הצפות, ו-metrics על דחיות לפי key כדי לזהות ניצול לרעה או לקוחות שצריכים שדרוג." } },
-    { q: { en: "Token bucket vs leaky bucket — when would you choose each?", he: "Token bucket מול leaky bucket — מתי תבחרו כל אחד?" },
+    { q: { en: "Token bucket vs leaky bucket — when would you choose each?", he: "Token bucket מול leaky bucket — מתי תבחר כל אחד?" },
       a: { en: "Token bucket when you want to allow short bursts but cap the average (APIs, user actions). Leaky bucket when the downstream needs a smooth constant rate and you'd rather queue than reject (sending to an SMS provider at exactly 100/s, network traffic shaping).", he: "Token bucket כשרוצים לאפשר פיקים קצרים אבל להגביל את הממוצע (APIs, פעולות משתמש). Leaky bucket כשה-downstream צריך קצב קבוע וחלק ועדיף להכניס לתור מאשר לדחות (שליחה לספק SMS בדיוק 100 לשנייה, traffic shaping ברשת)." } }
   ],
   quiz: [
@@ -966,11 +966,11 @@ INFRA.lessons.push({
   title: { en: "Depending on Third-Party Providers: Timeouts, Breakers, Fallbacks & SLA Math", he: "תלות בספקים חיצוניים: timeouts, ‏circuit breakers, ‏fallbacks וחשבון SLA" },
   tldr: {
     en: "Every external provider (payments, SMS, email, maps, LLMs, auth) is a part of your system you don't control: bound how long you wait, how much you retry and how far its failure spreads, decide in advance what you do without it, and do the availability math before you promise an SLA.",
-    he: "כל ספק חיצוני (תשלומים, SMS, מייל, מפות, LLMs, ‏auth) הוא חלק מהמערכת שלכם שאתם לא שולטים בו: מגבילים כמה זמן מחכים, כמה עושים retry ועד כמה הכשל שלו מתפשט, מחליטים מראש מה עושים בלעדיו, ועושים את חשבון הזמינות לפני שמבטיחים SLA."
+    he: "כל ספק חיצוני (תשלומים, SMS, מייל, מפות, LLMs, ‏auth) הוא חלק מהמערכת שלך שאתה לא שולט בו: מגבילים כמה זמן מחכים, כמה עושים retry ועד כמה הכשל שלו מתפשט, מחליטים מראש מה עושים בלעדיו, ועושים את חשבון הזמינות לפני שמבטיחים SLA."
   },
   analogy: {
     en: "A restaurant that depends on suppliers. You don't wait at the door all night for the fish truck (timeout). If the fish supplier failed the last 5 deliveries, you stop calling them for a while and take fish off the menu (circuit breaker + graceful degradation). You keep two vegetable suppliers so one strike doesn't close you (multi-provider). Fish and vegetables come through separate doors, so a fish-truck jam doesn't block the vegetables (bulkhead). And before promising guests 'open every day', you check how reliable all your suppliers are together — because you're only as open as the weakest link.",
-    he: "מסעדה שתלויה בספקים. לא מחכים בדלת כל הלילה למשאית הדגים (timeout). אם ספק הדגים פספס את 5 המשלוחים האחרונים, מפסיקים להתקשר אליו לזמן מה ומורידים דגים מהתפריט (circuit breaker + graceful degradation). מחזיקים שני ספקי ירקות כדי ששביתה אחת לא תסגור אתכם (multi-provider). דגים וירקות נכנסים בדלתות נפרדות, כך שפקק של משאית הדגים לא חוסם את הירקות (bulkhead). ולפני שמבטיחים לאורחים 'פתוח כל יום', בודקים כמה אמינים כל הספקים יחד — כי אתם פתוחים רק כמו החוליה החלשה."
+    he: "מסעדה שתלויה בספקים. לא מחכים בדלת כל הלילה למשאית הדגים (timeout). אם ספק הדגים פספס את 5 המשלוחים האחרונים, מפסיקים להתקשר אליו לזמן מה ומורידים דגים מהתפריט (circuit breaker + graceful degradation). מחזיקים שני ספקי ירקות כדי ששביתה אחת לא תסגור אותך (multi-provider). דגים וירקות נכנסים בדלתות נפרדות, כך שפקק של משאית הדגים לא חוסם את הירקות (bulkhead). ולפני שמבטיחים לאורחים 'פתוח כל יום', בודקים כמה אמינים כל הספקים יחד — כי אתה פתוח רק כמו החוליה החלשה."
   },
   sections: [
     {
@@ -989,13 +989,13 @@ INFRA.lessons.push({
         he: `<p><strong>בטור</strong> (כולם חייבים לעבוד): A = A₁ × A₂ × … × Aₙ. ‏<strong>במקביל</strong> (מספיק אחד, כשלים בלתי תלויים): A = 1 − (1 − A₁)(1 − A₂)…</p>
 <table>
 <tr><th>תצורה</th><th>חישוב</th><th>זמינות</th><th>Downtime לחודש</th></tr>
-<tr><td>השירות שלכם לבד</td><td>0.9995</td><td>99.95%</td><td>~22 דק'</td></tr>
+<tr><td>השירות שלך לבד</td><td>0.9995</td><td>99.95%</td><td>~22 דק'</td></tr>
 <tr><td>+ PSP לתשלומים (99.95%), ‏SMS ‏(99.9%), מפות (99.9%) כולם סינכרוניים ב-checkout</td><td>0.9995 × 0.9995 × 0.999 × 0.999</td><td>≈ 99.70%</td><td>~2.2 שעות</td></tr>
 <tr><td>אותו דבר, אבל SMS ומפות async/אופציונליים</td><td>0.9995 × 0.9995</td><td>≈ 99.90%</td><td>~43 דק'</td></tr>
 <tr><td>שני PSPs עם failover (99.95% כל אחד)</td><td>1 − 0.0005²</td><td>≈ 99.99997% (בתיאוריה)</td><td>שניות — אם ה-failover עובד והכשלים בלתי תלויים</td></tr>
 </table>
 <p>מסקנות: (1) אי אפשר להבטיח SLA גבוה ממה שה-<em>critical path הסינכרוני</em> מאפשר; (2) השיפור הכי זול בזמינות הוא <strong>להוציא תלויות מה-critical path</strong> (async, ‏cache, אופציונלי); (3) redundancy עוזר רק אם הכשלים בלתי תלויים — שני ספקים "שונים" על אותו region בענן, או ששניהם מוכרים מחדש את אותו SMS aggregator, נופלים יחד.</p>
-<blockquote>💡 מהשטח: SLAs של ספקים הם <em>מדיניות החזרים</em>, לא הבטחה הנדסית: "99.9% או 10% זיכוי". דף הסטטוס שלהם לעתים קרובות ירוק בזמן שהקריאות שלכם נכשלות מה-region שלכם. מודדים את הספק בעצמכם (SLIs לכל תלות) ומתכננים לפי המציאות שרואים.</blockquote>`
+<blockquote>💡 מהשטח: SLAs של ספקים הם <em>מדיניות החזרים</em>, לא הבטחה הנדסית: "99.9% או 10% זיכוי". דף הסטטוס שלהם לעתים קרובות ירוק בזמן שהקריאות שלך נכשלות מה-region שלך. מודדים את הספק בעצמך (SLIs לכל תלות) ומתכננים לפי המציאות שרואים.</blockquote>`
       }
     },
     {
@@ -1016,12 +1016,12 @@ psp = httpx.Client(
     limits=httpx.Limits(max_connections=50, max_keepalive_connections=20),
 )</pre>
 <blockquote>⚠️ Production tip: payment authorizations are the exception to "short timeouts" — a timed-out charge is in an <em>unknown</em> state. Use a generous timeout, an idempotency key, and a status-check/reconciliation path ("GET payment by my reference") rather than blindly retrying or assuming failure.</blockquote>`,
-        he: `<p>ה-timeout ברירת המחדל של הרבה HTTP clients הוא <strong>אינסופי</strong> (‏<code>requests</code> בפייתון, ‏<code>http.Client{}</code> ב-Go) או ארוך מאוד (ב-Java לרוב 0 = לנצח). ספק שנתקע בלי להיכשל ימצה את ה-threads/connections שלכם ויפיל אתכם — תלות איטית גרועה מתלות מתה.</p>
+        he: `<p>ה-timeout ברירת המחדל של הרבה HTTP clients הוא <strong>אינסופי</strong> (‏<code>requests</code> בפייתון, ‏<code>http.Client{}</code> ב-Go) או ארוך מאוד (ב-Java לרוב 0 = לנצח). ספק שנתקע בלי להיכשל ימצה את ה-threads/connections שלך ויפיל אותך — תלות איטית גרועה מתלות מתה.</p>
 <ul>
 <li><strong>Connect timeout</strong> קצר (0.5–2 שניות): endpoint בריא מקבל TCP+TLS מהר.</li>
 <li><strong>Read/response timeout</strong> לפי ה-p99 שנמדד אצל הספק + מרווח (למשל p99 = 800ms → ‏2 שניות), לא לפי תקווה.</li>
 <li><strong>Deadline / budget כולל</strong>: לבקשת המשתמש יש 3 שניות בסך הכול; אם עברו 2.5 — לא מתחילים קריאה של 2 שניות, נכשלים מהר או עושים degrade. מעבירים deadlines הלאה.</li>
-<li><strong>Retries</strong>: רק לפעולות אידמפוטנטיות (או עם idempotency key — ראו <code>#/lesson/pr-idempotency</code>), מקסימום 2–3, exponential backoff + jitter, לכבד 429/Retry-After, ו-retry budget. Hedged requests (לשלוח עותק שני אחרי p95) רק לקריאות אידמפוטנטיות.</li>
+<li><strong>Retries</strong>: רק לפעולות אידמפוטנטיות (או עם idempotency key — ראה <code>#/lesson/pr-idempotency</code>), מקסימום 2–3, exponential backoff + jitter, לכבד 429/Retry-After, ו-retry budget. Hedged requests (לשלוח עותק שני אחרי p95) רק לקריאות אידמפוטנטיות.</li>
 </ul>
 <pre># Python (httpx): explicit, separate timeouts + a pooled, bounded client
 import httpx
@@ -1093,7 +1093,7 @@ var pipeline = new ResiliencePipelineBuilder&lt;HttpResponseMessage&gt;()
     .AddTimeout(TimeSpan.FromSeconds(2))
     .Build();</pre>
 <p><strong>Bulkhead</strong> נותן לכל תלות pool מוגבל משלה (threads, connections, semaphore), כך ש-API מפות תקוע יכול לצרוך רק את 20 המקומות שלו — לקריאות ה-PSP של ה-checkout עדיין יש את שלהן. ב-Kubernetes אפשר ללכת רחוק יותר ולהריץ את האינטגרציה ב-deployment נפרד עם משאבים משלו.</p>
-<blockquote>💡 מהשטח: Hystrix של Netflix הפך breaker + bulkhead + fallback לכל תלות לפופולרי; היום זה חי ב-resilience4j ‏(Java), ‏Polly ‏(.NET), ו-outlier detection ו-circuit breaking של Envoy/Istio (ברמת ה-mesh, בלי תלות בשפה). ראו <code>#/lesson/arch-resilience</code> ו-<code>#/lesson/staff-service-mesh</code>.</blockquote>`
+<blockquote>💡 מהשטח: Hystrix של Netflix הפך breaker + bulkhead + fallback לכל תלות לפופולרי; היום זה חי ב-resilience4j ‏(Java), ‏Polly ‏(.NET), ו-outlier detection ו-circuit breaking של Envoy/Istio (ברמת ה-mesh, בלי תלות בשפה). ראה <code>#/lesson/arch-resilience</code> ו-<code>#/lesson/staff-service-mesh</code>.</blockquote>`
       }
     },
     {
@@ -1156,8 +1156,8 @@ sum by (dependency) (rate(http_client_requests_total[5m]))</pre>
 <li><strong>Secrets</strong>: API keys ב-secret manager ‏(Vault, ‏AWS Secrets Manager, ‏Key Vault), אף פעם לא בקוד או ב-images; key אחד לכל סביבה ולכל שירות; תמיכה בשני keys פעילים כדי לעשות <strong>rotation</strong> בלי downtime; הגבלת keys לפי IP/scope כשהספק מאפשר.</li>
 <li><strong>בדיקות</strong>: unit tests מול fake/ממשק adapter; ‏contract tests ‏(Pact, או fixtures מוקלטים שמאומתים מול ה-OpenAPI של הספק) כדי לתפוס שינויי schema; ‏integration tests מול ה-sandbox של הספק ב-CI (לילי — sandboxes לא יציבים); ‏WireMock/Toxiproxy כדי להזריק latency, ‏500s ו-resets.</li>
 <li><strong>ניטור</strong>: RED metrics לכל תלות (קצב, שגיאות לפי קוד, latency ‏p50/p99) עם labels של ספק ו-endpoint; מצב ה-breaker כ-metric; ‏synthetic checks מכל region; הרשמה ל-status feeds של הספקים לערוץ התקלות; שורה בדשבורד לכל תלות כדי שה-on-call יוכל להגיד "זה Twilio" תוך 30 שניות.</li>
-<li><strong>Lock-in ואסטרטגיית יציאה</strong>: להחזיק את קריאות ה-SDK של הספק מאחורי ממשק שלכם, לשמור את הנתונים הקנוניים ב-DB שלכם (לא רק אצל הספק), להכיר את נתיב ה-export ואת תנאי הסיום בחוזה. Lock-in הוא לא רע — הוא מחיר; תדעו מה אתם משלמים.</li>
-<li><strong>Build מול buy</strong>: קונים את מה שלא מבדל אתכם (שליחת מיילים, תשלומים, auth), אלא אם בסקייל החשבון גדול מצוות, רגולציה אוסרת, או שהמגבלות של הספק חוסמות את המוצר.</li>
+<li><strong>Lock-in ואסטרטגיית יציאה</strong>: להחזיק את קריאות ה-SDK של הספק מאחורי ממשק שלך, לשמור את הנתונים הקנוניים ב-DB שלך (לא רק אצל הספק), להכיר את נתיב ה-export ואת תנאי הסיום בחוזה. Lock-in הוא לא רע — הוא מחיר; דע מה אתה משלם.</li>
+<li><strong>Build מול buy</strong>: קונים את מה שלא מבדל אותך (שליחת מיילים, תשלומים, auth), אלא אם בסקייל החשבון גדול מצוות, רגולציה אוסרת, או שהמגבלות של הספק חוסמות את המוצר.</li>
 </ul>
 <pre># Prometheus: error ratio per external dependency over 5m
 sum by (dependency) (rate(http_client_requests_total{status=~"5..|timeout"}[5m]))
@@ -1176,7 +1176,7 @@ sum by (dependency) (rate(http_client_requests_total[5m]))</pre>
   availability (sync path) = 0.9995 (you) × 0.9995 (PSP) ≈ 99.90%   ← async deps don't count`,
   handsOn: [
     { cmd: "python3 -c \"print(f'{0.9995*0.9995*0.999*0.999:.5f}', f'{1-(1-0.9995)**2:.7f}')\"",
-      what: { en: "Do the series vs parallel availability math yourself: four sync dependencies vs two redundant providers.", he: "עושים בעצמכם את חשבון הזמינות בטור מול במקביל: ארבע תלויות סינכרוניות מול שני ספקים יתירים." } },
+      what: { en: "Do the series vs parallel availability math yourself: four sync dependencies vs two redundant providers.", he: "עשה בעצמך את חשבון הזמינות בטור מול במקביל: ארבע תלויות סינכרוניות מול שני ספקים יתירים." } },
     { cmd: "curl -o /dev/null -s -w 'dns=%{time_namelookup} connect=%{time_connect} tls=%{time_appconnect} ttfb=%{time_starttransfer} total=%{time_total}\\n' --connect-timeout 1 --max-time 3 https://api.stripe.com/healthcheck",
       what: { en: "Measure where a provider's latency goes and practice explicit connect vs total timeouts.", he: "מודדים לאן הולך ה-latency של ספק ומתרגלים timeouts מפורשים ל-connect מול total." } },
     { cmd: "toxiproxy-cli toxic add -t latency -a latency=3000 psp_proxy",
@@ -1184,26 +1184,26 @@ sum by (dependency) (rate(http_client_requests_total[5m]))</pre>
     { cmd: "aws secretsmanager rotate-secret --secret-id prod/sms/api-key",
       what: { en: "Trigger rotation of a provider key (with a rotation Lambda that creates the new key at the vendor, then retires the old one after clients pick it up).", he: "מפעילים rotation ל-key של ספק (עם Lambda של rotation שיוצרת key חדש אצל הספק, ומבטלת את הישן אחרי שה-clients עברו)." } }
   ],
-  mnemonic: { en: "\"TRBF-M\": Timeout, Retry (bounded), Breaker, Fallback — then Measure it yourself. And: you're only as available as your synchronous path.", he: "\"TRBF-M\": ‏Timeout, ‏Retry (מוגבל), ‏Breaker, ‏Fallback — ואז Measure בעצמכם. וגם: אתם זמינים רק כמו הנתיב הסינכרוני שלכם." },
+  mnemonic: { en: "\"TRBF-M\": Timeout, Retry (bounded), Breaker, Fallback — then Measure it yourself. And: you're only as available as your synchronous path.", he: "\"TRBF-M\": ‏Timeout, ‏Retry (מוגבל), ‏Breaker, ‏Fallback — ואז Measure בעצמך. וגם: אתה זמין רק כמו הנתיב הסינכרוני שלך." },
   pitfalls: [
     { en: "Default (infinite) HTTP client timeouts: one hanging provider exhausts every worker thread and your whole service stops — not just the feature.", he: "Timeouts ברירת מחדל (אינסופיים) ב-HTTP client: ספק אחד שנתקע ממצה את כל ה-worker threads וכל השירות נעצר — לא רק הפיצ'ר." },
-    { en: "Promising customers 99.99% while checkout synchronously calls four 99.9% vendors — the math caps you near 99.6%.", he: "להבטיח ללקוחות 99.99% כשה-checkout קורא באופן סינכרוני לארבעה ספקים של 99.9% — החשבון מגביל אתכם לסביבות 99.6%." },
+    { en: "Promising customers 99.99% while checkout synchronously calls four 99.9% vendors — the math caps you near 99.6%.", he: "להבטיח ללקוחות 99.99% כשה-checkout קורא באופן סינכרוני לארבעה ספקים של 99.9% — החשבון מגביל אותך לסביבות 99.6%." },
     { en: "A 'backup provider' configured once and never sent traffic — when you fail over, the key is expired or the integration is broken.", he: "'ספק גיבוי' שהוגדר פעם אחת ומעולם לא קיבל תעבורה — כשעושים failover, ה-key פג או שהאינטגרציה שבורה." },
     { en: "Retrying non-idempotent provider calls (charge, send SMS) without an idempotency key — outages turn into double charges and duplicate texts.", he: "Retry לקריאות לא אידמפוטנטיות לספק (חיוב, שליחת SMS) בלי idempotency key — תקלות הופכות לחיובים כפולים ו-SMS כפולים." }
   ],
   interview: [
-    { q: { en: "Your checkout depends on a payment provider that had three outages this quarter. What do you do?", he: "ה-checkout שלכם תלוי בספק תשלומים שהיו לו שלוש תקלות ברבעון. מה תעשו?" },
+    { q: { en: "Your checkout depends on a payment provider that had three outages this quarter. What do you do?", he: "ה-checkout שלך תלוי בספק תשלומים שהיו לו שלוש תקלות ברבעון. מה תעשה?" },
       a: { en: "First measure: our own SLI per dependency, failure modes (timeouts vs 5xx vs declines), duration, regions. Short term: correct timeouts, idempotency keys, breaker with clear fallback ('pending payment' + reconciliation), alerting on PSP error ratio. Medium term: a payment abstraction with a second PSP, routing 5–10% steadily to keep it warm, normalized webhooks via an ACL, and token portability (network tokens / vault) so cards work on both. Weigh cost (fees, engineering, PCI scope) against lost revenue per outage hour, and escalate with the vendor using our data.", he: "קודם מודדים: SLI משלנו לכל תלות, סוגי כשלים (timeouts מול 5xx מול declines), משך, regions. בטווח הקצר: timeouts נכונים, idempotency keys, ‏breaker עם fallback ברור ('ממתין לתשלום' + reconciliation), התראה על יחס השגיאות של ה-PSP. בטווח הבינוני: הפשטת תשלומים עם PSP שני, ניתוב קבוע של 5–10% כדי לשמור אותו חם, ‏webhooks מנורמלים דרך ACL, וניידות tokens ‏(network tokens / vault) כדי שכרטיסים יעבדו בשניהם. שוקלים עלות (עמלות, פיתוח, היקף PCI) מול הכנסה שאבדה בכל שעת תקלה, ומסלימים מול הספק עם הנתונים שלנו." } },
-    { q: { en: "Explain the three circuit-breaker states and what you'd tune.", he: "הסבירו את שלושת המצבים של circuit breaker ומה הייתם מכוונים." },
+    { q: { en: "Explain the three circuit-breaker states and what you'd tune.", he: "הסבר את שלושת המצבים של circuit breaker ומה היית מכוון." },
       a: { en: "Closed (normal, counting failures), Open (fail fast + fallback for a cool-down), Half-open (a few probe calls decide). Tune: window size and minimum calls (avoid opening on 2 failures at night), failure-rate and slow-call thresholds, open duration, number of half-open probes, and what counts as failure (timeouts and 5xx yes; 4xx client errors no). Breakers are per dependency (and often per endpoint), and their state must be a metric.", he: "Closed (רגיל, סופר כשלים), ‏Open (נכשל מהר + fallback לזמן צינון), ‏Half-open (כמה קריאות בדיקה מכריעות). מכוונים: גודל החלון ומינימום קריאות (לא לפתוח על 2 כשלים בלילה), ספי כשל וקריאות איטיות, משך ה-open, מספר קריאות ה-half-open, ומה נחשב כשל (timeouts ו-5xx כן; שגיאות 4xx של ה-client לא). Breakers הם לכל תלות (ולרוב לכל endpoint), והמצב שלהם חייב להיות metric." } }
   ],
   quiz: [
-    { q: { en: "Your service (99.95%) synchronously calls two providers at 99.9% each. Max availability?", he: "השירות שלכם (99.95%) קורא באופן סינכרוני לשני ספקים של 99.9% כל אחד. מה הזמינות המקסימלית?" },
+    { q: { en: "Your service (99.95%) synchronously calls two providers at 99.9% each. Max availability?", he: "השירות שלך (99.95%) קורא באופן סינכרוני לשני ספקים של 99.9% כל אחד. מה הזמינות המקסימלית?" },
       options: [ { en: "99.95%", he: "99.95%" }, { en: "≈ 99.75%", he: "≈ 99.75%" }, { en: "99.9%", he: "99.9%" }, { en: "99.99%", he: "99.99%" } ],
       answer: 1, explain: { en: "0.9995 × 0.999 × 0.999 ≈ 0.9975. Series dependencies multiply.", he: "0.9995 × 0.999 × 0.999 ≈ 0.9975. תלויות בטור מוכפלות." } },
     { q: { en: "A circuit breaker is Open. What happens to new calls?", he: "Circuit breaker במצב Open. מה קורה לקריאות חדשות?" },
       options: [ { en: "They wait for the provider", he: "הן מחכות לספק" }, { en: "They fail immediately and the fallback runs, until the cool-down allows half-open probes", he: "הן נכשלות מיד וה-fallback רץ, עד שזמן הצינון מאפשר קריאות בדיקה ב-half-open" }, { en: "They are retried 10 times", he: "עושים להן retry עשר פעמים" }, { en: "They go to a random provider", he: "הן הולכות לספק אקראי" } ],
-      answer: 1, explain: { en: "Open = fail fast: protect your threads and give the provider room to recover.", he: "Open = להיכשל מהר: מגנים על ה-threads שלכם ונותנים לספק מקום להתאושש." } },
+      answer: 1, explain: { en: "Open = fail fast: protect your threads and give the provider room to recover.", he: "Open = להיכשל מהר: מגנים על ה-threads שלך ונותנים לספק מקום להתאושש." } },
     { q: { en: "Which pattern prevents a hung maps API from consuming all your worker threads?", he: "איזו תבנית מונעת מ-API מפות תקוע לצרוך את כל ה-worker threads?" },
       options: [ { en: "Bulkhead (bounded pool per dependency)", he: "Bulkhead (pool מוגבל לכל תלות)" }, { en: "Sharding", he: "Sharding" }, { en: "CQRS", he: "CQRS" }, { en: "Blue/green deployment", he: "Blue/green deployment" } ],
       answer: 0, explain: { en: "Bulkheads isolate resources per dependency so one failure can't sink the whole ship.", he: "Bulkheads מבודדים משאבים לכל תלות כך שכשל אחד לא מטביע את כל הספינה." } },
@@ -1219,7 +1219,7 @@ INFRA.glossary.push(
   { term: "Effectively-once", track: "principal", def: { en: "At-least-once delivery combined with idempotent processing, so duplicates have no extra effect.", he: "מסירה at-least-once בשילוב עיבוד אידמפוטנטי, כך שלכפילויות אין השפעה נוספת." }, lesson: "pr-idempotency" },
   { term: "Full jitter", track: "principal", def: { en: "Backoff strategy that sleeps a random time between 0 and the exponential cap, spreading retries so clients don't retry in lockstep.", he: "אסטרטגיית backoff שישנה זמן אקראי בין 0 לתקרה האקספוננציאלית, כדי לפזר retries ושה-clients לא ינסו שוב באותו רגע." }, lesson: "pr-idempotency" },
   { term: "Webhook signature (HMAC)", track: "principal", def: { en: "A hash of the raw request body and timestamp keyed by a shared secret, letting a receiver verify a webhook's origin and reject replays.", he: "Hash של ה-body הגולמי וה-timestamp עם סוד משותף, שמאפשר למקבל לאמת את מקור ה-webhook ולדחות replays." }, lesson: "pr-integration-styles" },
-  { term: "Anti-corruption layer", track: "principal", def: { en: "A translation layer that isolates your domain model from a legacy or vendor model so its concepts don't leak in.", he: "שכבת תרגום שמבודדת את מודל הדומיין שלכם ממודל legacy או של ספק כדי שהמושגים שלו לא ידלפו פנימה." }, lesson: "pr-integration-styles" },
+  { term: "Anti-corruption layer", track: "principal", def: { en: "A translation layer that isolates your domain model from a legacy or vendor model so its concepts don't leak in.", he: "שכבת תרגום שמבודדת את מודל הדומיין שלך ממודל legacy או של ספק כדי שהמושגים שלו לא ידלפו פנימה." }, lesson: "pr-integration-styles" },
   { term: "BFF (Backend for Frontend)", track: "principal", def: { en: "A thin backend per client type (web, mobile) that aggregates internal APIs and shapes responses for that UI.", he: "Backend דק לכל סוג client (web, מובייל) שמרכז APIs פנימיים ומעצב תשובות ל-UI הספציפי." }, lesson: "pr-integration-styles" },
   { term: "Visibility timeout", track: "principal", def: { en: "How long a received queue message stays hidden from other consumers; if not deleted in time, it is redelivered.", he: "כמה זמן הודעה שהתקבלה מתור נשארת מוסתרת מ-consumers אחרים; אם לא נמחקה בזמן — היא נמסרת שוב." }, lesson: "pr-queue-kinds" },
   { term: "Poison message", track: "principal", def: { en: "A message that fails processing every time; after N attempts it should go to a DLQ so it stops blocking or burning resources.", he: "הודעה שנכשלת בעיבוד בכל פעם; אחרי N ניסיונות היא צריכה לעבור ל-DLQ כדי שתפסיק לחסום או לשרוף משאבים." }, lesson: "pr-queue-kinds" },

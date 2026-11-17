@@ -629,7 +629,7 @@ pinned: sha256/kR7x...(old DigiCert leaf key)`,
             "אוטומציה לחידוש וגם ניטור מבחוץ — אוטומציה לפעמים נכשלת בשקט (רשומת DNS validation נמחקה, rate limits)."),
           c("A calendar reminder for the next expiry", "תזכורת ביומן לפקיעה הבאה", "win", 0,
             "That's how you got here: the person who set the reminder left the company. Humans are not a renewal system.",
-            "ככה הגעתם לכאן: מי שקבע את התזכורת עזב את החברה. בני אדם הם לא מערכת חידוש.")
+            "ככה הגעת לכאן: מי שקבע את התזכורת עזב את החברה. בני אדם הם לא מערכת חידוש.")
         ]
       },
       win: {

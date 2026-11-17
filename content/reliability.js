@@ -939,7 +939,7 @@ INFRA.lessons.push({
 <tr><td>MTTR – Mean Time To Recover/Restore</td><td>כמה מהר השירות חוזר</td><td>תחילת הכשל → התאוששות</td><td>Rollback מהיר, runbooks, feature flags, אוטומציה</td></tr>
 <tr><td>MTBF – Mean Time Between Failures</td><td>כמה פעמים נשברים</td><td>התאוששות → הכשל הבא</td><td>טסטים, canaries, הסרת root causes</td></tr></table>
 <p>Availability ≈ MTBF / (MTBF + MTTR). משהו שנופל כל 30 יום (720 שעות) ולוקח שעה להתאושש ≈ 99.86%. תוריד את ה-MTTR ל-6 דקות ואתה ב-~99.99% <em>בלי</em> ליפול פחות. בגלל זה עבודת אמינות מודרנית אובססיבית להתאוששות מהירה ולא למניעה מושלמת.</p>
-<p>הסתייגות: ה-"R" דו-משמעי (repair / recover / resolve / respond). תגדירו אותו בארגון, ותתייחסו למטריקות האלה כאינדיקטורים למגמה, לא כיעדים שמנסים "לשחק" איתם.</p>`
+<p>הסתייגות: ה-"R" דו-משמעי (repair / recover / resolve / respond). תגדיר אותו בארגון, ותתייחס למטריקות האלה כאינדיקטורים למגמה, לא כיעדים שמנסים "לשחק" איתם.</p>`
       }
     }
   ],

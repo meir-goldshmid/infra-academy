@@ -18,7 +18,7 @@ INFRA.lessons.push({
   },
   analogy: {
     en: "A monolith is a big family kitchen: one fridge, one stove, everyone bumps elbows but passing the salt takes a second. Microservices are a food court: each stall has its own fridge, staff and opening hours — great when 40 cooks would otherwise trip over each other, absurd if you're three people making a sandwich. And a 'distributed monolith' is a food court where every stall must open and close at the same time and shares one fridge down the hall.",
-    he: "Monolith זה מטבח משפחתי גדול: מקרר אחד, כיריים אחד, כולם נתקעים אחד בשני — אבל להעביר את המלח לוקח שנייה. Microservices זה מתחם מזון בקניון: לכל דוכן מקרר, צוות ושעות פתיחה משלו — מעולה כשיש 40 טבחים שאחרת היו דורכים אחד על השני, מגוחך אם אתם שלושה אנשים שמכינים סנדוויץ'. ו-'distributed monolith'? זה מתחם מזון שבו כל הדוכנים חייבים לפתוח ולסגור ביחד וחולקים מקרר אחד בסוף המסדרון."
+    he: "Monolith זה מטבח משפחתי גדול: מקרר אחד, כיריים אחד, כולם נתקעים אחד בשני — אבל להעביר את המלח לוקח שנייה. Microservices זה מתחם מזון בקניון: לכל דוכן מקרר, צוות ושעות פתיחה משלו — מעולה כשיש 40 טבחים שאחרת היו דורכים אחד על השני, מגוחך אם הצוות שלך הוא שלושה אנשים שמכינים סנדוויץ'. ו-'distributed monolith'? זה מתחם מזון שבו כל הדוכנים חייבים לפתוח ולסגור ביחד וחולקים מקרר אחד בסוף המסדרון."
   },
   sections: [
     {
@@ -87,7 +87,7 @@ INFRA.lessons.push({
 <li>Integration tests require spinning up the whole fleet.</li>
 </ul>
 <blockquote>⚠️ Production tip: Start monolith-first (Martin Fowler's "MonolithFirst"), modularize hard, extract services along seams that are proven stable and that have a clear owner and a real scaling or deploy-cadence reason.</blockquote>`,
-        he: `<p>לא ללכת על microservices כש: הצוות קטן מ-~15–20 מפתחים; הדומיין עדיין לא מגובש (הגבולות יזוזו, ולהזיז גבול בין services זה פי 10 יותר קשה מבין מודולים); אין לכם CI/CD, לוגים מרוכזים, tracing ובשלות של on-call; או שרוב הפעולות דורשות strong consistency.</p>
+        he: `<p>לא ללכת על microservices כש: הצוות קטן מ-~15–20 מפתחים; הדומיין עדיין לא מגובש (הגבולות יזוזו, ולהזיז גבול בין services זה פי 10 יותר קשה מבין מודולים); אין לך CI/CD, לוגים מרוכזים, tracing ובשלות של on-call; או שרוב הפעולות דורשות strong consistency.</p>
 <p><strong>Distributed monolith</strong> — כל העלויות של microservices, אפס מהיתרונות. סימנים מחשידים:</p>
 <ul>
 <li>אי אפשר לעשות deploy ל-service A בלי B ו-C "בסדר הנכון".</li>
@@ -119,7 +119,7 @@ INFRA.lessons.push({
   ],
   mnemonic: {
     en: "\"Split teams, then split code\" — Conway first, Kubernetes later. And remember MONO: Modules, Ownership, No shared tables, Only then extract.",
-    he: "\"קודם מפצלים צוותים, אחר כך קוד\" — Conway קודם, Kubernetes אחר כך. וזכרו MONO: Modules, Ownership, No shared tables, Only then extract."
+    he: "\"קודם מפצלים צוותים, אחר כך קוד\" — Conway קודם, Kubernetes אחר כך. וזכור MONO: Modules, Ownership, No shared tables, Only then extract."
   },
   pitfalls: [
     { en: "Splitting by technical layer (a 'database service', a 'validation service') instead of by business capability — every feature now touches every service.", he: "פיצול לפי שכבה טכנית ('database service', 'validation service') במקום לפי יכולת עסקית — עכשיו כל פיצ'ר נוגע בכל השירותים." },
@@ -158,7 +158,7 @@ INFRA.lessons.push({
         { en: "Services communicate through a message broker", he: "השירותים מתקשרים דרך message broker" }
       ],
       answer: 2,
-      explain: { en: "Lockstep deploys mean the services aren't independent — you have the coupling of a monolith plus the network.", he: "deploys בצעד אחיד אומרים שהשירותים לא עצמאיים — יש לכם את הצימוד של monolith פלוס הרשת." }
+      explain: { en: "Lockstep deploys mean the services aren't independent — you have the coupling of a monolith plus the network.", he: "deploys בצעד אחיד אומרים שהשירותים לא עצמאיים — יש לך את הצימוד של monolith פלוס הרשת." }
     },
     {
       q: { en: "What makes a modular monolith easy to split later?", he: "מה הופך modular monolith לקל לפיצול בהמשך?" },
@@ -245,7 +245,7 @@ services:
         he: `<p>API גנרי אחד ל-web, iOS, Android ולשותפים בסוף לא משרת אף אחד טוב: המובייל רוצה payloads קטנים ופחות round-trips על 4G; הדשבורד ב-web רוצה דאטה עשיר; שותפים רוצים חוזים יציבים עם גרסאות. <strong>תבנית BFF</strong> נותנת לכל סוג לקוח backend דק משלו, שבבעלות הצוות שמחזיק את ה-frontend הזה.</p>
 <p>ה-BFF של המובייל קורא ל-orders, users ו-recommendations במקביל ומחזיר JSON קומפקטי אחד שתפור למסך הבית — round-trip אחד במקום שלושה על RTT של 150 ms במובייל חוסך ~300 ms של latency מורגש. הרבה פעמים משתמשים ב-GraphQL server כ-BFF, כי הלקוח בוחר את הצורה.</p>
 <blockquote>💡 מהשטח: SoundCloud הפכו את BFF לפופולרי; Netflix הריצו שכבות adapter לכל סוג מכשיר במשך שנים. מבנה נפוץ: edge gateway (auth, rate limit, TLS) → BFF לכל לקוח (aggregation, עיצוב התשובה) → domain services.</blockquote>
-<p>סימן אזהרה: אם ה-BFFs מתחילים לשכפל חוקים עסקיים, תורידו את הלוגיקה הזו ל-domain service.</p>`
+<p>סימן אזהרה: אם ה-BFFs מתחילים לשכפל חוקים עסקיים, הורד את הלוגיקה הזו ל-domain service.</p>`
       }
     },
     {
@@ -397,7 +397,7 @@ INFRA.lessons.push({
   title: { en: "Sync vs Async Communication", he: "תקשורת סינכרונית מול אסינכרונית" },
   tldr: {
     en: "Sync calls couple services in time: if anyone in the chain is slow or down, you are too. Async decouples time at the cost of immediacy and simplicity.",
-    he: "קריאות סינכרוניות מצמידות שירותים בזמן: אם מישהו בשרשרת איטי או נפל — גם אתם. אסינכרוני משחרר את הצימוד בזמן, במחיר של מיידיות ופשטות."
+    he: "קריאות סינכרוניות מצמידות שירותים בזמן: אם מישהו בשרשרת איטי או נפל — גם אתה. אסינכרוני משחרר את הצימוד בזמן, במחיר של מיידיות ופשטות."
   },
   analogy: {
     en: "A sync call is a phone call: instant answers, but both people must be available right now, and if you're on hold you can't do anything else. Async messaging is WhatsApp: you send and move on, they reply when they can — but you don't know exactly when, and you'd better handle 'seen but no reply'.",
@@ -449,9 +449,9 @@ chain availability = 0.999^5 = 0.995  (99.5%)
 each 99.9% available
 chain availability = 0.999^5 = 0.995  (99.5%)
 99.9% = 43 min downtime/month   99.5% = 3.6 hours/month</pre>
-<p>חמישה שירותים של "שלוש תשיעיות" בשורה נותנים לכם שתיים וחצי. עם עשרה כאלה אתם ב-99.0% — 7.3 שעות בחודש.</p>
+<p>חמישה שירותים של "שלוש תשיעיות" בשורה נותנים לך שתיים וחצי. עם עשרה כאלה אתה ב-99.0% — 7.3 שעות בחודש.</p>
 <p>עם <strong>הודעות אסינכרוניות</strong>, ה-checkout כותב הודעת <code>OrderPlaced</code> ל-broker עמיד ומחזיר "ההזמנה התקבלה". אם billing נופל ל-10 דקות, ההודעות מחכות ב-queue ומעובדות כשהוא חוזר. המשתמש בכלל לא רואה את התקלה. המחיר: המשתמש מקבל "אנחנו מעבדים את ההזמנה" במקום אישור מיידי, וצריך לטפל בכשלונות בדיעבד (מייל "התשלום נכשל", פעולות מפצות).</p>
-<blockquote>⚠️ טיפ לפרודקשן: תשאלו על כל תלות: "אם זה למטה ל-5 דקות, הבקשה שלי צריכה להיכשל?" אם התשובה לא — זה לא צריך להיות קריאה סינכרונית.</blockquote>`
+<blockquote>⚠️ טיפ לפרודקשן: שאל על כל תלות: "אם זה למטה ל-5 דקות, הבקשה שלי צריכה להיכשל?" אם התשובה לא — זה לא צריך להיות קריאה סינכרונית.</blockquote>`
       }
     },
     {
@@ -475,8 +475,8 @@ chain availability = 0.999^5 = 0.995  (99.5%)
 <tr><td>10</td><td>9.6%</td></tr>
 <tr><td>100 (fan-out)</td><td>63%</td></tr>
 </table>
-<p>כלומר ה-<em>p95</em> מקצה לקצה שלכם בנוי בערך מה-<em>p99</em> של התלויות. זה "The Tail at Scale" (Dean ו-Barroso, Google, 2013). פתרונות: פחות hops, קריאות במקביל במקום ברצף, timeouts הדוקים, hedged requests (שולחים עותק שני אחרי זמן ה-p95 ולוקחים את מי שחוזר ראשון), caching, והעברת עבודה לא-הכרחית לאסינכרוני.</p>
-<blockquote>💡 מהשטח: תפתחו trace waterfall ב-Jaeger/Tempo. מדרגות של spans רצופים זו שרשרת latency שצועקת שיעשו אותה במקביל או אסינכרונית.</blockquote>`
+<p>כלומר ה-<em>p95</em> מקצה לקצה שלך בנוי בערך מה-<em>p99</em> של התלויות. זה "The Tail at Scale" (Dean ו-Barroso, Google, 2013). פתרונות: פחות hops, קריאות במקביל במקום ברצף, timeouts הדוקים, hedged requests (שולחים עותק שני אחרי זמן ה-p95 ולוקחים את מי שחוזר ראשון), caching, והעברת עבודה לא-הכרחית לאסינכרוני.</p>
+<blockquote>💡 מהשטח: פתח trace waterfall ב-Jaeger/Tempo. מדרגות של spans רצופים זו שרשרת latency שצועקת שיעשו אותה במקביל או אסינכרונית.</blockquote>`
       }
     },
     {
@@ -501,7 +501,7 @@ GET  /reports/r-8f2  -&gt; 200 { "status": "done", "url": "https://..." }</pre>
 <pre>POST /reports        -&gt; 202 Accepted  { "jobId": "r-8f2", "status": "queued" }
 GET  /reports/r-8f2  -&gt; 200 { "status": "done", "url": "https://..." }</pre>
 <p>אסינכרוני זה לא בחינם: עכשיו צריך broker (עוד משהו להריץ), schemas להודעות וניהול גרסאות, consumers אידמפוטנטיים, DLQs, ו-tracing שמעביר context דרך ההודעות. לדבג "למה זה לא קרה?" קשה יותר מ-"למה זה החזיר 500?"</p>
-<blockquote>⚠️ טיפ לפרודקשן: אל תזייפו סינכרוני מעל אסינכרוני (שולחים הודעה ואז חוסמים עד שמגיעה הודעת תשובה) בנתיב של בקשת משתמש, אלא אם באמת חייבים — מקבלים את ה-latency של סינכרוני ואת כל החלקים הנעים של אסינכרוני.</blockquote>`
+<blockquote>⚠️ טיפ לפרודקשן: אל תזייף סינכרוני מעל אסינכרוני (שולחים הודעה ואז חוסמים עד שמגיעה הודעת תשובה) בנתיב של בקשת משתמש, אלא אם באמת חייבים — מקבלים את ה-latency של סינכרוני ואת כל החלקים הנעים של אסינכרוני.</blockquote>`
       }
     }
   ],
@@ -515,7 +515,7 @@ client -> A --> B --> C --> D               client -> A --publish--> [ broker ]
   handsOn: [
     { cmd: "curl -w 'dns=%{time_namelookup} connect=%{time_connect} ttfb=%{time_starttransfer} total=%{time_total}\\n' -o /dev/null -s https://httpbin.org/delay/1", what: { en: "Break a sync call into its phases — see how much of 'latency' is just waiting for the server.", he: "מפרקים קריאה סינכרונית לשלבים — רואים כמה מה-'latency' הוא פשוט המתנה לשרת." } },
     { cmd: "grpcurl -plaintext -d '{\"order_id\":\"o-1\",\"amount_cents\":4200}' localhost:50051 billing.Billing/Charge", what: { en: "Call a gRPC method from the terminal (requires server reflection) — curl for gRPC.", he: "קוראים ל-method של gRPC מהטרמינל (דורש server reflection) — ה-curl של gRPC." } },
-    { cmd: "python3 -c \"[print(n, round(1-0.99**n,3)) for n in (1,5,10,20,50,100)]\"", what: { en: "Compute the tail-latency amplification table yourself for any number of hops.", he: "מחשבים בעצמכם את טבלת הגברת ה-tail latency לכל מספר hops." } }
+    { cmd: "python3 -c \"[print(n, round(1-0.99**n,3)) for n in (1,5,10,20,50,100)]\"", what: { en: "Compute the tail-latency amplification table yourself for any number of hops.", he: "חשב בעצמך את טבלת הגברת ה-tail latency לכל מספר hops." } }
   ],
   mnemonic: {
     en: "\"Sync multiplies, async buffers.\" Sync chains multiply availability (down) and tail latency (up); a queue is a shock absorber.",
@@ -528,11 +528,11 @@ client -> A --> B --> C --> D               client -> A --publish--> [ broker ]
   ],
   interview: [
     {
-      q: { en: "Each of 6 downstream services has p99 = 200 ms. Your endpoint calls them sequentially. What happens to your tail latency, and how do you fix it?", he: "ל-6 שירותים downstream יש p99 של 200 ms. ה-endpoint שלכם קורא להם ברצף. מה קורה ל-tail latency, ואיך מתקנים?" },
-      a: { en: "Latencies sum, and ~5.9% of requests (1-0.99^6) hit at least one p99-slow call, so your p95 is already dominated by dependency tails. Fixes: parallelize independent calls, set per-call timeouts within a total budget, cache stable data, hedge requests to replicated backends, and move non-essential calls (analytics, notifications) to async events.", he: "ה-latencies מצטברים, ו-~5.9% מהבקשות (1-0.99^6) פוגשות לפחות קריאה איטית אחת ברמת p99, כך שה-p95 שלכם כבר נשלט על ידי ה-tails של התלויות. תיקונים: לבצע קריאות בלתי תלויות במקביל, timeouts לכל קריאה בתוך תקציב זמן כולל, cache לדאטה יציב, hedged requests ל-backends משוכפלים, והעברת קריאות לא-הכרחיות (analytics, התראות) ל-events אסינכרוניים." }
+      q: { en: "Each of 6 downstream services has p99 = 200 ms. Your endpoint calls them sequentially. What happens to your tail latency, and how do you fix it?", he: "ל-6 שירותים downstream יש p99 של 200 ms. ה-endpoint שלך קורא להם ברצף. מה קורה ל-tail latency, ואיך מתקנים?" },
+      a: { en: "Latencies sum, and ~5.9% of requests (1-0.99^6) hit at least one p99-slow call, so your p95 is already dominated by dependency tails. Fixes: parallelize independent calls, set per-call timeouts within a total budget, cache stable data, hedge requests to replicated backends, and move non-essential calls (analytics, notifications) to async events.", he: "ה-latencies מצטברים, ו-~5.9% מהבקשות (1-0.99^6) פוגשות לפחות קריאה איטית אחת ברמת p99, כך שה-p95 שלך כבר נשלט על ידי ה-tails של התלויות. תיקונים: לבצע קריאות בלתי תלויות במקביל, timeouts לכל קריאה בתוך תקציב זמן כולל, cache לדאטה יציב, hedged requests ל-backends משוכפלים, והעברת קריאות לא-הכרחיות (analytics, התראות) ל-events אסינכרוניים." }
     },
     {
-      q: { en: "When would you choose gRPC over REST?", he: "מתי תבחרו ב-gRPC על פני REST?" },
+      q: { en: "When would you choose gRPC over REST?", he: "מתי תבחר ב-gRPC על פני REST?" },
       a: { en: "Internal, high-throughput service-to-service calls where you control both sides: you get typed contracts with codegen, smaller binary payloads, HTTP/2 multiplexing and streaming. REST stays better for public/browser APIs, HTTP caching and ease of debugging.", he: "קריאות פנימיות עם throughput גבוה בין שירותים כששולטים בשני הצדדים: מקבלים חוזים מוקלדים עם codegen, payloads בינאריים קטנים, multiplexing ו-streaming של HTTP/2. REST נשאר עדיף ל-APIs ציבוריים ולדפדפנים, ל-HTTP caching ולנוחות דיבאג." }
     }
   ],
@@ -557,7 +557,7 @@ client -> A --> B --> C --> D               client -> A --publish--> [ broker ]
         { en: "Never — parallel calls hide slowness", he: "אף פעם — קריאות במקביל מסתירות איטיות" }
       ],
       answer: 2,
-      explain: { en: "1 - 0.99^100 ≈ 0.63. Waiting for all = you're as slow as the slowest; that's why hedging and partial results matter at fan-out.", he: "1 - 0.99^100 ≈ 0.63. לחכות לכולם = אתם איטיים כמו האיטי ביותר; לכן hedging ותוצאות חלקיות קריטיים ב-fan-out." }
+      explain: { en: "1 - 0.99^100 ≈ 0.63. Waiting for all = you're as slow as the slowest; that's why hedging and partial results matter at fan-out.", he: "1 - 0.99^100 ≈ 0.63. לחכות לכולם = אתה איטי כמו האיטי ביותר; לכן hedging ותוצאות חלקיות קריטיים ב-fan-out." }
     },
     {
       q: { en: "Which operation is the best candidate for async messaging?", he: "איזו פעולה היא המועמדת הכי טובה להודעות אסינכרוניות?" },
@@ -584,7 +584,7 @@ INFRA.lessons.push({
   title: { en: "Queues: Delivery, Acks & DLQs", he: "Queues: מסירה, Acks ו-DLQs" },
   tldr: {
     en: "A queue buffers work between producers and consumers; assume every message can arrive twice, so make consumers idempotent and park poison in a DLQ.",
-    he: "Queue הוא באפר של עבודה בין producers ל-consumers; תניחו שכל הודעה יכולה להגיע פעמיים, אז תעשו consumers אידמפוטנטיים ותחנו הודעות רעל ב-DLQ."
+    he: "Queue הוא באפר של עבודה בין producers ל-consumers; הנח שכל הודעה יכולה להגיע פעמיים, אז בנה consumers אידמפוטנטיים ושים הודעות רעל ב-DLQ."
   },
   analogy: {
     en: "A queue is the ticket rail in a busy restaurant kitchen. Waiters (producers) clip orders on the rail; cooks (consumers) pull them off. When the dinner rush comes, the rail gets long (backlog) but nobody's turned away. If a cook grabs a ticket and faints, the ticket goes back on the rail after a while (visibility timeout). And the order for 'a pizza with ketchup and sushi' that makes every cook cry? It goes to the manager's desk (dead-letter queue) instead of being retried forever.",
@@ -622,7 +622,7 @@ for m in msgs.get("Messages", []):
 <blockquote>⚠️ Production tip: Set the visibility timeout comfortably above your worst-case processing time (AWS recommends 6x the function timeout for Lambda triggers). Too short and slow jobs get processed twice in parallel; too long and crashed work sits invisible for ages. For long jobs, extend it with ChangeMessageVisibility as a heartbeat.</blockquote>`,
         he: `<p>איך ה-queue יודע שהודעה עובדה? ה-consumer עושה לה <strong>ack</strong> <em>אחרי</em> שסיים את העבודה. עד אז ההודעה "in flight".</p>
 <ul>
-<li><strong>SQS</strong>: ברגע הקבלה ההודעה הופכת לבלתי נראית למשך ה-<strong>visibility timeout</strong> (ברירת מחדל 30 שניות). קוראים ל-<code>DeleteMessage</code> בתור ack. אם לא עשיתם את זה בזמן (קריסה, job איטי) — היא חוזרת ל-consumer אחר.</li>
+<li><strong>SQS</strong>: ברגע הקבלה ההודעה הופכת לבלתי נראית למשך ה-<strong>visibility timeout</strong> (ברירת מחדל 30 שניות). קוראים ל-<code>DeleteMessage</code> בתור ack. אם לא עשית את זה בזמן (קריסה, job איטי) — היא חוזרת ל-consumer אחר.</li>
 <li><strong>RabbitMQ</strong>: <code>basic.ack</code> ידני; אם ה-channel/connection של ה-consumer מת, הודעות בלי ack חוזרות לתור. <code>basic.nack(requeue=false)</code> דוחה אותן ל-dead-letter exchange.</li>
 </ul>
 <pre># Python + boto3 (SQS)
@@ -632,7 +632,7 @@ msgs = sqs.receive_message(QueueUrl=Q, MaxNumberOfMessages=10,
 for m in msgs.get("Messages", []):
     process(m["Body"])                                  # do the work FIRST
     sqs.delete_message(QueueUrl=Q, ReceiptHandle=m["ReceiptHandle"])  # then ack</pre>
-<blockquote>⚠️ טיפ לפרודקשן: תגדירו visibility timeout עם מרווח נוח מעל זמן העיבוד הגרוע ביותר (AWS ממליצים על פי 6 מה-timeout של הפונקציה כשמחברים ל-Lambda). קצר מדי — jobs איטיים יעובדו פעמיים במקביל; ארוך מדי — עבודה שקרסה תשב בלתי נראית המון זמן. ל-jobs ארוכים, מאריכים עם ChangeMessageVisibility בתור heartbeat.</blockquote>`
+<blockquote>⚠️ טיפ לפרודקשן: הגדר visibility timeout עם מרווח נוח מעל זמן העיבוד הגרוע ביותר (AWS ממליצים על פי 6 מה-timeout של הפונקציה כשמחברים ל-Lambda). קצר מדי — jobs איטיים יעובדו פעמיים במקביל; ארוך מדי — עבודה שקרסה תשב בלתי נראית המון זמן. ל-jobs ארוכים, מאריכים עם ChangeMessageVisibility בתור heartbeat.</blockquote>`
       }
     },
     {
@@ -651,7 +651,7 @@ for m in msgs.get("Messages", []):
 <li><strong>Exactly-once</strong>: מקצה לקצה, כולל side effects שרירותיים (שליחת מייל, חיוב כרטיס), זה בלתי אפשרי באופן כללי — בעיית שני הגנרלים נושכת. מה שמערכות מציעות זה <em>exactly-once processing בתוך הגבולות שלהן</em>: Kafka transactions (קריאה-עיבוד-כתיבה ל-Kafka באופן אטומי), חלון ה-deduplication של 5 דקות ב-SQS FIFO.</li>
 </ul>
 <p>המתכון המעשי שכולם מגיעים אליו: <strong>at-least-once delivery + consumer אידמפוטנטי = effectively-once</strong>.</p>
-<blockquote>💡 מהשטח: כשספק אומר "exactly-once", תקראו את האותיות הקטנות: כמעט תמיד זה "בתוך המערכת שלנו" או "בתוך חלון dedup". הקריאה ל-Stripe או שליחת המייל שלכם עדיין צריכים idempotency key.</blockquote>`
+<blockquote>💡 מהשטח: כשספק אומר "exactly-once", קרא את האותיות הקטנות: כמעט תמיד זה "בתוך המערכת שלנו" או "בתוך חלון dedup". הקריאה ל-Stripe או שליחת המייל שלך עדיין צריכים idempotency key.</blockquote>`
       }
     },
     {
@@ -712,9 +712,9 @@ aws sqs set-queue-attributes --queue-url $Q --attributes '{
                         +--------------------------------------------+
                   receiveCount > maxReceiveCount(5) ?  --> [ DLQ ] --> alarm, inspect, redrive`,
   handsOn: [
-    { cmd: "docker run -d --name rmq -p 5672:5672 -p 15672:15672 rabbitmq:3-management", what: { en: "Run RabbitMQ locally with its management UI at http://localhost:15672 (guest/guest) — watch Ready vs Unacked counts.", he: "מריצים RabbitMQ מקומית עם ממשק ניהול ב-http://localhost:15672 (guest/guest) — שימו לב ל-Ready מול Unacked." } },
+    { cmd: "docker run -d --name rmq -p 5672:5672 -p 15672:15672 rabbitmq:3-management", what: { en: "Run RabbitMQ locally with its management UI at http://localhost:15672 (guest/guest) — watch Ready vs Unacked counts.", he: "מריצים RabbitMQ מקומית עם ממשק ניהול ב-http://localhost:15672 (guest/guest) — שים לב ל-Ready מול Unacked." } },
     { cmd: "aws sqs get-queue-attributes --queue-url $Q --attribute-names ApproximateNumberOfMessages ApproximateNumberOfMessagesNotVisible", what: { en: "Backlog vs in-flight. For 'how late is the oldest work', check the ApproximateAgeOfOldestMessage metric in CloudWatch.", he: "Backlog מול in-flight. בשביל 'כמה מאחרת העבודה הכי ישנה' — בודקים את המטריקה ApproximateAgeOfOldestMessage ב-CloudWatch." } },
-    { cmd: "aws sqs start-message-move-task --source-arn arn:aws:sqs:eu-west-1:123456789012:orders-dlq", what: { en: "Redrive messages from a DLQ back to their source queue after you've fixed the bug.", he: "מחזירים הודעות מה-DLQ לתור המקור אחרי שתיקנתם את הבאג." } },
+    { cmd: "aws sqs start-message-move-task --source-arn arn:aws:sqs:eu-west-1:123456789012:orders-dlq", what: { en: "Redrive messages from a DLQ back to their source queue after you've fixed the bug.", he: "מחזירים הודעות מה-DLQ לתור המקור אחרי שתיקנת את הבאג." } },
     { cmd: "rabbitmqctl list_queues name messages_ready messages_unacknowledged consumers", what: { en: "Spot a stuck consumer: messages_unacknowledged high and not moving = someone grabbed work and isn't finishing it.", he: "מזהים consumer תקוע: messages_unacknowledged גבוה ולא זז = מישהו לקח עבודה ולא מסיים אותה." } }
   ],
   mnemonic: {
@@ -733,7 +733,7 @@ aws sqs set-queue-attributes --queue-url $Q --attributes '{
       a: { en: "You can't get exactly-once delivery, so combine at-least-once delivery with idempotency: use a stable idempotency key (the message or order ID) when calling the payment provider, record processed IDs atomically with the state change (unique constraint), and use conditional state transitions (only charge if status = PENDING). Duplicates then become no-ops.", he: "אי אפשר לקבל exactly-once delivery, אז משלבים at-least-once עם אידמפוטנטיות: משתמשים ב-idempotency key יציב (ה-ID של ההודעה או ההזמנה) בקריאה לספק התשלום, רושמים IDs שעובדו באופן אטומי עם שינוי המצב (unique constraint), ומשתמשים במעברי מצב מותנים (מחייבים רק אם status = PENDING). כפילויות הופכות ל-no-op." }
     },
     {
-      q: { en: "Your queue backlog is growing steadily. Walk through your investigation.", he: "ה-backlog בתור גדל בהתמדה. תעברו על החקירה." },
+      q: { en: "Your queue backlog is growing steadily. Walk through your investigation.", he: "ה-backlog בתור גדל בהתמדה. עבור על החקירה." },
       a: { en: "Compare incoming rate vs processing rate. Did producers spike (campaign, retry storm upstream)? Did per-message processing time rise (slow DB, downstream latency)? Are consumers failing and redelivering (receive count, error logs, DLQ)? Are consumers actually running (crashloop, scaled to zero)? Short-term: scale consumers if the downstream can take it; long-term: fix the slow dependency or batch work.", he: "משווים קצב נכנס מול קצב עיבוד. ה-producers קפצו (קמפיין, retry storm מלמעלה)? זמן העיבוד להודעה עלה (DB איטי, latency של downstream)? consumers נכשלים ומקבלים שוב (receive count, לוגים של שגיאות, DLQ)? ה-consumers בכלל רצים (crashloop, scaled to zero)? בטווח הקצר: מוסיפים consumers אם ה-downstream עומד בזה; בטווח הארוך: מתקנים את התלות האיטית או עושים batching." }
     }
   ],
@@ -854,7 +854,7 @@ rabbitmqadmin declare queue name=eu-billing durable=true \\
   arguments='{"x-queue-type":"quorum","x-dead-letter-exchange":"dlx"}'
 rabbitmqadmin declare binding source=orders destination=eu-billing routing_key="order.*.eu"</pre>
 <p>חוזקות: routing גמיש, ack לכל הודעה, priorities, TTLs, latency נמוך, מעולה ל-task queues. חולשות: הודעות נמחקות ב-ack (אין replay — Streams מוסיפים מצב log), throughput בעשרות אלפי הודעות לשנייה ל-queue ולא במיליונים.</p>
-<blockquote>⚠️ טיפ לפרודקשן: תשתמשו ב-<strong>quorum queues</strong> (משוכפלים עם Raft) לכל דבר שחשוב לכם; classic mirrored queues הוסרו ב-RabbitMQ 4.0. ותשמרו על queues קצרים — RabbitMQ הכי מאושר כשהתורים כמעט ריקים.</blockquote>`
+<blockquote>⚠️ טיפ לפרודקשן: השתמש ב-<strong>quorum queues</strong> (משוכפלים עם Raft) לכל דבר שחשוב לך; classic mirrored queues הוסרו ב-RabbitMQ 4.0. ושמור על queues קצרים — RabbitMQ הכי מאושר כשהתורים כמעט ריקים.</blockquote>`
       }
     },
     {
@@ -903,10 +903,10 @@ kafka-consumer-groups.sh --describe --group billing   # shows LAG per partition<
 <tr><td>אחרי צריכה</td><td>נמחק ב-ack</td><td>נשמר (replay)</td><td>נמחק</td><td>נמחק (אפשר seek/snapshots)</td><td>נמחק</td></tr>
 <tr><td>סדר</td><td>לפי queue (consumer אחד)</td><td>לפי partition</td><td>FIFO queues לפי group ID</td><td>עם ordering keys</td><td>Sessions</td></tr>
 <tr><td>Throughput</td><td>~10k–100k לשנייה</td><td>מיליונים לשנייה</td><td>כמעט בלי גבול (standard)</td><td>גבוה מאוד</td><td>גבוה (Premium)</td></tr>
-<tr><td>עומס תפעולי</td><td>אתם מריצים</td><td>אתם מריצים (או MSK/Confluent)</td><td>אפס</td><td>אפס</td><td>אפס</td></tr>
+<tr><td>עומס תפעולי</td><td>אתה מריץ</td><td>אתה מריץ (או MSK/Confluent)</td><td>אפס</td><td>אפס</td><td>אפס</td></tr>
 </table>
 <p>כללי אצבע: <strong>task queue / routing מורכב</strong> → RabbitMQ או SQS. <strong>שדרת events, replay, הרבה קוראים עצמאיים, נפח גבוה</strong> → Kafka (או Kinesis/Event Hubs). <strong>על AWS ורוצים משעמם</strong> → SNS+SQS. <strong>Enterprise ב-.NET עם sessions, טרנזקציות, scheduled messages</strong> → Service Bus.</p>
-<blockquote>⚠️ טיפ לפרודקשן: SQS FIFO מוגבל (300 הודעות לשנייה לכל API action בלי batching, הרבה יותר במצב high-throughput) ושומר על סדר רק בתוך MessageGroupId — בחרו group IDs כמו שבוחרים keys ב-Kafka.</blockquote>`
+<blockquote>⚠️ טיפ לפרודקשן: SQS FIFO מוגבל (300 הודעות לשנייה לכל API action בלי batching, הרבה יותר במצב high-throughput) ושומר על סדר רק בתוך MessageGroupId — בחר group IDs כמו שבוחרים keys ב-Kafka.</blockquote>`
       }
     }
   ],
@@ -923,7 +923,7 @@ Kafka topic "orders" (3 partitions), key = customerId
        group "analytics" reads the SAME partitions with its OWN offsets`,
   handsOn: [
     { cmd: "docker run -d --name kafka -p 9092:9092 apache/kafka:3.8.0", what: { en: "Start a single-node Kafka (KRaft mode, no ZooKeeper) for experiments.", he: "מרימים Kafka עם node אחד (מצב KRaft, בלי ZooKeeper) לניסויים." } },
-    { cmd: "docker exec -it kafka /opt/kafka/bin/kafka-console-producer.sh --bootstrap-server localhost:9092 --topic orders --property parse.key=true --property key.separator=:", what: { en: "Produce keyed messages (type cust1:hello). Same key always lands in the same partition.", he: "שולחים הודעות עם key (תקלידו cust1:hello). אותו key תמיד נוחת באותו partition." } },
+    { cmd: "docker exec -it kafka /opt/kafka/bin/kafka-console-producer.sh --bootstrap-server localhost:9092 --topic orders --property parse.key=true --property key.separator=:", what: { en: "Produce keyed messages (type cust1:hello). Same key always lands in the same partition.", he: "שולחים הודעות עם key (הקלד cust1:hello). אותו key תמיד נוחת באותו partition." } },
     { cmd: "docker exec -it kafka /opt/kafka/bin/kafka-consumer-groups.sh --bootstrap-server localhost:9092 --group billing --reset-offsets --to-earliest --topic orders --execute", what: { en: "Replay: rewind a consumer group to the beginning (group must be stopped). Impossible with a classic queue.", he: "Replay: מחזירים consumer group להתחלה (ה-group חייב להיות עצור). בלתי אפשרי עם queue קלאסי." } },
     { cmd: "aws sns subscribe --topic-arn $TOPIC --protocol sqs --notification-endpoint $QUEUE_ARN", what: { en: "Wire the SNS→SQS fan-out: every message published to the topic lands in this queue too (queue policy must allow SNS).", he: "מחברים fan-out של SNS→SQS: כל הודעה שמתפרסמת ל-topic נוחתת גם ב-queue הזה (ה-queue policy צריך לאשר ל-SNS)." } }
   ],
@@ -1010,7 +1010,7 @@ INFRA.lessons.push({
   },
   analogy: {
     en: "A cache is the snack drawer in your desk. The supermarket (database) has everything but is a 20-minute trip; the drawer has a few things and takes 2 seconds. You restock it when it's empty (cache-aside), throw out what you haven't touched in ages (LRU), and check expiry dates (TTL). Cache stampede? That's the whole office discovering the drawer is empty at the same moment and all driving to the supermarket together.",
-    he: "Cache זה מגירת החטיפים בשולחן. הסופר (database) יש בו הכול, אבל זה 20 דקות נסיעה; במגירה יש כמה דברים וזה 2 שניות. ממלאים אותה כשהיא מתרוקנת (cache-aside), זורקים את מה שלא נגעתם בו מלא זמן (LRU), ובודקים תאריכי תפוגה (TTL). Cache stampede? זה כל המשרד מגלה באותו רגע שהמגירה ריקה וכולם נוסעים ביחד לסופר."
+    he: "Cache זה מגירת החטיפים בשולחן. הסופר (database) יש בו הכול, אבל זה 20 דקות נסיעה; במגירה יש כמה דברים וזה 2 שניות. ממלאים אותה כשהיא מתרוקנת (cache-aside), זורקים את מה שלא נגעת בו מלא זמן (LRU), ובודקים תאריכי תפוגה (TTL). Cache stampede? זה כל המשרד מגלה באותו רגע שהמגירה ריקה וכולם נוסעים ביחד לסופר."
   },
   sections: [
     {
@@ -1035,7 +1035,7 @@ INFRA.lessons.push({
 <tr><td>95%</td><td>3.5 ms</td><td>500 q/s</td></tr>
 <tr><td>99%</td><td>1.5 ms</td><td>100 q/s</td></tr>
 </table>
-<p>שימו לב לעמודת העומס: מעבר מ-95% ל-99% מוריד את התעבורה ל-DB <strong>פי 5</strong>. בגלל זה האחוזים האחרונים של hit ratio כל כך חשובים — ובגלל זה flush ל-cache או cold start יכולים להפיל DB שהיה "בסדר" אתמול: ה-DB תמיד היה מתוכנן רק ל-misses.</p>
+<p>שים לב לעמודת העומס: מעבר מ-95% ל-99% מוריד את התעבורה ל-DB <strong>פי 5</strong>. בגלל זה האחוזים האחרונים של hit ratio כל כך חשובים — ובגלל זה flush ל-cache או cold start יכולים להפיל DB שהיה "בסדר" אתמול: ה-DB תמיד היה מתוכנן רק ל-misses.</p>
 <p>Cache משתלם כשהדאטה <strong>נקרא הרבה יותר משנכתב</strong>, יש לו <strong>פופולריות מוטה</strong> (1% מהמוצרים מקבלים 50% מהצפיות), והוא <strong>יקר לחישוב</strong>. לשים ב-cache דאטה שנקרא פעם אחת — זה סתם עוד latency.</p>
 <blockquote>💡 מהשטח: עוקבים אחרי <code>keyspace_hits / (keyspace_hits + keyspace_misses)</code> מתוך INFO של Redis. ירידה פתאומית ב-hit ratio אחרי deploy בדרך כלל אומרת שפורמט ה-cache key השתנה.</blockquote>`
       }
@@ -1107,7 +1107,7 @@ redis-cli INFO stats | grep -E "keyspace_(hits|misses)|evicted_keys"</pre>
 <pre>redis-cli CONFIG SET maxmemory 2gb
 redis-cli CONFIG SET maxmemory-policy allkeys-lru
 redis-cli INFO stats | grep -E "keyspace_(hits|misses)|evicted_keys"</pre>
-<blockquote>⚠️ טיפ לפרודקשן: <code>evicted_keys</code> עולה ו-hit ratio יורד = ה-working set כבר לא נכנס. תוסיפו זיכרון או תקטינו ערכים לפני שמאשימים את ה-DB.</blockquote>`
+<blockquote>⚠️ טיפ לפרודקשן: <code>evicted_keys</code> עולה ו-hit ratio יורד = ה-working set כבר לא נכנס. הוסף זיכרון או הקטן ערכים לפני שמאשימים את ה-DB.</blockquote>`
       }
     },
     {
@@ -1153,7 +1153,7 @@ redis-cli INFO stats | grep -E "keyspace_(hits|misses)|evicted_keys"</pre>
 </table>
 <p>ברירת מחדל: <strong>Redis</strong> (או ה-fork של Linux Foundation, <strong>Valkey</strong>) — מבני הנתונים מחזירים את ההשקעה. <strong>Memcached</strong> — ל-cache ענק, פשוט ו-multi-threaded של blobs.</p>
 <p>שכבות cache, מהקרוב לרחוק: cache בדפדפן → CDN (CloudFront, Cloudflare) → cache ב-API gateway/reverse proxy → cache בתוך ה-process (Caffeine, Map עם LRU: ~100 ns אבל לכל instance בנפרד ולא עקבי בין pods) → cache מבוזר (Redis: ~0.5–1 ms ברשת) → ה-buffer pool של ה-DB.</p>
-<blockquote>⚠️ טיפ לפרודקשן: לעולם אל תהפכו את ה-cache לתלות קשיחה. אם Redis נפל — fallback ל-DB עם circuit breaker ו-rate limit. אחרת הפכתם אופטימיזציית ביצועים ל-single point of failure.</blockquote>`
+<blockquote>⚠️ טיפ לפרודקשן: לעולם אל תהפוך את ה-cache לתלות קשיחה. אם Redis נפל — fallback ל-DB עם circuit breaker ו-rate limit. אחרת הפכת אופטימיזציית ביצועים ל-single point of failure.</blockquote>`
       }
     }
   ],
@@ -1182,7 +1182,7 @@ redis-cli INFO stats | grep -E "keyspace_(hits|misses)|evicted_keys"</pre>
   ],
   interview: [
     {
-      q: { en: "Your DB handles 10k QPS fine with a 95% cache hit ratio. What happens if the hit ratio drops to 80%?", he: "ה-DB שלכם מחזיק טוב 10k QPS עם cache hit ratio של 95%. מה קורה אם ה-hit ratio יורד ל-80%?" },
+      q: { en: "Your DB handles 10k QPS fine with a 95% cache hit ratio. What happens if the hit ratio drops to 80%?", he: "ה-DB שלך מחזיק טוב 10k QPS עם cache hit ratio של 95%. מה קורה אם ה-hit ratio יורד ל-80%?" },
       a: { en: "DB load goes from 500 to 2,000 QPS — 4x — even though the hit ratio 'only' dropped 15 points. If the DB was sized for ~500 QPS, it saturates, latency climbs, and you may cascade into timeouts. Hence: alert on hit ratio, capacity-plan the DB for realistic miss rates, and protect it with rate limits and stampede protection.", he: "העומס על ה-DB עולה מ-500 ל-2,000 QPS — פי 4 — למרות שה-hit ratio ירד 'רק' ב-15 נקודות. אם ה-DB תוכנן ל-~500 QPS, הוא נחנק, ה-latency מטפס, ואפשר להתגלגל ל-timeouts בשרשרת. לכן: התראה על hit ratio, תכנון capacity ל-DB לפי שיעורי miss ריאליים, והגנה עליו עם rate limits והגנה מ-stampede." }
     },
     {
@@ -1243,7 +1243,7 @@ INFRA.lessons.push({
   },
   analogy: {
     en: "Your house's electrical panel: each room has its own breaker (bulkhead) so a shorted toaster doesn't kill the fridge. The breaker trips when something's wrong (circuit breaker) instead of letting the wires melt, and you don't flip it back on 50 times per second — you wait, then try once (half-open). Timeouts are hanging up on a call that's just ringing; backoff with jitter is not having the entire neighborhood call the electric company at the exact same second after the outage.",
-    he: "לוח החשמל בבית: לכל חדר יש מפסק משלו (bulkhead) כדי שטוסטר עם קצר לא יפיל את המקרר. המפסק קופץ כשמשהו לא בסדר (circuit breaker) במקום לתת לחוטים להימס, ואתם לא מרימים אותו בחזרה 50 פעם בשנייה — מחכים, ואז מנסים פעם אחת (half-open). Timeout זה לנתק שיחה שרק מצלצלת; backoff עם jitter זה שכל השכונה לא מתקשרת לחברת החשמל באותה שנייה בדיוק אחרי ההפסקה."
+    he: "לוח החשמל בבית: לכל חדר יש מפסק משלו (bulkhead) כדי שטוסטר עם קצר לא יפיל את המקרר. המפסק קופץ כשמשהו לא בסדר (circuit breaker) במקום לתת לחוטים להימס, ואתה לא מרים אותו בחזרה 50 פעם בשנייה — מחכים, ואז מנסים פעם אחת (half-open). Timeout זה לנתק שיחה שרק מצלצלת; backoff עם jitter זה שכל השכונה לא מתקשרת לחברת החשמל באותה שנייה בדיוק אחרי ההפסקה."
   },
   sections: [
     {
@@ -1258,7 +1258,7 @@ INFRA.lessons.push({
 ctx, cancel := context.WithTimeout(ctx, 400*time.Millisecond)  // Go
 await fetch(url, { signal: AbortSignal.timeout(400) })        // JS</pre>
 <blockquote>⚠️ Production tip: Outer timeouts must be longer than inner ones. Gateway 30 s → service 10 s → DB 5 s. If the gateway gives up at 5 s while the service still waits 10 s for the DB, you burn resources on answers nobody will receive.</blockquote>`,
-        he: `<p>כל קריאת רשת צריכה timeout. בלי זה, dependency איטי מחזיק את ה-threads/connections שלכם כבני ערובה; כשה-pool נגמר — גם <em>השירות שלכם</em> למטה — <strong>cascading failure</strong>. הרבה ברירות מחדל מפחידות: ל-<code>requests</code> של Python אין timeout כברירת מחדל; ב-HttpURLConnection של Java ברירת המחדל היא אינסוף.</p>
+        he: `<p>כל קריאת רשת צריכה timeout. בלי זה, dependency איטי מחזיק את ה-threads/connections שלך כבני ערובה; כשה-pool נגמר — גם <em>השירות שלך</em> למטה — <strong>cascading failure</strong>. הרבה ברירות מחדל מפחידות: ל-<code>requests</code> של Python אין timeout כברירת מחדל; ב-HttpURLConnection של Java ברירת המחדל היא אינסוף.</p>
 <ul>
 <li><strong>Connect</strong> timeout קצר (~100 ms–1 s בתוך datacenter), ו-<strong>request</strong> timeout לפי ה-p99.9 של ה-dependency פלוס מרווח (למשל p99.9 = 250 ms → timeout של 400 ms).</li>
 <li><strong>Deadline propagation</strong>: אם לבקשת המשתמש יש תקציב של 2 שניות ו-1.5 כבר נוצלו, קריאות downstream מקבלות 500 ms, לא 2 שניות טריות משלהן. gRPC עושה את זה מובנה עם deadlines.</li>
@@ -1329,7 +1329,7 @@ resilience4j.circuitbreaker.instances.pricing:
         he: `<p><strong>Circuit breaker</strong> עוטף קריאות ל-dependency ועוקב אחרי כשלונות. שלושה מצבים:</p>
 <ul>
 <li><strong>Closed</strong> (רגיל): קריאות עוברות. אם שיעור הכשלונות עובר סף (למשל 50% מ-20 הקריאות האחרונות, או קריאות איטיות &gt; 2 שניות) — קופץ ל-Open.</li>
-<li><strong>Open</strong>: קריאות נכשלות <em>מיד</em> בלי לגעת ב-dependency (מחזירים fallback או שגיאה). זה מגן גם עליכם (אין threads שמחכים) וגם על ה-dependency (זמן להתאושש). אחרי המתנה (למשל 30 שניות) → Half-Open.</li>
+<li><strong>Open</strong>: קריאות נכשלות <em>מיד</em> בלי לגעת ב-dependency (מחזירים fallback או שגיאה). זה מגן גם עליך (אין threads שמחכים) וגם על ה-dependency (זמן להתאושש). אחרי המתנה (למשל 30 שניות) → Half-Open.</li>
 <li><strong>Half-Open</strong>: נותנים לכמה קריאות ניסיון לעבור. הצלחה → Closed. כשלון → חוזר ל-Open.</li>
 </ul>
 <pre># Resilience4j (Spring Boot application.yml)
@@ -1340,7 +1340,7 @@ resilience4j.circuitbreaker.instances.pricing:
   waitDurationInOpenState: 30s
   permittedNumberOfCallsInHalfOpenState: 3</pre>
 <p>ספריות: Resilience4j (Java), Polly (.NET), opossum (Node), gobreaker (Go) — או ברמת ה-mesh (outlier detection של Istio מוציא hosts בעייתיים מה-pool).</p>
-<blockquote>⚠️ טיפ לפרודקשן: תייצאו את מצב ה-breaker כמטריקה ותתריעו עליו. breaker שנמצא ב-Open כבר שעה זו תקלה שאתם מסתירים בשקט מאחורי fallbacks.</blockquote>`
+<blockquote>⚠️ טיפ לפרודקשן: ייצא את מצב ה-breaker כמטריקה והגדר עליו התראה. breaker שנמצא ב-Open כבר שעה זו תקלה שאתה מסתיר בשקט מאחורי fallbacks.</blockquote>`
       }
     },
     {
@@ -1359,7 +1359,7 @@ location /api/ { limit_req zone=api burst=20 nodelay; limit_req_status 429; }</p
 <p>Alternatives: leaky bucket (smooth constant outflow), fixed window (simple but allows 2x bursts at window edges), sliding window (accurate, a bit more state). Distributed limiters typically keep counters in Redis.</p>
 <blockquote>💡 Real world: Stripe's API publicly documents its use of token-bucket rate limiters plus a separate "load shedder" that drops low-priority traffic first when the whole fleet is under stress.</blockquote>`,
         he: `<p><strong>Bulkheads</strong> (מהתאים האטומים באונייה): מבודדים משאבים כך ש-dependency אחד שנכשל לא יטביע את הכול. thread/connection pools נפרדים לכל dependency (20 threads ל-pricing, 20 ל-recommendations — אם recommendations נתקע, ל-pricing עדיין יש את ה-20 שלו), node pools או clusters נפרדים לעומסים קריטיים מול batch, quotas לכל tenant.</p>
-<p><strong>Rate limiting</strong> מגן על service מהלקוחות שלו (כולל אלה שלכם, עם הבאגים). <strong>Token bucket</strong> הוא האלגוריתם הקלאסי:</p>
+<p><strong>Rate limiting</strong> מגן על service מהלקוחות שלו (כולל אלה שלך, עם הבאגים). <strong>Token bucket</strong> הוא האלגוריתם הקלאסי:</p>
 <ul>
 <li>דלי מחזיק עד <strong>B</strong> tokens (גודל ה-burst), ומתמלא בקצב של <strong>R</strong> tokens לשנייה.</li>
 <li>כל בקשה לוקחת token; דלי ריק → דוחים עם <code>429 Too Many Requests</code> + <code>Retry-After</code>.</li>
@@ -1423,18 +1423,18 @@ BACKOFF + FULL JITTER (base 100ms)       TOKEN BUCKET (R=10/s, B=50)
     he: "\"TRaCe BuLGe\": Timeouts, Retries (עם jitter), Circuit breakers, Bulkheads, Limits (rate), Graceful degradation — ועוד idempotency keys כדי שכל זה יהיה בטוח."
   },
   pitfalls: [
-    { en: "Retrying non-idempotent POSTs without an idempotency key — the 'timeout' may have succeeded server-side, and now you've charged twice.", he: "Retry ל-POST לא-אידמפוטנטי בלי idempotency key — ה-'timeout' אולי הצליח בצד השרת, ועכשיו חייבתם פעמיים." },
+    { en: "Retrying non-idempotent POSTs without an idempotency key — the 'timeout' may have succeeded server-side, and now you've charged twice.", he: "Retry ל-POST לא-אידמפוטנטי בלי idempotency key — ה-'timeout' אולי הצליח בצד השרת, ועכשיו חייבת פעמיים." },
     { en: "Exponential backoff without jitter: thousands of clients still retry at exactly 100, 200, 400 ms — synchronized waves.", he: "Exponential backoff בלי jitter: אלפי לקוחות עדיין מנסים שוב בדיוק ב-100, 200, 400 ms — גלים מסונכרנים." },
     { en: "A fallback that calls another fragile dependency (or the same DB) — your safety net has the same hole.", he: "Fallback שקורא ל-dependency שביר אחר (או לאותו DB) — לרשת הביטחון יש את אותו חור." },
     { en: "Never testing failure paths. Fallbacks and breakers that never ran in production often don't work — use chaos/fault injection in staging.", he: "אף פעם לא לבדוק מסלולי כשלון. fallbacks ו-breakers שמעולם לא רצו בפרודקשן בדרך כלל לא עובדים — chaos/fault injection ב-staging." }
   ],
   interview: [
     {
-      q: { en: "A downstream service starts timing out. Walk through what each resilience pattern does to protect your service.", he: "service ב-downstream מתחיל לעשות timeouts. תסבירו מה כל תבנית resilience עושה כדי להגן על השירות שלכם." },
+      q: { en: "A downstream service starts timing out. Walk through what each resilience pattern does to protect your service.", he: "service ב-downstream מתחיל לעשות timeouts. הסבר מה כל תבנית resilience עושה כדי להגן על השירות שלך." },
       a: { en: "Timeouts cap how long each call holds a thread. Retries with jittered backoff absorb brief blips without synchronized storms, within a retry budget. The circuit breaker sees the failure rate climb, opens, and fails fast so threads aren't wasted and the dependency can recover; half-open probes later. Bulkheads ensure only that dependency's pool is affected. Graceful degradation serves a fallback, and rate limiting/load shedding keep the remaining capacity for critical traffic.", he: "Timeouts מגבילים כמה זמן כל קריאה מחזיקה thread. Retries עם backoff ו-jitter סופגים תקלות קצרות בלי סערות מסונכרנות, בתוך retry budget. ה-circuit breaker רואה את שיעור הכשלונות עולה, נפתח ונכשל מהר כדי ש-threads לא יתבזבזו וה-dependency יוכל להתאושש; אחר כך half-open בודק. Bulkheads מבטיחים שרק ה-pool של אותו dependency נפגע. Graceful degradation מגיש fallback, ו-rate limiting/load shedding שומרים את הקיבולת שנשארה לתעבורה קריטית." }
     },
     {
-      q: { en: "Explain the token bucket. How would you implement a limit of 100 req/min per API key across 20 gateway instances?", he: "תסבירו token bucket. איך תממשו מגבלה של 100 בקשות לדקה לכל API key על פני 20 instances של gateway?" },
+      q: { en: "Explain the token bucket. How would you implement a limit of 100 req/min per API key across 20 gateway instances?", he: "הסבר token bucket. איך תממש מגבלה של 100 בקשות לדקה לכל API key על פני 20 instances של gateway?" },
       a: { en: "A bucket of capacity B refills at rate R; each request consumes a token or is rejected with 429. Across 20 instances, local buckets would allow 20x the limit, so keep state centrally — e.g. a Redis key per API key updated atomically with a Lua script (or INCR with EXPIRE for a fixed window), accepting a ~1 ms Redis hop. Alternatively, split the budget per instance if approximate limits are fine.", he: "דלי בקיבולת B מתמלא בקצב R; כל בקשה צורכת token או נדחית עם 429. עם 20 instances, דליים מקומיים יאפשרו פי 20 מהמגבלה, אז מחזיקים state מרכזי — למשל key ב-Redis לכל API key שמתעדכן אטומית עם סקריפט Lua (או INCR עם EXPIRE ל-fixed window), ומקבלים hop של ~1 ms ל-Redis. לחלופין, מחלקים את התקציב בין ה-instances אם מגבלה מקורבת מספיקה." }
     }
   ],
@@ -1502,7 +1502,7 @@ INFRA.lessons.push({
   },
   analogy: {
     en: "A popular falafel stand. Vertical scaling: hire a faster, more expensive cook with a bigger fryer — easy, but there's a limit to how fast one human can roll balls. Horizontal scaling: open five identical stands — but it only works if any stand can serve any customer (stateless), which means nobody's half-eaten order lives in a specific cook's head. And no matter how many stands you open, if they all share one pita supplier (the database), the pita truck is your new bottleneck.",
-    he: "דוכן פלאפל פופולרי. Vertical scaling: מגייסים טבח מהיר ויקר יותר עם מטגנת גדולה יותר — קל, אבל יש גבול לכמה מהר בן אדם אחד יכול לגלגל כדורים. Horizontal scaling: פותחים חמישה דוכנים זהים — אבל זה עובד רק אם כל דוכן יכול לשרת כל לקוח (stateless), כלומר שום הזמנה חצי-גמורה לא יושבת בראש של טבח מסוים. וכמה דוכנים שלא תפתחו, אם כולם חולקים ספק פיתות אחד (ה-database) — משאית הפיתות היא צוואר הבקבוק החדש."
+    he: "דוכן פלאפל פופולרי. Vertical scaling: מגייסים טבח מהיר ויקר יותר עם מטגנת גדולה יותר — קל, אבל יש גבול לכמה מהר בן אדם אחד יכול לגלגל כדורים. Horizontal scaling: פותחים חמישה דוכנים זהים — אבל זה עובד רק אם כל דוכן יכול לשרת כל לקוח (stateless), כלומר שום הזמנה חצי-גמורה לא יושבת בראש של טבח מסוים. וכמה דוכנים שלא תפתח, אם כולם חולקים ספק פיתות אחד (ה-database) — משאית הפיתות היא צוואר הבקבוק החדש."
   },
   sections: [
     {
@@ -1514,7 +1514,7 @@ INFRA.lessons.push({
 <p>Typical path: scale up the DB, scale out the stateless app tier, add caching and read replicas, and only then partition data.</p>`,
         he: `<p><strong>Vertical scaling (scale up)</strong>: מכונה גדולה יותר. מ-4 vCPU/16 GB ל-96 vCPU/768 GB זה כמה קליקים ב-AWS (וקצת downtime לשינוי הגודל). בלי שינויי קוד, בלי בעיות של מערכות מבוזרות. מגבלות: יש instance הכי גדול, המחיר בקצה העליון עולה מהר יותר מליניארי, וזה עדיין single point of failure.</p>
 <p><strong>Horizontal scaling (scale out)</strong>: יותר מכונות מאחורי load balancer. גידול קיבולת כמעט ליניארי, עמידות לתקלות (מאבדים pod אחד מתוך 10 = מאבדים 10% קיבולת, לא 100%), ו-instances זולים. המחיר: האפליקציה חייבת להיות stateless, צריך load balancing, ושכבת הדאטה הופכת לחלק הקשה.</p>
-<blockquote>💡 מהשטח: אל תזלזלו ב-scale up. Stack Overflow הגישו מיליארדי צפיות בחודש מקומץ שרתי SQL Server ו-web גדולים. Postgres מודרני אחד על instance גדול עם NVMe מחזיק עשרות אלפי שאילתות פשוטות לשנייה — תעשו profiling לפני sharding.</blockquote>
+<blockquote>💡 מהשטח: אל תזלזל ב-scale up. Stack Overflow הגישו מיליארדי צפיות בחודש מקומץ שרתי SQL Server ו-web גדולים. Postgres מודרני אחד על instance גדול עם NVMe מחזיק עשרות אלפי שאילתות פשוטות לשנייה — עשה profiling לפני sharding.</blockquote>
 <p>המסלול הטיפוסי: scale up ל-DB, scale out לשכבת האפליקציה ה-stateless, מוסיפים caching ו-read replicas, ורק אז מחלקים את הדאטה.</p>`
       }
     },
@@ -1622,7 +1622,7 @@ spec:
   metrics:
   - type: Resource
     resource: { name: cpu, target: { type: Utilization, averageUtilization: 60 } }</pre>
-<p>זכרו את <strong>זמן התגובה</strong>: scrape של מטריקה (15–30 שניות) + לולאת HPA (15 שניות) + scheduling ל-pod + image pull + עליית האפליקציה + readiness — בדרך כלל 1–3 דקות, יותר אם צריך node חדש. תעבורה שמכפילה את עצמה ב-30 שניות תכאב לפני שה-autoscaling יעזור. אז: משאירים מרווח (target של 60%, לא 90%), <code>minReplicas</code> הגיוני, pre-scale לאירועים ידועים (קמפיינים, Black Friday), ועלייה מהירה של האפליקציה.</p>
+<p>זכור את <strong>זמן התגובה</strong>: scrape של מטריקה (15–30 שניות) + לולאת HPA (15 שניות) + scheduling ל-pod + image pull + עליית האפליקציה + readiness — בדרך כלל 1–3 דקות, יותר אם צריך node חדש. תעבורה שמכפילה את עצמה ב-30 שניות תכאב לפני שה-autoscaling יעזור. אז: משאירים מרווח (target של 60%, לא 90%), <code>minReplicas</code> הגיוני, pre-scale לאירועים ידועים (קמפיינים, Black Friday), ועלייה מהירה של האפליקציה.</p>
 <blockquote>⚠️ טיפ לפרודקשן: תמיד מגדירים <code>maxReplicas</code> עם ה-database בראש. autoscaling של האפליקציה מ-10 ל-100 pods בזמן spike יכול לגמור את ה-connections של ה-DB ולהפוך האטה ל-outage.</blockquote>`
       }
     }
@@ -1658,11 +1658,11 @@ spec:
   ],
   interview: [
     {
-      q: { en: "Your stateless API is at 30% CPU on 20 pods, but p99 latency doubles at peak. Adding pods doesn't help. What's going on?", he: "ה-API ה-stateless שלכם על 30% CPU ב-20 pods, אבל ה-p99 latency מוכפל בשיא. הוספת pods לא עוזרת. מה קורה?" },
+      q: { en: "Your stateless API is at 30% CPU on 20 pods, but p99 latency doubles at peak. Adding pods doesn't help. What's going on?", he: "ה-API ה-stateless שלך על 30% CPU ב-20 pods, אבל ה-p99 latency מוכפל בשיא. הוספת pods לא עוזרת. מה קורה?" },
       a: { en: "A shared bottleneck downstream — Amdahl's serial fraction. Likely suspects: DB connection pool exhaustion, lock contention on hot rows, a slow downstream dependency, or a single partition/queue. Check pool wait time, DB CPU and locks, trace waterfalls. Fix the bottleneck (pooler, query/index fixes, caching, read replicas, removing the hot row) rather than adding more pods.", he: "צוואר בקבוק משותף ב-downstream — החלק הסדרתי של Amdahl. חשודים סבירים: connection pool של ה-DB שנגמר, lock contention על שורות חמות, dependency איטי, או partition/queue בודד. בודקים זמן המתנה ל-pool, CPU ו-locks ב-DB, trace waterfalls. מתקנים את צוואר הבקבוק (pooler, תיקוני שאילתות/indexes, caching, read replicas, הורדת השורה החמה) במקום להוסיף pods." }
     },
     {
-      q: { en: "Explain the three axes of the scale cube with an example.", he: "תסבירו את שלושת הצירים של ה-scale cube עם דוגמה." },
+      q: { en: "Explain the three axes of the scale cube with an example.", he: "הסבר את שלושת הצירים של ה-scale cube עם דוגמה." },
       a: { en: "X: run 10 identical copies of the e-commerce app behind an LB. Y: split it into catalog, cart and payment services that scale independently. Z: shard customers so EU customers live on cell A and US customers on cell B, each running the full stack on a subset of data. Real systems combine all three.", he: "X: מריצים 10 עותקים זהים של אפליקציית ה-e-commerce מאחורי LB. Y: מפצלים אותה ל-catalog, cart ו-payment שגדלים כל אחד בנפרד. Z: עושים sharding ללקוחות כך שלקוחות EU יושבים על cell A ולקוחות US על cell B, כל אחד מריץ את כל ה-stack על תת-קבוצה של הדאטה. מערכות אמיתיות משלבות את שלושתם." }
     }
   ],
@@ -1748,7 +1748,7 @@ INFRA.lessons.push({
   "data": { "orderId": "o-81", "customerId": "c-9", "totalCents": 12900,
             "items": [{ "sku": "MUG-1", "qty": 2 }] }
 }</pre>
-<blockquote>💡 מהשטח: תתייחסו ל-schemas של events כמו ל-APIs ציבוריים: schema registry (Confluent, Apicurio, Glue) עם Avro/Protobuf/JSON Schema, רק שינויים תואמים לאחור (מוסיפים שדות אופציונליים), ושינויים שוברים — כ-event type חדש. ה-spec של CloudEvents מתקנן את המעטפה.</blockquote>`
+<blockquote>💡 מהשטח: התייחס ל-schemas של events כמו ל-APIs ציבוריים: schema registry (Confluent, Apicurio, Glue) עם Avro/Protobuf/JSON Schema, רק שינויים תואמים לאחור (מוסיפים שדות אופציונליים), ושינויים שוברים — כ-event type חדש. ה-spec של CloudEvents מתקנן את המעטפה.</blockquote>`
       }
     },
     {
@@ -1821,7 +1821,7 @@ COMMIT;   -- both or neither
 -- relay: poll "SELECT ... FROM outbox WHERE sent_at IS NULL ORDER BY id LIMIT 100"
 --        or tail the WAL with Debezium CDC (outbox event router) -&gt; Kafka</pre>
 <p>ה-relay יכול לפרסם שורה פעמיים (קריסה אחרי פרסום, לפני הסימון), אז המסירה היא at-least-once — ה-consumers חייבים להיות אידמפוטנטיים, לפי <code>eventId</code>. התבנית המקבילה בצד ה-consumer היא <strong>inbox</strong>: רושמים IDs של events שעובדו באותה טרנזקציה של ה-side effect.</p>
-<blockquote>⚠️ טיפ לפרודקשן: Debezium + תבנית ה-outbox הם הסטנדרט דה-פקטו על Postgres/MySQL + Kafka. תנקו שורות outbox שפורסמו (או תעשו partitioning לטבלה לפי יום), אחרת היא תהפוך לטבלה הכי גדולה שלכם.</blockquote>`
+<blockquote>⚠️ טיפ לפרודקשן: Debezium + תבנית ה-outbox הם הסטנדרט דה-פקטו על Postgres/MySQL + Kafka. נקה שורות outbox שפורסמו (או עשה partitioning לטבלה לפי יום), אחרת היא תהפוך לטבלה הכי גדולה שלך.</blockquote>`
       }
     },
     {
@@ -1842,7 +1842,7 @@ COMMIT;   -- both or neither
 <li><strong>Observability</strong>: מעבירים <code>correlationId</code>/trace context ב-headers של ההודעה כך ש-trace אחד מכסה את כל ה-saga; מתריעים על lag של projections ועל sagas תקועות (למשל הזמנות ב-PENDING יותר מ-10 דקות).</li>
 <li><strong>Reconciliation</strong>: job תקופתי שמשווה בין מקורות אמת ומתקן סטיות — רשת הביטחון שיש לכל מערכת event-driven בוגרת.</li>
 </ul>
-<blockquote>💡 מהשטח: הבנק שלכם הוא eventually consistent: אישורי כרטיס מופיעים מיד כ-"ממתין", נסלקים יום-יומיים אחר כך, ו-reconciliation לילי תופס אי-התאמות. מערכות event-driven העתיקו את ה-playbook מעולם הפיננסים, לא להפך.</blockquote>`
+<blockquote>💡 מהשטח: הבנק שלך הוא eventually consistent: אישורי כרטיס מופיעים מיד כ-"ממתין", נסלקים יום-יומיים אחר כך, ו-reconciliation לילי תופס אי-התאמות. מערכות event-driven העתיקו את ה-playbook מעולם הפיננסים, לא להפך.</blockquote>`
       }
     }
   ],

@@ -1243,7 +1243,7 @@ ENDPOINT          STATUS      OUTLIER CHECK   CLUSTER
     steps: {
       s1: {
         text: t("Tuesday 14:05. No cost spike, no outage. GuardDuty raises a finding on the analytics account, and almost at the same time a security researcher emails that your public Docker Hub image acme/report-worker contains AWS credentials.",
-                "יום שלישי 14:05. אין קפיצה בעלויות, אין תקלה. GuardDuty מעלה finding על ה-account של analytics, וכמעט באותו זמן חוקר אבטחה שולח מייל שה-image הציבורי שלכם ב-Docker Hub, acme/report-worker, מכיל AWS credentials."),
+                "יום שלישי 14:05. אין קפיצה בעלויות, אין תקלה. GuardDuty מעלה finding על ה-account של analytics, וכמעט באותו זמן חוקר אבטחה שולח מייל שה-image הציבורי שלך ב-Docker Hub, acme/report-worker, מכיל AWS credentials."),
         data: `GuardDuty finding  severity: HIGH
   type: Exfiltration:S3/AnomalousBehavior
   principal: IAMUser/report-worker   accessKeyId: AKIAEXAMPLEREPORT01
@@ -1327,7 +1327,7 @@ ENDPOINT          STATUS      OUTLIER CHECK   CLUSTER
         choices: [
           c("Escalate to security leadership, legal and the DPO now: this is a personal-data breach with a GDPR 72-hour notification clock", "להסלים עכשיו להנהלת האבטחה, ל-legal ול-DPO: זו פריצה של מידע אישי עם שעון של 72 שעות להודעה לפי GDPR", "s5", 15,
             "Correct. Engineers scope the facts; legal decides notification. The 72-hour clock started when you became aware.",
-            "נכון. המהנדסים ממפים את העובדות; legal מחליט על ההודעה. שעון ה-72 שעות התחיל ברגע שנודע לכם."),
+            "נכון. המהנדסים ממפים את העובדות; legal מחליט על ההודעה. שעון ה-72 שעות התחיל ברגע שנודע לך."),
           c("The files were only read, not deleted — no need to tell anyone outside engineering", "הקבצים רק נקראו, לא נמחקו — אין צורך לספר לאף אחד מחוץ להנדסה", "lose", -25,
             "Unauthorized access to personal data is a breach regardless of deletion. Hiding it turns an incident into a legal and trust catastrophe.",
             "גישה לא מורשית למידע אישי היא פריצה בלי קשר למחיקה. הסתרה הופכת incident לאסון משפטי ואסון אמון.")

@@ -36,7 +36,7 @@ CQ.unitHe({
         { type: 'mcq', q: 'יש לך dynamic array עם מיליון פריטים. איזו פעולה היא O(n)?',
           choices: ['קריאה של arr[500000]', 'הוספה לסוף (amortized)', 'הכנסת פריט חדש באינדקס 0', 'דריסה של arr[0]'], answer: 2,
           explain: 'הכנסה בהתחלה אומרת להזיז את כל מיליון הפריטים משבצת אחת ימינה. קריאה, דריסה, ו-append לסוף (amortized) — כולם O(1).' },
-        { type: 'order', q: 'סדרו מה-latency הטיפוסי הכי מהיר להכי איטי',
+        { type: 'order', q: 'סדר מה-latency הטיפוסי הכי מהיר להכי איטי',
           items: ['L1 cache של ה-CPU', 'זיכרון ראשי (RAM)', 'קריאה מ-NVMe SSD', 'Round trip ברשת ל-region אחר'],
           explain: 'בערך: L1 ~1 ns, RAM ~100 ns, NVMe SSD ~10–100 µs, רשת בין regions ~50–150 ms. כל שלב איטי בכמה סדרי גודל — ה-"latency numbers every programmer should know" המפורסמים.' },
         { type: 'tf', q: 'גישה ל-arr[i] במערך נהיית איטית יותר ככל שהמערך גדל, כי המחשב צריך ללכת עד מקום i.', answer: false,
@@ -78,7 +78,7 @@ A.next = X      // O(1), done</code></pre>
         { type: 'mcq', q: 'צריך LRU cache: חיפוש לפי key ב-O(1) וגם "הזז את הרשומה הזו ל-most-recently-used" ב-O(1). מה התכנון הקלאסי?',
           choices: ['מערך ממוין', 'Hash map שמצביע לתוך doubly linked list', 'Singly linked list אחת ויחידה', 'רק binary search tree'], answer: 1,
           explain: 'ה-hash map מוצא את ה-node ב-O(1); ה-doubly linked list מאפשרת לנתק אותו ולהזיז לקדימה ב-O(1), ולפנות מהזנב ב-O(1). זה ה-LRU של ספרי הלימוד (והאהוב על מראיינים).' },
-        { type: 'order', q: 'סדרו את השלבים להכנסת node חדש X מיד אחרי node A ב-singly linked list',
+        { type: 'order', q: 'סדר את השלבים להכנסת node חדש X מיד אחרי node A ב-singly linked list',
           items: ['ליצור node X עם הערך שלו', 'לקבוע X.next = A.next', 'לקבוע A.next = X'],
           explain: 'הסדר קובע! אם תקבע קודם A.next = X, איבדת את ה-pointer היחיד לשאר הרשימה — הבאג הקלאסי של "הרגע הדלפתי חצי רשימה".' },
         { type: 'mcq', q: 'איזה עומס עבודה הכי פחות מתאים ל-linked list?',
@@ -117,8 +117,8 @@ A.next = X      // O(1), done</code></pre>
 <p>סורקים גרף (רשת, עץ תלויות, הלינקים של אתר)?</p>
 <ul><li>משתמשים ב-<b>queue</b> → <b>Breadth-First Search</b>: מבקרים בכל השכנים במרחק 1, אחר כך מרחק 2… מוצא מסלולים קצרים ביותר בגרפים לא ממושקלים.</li>
 <li>משתמשים ב-<b>stack</b> → <b>Depth-First Search</b>: צוללים במסלול אחד עד הסוף, ואז חוזרים אחורה (backtrack).</li></ul>
-<p>אותה לולאה, container אחר. נסו בעצמכם:</p>` },
-        { type: 'widget', widget: 'graph', title: 'BFS מול DFS', html: '<p>עברו צעד-צעד ב-BFS (queue) וב-DFS (stack). שימו לב איך ה-container קובע את סדר הביקור.</p>' },
+<p>אותה לולאה, container אחר. נסה בעצמך:</p>` },
+        { type: 'widget', widget: 'graph', title: 'BFS מול DFS', html: '<p>עבור צעד-צעד ב-BFS (queue) וב-DFS (stack). שים לב איך ה-container קובע את סדר הביקור.</p>' },
         { type: 'mcq', q: 'רוצים למצוא את מספר ה-hops המינימלי ברשת בין שני hosts (כל הלינקים שווים). איזה סריקה?',
           choices: ['DFS עם stack', 'BFS עם queue', 'שניהם נותנים את המסלול הקצר ביותר', 'אף אחד מהם לא יכול'], answer: 1,
           explain: 'BFS סורק בטבעות של מרחק הולך וגדל, אז הפעם הראשונה שהוא מגיע ליעד היא דרך מסלול קצר ביותר (במספר hops). DFS עלול לשוטט קודם במסלול ארוך.' },
@@ -142,7 +142,7 @@ A.next = X      // O(1), done</code></pre>
 <li>שומרים/מוצאים את הערך ב-bucket הזה — שיושב בתוך מערך, אז הקפיצה אליו היא O(1).</li></ol>
 <div class="formula">bucket = hash(key) mod m</div>
 <div class="dev">אתה כבר מכיר את זה: Redis הוא בעצם hash table ענקי מעל הרשת. כך גם ה-cache של ה-service discovery שלך, בלוק <code>map</code> ב-nginx, וכל JSON object שאי-פעם עשית לו parse.</div>` },
-        { type: 'widget', widget: 'hash', title: 'תעשו hash לכמה keys', html: '<p>הקלידו keys כמו <code>alice</code>, <code>bob</code>, <code>pod-7</code>… וראו לאיזה bucket הם נוחתים. תמשיכו עד ששני keys מתנגשים!</p>' },
+        { type: 'widget', widget: 'hash', title: 'תעשה hash לכמה keys', html: '<p>הקלד keys כמו <code>alice</code>, <code>bob</code>, <code>pod-7</code>… וראה לאיזה bucket הם נוחתים. תמשיך עד ששני keys מתנגשים!</p>' },
         { type: 'learn', title: 'התנגשויות הן בלתי נמנעות', html: `
 <p>אינסוף keys אפשריים, מספר סופי של buckets — שני keys <i>ינחתו</i> באותו bucket. זו <b>collision</b> (התנגשות). שני פתרונות קלאסיים:</p>
 <ul><li><b>Chaining</b>: כל bucket מחזיק רשימה קטנה של רשומות (מה שה-widget עושה). ה-HashMap של Java עובד ככה (והופך שרשראות ארוכות לעצים).</li>
@@ -203,7 +203,7 @@ A.next = X      // O(1), done</code></pre>
           explain: 'תת-העץ השמאלי של 50 נותן 20, 30, 40; אחר כך 50; ואז תת-העץ הימני נותן 70, 80. ממוין, כמו שהבטחנו.' },
         { type: 'learn', title: 'מאוזן מול מנוון', html: `
 <p>עלות חיפוש = גובה העץ. לעץ <b>מאוזן</b> יפה עם n nodes יש גובה ≈ log₂ n. מיליון keys? בערך 20 רמות. 🚀</p>
-<p>אבל תכניסו keys <b>שכבר ממוינים</b> (1, 2, 3, 4…) ל-BST נאיבי: כל אחד הולך מימין לקודם. מקבלים "עץ" שהוא בעצם linked list — גובה n, חיפוש O(n). 🐌</p>
+<p>אבל תכניס keys <b>שכבר ממוינים</b> (1, 2, 3, 4…) ל-BST נאיבי: כל אחד הולך מימין לקודם. מקבלים "עץ" שהוא בעצם linked list — גובה n, חיפוש O(n). 🐌</p>
 <p>עצים <b>מאזנים את עצמם</b> (self-balancing: AVL, red-black) עושים רוטציות קטנות בהכנסה/מחיקה כדי להבטיח גובה O(log n).</p>
 <div class="dev">ה-CFS scheduler של Linux החזיק את התהליכים המוכנים לריצה ב-red-black tree, ממוין לפי virtual runtime; ה-node הכי שמאלי הוא המשימה הבאה שתרוץ. IDs מסוג auto-increment הם בדיוק סוג ה-input הממוין שהיה הורס BST נאיבי.</div>` },
         { type: 'tf', q: 'הכנסת ה-keys 1, 2, 3, …, n לפי הסדר ל-BST רגיל (שלא מאזן את עצמו) יוצרת עץ בגובה של בערך log₂ n.', answer: false,
@@ -250,7 +250,7 @@ right(i)  = 2*i + 2</code></pre>
           explain: 'השורש של ה-min-heap הוא הקטן ביותר ב-top-k הנוכחי — ה"סלקטור" בכניסה. כל מי שגדול ממנו מעיף אותו. max-heap בגודל k היה מציב את הפריט הלא נכון בדלת.' },
         { type: 'tf', q: 'אפשר לבנות heap מ-n פריטים לא ממוינים ב-O(n), מהר יותר מ-n הכנסות נפרדות.', answer: true,
           explain: '"heapify" מלמטה למעלה עושה sift down מההורה האחרון ועד השורש. רוב ה-nodes נמצאים קרוב לתחתית וכמעט לא זזים, אז סך העבודה מסתכם ב-O(n), לא O(n log n).' },
-        { type: 'order', q: 'סדרו לפי סיבוכיות זמן על binary heap עם n פריטים, מהזול ליקר',
+        { type: 'order', q: 'סדר לפי סיבוכיות זמן על binary heap עם n פריטים, מהזול ליקר',
           items: ['Peek למינימום', 'הכנסת פריט אחד', 'בניית heap מ-n פריטים', 'מיון כל הפריטים ע״י pop חוזר'],
           explain: 'Peek O(1) < insert O(log n) < build O(n) < לשלוף-הכול O(n log n). (האחרון הזה הוא heap sort — מגיע ביחידה הבאה!)' }
       ]
@@ -290,10 +290,10 @@ right(i)  = 2*i + 2</code></pre>
           explain: 'כל הביטים של X יכלו להידלק על ידי keys אחרים — false positive. רק "לא" הוא חד-משמעי. אז "אולי" אומר: לך תעשה את החיפוש האמיתי (והיקר).' },
         { type: 'tf', q: 'Bloom filter סטנדרטי יכול לתת false negatives (להגיד "לא קיים" על key שהוסף).', answer: false,
           explain: 'הוספת key מדליקה את כל הביטים שלו ל-1, ו-Bloom filter סטנדרטי אף פעם לא מכבה ביטים. אז key שהוסף תמיד ימצא את הביטים שלו דולקים. false positives כן, false negatives אף פעם. (וזו גם הסיבה שאי אפשר למחוק מ-Bloom filter רגיל.)' },
-        { type: 'order', q: 'סדרו את החיפושים לפי כמה קריאות disk page הם צריכים בטבלה של מיליארד שורות, מהמעט ביותר',
+        { type: 'order', q: 'סדר את החיפושים לפי כמה קריאות disk page הם צריכים בטבלה של מיליארד שורות, מהמעט ביותר',
           items: ['חיפוש באינדקס B-tree (fanout של ~מאות)', 'עץ בינארי מאוזן על דיסק (key אחד לכל node)', 'Full table scan'],
           explain: 'B-tree: ~4 רמות (ולרוב פחות קריאות אמיתיות בזכות caching). עץ בינארי: ~30 רמות. Full scan: כל page בטבלה — אולי מיליונים. זה ה-EXPLAIN plan שלך על רגל אחת.' },
-        { type: 'mcq', q: 'התאימו משימה למבנה: "autocomplete לכל ה-hostnames שמתחילים ב-web-prod-".',
+        { type: 'mcq', q: 'התאם משימה למבנה: "autocomplete לכל ה-hostnames שמתחילים ב-web-prod-".',
           choices: ['Bloom filter', 'Trie', 'Min-heap', 'Hash table'], answer: 1,
           explain: 'יורדים ב-trie לאורך "web-prod-", ואז מונים את כל מה שבתת-העץ הזה. hash table מפזר keys ולא יכול למצוא prefixes בלי לסרוק הכול.' }
       ]

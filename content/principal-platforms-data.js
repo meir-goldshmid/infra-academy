@@ -61,7 +61,7 @@ INFRA.lessons.push({
 </table>
 <p>Translate to money: 10k req/s at peak needs ~1 Go pod but ~2–4 Python pods (with 4 workers each). At 100 services that difference is real cloud spend — but usually still smaller than one engineer's salary.</p>
 <blockquote>⚠️ Production tip: In serverless (Lambda, Cloud Run scale-to-zero) cold start dominates: a 4 s Spring Boot start on every scale-up is user-visible. Use Go/Node/Rust, GraalVM native image, .NET AOT, or SnapStart/min instances.</blockquote>`,
-        he: `<p>הערכת סדר גודל ל-API פשוט של "JSON + קריאת DB אחת" על 2 vCPU. מספרים אמיתיים משתנים פי 2 לכל כיוון לפי framework ו-tuning — השתמשו בהם לסדרי גודל, לא לשיווק.</p>
+        he: `<p>הערכת סדר גודל ל-API פשוט של "JSON + קריאת DB אחת" על 2 vCPU. מספרים אמיתיים משתנים פי 2 לכל כיוון לפי framework ו-tuning — השתמש בהם לסדרי גודל, לא לשיווק.</p>
 <table>
 <tr><th>פלטפורמה</th><th>req/s (JSON)</th><th>RSS במנוחה</th><th>Cold start</th><th>סיכון p99</th></tr>
 <tr><td>Rust (axum)</td><td>150k+</td><td>5–10 MB</td><td>~5 ms</td><td>הכי נמוך</td></tr>
@@ -72,7 +72,7 @@ INFRA.lessons.push({
 <tr><td>Python (FastAPI)</td><td>5–15k ל-worker</td><td>40–80 MB</td><td>0.5–2 s</td><td>GIL, CPU</td></tr>
 </table>
 <p>בתרגום לכסף: 10k req/s בשיא דורשים ~pod אחד של Go אבל ~2–4 pods של Python (עם 4 workers כל אחד). ב-100 שירותים זה הבדל אמיתי בחשבון הענן — אבל בדרך כלל עדיין קטן ממשכורת של מהנדס אחד.</p>
-<blockquote>⚠️ טיפ לפרודקשן: ב-serverless (Lambda, Cloud Run עם scale-to-zero) ה-cold start שולט: startup של 4 שניות של Spring Boot בכל scale-up מורגש אצל המשתמש. השתמשו ב-Go/Node/Rust, GraalVM native image, .NET AOT, או SnapStart/min instances.</blockquote>`
+<blockquote>⚠️ טיפ לפרודקשן: ב-serverless (Lambda, Cloud Run עם scale-to-zero) ה-cold start שולט: startup של 4 שניות של Spring Boot בכל scale-up מורגש אצל המשתמש. השתמש ב-Go/Node/Rust, GraalVM native image, .NET AOT, או SnapStart/min instances.</blockquote>`
       }
     },
     {
@@ -164,7 +164,7 @@ async def ping(): return {"ok": True}
 
 // Rust (axum)
 async fn ping() -&gt; Json&lt;Value&gt; { Json(json!({"ok": true})) }</pre>
-<p>שימו לב: ה-hello-world נראה אותו דבר בכל מקום. ההבדלים מופיעים בחודש השישי — profiling של memory leak, tuning של GC, טיפול ב-5k חיבורים במקביל, image של 30 MB מול 300 MB, קליטה של עובד חדש.</p>`
+<p>שים לב: ה-hello-world נראה אותו דבר בכל מקום. ההבדלים מופיעים בחודש השישי — profiling של memory leak, tuning של GC, טיפול ב-5k חיבורים במקביל, image של 30 MB מול 300 MB, קליטה של עובד חדש.</p>`
       }
     },
     {
@@ -205,9 +205,9 @@ IO-bound  : Node ~ Go ~ Java-VT ~ .NET async   (all fine)
 CPU-bound : Go / Java / .NET / Rust  >>  Node / Python (offload!)`,
   handsOn: [
     { cmd: "node -e \"const t=Date.now();setTimeout(()=>console.log('timer late by',Date.now()-t-10,'ms'),10);const e=Date.now()+500;while(Date.now()<e){}\"", what: { en: "Prove that 500 ms of CPU on the event loop delays a 10 ms timer by ~500 ms.", he: "הוכחה ש-500 ms של CPU על ה-event loop מעכבים timer של 10 ms בכ-500 ms." } },
-    { cmd: "docker images --format '{{.Repository}} {{.Size}}' | grep -E 'node|golang|eclipse-temurin|python|dotnet'", what: { en: "Compare base image sizes — a static Go binary on distroless is ~10–20 MB; a JDK image is 300+ MB.", he: "השוו גדלי base images — binary סטטי של Go על distroless הוא ~10–20 MB; image של JDK הוא 300+ MB." } },
-    { cmd: "hey -z 20s -c 100 http://localhost:8080/ping", what: { en: "Load-test the same /ping in two platforms; compare req/s and p99, then check RSS with `docker stats`.", he: "בדיקת עומס לאותו /ping בשתי פלטפורמות; השוו req/s ו-p99, ואז בדקו RSS עם `docker stats`." } },
-    { cmd: "python -c \"import sys; print(sys.version); print(getattr(sys,'_is_gil_enabled',lambda:True)())\"", what: { en: "Check your Python version and whether the GIL is enabled (3.13+ free-threaded builds print False).", he: "בדקו את גרסת ה-Python והאם ה-GIL פעיל (ב-builds free-threaded של 3.13+ יודפס False)." } }
+    { cmd: "docker images --format '{{.Repository}} {{.Size}}' | grep -E 'node|golang|eclipse-temurin|python|dotnet'", what: { en: "Compare base image sizes — a static Go binary on distroless is ~10–20 MB; a JDK image is 300+ MB.", he: "השווה גדלי base images — binary סטטי של Go על distroless הוא ~10–20 MB; image של JDK הוא 300+ MB." } },
+    { cmd: "hey -z 20s -c 100 http://localhost:8080/ping", what: { en: "Load-test the same /ping in two platforms; compare req/s and p99, then check RSS with `docker stats`.", he: "בדיקת עומס לאותו /ping בשתי פלטפורמות; השווה req/s ו-p99, ואז בדוק RSS עם `docker stats`." } },
+    { cmd: "python -c \"import sys; print(sys.version); print(getattr(sys,'_is_gil_enabled',lambda:True)())\"", what: { en: "Check your Python version and whether the GIL is enabled (3.13+ free-threaded builds print False).", he: "בדוק את גרסת ה-Python והאם ה-GIL פעיל (ב-builds free-threaded של 3.13+ יודפס False)." } }
   ],
   mnemonic: {
     en: "\"Waiter, Hotel, Truck, Twin, Cook, Chef\" — Node waits, Java warms, Go starts, .NET mirrors, Python knows everything, Rust wastes nothing. And: the team beats the benchmark.",
@@ -220,9 +220,9 @@ CPU-bound : Go / Java / .NET / Rust  >>  Node / Python (offload!)`,
     { en: "Not matching JVM/V8 heap flags to the container memory limit → OOMKilled or wasted memory.", he: "לא להתאים את דגלי ה-heap של JVM/V8 ל-memory limit של הקונטיינר → OOMKilled או זיכרון מבוזבז." }
   ],
   interview: [
-    { q: { en: "When would you NOT choose Node.js for a new service?", he: "מתי לא הייתם בוחרים Node.js לשירות חדש?" },
+    { q: { en: "When would you NOT choose Node.js for a new service?", he: "מתי לא היית בוחר Node.js לשירות חדש?" },
       a: { en: "When the hot path is CPU-bound (image/video processing, heavy computation, compression, ML inference) — a single event loop serializes it and kills tail latency for everyone. Also when the org's paved road and on-call expertise are on another stack and Node brings no clear gain. If we still use Node, I'd isolate CPU work into worker_threads or a separate Go/Rust/Python worker behind a queue.", he: "כשה-hot path הוא CPU-bound (עיבוד תמונה/וידאו, חישוב כבד, דחיסה, ML inference) — event loop יחיד עושה לזה serialization והורג את ה-tail latency לכולם. וגם כשה-paved road של הארגון והמומחיות של ה-on-call הם על stack אחר ו-Node לא מביא רווח ברור. אם בכל זאת Node, הייתי מבודד את עבודת ה-CPU ל-worker_threads או ל-worker נפרד ב-Go/Rust/Python מאחורי תור." } },
-    { q: { en: "Your Java service takes 6 s to start and you're moving to scale-to-zero serverless. Options?", he: "שירות ה-Java שלכם עולה ב-6 שניות ואתם עוברים ל-serverless עם scale-to-zero. אפשרויות?" },
+    { q: { en: "Your Java service takes 6 s to start and you're moving to scale-to-zero serverless. Options?", he: "שירות ה-Java שלך עולה ב-6 שניות ואתה עובר ל-serverless עם scale-to-zero. אפשרויות?" },
       a: { en: "GraalVM native image (≈50 ms start, lower RSS, but reflection config and longer builds), AWS Lambda SnapStart / CRaC checkpoint-restore, trimming the framework (Quarkus/Micronaut), keeping min instances warm (cost), or keeping it on long-running containers if traffic is steady — scale-to-zero isn't free if p99 matters.", he: "GraalVM native image (≈50 ms startup, פחות RSS, אבל קונפיגורציית reflection ו-builds ארוכים), AWS Lambda SnapStart / CRaC checkpoint-restore, להרזות את ה-framework (Quarkus/Micronaut), להשאיר min instances חמים (עלות), או להישאר על קונטיינרים רציפים אם התעבורה יציבה — scale-to-zero לא בחינם אם ה-p99 חשוב." } }
   ],
   quiz: [
@@ -363,7 +363,7 @@ daily = (orders
 daily.write.mode("overwrite") \\
   .partitionBy("day").parquet("s3://lake/daily_rev/")  # action</pre>
 <p>מושגי מפתח: <strong>partitions</strong> (יחידת המקביליות — מכוונים ל-100–200 MB כל אחד), טרנספורמציות <strong>narrow מול wide</strong> (filter הוא narrow; groupBy/join גורמים ל-<strong>shuffle</strong> על הרשת — החלק היקר), <strong>broadcast join</strong> לטבלה קטנה, <strong>data skew</strong> (key אחד עם 40% מהשורות = task אחד שרץ שעות; מתקנים עם salting או AQE skew join).</p>
-<blockquote>⚠️ טיפ לפרודקשן: ב-Spark UI, הסתכלו על ה-stage עם ה-task הארוך ביותר מול החציון. Max ≫ median = skew. המון tasks זעירים = יותר מדי partitions/קבצים קטנים; קוראים ל-<code>coalesce</code>/<code>repartition</code>.</blockquote>`
+<blockquote>⚠️ טיפ לפרודקשן: ב-Spark UI, הסתכל על ה-stage עם ה-task הארוך ביותר מול החציון. Max ≫ median = skew. המון tasks זעירים = יותר מדי partitions/קבצים קטנים; קוראים ל-<code>coalesce</code>/<code>repartition</code>.</blockquote>`
       }
     },
     {
@@ -454,10 +454,10 @@ GROUP BY window_start, window_end, country;</pre>
 MapReduce:  [split]->map->disk->shuffle/sort->reduce->disk (per step)
 Spark:      DAG of stages, intermediate data in memory, shuffle only on wide ops`,
   handsOn: [
-    { cmd: "pip install duckdb && python -c \"import duckdb;print(duckdb.sql('select count(*), sum(i) from range(100000000) t(i)'))\"", what: { en: "Feel how far one machine goes: DuckDB aggregates 100M rows in about a second.", he: "תרגישו כמה רחוק מכונה אחת מגיעה: DuckDB מסכם 100M שורות בערך בשנייה." } },
-    { cmd: "docker run -it --rm -p 4040:4040 apache/spark-py /opt/spark/bin/pyspark", what: { en: "Start a local PySpark shell, run a groupBy, and open the Spark UI at localhost:4040 to see stages and shuffles.", he: "הריצו PySpark מקומי, תריצו groupBy, ופתחו את Spark UI ב-localhost:4040 כדי לראות stages ו-shuffles." } },
+    { cmd: "pip install duckdb && python -c \"import duckdb;print(duckdb.sql('select count(*), sum(i) from range(100000000) t(i)'))\"", what: { en: "Feel how far one machine goes: DuckDB aggregates 100M rows in about a second.", he: "תרגיש כמה רחוק מכונה אחת מגיעה: DuckDB מסכם 100M שורות בערך בשנייה." } },
+    { cmd: "docker run -it --rm -p 4040:4040 apache/spark-py /opt/spark/bin/pyspark", what: { en: "Start a local PySpark shell, run a groupBy, and open the Spark UI at localhost:4040 to see stages and shuffles.", he: "הרץ PySpark מקומי, תריץ groupBy, ופתח את Spark UI ב-localhost:4040 כדי לראות stages ו-shuffles." } },
     { cmd: "hdfs fsck /data/events -files -blocks -locations | head -40", what: { en: "On a Hadoop cluster: see how a file is split into blocks and where the 3 replicas live.", he: "בקלאסטר Hadoop: לראות איך קובץ מפוצל לבלוקים ואיפה נמצאים 3 העותקים." } },
-    { cmd: "python -c \"import pyarrow.parquet as pq;f=pq.ParquetFile('data.parquet');print(f.metadata);print(f.metadata.row_group(0).column(0).statistics)\"", what: { en: "Inspect a Parquet file's row groups and min/max statistics — the reason column stores skip data so well.", he: "בדקו row groups וסטטיסטיקות min/max של קובץ Parquet — הסיבה ש-column stores מדלגים על data כל כך טוב." } }
+    { cmd: "python -c \"import pyarrow.parquet as pq;f=pq.ParquetFile('data.parquet');print(f.metadata);print(f.metadata.row_group(0).column(0).statistics)\"", what: { en: "Inspect a Parquet file's row groups and min/max statistics — the reason column stores skip data so well.", he: "בדוק row groups וסטטיסטיקות min/max של קובץ Parquet — הסיבה ש-column stores מדלגים על data כל כך טוב." } }
   ],
   mnemonic: {
     en: "\"Split, Map, Shuffle, Reduce — then keep it in RAM (Spark), give it time (watermarks), and store it in columns (Parquet).\" Also: small data first — DuckDB before Databricks.",
@@ -472,7 +472,7 @@ Spark:      DAG of stages, intermediate data in memory, shuffle only on wide ops
   interview: [
     { q: { en: "Why did Spark replace MapReduce?", he: "למה Spark החליף את MapReduce?" },
       a: { en: "MapReduce writes every stage to disk and forces jobs into map→reduce pairs, so multi-step and iterative jobs chain many disk-bound jobs. Spark plans a whole DAG, pipelines narrow transformations, keeps intermediates in memory, only shuffles on wide operations, and offers SQL/DataFrame APIs with a cost-based optimizer — 10–100× faster for iterative work and far easier to write.", he: "MapReduce כותב כל שלב לדיסק ומכריח jobs לזוגות של map→reduce, אז jobs רב-שלביים ואיטרטיביים משרשרים הרבה jobs שכבולים לדיסק. Spark מתכנן DAG שלם, עושה pipelining לטרנספורמציות narrow, מחזיק נתוני ביניים בזיכרון, עושה shuffle רק בפעולות wide, ומציע API של SQL/DataFrame עם optimizer מבוסס עלות — פי 10–100 מהר יותר לעבודה איטרטיבית והרבה יותר קל לכתוב." } },
-    { q: { en: "Design a pipeline for real-time fraud scores plus accurate daily finance reports from the same events.", he: "תכננו pipeline ל-fraud scores בזמן אמת וגם לדוחות כספיים יומיים מדויקים מאותם events." },
+    { q: { en: "Design a pipeline for real-time fraud scores plus accurate daily finance reports from the same events.", he: "תכנן pipeline ל-fraud scores בזמן אמת וגם לדוחות כספיים יומיים מדויקים מאותם events." },
       a: { en: "Events via CDC/outbox into Kafka (keyed by account). Flink consumes with event-time windows and keyed state for features and scoring, writing alerts within seconds. The same topic is sunk to S3 as Iceberg tables (bronze); nightly dbt/Spark builds silver/gold finance tables with late data included, reconciled against the ledger DB. One source of truth (the log), two consumers with different latency/accuracy — Kappa-style, with replay for bug fixes.", he: "Events דרך CDC/outbox ל-Kafka (עם key לפי חשבון). Flink צורך עם חלונות event-time ו-keyed state בשביל features ו-scoring, וכותב התראות תוך שניות. אותו topic נשפך ל-S3 כטבלאות Iceberg (bronze); כל לילה dbt/Spark בונים טבלאות silver/gold לכספים כולל data מאוחר, ומבצעים reconciliation מול ה-ledger DB. מקור אמת אחד (ה-log), שני consumers עם latency/דיוק שונים — בסגנון Kappa, עם replay לתיקוני באגים." } }
   ],
   quiz: [
@@ -610,8 +610,8 @@ pgbackrest --stanza=main info
 pgbackrest --stanza=main --delta \\
   --type=time "--target=2026-11-13 14:31:59+02" \\
   --target-action=promote restore</pre>
-<p>WAL-G ו-Barman עושים אותו דבר; DBs מנוהלים (RDS, Cloud SQL, Azure Flexible Server) נותנים PITR עם חלון retention (1–35 ימים) — אבל משחזרים ל-instance <em>חדש</em>, אז תתרגלו גם את המעבר של DNS/connection string.</p>
-<blockquote>⚠️ טיפ לפרודקשן: תנטרו את <code>pg_stat_archiver.failed_count</code> ואת הגיל של ה-WAL האחרון שנשמר בארכיון. archive_command שנכשל בשקט אומר שה-RPO שלכם גדל בשקט ל-"גיבוי ה-full האחרון" — ו-pg_wal ממלא את הדיסק.</blockquote>`
+<p>WAL-G ו-Barman עושים אותו דבר; DBs מנוהלים (RDS, Cloud SQL, Azure Flexible Server) נותנים PITR עם חלון retention (1–35 ימים) — אבל משחזרים ל-instance <em>חדש</em>, אז תתרגל גם את המעבר של DNS/connection string.</p>
+<blockquote>⚠️ טיפ לפרודקשן: תנטר את <code>pg_stat_archiver.failed_count</code> ואת הגיל של ה-WAL האחרון שנשמר בארכיון. archive_command שנכשל בשקט אומר שה-RPO שלך גדל בשקט ל-"גיבוי ה-full האחרון" — ו-pg_wal ממלא את הדיסק.</blockquote>`
       }
     },
     {
@@ -636,7 +636,7 @@ velero restore create \\
 <li><strong>Object Lock / WORM</strong>: S3 Object Lock במצב <em>compliance</em> (אף אחד, אפילו לא root, לא יכול למחוק לפני התאריך), immutable blob policies ב-Azure, bucket lock ב-GCS. זו התשובה ל-ransomware.</li>
 <li><strong>Account נפרד + credentials נפרדים</strong>: גיבויים מועתקים ל-account ייעודי של "כספת" (AWS Backup vault lock, cross-account copy). ה-admins של פרודקשן לא יכולים למחוק אותם.</li>
 <li><strong>הצפנה + גיבוי מפתחות</strong>: גיבויים מוצפנים עם מפתחות KMS — והמפתחות עצמם חייבים לשרוד (multi-region keys, escrow מתועד). לאבד את המפתח = לאבד את הגיבוי.</li>
-<li><strong>Retention: GFS</strong> (סבא-אבא-בן): יומי ל-14 יום, שבועי ל-8 שבועות, חודשי ל-12 חודשים, שנתי ל-7 שנים (רק אם רגולציה דורשת). צריך לאזן מול פרטיות: משתמש שנמחק ממשיך לחיות בגיבויים (ראו crypto-shredding בשיעור על פרטיות).</li>
+<li><strong>Retention: GFS</strong> (סבא-אבא-בן): יומי ל-14 יום, שבועי ל-8 שבועות, חודשי ל-12 חודשים, שנתי ל-7 שנים (רק אם רגולציה דורשת). צריך לאזן מול פרטיות: משתמש שנמחק ממשיך לחיות בגיבויים (ראה crypto-shredding בשיעור על פרטיות).</li>
 </ul>
 <pre># Kubernetes: Velero backs up API objects + PV snapshots
 velero schedule create nightly \\
@@ -674,7 +674,7 @@ velero restore create \\
 <tr><td>Terraform state, secrets, DNS, קונפיג CI</td><td>יומי</td><td>שעות</td><td>bucket עם versioning, snapshots של Vault, export של zones</td></tr>
 </table>
 <p>דברים שאנשים שוכחים לגבות: <strong>Terraform state</strong>, <strong>מפתחות Vault/KMS</strong>, רשומות ה-<strong>DNS zone</strong>, <strong>קונפיג IdP/SSO</strong>, pipelines של CI/CD וה-secrets שלהם, data ב-SaaS (Jira, Google Workspace, GitHub org), וה-<strong>runbook לשחזור</strong> — שמור במקום שהוא לא המערכת שנפלה.</p>
-<p><strong>תרגולי שחזור</strong>: אוטומציה של job שבועי שמשחזר את הגיבוי האחרון לסביבה מבודדת, מריץ checksums/ספירת שורות/smoke tests של האפליקציה, רושם כמה זמן זה לקח (ה-RTO <em>האמיתי</em> שלכם) ומתריע על כשל. Game day מלא של DR פעמיים בשנה.</p>
+<p><strong>תרגולי שחזור</strong>: אוטומציה של job שבועי שמשחזר את הגיבוי האחרון לסביבה מבודדת, מריץ checksums/ספירת שורות/smoke tests של האפליקציה, רושם כמה זמן זה לקח (ה-RTO <em>האמיתי</em> שלך) ומתריע על כשל. Game day מלא של DR פעמיים בשנה.</p>
 <p><strong>עלות</strong>: DB של 10 TB, diff יומי ~3%, retention של 30 יום ≈ 4 fulls (40 TB) + 30 diffs (9 TB) ≈ 49 TB גולמי → דחוס ~20 TB → S3 Standard-IA ≈ $250 לחודש; עותקים שנתיים ב-Glacier עולים אגורות. גיבויים זולים; downtime ונתונים שאבדו — לא.</p>`
       }
     }
@@ -705,9 +705,9 @@ velero restore create \\
     { en: "Forgetting non-database state: Terraform state, secrets, DNS, IdP config, SaaS data.", he: "לשכוח state שהוא לא DB: Terraform state, secrets, DNS, קונפיג IdP, data ב-SaaS." }
   ],
   interview: [
-    { q: { en: "Ransomware encrypted production and the attacker had cloud admin. How should your backup design have saved you?", he: "Ransomware הצפין את הפרודקשן והתוקף החזיק cloud admin. איך תכנון הגיבוי היה אמור להציל אתכם?" },
+    { q: { en: "Ransomware encrypted production and the attacker had cloud admin. How should your backup design have saved you?", he: "Ransomware הצפין את הפרודקשן והתוקף החזיק cloud admin. איך תכנון הגיבוי היה אמור להציל אותך?" },
       a: { en: "Backups copied to a separate vault account with separate identities and break-glass access only; S3 Object Lock in compliance mode / vault lock so even root can't delete within retention; encryption keys that also survive (separate KMS, multi-region); retention long enough to predate the intrusion (attackers dwell for weeks); and a practiced restore runbook into a clean environment with rotated credentials. Plus alerts on mass deletion and backup-policy changes.", he: "גיבויים שמועתקים ל-account כספת נפרד עם זהויות נפרדות וגישת break-glass בלבד; S3 Object Lock במצב compliance / vault lock כך שאפילו root לא יכול למחוק בתוך ה-retention; מפתחות הצפנה שגם הם שורדים (KMS נפרד, multi-region); retention ארוך מספיק כדי לכסות את התקופה שלפני החדירה (תוקפים מסתובבים שבועות); ו-runbook שחזור מתורגל לסביבה נקייה עם credentials מסובבים. ובנוסף התראות על מחיקה המונית ועל שינויים ב-backup policy." } },
-    { q: { en: "How do you know your backups work?", he: "איך אתם יודעים שהגיבויים עובדים?" },
+    { q: { en: "How do you know your backups work?", he: "איך אתה יודע שהגיבויים עובדים?" },
       a: { en: "Because we restore them automatically and regularly: a scheduled job restores the latest backup (and a random older one) into an isolated environment, validates checksums, row counts against production, schema version and an app smoke test, measures restore duration against the RTO, and pages on failure. Plus monitoring of backup success, WAL archive lag and backup age, and a semi-annual full DR game day.", he: "כי אנחנו משחזרים אותם באופן אוטומטי וקבוע: job מתוזמן משחזר את הגיבוי האחרון (ועוד אחד ישן אקראי) לסביבה מבודדת, מאמת checksums, ספירת שורות מול פרודקשן, גרסת schema ו-smoke test של האפליקציה, מודד את משך השחזור מול ה-RTO, ומעיר מישהו אם נכשל. ובנוסף ניטור של הצלחת הגיבויים, lag של WAL archive וגיל הגיבוי, ו-game day מלא של DR פעמיים בשנה." } }
   ],
   quiz: [
@@ -720,7 +720,7 @@ velero restore create \\
     { q: { en: "Which kind needs the full backup plus EVERY subsequent piece to restore?", he: "איזה סוג צריך את ה-full ועוד כל חלק שאחריו כדי לשחזר?" },
       options: [ { en: "Differential", he: "Differential" }, { en: "Incremental", he: "Incremental" }, { en: "Logical dump", he: "Dump לוגי" }, { en: "Snapshot", he: "Snapshot" } ],
       answer: 1, explain: { en: "Incremental captures changes since the last backup of any kind, so the chain must be complete; differential only needs full + latest diff.", he: "Incremental שומר שינויים מאז הגיבוי האחרון מכל סוג, אז השרשרת חייבת להיות שלמה; differential צריך רק full + ה-diff האחרון." } },
-    { q: { en: "What is the best evidence of your real RTO?", he: "מה הראיה הטובה ביותר ל-RTO האמיתי שלכם?" },
+    { q: { en: "What is the best evidence of your real RTO?", he: "מה הראיה הטובה ביותר ל-RTO האמיתי שלך?" },
       options: [ { en: "The vendor's SLA", he: "ה-SLA של הספק" }, { en: "The backup job duration", he: "משך ה-job של הגיבוי" }, { en: "Measured duration of regular automated restore drills", he: "משך מדוד של תרגולי שחזור אוטומטיים קבועים" }, { en: "The size of the backup", he: "גודל הגיבוי" } ],
       answer: 2, explain: { en: "Only an actual end-to-end restore, including app validation and the traffic switch, measures RTO.", he: "רק שחזור אמיתי מקצה לקצה, כולל ולידציה של האפליקציה והעברת תעבורה, מודד RTO." } }
   ],
@@ -796,7 +796,7 @@ INFRA.lessons.push({
 <li><strong>ישראל — חוק הגנת הפרטיות, תיקון 13 (בתוקף מאוגוסט 2025)</strong>: הגדרות רחבות יותר וקרובות ל-GDPR, קנסות מנהליים גבוהים בהרבה מהרשות להגנת הפרטיות, חובת ממונה הגנת פרטיות (DPO) לארגונים מסוימים, ובנוסף תקנות אבטחת מידע מ-2017 שכבר קיימות (רמות אבטחה, בקרת גישה, לוגים, דיווח על אירועים).</li>
 <li><strong>Data residency / העברות</strong>: מידע של אירופאים שיוצא מה-EU צריך החלטת adequacy (לישראל יש) או SCCs; סקטורים מסוימים (בריאות, ממשלה, פיננסים) דורשים אחסון בתוך המדינה.</li>
 </ul>
-<blockquote>⚠️ טיפ לפרודקשן: זה לא ייעוץ משפטי והפרטים משתנים — תערבו את ה-DPO/המחלקה המשפטית. התפקיד שלכם כמהנדסים הוא להפוך compliance ל-<em>אפשרי וזול</em>: inventory, APIs למחיקה, audit logs, נעיצה ל-region.</blockquote>`
+<blockquote>⚠️ טיפ לפרודקשן: זה לא ייעוץ משפטי והפרטים משתנים — תערב את ה-DPO/המחלקה המשפטית. התפקיד שלך כמהנדס הוא להפוך compliance ל-<em>אפשרי וזול</em>: inventory, APIs למחיקה, audit logs, נעיצה ל-region.</blockquote>`
       }
     },
     {
@@ -868,7 +868,7 @@ logging.getLogger().addFilter(Redact())</pre>
 <li><strong>בתעבורה</strong>: TLS 1.2+/1.3 בכל מקום, mTLS בין שירותים.</li>
 <li><strong>במנוחה</strong>: הצפנת דיסק/volume (KMS) — מגינה מפני דיסקים גנובים, <em>לא</em> מפני תוקף עם credentials של ה-DB.</li>
 <li><strong>הצפנה ברמת שדה / אפליקציה</strong>: האפליקציה מצפינה עמודות ספציפיות (ת"ז, מידע רפואי), כך ש-DBAs, גיבויים ו-dumps של SQL injection רואים רק ciphertext.</li>
-<li><strong>Tokenization</strong>: מחליפים את הערך ב-token אקראי; הערך האמיתי יושב ב-vault מוקשח (tokens של Stripe לכרטיסים מוציאים אתכם מרוב ה-scope של PCI).</li>
+<li><strong>Tokenization</strong>: מחליפים את הערך ב-token אקראי; הערך האמיתי יושב ב-vault מוקשח (tokens של Stripe לכרטיסים מוציאים אותך מרוב ה-scope של PCI).</li>
 <li><strong>Pseudonymization</strong>: מחליפים מזהים ב-hashes עם מפתח או ב-IDs — עדיין מידע אישי לפי GDPR כי זה הפיך עם המפתח/המיפוי.</li>
 <li><strong>Anonymization</strong>: בלתי הפיך — ואז GDPR כבר לא חל. הרבה יותר קשה ממה שזה נראה.</li>
 </ul>
@@ -929,7 +929,7 @@ logging.getLogger().addFilter(Redact())</pre>
   handsOn: [
     { cmd: "grep -rEn '[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}' /var/log/app/ | head", what: { en: "Hunt for email addresses leaking into your application logs.", he: "חיפוש כתובות מייל שדולפות ללוגים של האפליקציה." } },
     { cmd: "psql -c \"select table_name, column_name from information_schema.columns where column_name ~* '(email|phone|ssn|id_number|birth|address|ip)'\"", what: { en: "First pass of a data inventory: find columns that probably hold PII.", he: "מעבר ראשון של data inventory: למצוא עמודות שכנראה מחזיקות PII." } },
-    { cmd: "aws kms schedule-key-deletion --key-id alias/user-42-dek --pending-window-in-days 7", what: { en: "Crypto-shredding with KMS (illustrative — at scale you destroy wrapped per-user DEKs in your own table, not one KMS key per user).", he: "Crypto-shredding עם KMS (להמחשה — בסקייל משמידים DEKs עטופים פר-משתמש בטבלה שלכם, לא מפתח KMS לכל משתמש)." } },
+    { cmd: "aws kms schedule-key-deletion --key-id alias/user-42-dek --pending-window-in-days 7", what: { en: "Crypto-shredding with KMS (illustrative — at scale you destroy wrapped per-user DEKs in your own table, not one KMS key per user).", he: "Crypto-shredding עם KMS (להמחשה — בסקייל משמידים DEKs עטופים פר-משתמש בטבלה שלך, לא מפתח KMS לכל משתמש)." } },
     { cmd: "aws s3api get-public-access-block --bucket my-user-uploads", what: { en: "Verify public access is blocked on buckets holding personal data — the most common breach cause.", he: "וידוא שגישה ציבורית חסומה ב-buckets שמחזיקים מידע אישי — הגורם הנפוץ ביותר לדליפות." } }
   ],
   mnemonic: {
@@ -945,7 +945,7 @@ logging.getLogger().addFilter(Redact())</pre>
   interview: [
     { q: { en: "How do you honor a GDPR erasure request when you have 35 days of immutable backups?", he: "איך מכבדים בקשת מחיקה לפי GDPR כשיש 35 יום של גיבויים immutable?" },
       a: { en: "Two accepted approaches. (1) Crypto-shredding: sensitive fields are encrypted with a per-user data key; destroying the key makes every backup copy unreadable for that user immediately. (2) Documented process: backups are kept out of active use, expire within the stated retention, and if a restore happens, the erasure log is replayed before the data goes live. In both cases the live systems, indexes, lake and vendors are erased via an event-driven workflow with tracking and an SLA.", he: "שתי גישות מקובלות. (1) Crypto-shredding: השדות הרגישים מוצפנים עם data key פר-משתמש; השמדת המפתח הופכת כל עותק בגיבוי לבלתי קריא עבור המשתמש הזה מיד. (2) תהליך מתועד: גיבויים לא בשימוש פעיל, פגים בתוך ה-retention המוצהר, ואם קורה שחזור — מריצים מחדש את ה-erasure log לפני שה-data עולה לאוויר. בשני המקרים המערכות החיות, האינדקסים, ה-lake והספקים נמחקים דרך workflow מונחה events עם מעקב ו-SLA." } },
-    { q: { en: "Product wants to share 'anonymized' user data with a partner for analytics. What do you check?", he: "המוצר רוצה לשתף data 'אנונימי' של משתמשים עם שותף לאנליטיקה. מה אתם בודקים?" },
+    { q: { en: "Product wants to share 'anonymized' user data with a partner for analytics. What do you check?", he: "המוצר רוצה לשתף data 'אנונימי' של משתמשים עם שותף לאנליטיקה. מה אתה בודק?" },
       a: { en: "Whether it's truly anonymous or just pseudonymous: remove direct identifiers, then look at quasi-identifiers (ZIP, birth date, gender, rare attributes, precise location/time) that allow joins; apply k-anonymity/generalization or share only aggregates with differential privacy and minimum group sizes. Plus a legal basis and DPA, purpose limitation in the contract, DPIA if large-scale, and prefer giving the partner query access to aggregates over shipping row-level data.", he: "האם זה באמת אנונימי או רק פסאודונימי: מסירים מזהים ישירים, ואז בודקים quasi-identifiers (מיקוד, תאריך לידה, מגדר, תכונות נדירות, מיקום/זמן מדויקים) שמאפשרים joins; מפעילים k-anonymity/הכללה או משתפים רק אגרגציות עם differential privacy וגדלי קבוצה מינימליים. ובנוסף בסיס חוקי ו-DPA, הגבלת מטרה בחוזה, DPIA אם זה בהיקף גדול, ועדיף לתת לשותף גישת שאילתות לאגרגציות על פני שליחת data ברמת שורה." } }
   ],
   quiz: [

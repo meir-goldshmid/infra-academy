@@ -46,7 +46,7 @@ INFRA.lessons.push({
 <tr><td>App + Redis + Postgres</td><td>10–40 ms</td><td>queries, serialization</td></tr>
 <tr><td>הורדה + parse + render</td><td>100–1500 ms</td><td>גודל JS/CSS, CPU</td></tr>
 </table>
-<p>השיעור: <strong>ה-round trips ברשת והדפדפן שולטים</strong>, לא ה-handler שלכם. Principal שואל "כמה RTTs, ולאן?" לפני "כמה הקוד מהיר?".</p>
+<p>השיעור: <strong>ה-round trips ברשת והדפדפן שולטים</strong>, לא ה-handler שלך. Principal שואל "כמה RTTs, ולאן?" לפני "כמה הקוד מהיר?".</p>
 <blockquote>💡 מהשטח: המחקר של Google מאחורי HTTP/2 ו-QUIC עסק בעיקר בהורדת round trips — TLS 1.3 חתך RTT שלם לעומת TLS 1.2, QUIC מאחד את ה-handshake של התעבורה וההצפנה לאחד, ו-0-RTT resumption מבטל אותו לגמרי למבקרים חוזרים.</blockquote>`
       }
     },
@@ -175,7 +175,7 @@ cache-control: public, max-age=31536000, immutable</pre>` },
         fail: { en: `A deploy purges the whole cache → a "thundering herd" on the origin. Mitigate: content-hashed assets (no purge needed), origin shield, request coalescing.`, he: `deploy שמנקה את כל ה-cache → "thundering herd" על ה-origin. מקטינים: נכסים עם hash בשם (לא צריך purge), origin shield, request coalescing.` } },
       { from: 4, to: 5, ms: 2,
         label: { en: "WAF and bot rules", he: "חוקי WAF ובוטים" },
-        detail: { en: `<p>Managed rules (OWASP CRS: SQLi, XSS, path traversal), bot scoring, geo rules and per-IP rate limits run at the edge before anything touches your servers.</p>`, he: `<p>חוקים מנוהלים (OWASP CRS: SQLi, XSS, path traversal), ניקוד בוטים, חוקי geo ו-rate limits לפי IP רצים ב-edge לפני שמשהו נוגע בשרתים שלכם.</p>` },
+        detail: { en: `<p>Managed rules (OWASP CRS: SQLi, XSS, path traversal), bot scoring, geo rules and per-IP rate limits run at the edge before anything touches your servers.</p>`, he: `<p>חוקים מנוהלים (OWASP CRS: SQLi, XSS, path traversal), ניקוד בוטים, חוקי geo ו-rate limits לפי IP רצים ב-edge לפני שמשהו נוגע בשרתים שלך.</p>` },
         fail: { en: `False positive blocks a legit checkout (403 from the edge, nothing in app logs). Roll out new rules in "log/count" mode first and watch edge 403 rates per rule.`, he: `False positive חוסם checkout לגיטימי (403 מה-edge, כלום בלוגים של האפליקציה). מכניסים חוקים חדשים קודם במצב "log/count" ומסתכלים על שיעור ה-403 ב-edge לפי חוק.` } },
       { from: 5, to: 6, ms: 55,
         label: { en: "Edge → origin load balancer", he: "Edge → ה-Load Balancer של ה-origin" },

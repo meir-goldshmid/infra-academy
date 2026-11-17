@@ -51,7 +51,7 @@ window.INFRA.lessons.push({
 <li><strong>Events</strong> – שינויים בדידים: deploys, שינויי קונפיג, feature flags, autoscaling. לשים "deploy v2.3.1" על גרף ה-latency פותר כמות מביכה של תקלות.</li>
 </ul>
 <p>הקסם הוא ב<strong>חיבור</strong> ביניהם: קפיצה ב-metric ← exemplar ← trace ← הלוגים עם אותו <code>trace_id</code>. שלושה כלים מנותקים זה שלוש ערימות שחת; מחוברים – זו מפה.</p>
-<blockquote>⚠️ טיפ לפרודקשן: תמיד תסמנו deploys על הדשבורדים (annotations). "מה השתנה?" זו השאלה מספר 1 בתקלה, והתשובה בדרך כלל "עשינו deploy לפני 12 דקות".</blockquote>`
+<blockquote>⚠️ טיפ לפרודקשן: תמיד תסמן deploys על הדשבורדים (annotations). "מה השתנה?" זו השאלה מספר 1 בתקלה, והתשובה בדרך כלל "עשינו deploy לפני 12 דקות".</blockquote>`
       }
     },
     {
@@ -76,7 +76,7 @@ window.INFRA.lessons.push({
 <tr><td>Instrumentation</td><td colspan="2">OpenTelemetry – SDKs ו-Collector ניטרליים, מייצאים לכל מה שלמעלה</td></tr>
 </table>
 <p>הקומבו הקלאסי בקוד פתוח נקרא "LGTM": <strong>L</strong>oki, <strong>G</strong>rafana, <strong>T</strong>empo, <strong>M</strong>imir. SaaS (Datadog, New Relic) מחליף כסף באפס תפעול ו-correlation מעולה מהקופסה. הכלים של הענן (CloudWatch, Azure Monitor) "חינמיים להתחלה" וכבר מחוברים לשירותים המנוהלים שלך, אבל נהיים יקרים ומסורבלים כשצריך תמונה חוצת-עננים.</p>
-<blockquote>💡 מהשטח: תעשו instrumentation עם OpenTelemetry לא משנה מה ה-backend. ככה מעבר מ-Datadog ל-Grafana Cloud הוא שינוי קונפיג ב-Collector ולא פרויקט re-instrumentation של חצי שנה.</blockquote>`
+<blockquote>💡 מהשטח: תעשה instrumentation עם OpenTelemetry לא משנה מה ה-backend. ככה מעבר מ-Datadog ל-Grafana Cloud הוא שינוי קונפיג ב-Collector ולא פרויקט re-instrumentation של חצי שנה.</blockquote>`
       }
     },
     {
@@ -226,7 +226,7 @@ http_requests_total{service="cart",     method="GET",  code="200"}  992011</pre>
 <tr><td>Summary</td><td>הקליינט מחשב quantiles בעצמו</td><td>latency בספריות ישנות</td><td>קוראים <code>{quantile="0.99"}</code></td></tr>
 </table>
 <p>Histogram חושף <code>_bucket{le="0.1"}</code>, <code>_bucket{le="0.5"}</code>, ..., <code>_sum</code> ו-<code>_count</code>. בגלל שהדליים הם counters רגילים, אפשר <strong>לסכום אותם על 50 פודים</strong> ולחשב p99 של כל הצי. את ה-quantiles של summary אי אפשר לאגרג – ממוצע של ה-p99 של עשרה פודים הוא חסר משמעות מתמטית.</p>
-<blockquote>⚠️ טיפ לפרודקשן: תעדיפו histograms על summaries. תבחרו buckets סביב ה-SLO (למשל אם ה-SLO הוא 300ms, שיהיו buckets ב-0.1, 0.25, 0.3, 0.5, 1) – האחוזונים מחושבים באינטרפולציה בתוך הדליים, אז הדיוק נמצא איפה שהדליים נמצאים. Native histograms של Prometheus פותרים את רוב הכאב הזה.</blockquote>`
+<blockquote>⚠️ טיפ לפרודקשן: תעדיף histograms על summaries. תבחר buckets סביב ה-SLO (למשל אם ה-SLO הוא 300ms, שיהיו buckets ב-0.1, 0.25, 0.3, 0.5, 1) – האחוזונים מחושבים באינטרפולציה בתוך הדליים, אז הדיוק נמצא איפה שהדליים נמצאים. Native histograms של Prometheus פותרים את רוב הכאב הזה.</blockquote>`
       }
     },
     {
@@ -296,7 +296,7 @@ container_memory_working_set_bytes / on(pod, container)
 </ul>
 <p>Tail latency מצטבר: אם דף עושה 100 קריאות backend במקביל, ולכל אחת יש סיכוי של 1% להיות איטית, אז <code>1 - 0.99^100 ≈ 63%</code> מטעינות הדף יפגשו לפחות קריאה איטית אחת. ה-p99 שלך הופך לחציון של המשתמשים.</p>
 <p>ועוד: <strong>אי אפשר לעשות ממוצע לאחוזונים</strong>. ממוצע של ה-p99 של פוד A ושל פוד B הוא לא ה-p99 של השירות. מאגרגים את ה-buckets של ה-histogram, ורק אז מחשבים quantile.</p>
-<blockquote>⚠️ טיפ לפרודקשן: תמיד תציגו p50, p95 ו-p99 על אותו גרף. p99 שעולה כש-p50 שטוח אומר "חלק מה-requests" (dependency איטי אחד, node בעייתי אחד); הכל עולה ביחד אומר "כל המערכת" (saturation).</blockquote>`
+<blockquote>⚠️ טיפ לפרודקשן: תמיד תציג p50, p95 ו-p99 על אותו גרף. p99 שעולה כש-p50 שטוח אומר "חלק מה-requests" (dependency איטי אחד, node בעייתי אחד); הכל עולה ביחד אומר "כל המערכת" (saturation).</blockquote>`
       }
     },
     {
@@ -311,7 +311,7 @@ topk(10, count by (__name__) ({__name__=~".+"}))</pre>
 <p>Labels שמתפוצצים: <code>user_id</code>, <code>email</code>, <code>request_id</code>, <code>trace_id</code>, נתיבי URL מלאים (<code>/orders/98123</code>), הודעות שגיאה גולמיות, timestamps. Labels שבסדר: <code>service</code>, תבנית route (<code>/orders/:id</code>), <code>method</code>, <code>status_class</code>, <code>region</code>, <code>version</code>.</p>
 <pre># Find your top 10 metrics by series count
 topk(10, count by (__name__) ({__name__=~".+"}))</pre>
-<blockquote>💡 מהשטח: פירוט ברמת משתמש שייך ללוגים ול-traces (high cardinality זה התפקיד שלהם). Metrics הם לאגרגציות. אם באמת צריך אנליטיקה עם high cardinality, תשתמשו בכלי שבנוי לזה (Honeycomb, ClickHouse) במקום להתעלל ב-labels של Prometheus.</blockquote>`
+<blockquote>💡 מהשטח: פירוט ברמת משתמש שייך ללוגים ול-traces (high cardinality זה התפקיד שלהם). Metrics הם לאגרגציות. אם באמת צריך אנליטיקה עם high cardinality, תשתמש בכלי שבנוי לזה (Honeycomb, ClickHouse) במקום להתעלל ב-labels של Prometheus.</blockquote>`
       }
     },
     {
@@ -340,7 +340,7 @@ topk(10, count by (__name__) ({__name__=~".+"}))</pre>
         regex: checkout
         action: keep</pre>
 <p><strong>Push (StatsD, Datadog agent, OTLP, CloudWatch PutMetricData)</strong>: האפליקציה שולחת metrics ל-collector. עובד דרך firewalls/NAT, מתאים ל-jobs קצרי חיים ול-serverless (Lambda שחיה 200ms לא יכולה לחכות ל-scrape). הפתרון של Prometheus ל-batch jobs הוא Pushgateway – אבל רק ל-jobs, אף פעם לא כ-proxy כללי ל-push.</p>
-<blockquote>⚠️ טיפ לפרודקשן: ב-pull אפשר לזהות היעדר (<code>up == 0</code>). ב-push, שקט נראה כמו "הכל בסדר". תוסיפו alert עם <code>absent()</code> או heartbeat metric לכל דבר קריטי שעושה push.</blockquote>`
+<blockquote>⚠️ טיפ לפרודקשן: ב-pull אפשר לזהות היעדר (<code>up == 0</code>). ב-push, שקט נראה כמו "הכל בסדר". תוסיף alert עם <code>absent()</code> או heartbeat metric לכל דבר קריטי שעושה push.</blockquote>`
       }
     }
   ],
@@ -359,12 +359,12 @@ topk(10, count by (__name__) ({__name__=~".+"}))</pre>
   ],
   mnemonic: {
     en: "\"Counters Climb, Gauges Go both ways, Histograms Hold buckets.\" And for queries: \"Rate before you Sum, or your graph goes dumb.\" Never label by anything you'd find in a phone book.",
-    he: "\"Counter רק מטפס, Gauge הולך לשני הכיוונים, Histogram מחזיק דליים.\" ולשאילתות: \"קודם rate ואז sum, אחרת הגרף מטומטם.\" לעולם אל תעשו label על משהו שהייתם מוצאים בספר טלפונים."
+    he: "\"Counter רק מטפס, Gauge הולך לשני הכיוונים, Histogram מחזיק דליים.\" ולשאילתות: \"קודם rate ואז sum, אחרת הגרף מטומטם.\" לעולם אל תעשה label על משהו שהיית מוצא בספר טלפונים."
   },
   pitfalls: [
     { en: "Alerting on average latency. The average can stay flat while p99 goes from 300ms to 5s for 2% of users.", he: "לעשות alert על latency ממוצע. הממוצע יכול להישאר שטוח בזמן שה-p99 קופץ מ-300ms ל-5 שניות עבור 2% מהמשתמשים." },
     { en: "Putting user_id, request_id or raw URL paths in labels — cardinality explosion, Prometheus OOM, five-figure SaaS bill.", he: "לשים user_id, request_id או נתיבי URL גולמיים ב-labels – פיצוץ cardinality, OOM ל-Prometheus, וחשבון SaaS עם חמש ספרות." },
-    { en: "Graphing a raw counter or doing rate(sum(...)) — you'll see sawtooth drops at every pod restart.", he: "להציג counter גולמי או לעשות rate(sum(...)) – תראו נפילות בצורת מסור בכל ריסטארט של פוד." },
+    { en: "Graphing a raw counter or doing rate(sum(...)) — you'll see sawtooth drops at every pod restart.", he: "להציג counter גולמי או לעשות rate(sum(...)) – תראה נפילות בצורת מסור בכל ריסטארט של פוד." },
     { en: "Averaging p99s across pods or regions. Aggregate buckets with sum by (le), then histogram_quantile.", he: "לעשות ממוצע ל-p99 בין פודים או אזורים. מאגרגים buckets עם sum by (le), ורק אז histogram_quantile." }
   ],
   interview: [
@@ -459,19 +459,19 @@ window.INFRA.lessons.push({
 # CloudWatch Logs Insights
 fields @timestamp, error_code | filter level="error" | stats count() by error_code</pre>
 <blockquote>💡 Real world: use your language's structured logger (zap/zerolog in Go, structlog in Python, pino in Node, Logback JSON encoder in Java) and log to <strong>stdout</strong>. In containers, the platform collects stdout — never write log files inside the container.</blockquote>`,
-        he: `<p>תשוו:</p>
+        he: `<p>תשווה:</p>
 <pre>2026-11-12 09:14:03 ERROR Payment failed for user 8812 order A-981 after 842ms (stripe: card_declined)</pre>
 <pre>{"ts":"2026-11-12T09:14:03.512Z","level":"error","service":"checkout","version":"2.3.1",
  "trace_id":"4bf92f3577b34da6a3ce929d0e0e4736","request_id":"req-7f3a",
  "msg":"payment failed","user_id":"u_8812","order_id":"A-981",
  "provider":"stripe","error_code":"card_declined","latency_ms":842}</pre>
-<p>הראשון מיועד לבן אדם שקורא שורה אחת. השני מיועד למכונה ששואלת על מיליונים. עם JSON אפשר לשאול "ספור errors לפי <code>error_code</code> עבור <code>provider=stripe</code> בשעה האחרונה" בלי לכתוב regex שביר. תשאירו את ה-<code>msg</code> קבוע ("payment failed") ותשימו את המשתנים בשדות – ככה אפשר לקבץ לפי הודעה.</p>
+<p>הראשון מיועד לבן אדם שקורא שורה אחת. השני מיועד למכונה ששואלת על מיליונים. עם JSON אפשר לשאול "ספור errors לפי <code>error_code</code> עבור <code>provider=stripe</code> בשעה האחרונה" בלי לכתוב regex שביר. תשאיר את ה-<code>msg</code> קבוע ("payment failed") ותשים את המשתנים בשדות – ככה אפשר לקבץ לפי הודעה.</p>
 <pre># Loki (LogQL)
 {service="checkout"} | json | level="error" | latency_ms &gt; 500
 
 # CloudWatch Logs Insights
 fields @timestamp, error_code | filter level="error" | stats count() by error_code</pre>
-<blockquote>💡 מהשטח: תשתמשו ב-structured logger של השפה (zap/zerolog ב-Go, structlog בפייתון, pino ב-Node, Logback JSON encoder ב-Java) ותכתבו ל-<strong>stdout</strong>. בקונטיינרים הפלטפורמה אוספת את ה-stdout – אף פעם לא כותבים קבצי לוג בתוך הקונטיינר.</blockquote>`
+<blockquote>💡 מהשטח: תשתמש ב-structured logger של השפה (zap/zerolog ב-Go, structlog בפייתון, pino ב-Node, Logback JSON encoder ב-Java) ותכתוב ל-<strong>stdout</strong>. בקונטיינרים הפלטפורמה אוספת את ה-stdout – אף פעם לא כותבים קבצי לוג בתוך הקונטיינר.</blockquote>`
       }
     },
     {
@@ -496,7 +496,7 @@ fields @timestamp, error_code | filter level="error" | stats count() by error_co
 </table>
 <p><strong>כן ללוגג</strong>: request/trace ID, מזהה משתמש או tenant (פסאודונימי), הפעולה, התוצאה, משך, סוג השגיאה + stack trace, גרסה.</p>
 <p><strong>אף פעם לא ללוגג</strong>: סיסמאות, טוקנים, API keys, headers של <code>Authorization</code>, session cookies, מספרי כרטיס אשראי מלאים (PCI-DSS!), ולהימנע מ-PII גולמי (מיילים, טלפונים, תעודות זהות, כתובות) – לפי GDPR, שורת לוג היא מידע אישי עם חובות retention ומחיקה.</p>
-<blockquote>⚠️ טיפ לפרודקשן: הדליפה הקלאסית היא <code>logger.info("request", req)</code> שזורק את כל אובייקט ה-request כולל ה-headers. תשתמשו ב-allow-list של שדות או ב-middleware של redaction, ותוסיפו בדיקה ב-CI (regexes בסגנון gitleaks) על דוגמת פלט לוגים.</blockquote>`
+<blockquote>⚠️ טיפ לפרודקשן: הדליפה הקלאסית היא <code>logger.info("request", req)</code> שזורק את כל אובייקט ה-request כולל ה-headers. תשתמש ב-allow-list של שדות או ב-middleware של redaction, ותוסיף בדיקה ב-CI (regexes בסגנון gitleaks) על דוגמת פלט לוגים.</blockquote>`
       }
     },
     {
@@ -513,7 +513,7 @@ fields @timestamp, error_code | filter level="error" | stats count() by error_co
 <pre># one query → the whole journey across services
 {namespace="prod"} | json | trace_id="4bf92f3577b34da6a3ce929d0e0e4736"</pre>
 <p>מימוש: שמים את ה-ID ב-context ברמת ה-request (ב-Go <code>context.Context</code>, ב-Java MDC, בפייתון <code>contextvars</code>, ב-Node <code>AsyncLocalStorage</code>) והלוגר מוסיף אותו אוטומטית. אם מפתח צריך לזכור להעביר אותו ידנית, ל-30% משורות הלוג לא יהיה אותו.</p>
-<blockquote>💡 מהשטח: תחזירו את ה-request ID ללקוח ב-header של התשובה (<code>X-Request-Id</code>) ותציגו אותו בדפי שגיאה. כשהתמיכה מקבלת "זה נשבר!" עם ID מצורף, הדיבאג לוקח 2 דקות במקום יומיים.</blockquote>`
+<blockquote>💡 מהשטח: תחזיר את ה-request ID ללקוח ב-header של התשובה (<code>X-Request-Id</code>) ותציג אותו בדפי שגיאה. כשהתמיכה מקבלת "זה נשבר!" עם ID מצורף, הדיבאג לוקח 2 דקות במקום יומיים.</blockquote>`
       }
     },
     {
@@ -549,15 +549,15 @@ fields @timestamp, error_code | filter level="error" | stats count() by error_co
 <li><strong>Metrics instead of logs</strong>: if you only ever <code>count()</code> a log line, it should be a counter.</li>
 </ul>
 <blockquote>💡 Real world: a common surprise is that a single chatty library (an HTTP client logging every retry at INFO) produces 40% of total volume. Run a "top log patterns by volume" query monthly.</blockquote>`,
-        he: `<p>תעשו את החשבון לפני שהחשבונית תעשה אותו בשבילכם: 200 פודים × 10 שורות לשנייה × 500 בייט = <strong>1 MB/s ≈ 86 GB ליום ≈ 2.6 TB לחודש</strong>. ב-~0.50$ ל-GB ingestion (מחירון CloudWatch Logs) זה ~1,300$ לחודש <em>לפני</em> אחסון ושאילתות. אינדוקס בסגנון Datadog/Splunk יכול לעלות פי כמה.</p>
+        he: `<p>תעשה את החשבון לפני שהחשבונית תעשה אותו בשבילך: 200 פודים × 10 שורות לשנייה × 500 בייט = <strong>1 MB/s ≈ 86 GB ליום ≈ 2.6 TB לחודש</strong>. ב-~0.50$ ל-GB ingestion (מחירון CloudWatch Logs) זה ~1,300$ לחודש <em>לפני</em> אחסון ושאילתות. אינדוקס בסגנון Datadog/Splunk יכול לעלות פי כמה.</p>
 <p>המנופים, לפי סדר השפעה:</p>
 <ul>
 <li><strong>לא לייצר רעש</strong>: access logs של health checks (<code>GET /healthz 200</code> כל 5 שניות × 200 פודים = 3.4 מיליון שורות מיותרות ביום), לולאות שמלוגגות כל פריט, DEBUG בפרודקשן.</li>
 <li><strong>Retention בשכבות</strong>: 7-14 ימים hot וניתן לחיפוש, 90 יום ב-object storage זול, שנה+ ארכיון רק ללוגי audit/compliance.</li>
 <li><strong>Sampling</strong>: שומרים 100% מה-errors וה-warnings, 1-10% מלוגי INFO של requests מוצלחים. עושים sampling לפי trace ID כדי לשמור requests <em>שלמים</em>, לא שברים אקראיים.</li>
-<li><strong>Metrics במקום לוגים</strong>: אם אתם רק עושים <code>count()</code> על שורת לוג, היא צריכה להיות counter.</li>
+<li><strong>Metrics במקום לוגים</strong>: אם אתה רק עושה <code>count()</code> על שורת לוג, היא צריכה להיות counter.</li>
 </ul>
-<blockquote>💡 מהשטח: הפתעה נפוצה היא שספרייה פטפטנית אחת (HTTP client שמלוגג כל retry ב-INFO) מייצרת 40% מכל הנפח. תריצו פעם בחודש שאילתת "top log patterns by volume".</blockquote>`
+<blockquote>💡 מהשטח: הפתעה נפוצה היא שספרייה פטפטנית אחת (HTTP client שמלוגג כל retry ב-INFO) מייצרת 40% מכל הנפח. תריץ פעם בחודש שאילתת "top log patterns by volume".</blockquote>`
       }
     }
   ],
@@ -604,7 +604,7 @@ fields @timestamp, error_code | filter level="error" | stats count() by error_co
       explain: { en: "Constant message, variables as fields, and a trace_id. Option 3 is JSON but still buries data in the message; option 4 leaks headers.", he: "הודעה קבועה, משתנים כשדות, ו-trace_id. אופציה 3 היא JSON אבל עדיין קוברת מידע בתוך ההודעה; אופציה 4 מדליפה headers." }
     },
     {
-      q: { en: "Your log agent keeps logs only in memory. The backend is down for 20 minutes. What happens?", he: "ה-log agent שלכם מחזיק לוגים רק בזיכרון. ה-backend למטה 20 דקות. מה קורה?" },
+      q: { en: "Your log agent keeps logs only in memory. The backend is down for 20 minutes. What happens?", he: "ה-log agent שלך מחזיק לוגים רק בזיכרון. ה-backend למטה 20 דקות. מה קורה?" },
       options: [
         { en: "Logs are dropped or the agent gets OOMKilled", he: "לוגים נזרקים או שה-agent חוטף OOMKill" },
         { en: "Kubernetes automatically re-sends them later", he: "Kubernetes שולח אותם מחדש אוטומטית אחר כך" },
@@ -693,7 +693,7 @@ tracestate: vendor-specific key=values (optional)
 baggage: tenant=acme,region=eu   (W3C Baggage: app-level key/values)</pre>
 <p>שירות A מקבל את ה-header, יוצר child span, וכשהוא קורא לשירות B הוא שולח traceparent <em>חדש</em> עם אותו trace ID אבל עם ה-span ID שלו בתור parent. ה-auto-instrumentation של OpenTelemetry עושה את זה ל-HTTP ול-gRPC בצד הלקוח והשרת.</p>
 <p>איפה זה נשבר: גבולות אסינכרוניים. הודעות Kafka/SQS/RabbitMQ צריכות שיזריקו את ה-context ל-headers/attributes של ההודעה; thread pools ו-callbacks צריכים להעביר את ה-context; proxy או שירות legacy שזורק headers לא מוכרים חותך את ה-trace לשני יתומים.</p>
-<blockquote>⚠️ טיפ לפרודקשן: אם ה-traces שלכם נראים "קצרים" (span של gateway בלי ילדים) ה-propagation שבור איפשהו. תבדקו שכל השירותים משתמשים באותו propagator (W3C tracecontext, לא ערבוב של B3 ו-W3C).</blockquote>`
+<blockquote>⚠️ טיפ לפרודקשן: אם ה-traces שלך נראים "קצרים" (span של gateway בלי ילדים) ה-propagation שבור איפשהו. תבדוק שכל השירותים משתמשים באותו propagator (W3C tracecontext, לא ערבוב של B3 ו-W3C).</blockquote>`
       }
     },
     {
@@ -773,7 +773,7 @@ baggage: tenant=acme,region=eu   (W3C Baggage: app-level key/values)</pre>
         type: probabilistic
         probabilistic: { sampling_percentage: 5 }</pre>
 <p>המחיר: ה-collector צריך להחזיק בזיכרון את כל ה-spans של trace, וכל ה-spans של trace אחד חייבים להגיע ל<em>אותו</em> instance של collector (משתמשים ב-load-balancing exporter לפי trace ID).</p>
-<blockquote>⚠️ טיפ לפרודקשן: תחשבו RED metrics מתוך ה-spans <em>לפני</em> ה-sampling (למשל עם ה-spanmetrics connector), אחרת ה-request rate וה-error rate שלכם יהיו מוטים פי 20.</blockquote>`
+<blockquote>⚠️ טיפ לפרודקשן: תחשב RED metrics מתוך ה-spans <em>לפני</em> ה-sampling (למשל עם ה-spanmetrics connector), אחרת ה-request rate וה-error rate שלך יהיו מוטים פי 20.</blockquote>`
       }
     },
     {
@@ -817,7 +817,7 @@ export OTEL_RESOURCE_ATTRIBUTES=deployment.environment=prod,service.version=2.3.
 <blockquote>💡 Real world: the full loop is metrics → (exemplar) → trace → (trace_id) → logs, plus trace → (span metrics) → metrics. Grafana calls this "correlations"; Datadog does it automatically. Once you've used it, grepping logs by timestamp feels like the stone age.</blockquote>`,
         he: `<p>Metrics אומרים לך "ה-p99 קפץ ל-4 שניות ב-02:47". ה-traces מחזיקים את הפרטים. <strong>Exemplars</strong> מגשרים ביניהם: כשה-SDK רושם תצפית latency לתוך bucket של histogram, הוא מצמיד ל-bucket הזה trace ID לדוגמה.</p>
 <pre>http_request_duration_seconds_bucket{le="5",route="/checkout"} 10442 # {trace_id="4bf92f3577b34da6a3ce929d0e0e4736"} 3.81 1731402423.1</pre>
-<p>ב-Grafana ה-exemplars מופיעים כנקודות על גרף ה-latency; לוחצים על נקודה בתוך הקפיצה ← אתם ב-Tempo/Jaeger מסתכלים על request אמיתי של 3.81 שניות מאותה דקה בדיוק. בלי לנחש איזה trace לפתוח.</p>
+<p>ב-Grafana ה-exemplars מופיעים כנקודות על גרף ה-latency; לוחצים על נקודה בתוך הקפיצה ← אתה ב-Tempo/Jaeger ומסתכל על request אמיתי של 3.81 שניות מאותה דקה בדיוק. בלי לנחש איזה trace לפתוח.</p>
 <p>דרישות: פורמט חשיפה OpenMetrics, Prometheus שעלה עם <code>--enable-feature=exemplar-storage</code> (או backend שתומך בזה, כמו Mimir), ו-SDK שרושם exemplars כשיש span פעיל (OTel עושה את זה כברירת מחדל ל-spans שנבחרו ב-sampling).</p>
 <blockquote>💡 מהשטח: הלולאה המלאה היא metrics ← (exemplar) ← trace ← (trace_id) ← logs, ועוד trace ← (span metrics) ← metrics. ב-Grafana זה נקרא "correlations"; Datadog עושה את זה אוטומטית. אחרי שמשתמשים בזה פעם אחת, לחפש בלוגים לפי timestamp מרגיש כמו תקופת האבן.</blockquote>`
       }
@@ -831,9 +831,9 @@ export OTEL_RESOURCE_ATTRIBUTES=deployment.environment=prod,service.version=2.3.
                                             -> spanmetrics -> Prometheus (exemplars -> trace)`,
   handsOn: [
     { cmd: "docker run -d --name jaeger -p 16686:16686 -p 4317:4317 -p 4318:4318 jaegertracing/all-in-one:latest", what: { en: "Run Jaeger with an OTLP receiver; UI at http://localhost:16686.", he: "מריצים Jaeger עם OTLP receiver; ה-UI ב-http://localhost:16686." } },
-    { cmd: "pip install opentelemetry-distro opentelemetry-exporter-otlp && opentelemetry-bootstrap -a install", what: { en: "Install Python OTel auto-instrumentation for whatever libraries (Flask, requests, psycopg) you have installed.", he: "מתקינים auto-instrumentation של OTel לפייתון לכל הספריות שמותקנות אצלכם (Flask, requests, psycopg)." } },
+    { cmd: "pip install opentelemetry-distro opentelemetry-exporter-otlp && opentelemetry-bootstrap -a install", what: { en: "Install Python OTel auto-instrumentation for whatever libraries (Flask, requests, psycopg) you have installed.", he: "מתקינים auto-instrumentation של OTel לפייתון לכל הספריות שמותקנות אצלך (Flask, requests, psycopg)." } },
     { cmd: "OTEL_SERVICE_NAME=demo OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4317 opentelemetry-instrument python app.py", what: { en: "Run your app with zero code changes, hit a few endpoints, then find the traces in Jaeger.", he: "מריצים את האפליקציה בלי לשנות קוד, שולחים כמה requests, ומוצאים את ה-traces ב-Jaeger." } },
-    { cmd: "curl -H 'traceparent: 00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01' http://localhost:5000/", what: { en: "Inject your own trace context and search Jaeger for trace ID 4bf92f... — proof that propagation works.", he: "מזריקים trace context משלכם ומחפשים ב-Jaeger את ה-trace ID 4bf92f... – הוכחה שה-propagation עובד." } }
+    { cmd: "curl -H 'traceparent: 00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01' http://localhost:5000/", what: { en: "Inject your own trace context and search Jaeger for trace ID 4bf92f... — proof that propagation works.", he: "מזריקים trace context משלך ומחפשים ב-Jaeger את ה-trace ID 4bf92f... – הוכחה שה-propagation עובד." } }
   ],
   mnemonic: {
     en: "\"One trace, many spans, one barcode passed hand to hand.\" traceparent = Version-Trace-Parent-Flags: \"Very Tired Parcels Fly.\" Head decides blind; Tail decides with hindsight.",
@@ -918,7 +918,7 @@ window.INFRA.lessons.push({
   },
   analogy: {
     en: "Think of a restaurant. Latency: how long until food reaches the table. Traffic: how many customers walk in per hour. Errors: how many dishes are sent back. Saturation: how full the kitchen is — when every burner is on and orders pile up on the rail, latency is about to explode even though nothing has 'failed' yet. RED is the waiter's view (orders, complaints, wait time); USE is the chef's view of each burner and oven.",
-    he: "תחשבו על מסעדה. Latency: כמה זמן עד שהאוכל מגיע לשולחן. Traffic: כמה לקוחות נכנסים בשעה. Errors: כמה מנות חוזרות למטבח. Saturation: כמה המטבח מלא – כשכל הלהבות דולקות וההזמנות נערמות על המסילה, ה-latency עומד להתפוצץ למרות שעוד כלום לא 'נכשל'. RED זו נקודת המבט של המלצר (הזמנות, תלונות, זמן המתנה); USE זו נקודת המבט של השף על כל להבה ותנור."
+    he: "תחשוב על מסעדה. Latency: כמה זמן עד שהאוכל מגיע לשולחן. Traffic: כמה לקוחות נכנסים בשעה. Errors: כמה מנות חוזרות למטבח. Saturation: כמה המטבח מלא – כשכל הלהבות דולקות וההזמנות נערמות על המסילה, ה-latency עומד להתפוצץ למרות שעוד כלום לא 'נכשל'. RED זו נקודת המבט של המלצר (הזמנות, תלונות, זמן המתנה); USE זו נקודת המבט של השף על כל להבה ותנור."
   },
   sections: [
     {
@@ -932,7 +932,7 @@ window.INFRA.lessons.push({
 <li><strong>Saturation</strong> — how "full" the most constrained resource is: CPU throttling, memory near limit, thread/connection pool usage, queue depth, disk I/O wait. It's the <em>leading</em> indicator: it rises before latency and errors do.</li>
 </ul>
 <blockquote>💡 Real world: most incidents show up first in saturation (pool at 100%, queue growing), then in latency, and finally in errors. Watching only errors means you're always the last to know.</blockquote>`,
-        he: `<p>מתוך ספר ה-SRE של Google: אם אפשר למדוד רק ארבעה דברים במערכת שפונה למשתמשים, תמדדו את אלה.</p>
+        he: `<p>מתוך ספר ה-SRE של Google: אם אפשר למדוד רק ארבעה דברים במערכת שפונה למשתמשים, תמדוד את אלה.</p>
 <ul>
 <li><strong>Latency</strong> – זמן טיפול ב-request, באחוזונים (p50/p95/p99). מפרידים בין latency של הצלחות לשל כשלונות: 500 שחוזר תוך 2ms גורם ל-latency להיראות <em>טוב יותר</em> בזמן שהמשתמשים סובלים.</li>
 <li><strong>Traffic</strong> – הביקוש: requests לשנייה, הודעות לשנייה, sessions במקביל, טרנזקציות לשנייה. נותן הקשר לכל השאר (errors ב-10 req/s זה לא כמו errors ב-10 אלף).</li>
@@ -970,7 +970,7 @@ sum(rate(http_requests_total{service="checkout", code=~"5.."}[5m]))
 histogram_quantile(0.99, sum by (le, route)
   (rate(http_request_duration_seconds_bucket{service="checkout"}[5m])))</pre>
 <p>RED עובד לכל דבר בצורת request: HTTP, gRPC, Kafka consumer (rate = הודעות שעובדו לשנייה, errors = הודעות שנכשלו/הלכו ל-DLQ, duration = זמן עיבוד להודעה). ל-consumers מוסיפים <strong>lag</strong> – זה ה-saturation שלהם.</p>
-<blockquote>⚠️ טיפ לפרודקשן: 4xx הם בדרך כלל אשמת הלקוח ולא צריכים להעיר אתכם – אבל קפיצה פתאומית של 401/403 אחרי deploy היא בהחלט אשמתכם. תעקבו אחרי 4xx בנפרד במקום להתעלם מהם.</blockquote>`
+<blockquote>⚠️ טיפ לפרודקשן: 4xx הם בדרך כלל אשמת הלקוח ולא צריכים להעיר אותך – אבל קפיצה פתאומית של 401/403 אחרי deploy היא בהחלט אשמתך. תעקוב אחרי 4xx בנפרד במקום להתעלם מהם.</blockquote>`
       }
     },
     {
@@ -1022,7 +1022,7 @@ sum by (pod) (rate(container_cpu_cfs_throttled_periods_total[5m]))
 <li><strong>USE לכל משאב</strong> מאחורי השירות: "למה – מה נגמר?" CPU throttling, DB pool, דיסק, rate limit של dependency.</li>
 </ol>
 <p>דוגמה: ה-p99 של <code>/checkout</code> קופץ (golden). RED מראה שה-duration של <code>payments</code> עלה אבל ה-rate שלו שטוח (זה לא קפיצת traffic). USE על payments מראה שה-connection pool ל-DB ב-50/50 עם 120 threads שמחכים – saturation. סיבת שורש: שאילתה איטית שמחזיקה חיבורים יותר זמן. שלושה צעדים, חמש דקות.</p>
-<blockquote>⚠️ טיפ לפרודקשן: תסתכלו על traffic ו-latency ביחד. Latency שעולה יחד עם traffic = בעיית קיבולת (scale). Latency שעולה כשה-traffic <em>שטוח</em> = משהו נהיה איטי (deploy, dependency, גידול בדאטה) – scale out עלול רק להחמיר כי הוא מוסיף עוד חיבורים ל-DB.</blockquote>`
+<blockquote>⚠️ טיפ לפרודקשן: תסתכל על traffic ו-latency ביחד. Latency שעולה יחד עם traffic = בעיית קיבולת (scale). Latency שעולה כשה-traffic <em>שטוח</em> = משהו נהיה איטי (deploy, dependency, גידול בדאטה) – scale out עלול רק להחמיר כי הוא מוסיף עוד חיבורים ל-DB.</blockquote>`
       }
     }
   ],
@@ -1120,9 +1120,9 @@ window.INFRA.lessons.push({
 <p>Causes still matter — as <strong>dashboard panels and tickets</strong>, and as the investigation path after a symptom fires. A few causes deserve proactive alerts because they predict an outage with long lead time and no symptom yet: disk will be full in 4 hours (<code>predict_linear(node_filesystem_avail_bytes[6h], 4*3600) &lt; 0</code>), TLS cert expires in 14 days, backups failed.</p>
 <blockquote>💡 Real world: teams that delete most of their cause-based pages and replace them with SLO alerts typically see <em>fewer</em> pages and <em>faster</em> detection of real incidents. Noise doesn't make you safer; it makes you slower.</blockquote>`,
         he: `<p><strong>Alerts מבוססי סיבה</strong>: "CPU מעל 80%", "פוד עשה ריסטארט", "דיסק ב-75%", "replica lag מעל 5 שניות". הם קופצים כל הזמן בזמן שלמשתמשים הכל בסדר, ושותקים בכשלים שאף אחד לא צפה.</p>
-<p><strong>Alerts מבוססי סימפטום</strong>: "ה-error rate של checkout אוכל את ה-error budget", "p99 של /search מעל שנייה במשך 10 דקות", "אף הזמנה לא עובדה ב-15 דקות". הם קופצים כש<em>המשתמשים</em> סובלים, לא משנה מה הסיבה – כולל סיבות שלא דמיינתם.</p>
+<p><strong>Alerts מבוססי סימפטום</strong>: "ה-error rate של checkout אוכל את ה-error budget", "p99 של /search מעל שנייה במשך 10 דקות", "אף הזמנה לא עובדה ב-15 דקות". הם קופצים כש<em>המשתמשים</em> סובלים, לא משנה מה הסיבה – כולל סיבות שלא דמיינת.</p>
 <p>הסיבות עדיין חשובות – כ<strong>פאנלים בדשבורד וכטיקטים</strong>, וכמסלול החקירה אחרי שסימפטום קפץ. כמה סיבות כן מצדיקות alert יזום כי הן חוזות תקלה עם זמן התראה ארוך ועוד בלי סימפטום: הדיסק יתמלא בעוד 4 שעות (<code>predict_linear(node_filesystem_avail_bytes[6h], 4*3600) &lt; 0</code>), תעודת TLS פגה בעוד 14 יום, גיבויים נכשלו.</p>
-<blockquote>💡 מהשטח: צוותים שמוחקים את רוב ה-pages מבוססי הסיבה ומחליפים אותם ב-SLO alerts בדרך כלל רואים <em>פחות</em> pages וזיהוי <em>מהיר</em> יותר של תקלות אמיתיות. רעש לא הופך אתכם בטוחים יותר; הוא הופך אתכם איטיים יותר.</blockquote>`
+<blockquote>💡 מהשטח: צוותים שמוחקים את רוב ה-pages מבוססי הסיבה ומחליפים אותם ב-SLO alerts בדרך כלל רואים <em>פחות</em> pages וזיהוי <em>מהיר</em> יותר של תקלות אמיתיות. רעש לא הופך אותך לבטוח יותר; הוא הופך אותך לאיטי יותר.</blockquote>`
       }
     },
     {
@@ -1153,7 +1153,7 @@ window.INFRA.lessons.push({
   summary: "checkout is burning its 30d error budget 14x faster than allowed"
   runbook_url: "https://wiki.example.com/runbooks/checkout-slo-burn"
   dashboard: "https://grafana.example.com/d/checkout-slo"</pre>
-<blockquote>⚠️ טיפ לפרודקשן: תקיימו סקירת alerts שבועית של 15 דקות. על כל page שואלים "היה אפשר לפעול בעקבותיו?" אם לא – מכווננים, מורידים לטיקט, או מוחקים. Alerts נרקבים כמו קוד.</blockquote>`
+<blockquote>⚠️ טיפ לפרודקשן: תקיים סקירת alerts שבועית של 15 דקות. על כל page שואלים "היה אפשר לפעול בעקבותיו?" אם לא – מכווננים, מורידים לטיקט, או מוחקים. Alerts נרקבים כמו קוד.</blockquote>`
       }
     },
     {
@@ -1190,7 +1190,7 @@ window.INFRA.lessons.push({
 <tr><td>Page</td><td>6</td><td>6h</td><td>30m</td><td>5%</td></tr>
 <tr><td>טיקט</td><td>1</td><td>3d</td><td>6h</td><td>10%</td></tr>
 </table>
-<p>למה שני חלונות? ה<strong>חלון הארוך</strong> מוכיח שהבעיה משמעותית (לא מעירים על blip של 30 שניות). ה<strong>חלון הקצר</strong> מוכיח שזה <em>עדיין קורה</em>, כך שה-alert מתאפס מהר אחרי שתיקנתם במקום להמשיך לצפצף עוד שעה.</p>
+<p>למה שני חלונות? ה<strong>חלון הארוך</strong> מוכיח שהבעיה משמעותית (לא מעירים על blip של 30 שניות). ה<strong>חלון הקצר</strong> מוכיח שזה <em>עדיין קורה</em>, כך שה-alert מתאפס מהר אחרי שתיקנת במקום להמשיך לצפצף עוד שעה.</p>
 <pre>- alert: CheckoutErrorBudgetFastBurn
   expr: |
     (
@@ -1206,7 +1206,7 @@ window.INFRA.lessons.push({
   labels:
     severity: page
     team: payments</pre>
-<blockquote>💡 מהשטח: כלים כמו Sloth או Pyrra מייצרים את החוקים האלה (כולל recording rules ליעילות) מתוך הגדרת SLO קצרה. אל תכתבו ידנית 12 ביטויי PromQL לכל שירות.</blockquote>`
+<blockquote>💡 מהשטח: כלים כמו Sloth או Pyrra מייצרים את החוקים האלה (כולל recording rules ליעילות) מתוך הגדרת SLO קצרה. אל תכתוב ידנית 12 ביטויי PromQL לכל שירות.</blockquote>`
       }
     },
     {
@@ -1257,7 +1257,7 @@ inhibit_rules:
 <li><strong>Inhibition</strong>: אם כל ה-cluster לא נגיש, משתיקים את 300 ה-alerts שנגרמו בעקבותיו.</li>
 <li><strong>Silences</strong>: השתקה זמנית לתחזוקה מתוכננת או לבעיה ידועה: <code>amtool silence add service=checkout --duration=2h --comment="DB migration, ticket OPS-412"</code>. תמיד עם תפוגה ועם הערה.</li>
 </ul>
-<blockquote>⚠️ טיפ לפרודקשן: גם Alertmanager יכול ליפול בשקט. תוסיפו alert מסוג "Watchdog" / dead man's switch שתמיד דולק ונשלח לשירות חיצוני (למשל healthchecks.io, PagerDuty heartbeat) שמעיר אתכם כשהוא <em>מפסיק</em> להגיע.</blockquote>`
+<blockquote>⚠️ טיפ לפרודקשן: גם Alertmanager יכול ליפול בשקט. תוסיף alert מסוג "Watchdog" / dead man's switch שתמיד דולק ונשלח לשירות חיצוני (למשל healthchecks.io, PagerDuty heartbeat) שמעיר אותך כשהוא <em>מפסיק</em> להגיע.</blockquote>`
       }
     },
     {
@@ -1280,7 +1280,7 @@ inhibit_rules:
 <li><strong>שומרים על התורן</strong>: עומס ספרינט קל יותר בזמן on-call, יום חופש אחרי לילה רע, ו-postmortems בלי האשמות (blameless) על כל דבר משמעותי.</li>
 <li><strong>בודקים את ה-pipeline</strong>: מדי פעם מקפיצים page סינתטי מקצה לקצה. לגלות שה-integration key של PagerDuty פג באמצע השבתה אמיתית – קלאסיקה.</li>
 </ul>
-<blockquote>💡 מהשטח: ההנחיה של Google SRE היא לכל היותר ~2 תקלות למשמרת של 12 שעות; מעבר לזה איכות התגובה יורדת וה-burnout מטפס. אם הרוטציה שלכם מעל זה, הפחתת alerts היא משימת הנדסה בעדיפות עליונה, לא "nice to have".</blockquote>`
+<blockquote>💡 מהשטח: ההנחיה של Google SRE היא לכל היותר ~2 תקלות למשמרת של 12 שעות; מעבר לזה איכות התגובה יורדת וה-burnout מטפס. אם הרוטציה שלך מעל זה, הפחתת alerts היא משימת הנדסה בעדיפות עליונה, לא "nice to have".</blockquote>`
       }
     }
   ],
@@ -1432,7 +1432,7 @@ sum by (le) (increase(http_request_duration_seconds_bucket{service="$service"}[$
 <p><strong>Heatmap של latency</strong> מציג זמן על ציר X, buckets של latency על ציר Y, והצבע = מספר ה-requests. הוא מראה דברים שאחוזונים מסתירים: התפלגות <strong>דו-שיאית</strong> (שתי רצועות – למשל cache hits ב-5ms ו-misses ב-300ms), רצועה חדשה שמופיעה אחרי deploy, או "מריחה" איטית כלפי מעלה כש-pool מגיע ל-saturation.</p>
 <pre># Grafana heatmap query (format: Heatmap)
 sum by (le) (increase(http_request_duration_seconds_bucket{service="$service"}[$__rate_interval]))</pre>
-<blockquote>⚠️ טיפ לפרודקשן: תרשמו יחידות ותשמרו על צירי Y הוגנים. גרף עם auto-scale מ-99.95% ל-100% הופך תנודה של 0.01% למצוק. תקבעו min/max לצירים של יחסים ותמיד תציגו את סף ה-SLO כקו.</blockquote>`
+<blockquote>⚠️ טיפ לפרודקשן: תרשום יחידות ותשמור על צירי Y הוגנים. גרף עם auto-scale מ-99.95% ל-100% הופך תנודה של 0.01% למצוק. תקבע min/max לצירים של יחסים ותמיד תציג את סף ה-SLO כקו.</blockquote>`
       }
     },
     {
@@ -1456,14 +1456,14 @@ sum(rate(http_requests_total{service="checkout"}[5m] offset 1w))</pre>
 <tr><td>Latency מטפס לאט, ואז errors קופצים; traffic שטוח</td><td>Saturation: pool/תור מתמלא עד timeouts. בודקים USE על השירות ועל ה-DB.</td></tr>
 <tr><td>Latency ו-traffic עולים ביחד</td><td>קיבולת: הביקוש עולה על ההיצע. בודקים autoscaling ו-limits.</td></tr>
 <tr><td>Errors קופצים מיד, latency <em>יורד</em></td><td>Fast-failing: deploy רע, dependency שמסרב לחיבורים, auth שבור. מסתכלים על ה-annotation של ה-deploy.</td></tr>
-<tr><td>Traffic צונח בחדות, errors אפס</td><td>ה-requests לא מגיעים אליכם: DNS, LB, תקלה ב-upstream. שקט הוא סימפטום!</td></tr>
+<tr><td>Traffic צונח בחדות, errors אפס</td><td>ה-requests לא מגיעים אליך: DNS, LB, תקלה ב-upstream. שקט הוא סימפטום!</td></tr>
 <tr><td>זיכרון בצורת מסור, ריסטארט בכל שיא</td><td>Memory leak ← לולאת OOMKill.</td></tr>
 <tr><td>קפיצות כל שעה עגולה</td><td>Cron job, תפוגת cache, batch import, או גיבויים.</td></tr>
 </table>
 <p>תמיד משווים ל-baseline: ה-time shift של Grafana (<code>offset 1w</code> ב-PromQL) מציג את אותה שעה בשבוע שעבר. "3,000 req/s זה נורמלי ליום שלישי ב-10 בבוקר?" – בלי זה אי אפשר לענות.</p>
 <pre>sum(rate(http_requests_total{service="checkout"}[5m]))
 sum(rate(http_requests_total{service="checkout"}[5m] offset 1w))</pre>
-<blockquote>💡 מהשטח: "ה-traffic ירד לאפס ושום דבר לא התריע" זה דפוס השבתה מפורסם. Alerts על יחס errors עיוורים כשאין requests – תוסיפו alert על traffic נמוך בהשוואה לאותה שעה בשבוע שעבר.</blockquote>`
+<blockquote>💡 מהשטח: "ה-traffic ירד לאפס ושום דבר לא התריע" זה דפוס השבתה מפורסם. Alerts על יחס errors עיוורים כשאין requests – תוסיף alert על traffic נמוך בהשוואה לאותה שעה בשבוע שעבר.</blockquote>`
       }
     },
     {
@@ -1484,9 +1484,9 @@ sum(rate(http_requests_total{service="checkout"}[5m] offset 1w))</pre>
 <li><strong>מה זז ראשון?</strong> עושים zoom לדקה שבה זה התחיל. השינוי המוקדם ביותר בדרך כלל קרוב יותר לסיבה.</li>
 <li><strong>מה השתנה?</strong> Deploys, קונפיג, feature flags, תמהיל traffic, דף הסטטוס של dependency.</li>
 <li><strong>זה בכל מקום או בפרוסה אחת?</strong> AZ אחד, גרסה אחת, tenant אחד ← מפצלים לפי label.</li>
-<li><strong>בודקים את ההשערה</strong>: rollback, הסטת traffic, כיבוי ה-flag. אם הסימפטום נעלם – מצאתם; אם לא – ממשיכים לחפש.</li>
+<li><strong>בודקים את ההשערה</strong>: rollback, הסטת traffic, כיבוי ה-flag. אם הסימפטום נעלם – מצאת; אם לא – ממשיכים לחפש.</li>
 </ul>
-<blockquote>⚠️ טיפ לפרודקשן: קודם mitigation, אחר כך הסברים. אם הגרפים מתיישרים עם deploy, עושים rollback <em>לפני</em> שהוכחתם סיבתיות. Rollback זה זול; 40 דקות של ויכוח באמצע השבתה – לא.</blockquote>`
+<blockquote>⚠️ טיפ לפרודקשן: קודם mitigation, אחר כך הסברים. אם הגרפים מתיישרים עם deploy, עושים rollback <em>לפני</em> שהוכחת סיבתיות. Rollback זה זול; 40 דקות של ויכוח באמצע השבתה – לא.</blockquote>`
       }
     },
     {

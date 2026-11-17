@@ -1586,7 +1586,7 @@ INFRA.scenarios.push({
       ]
     },
     s1b: {
-      text: { en: "40 minutes later a customer forwards an email 'from your support team' that contains another customer's name, email and last four card digits. The leak is real and still running.", he: "40 דקות אחר כך לקוח מעביר מייל 'מצוות התמיכה שלכם' שמכיל את השם, המייל וארבע הספרות האחרונות של הכרטיס של לקוח אחר. הדליפה אמיתית ועדיין רצה." },
+      text: { en: "40 minutes later a customer forwards an email 'from your support team' that contains another customer's name, email and last four card digits. The leak is real and still running.", he: "40 דקות אחר כך לקוח מעביר מייל 'מצוות התמיכה שלך' שמכיל את השם, המייל וארבע הספרות האחרונות של הכרטיס של לקוח אחר. הדליפה אמיתית ועדיין רצה." },
       choices: [
         { label: { en: "Disable send_email and get_customer now and block the domain", he: "לכבות עכשיו את send_email ו-get_customer ולחסום את הדומיין" }, next: "s2", score: 5,
           feedback: { en: "Contained, 40 minutes late. Every alert about data leaving deserves containment before diagnosis.", he: "הוכל, באיחור של 40 דקות. כל התראה על מידע שיוצא החוצה מצדיקה הכלה לפני אבחנה." } }

@@ -216,7 +216,7 @@ For each table write: name(PK, key fields, index) + "access pattern: get by X, l
 <li><strong>שתיקה</strong>. תחשוב בקול; מעריכים את דרך החשיבה, לא רק את התמונה הסופית.</li>
 <li><strong>להתעלם מכשלים</strong>: אף מילה על מה קורה כשה-cache, ה-primary של ה-DB או AZ שלם נופלים.</li>
 <li><strong>להתווכח עם רמז של המראיין</strong>. אם הוא שואל "ומה עם hot keys?" — זו מתנה, תלך איתה.</li>
-<li><strong>Over-engineering ל-10^9 משתמשים</strong> כשסיכמתם על 10^6. תתכנן ל-scale שסוכם פלוס בערך פי 10, ותגיד איך המערכת תתפתח.</li>
+<li><strong>Over-engineering ל-10^9 משתמשים</strong> כשסוכם על 10^6. תתכנן ל-scale שסוכם פלוס בערך פי 10, ותגיד איך המערכת תתפתח.</li>
 </ul>`
       }
     },
@@ -1518,7 +1518,7 @@ Alertmanager state: silences + notification log, gossiped between replicas`,
 <li><strong>Dead man's switch:</strong> alert בשם "Watchdog" שיורה תמיד ונשלח לשירות חיצוני (heartbeat ב-PagerDuty או healthchecks); אם הוא מפסיק להגיע, הצד החיצוני מעיר מישהו – ככה תופסים מצב ש"הניטור עצמו מת".</li>
 <li><strong>Meta-monitoring:</strong> Prometheus קטן ועצמאי (בקלאסטר/region אחר) שעושה scrape לרכיבים של הפלטפורמה עצמה.</li>
 </ul>
-<blockquote>⚠️ טיפ מה-production: תתריעו על סימפטומים (SLO burn rate), לא על סיבות (CPU 80%). Burn-rate alerts עם שני חלונות (1h + 5m) תופסים שריפה מהירה מהר ושריפה איטית בלי רעש.</blockquote>`
+<blockquote>⚠️ טיפ מה-production: תתריע על סימפטומים (SLO burn rate), לא על סיבות (CPU 80%). Burn-rate alerts עם שני חלונות (1h + 5m) תופסים שריפה מהירה מהר ושריפה איטית בלי רעש.</blockquote>`
       }
     }
   ],
@@ -1663,7 +1663,7 @@ Alternative hot store (ClickHouse):
 <li><strong>Redaction:</strong> masking של מיילים, מספרי כרטיס ו-tokens <em>לפני</em> שהדאטה יוצא מה-node – הרבה יותר קשה למחוק PII מ-archive אחר כך.</li>
 <li><strong>Rate limit לכל pod:</strong> pod שתקוע בלולאת שגיאות וכותב 50k שורות לשנייה מקבל throttle, ויוצא counter של "logs dropped".</li>
 </ul>
-<blockquote>⚠️ שימו לב: log rotation של ה-kubelet (ברירת מחדל 10 MB) יכול לסובב קבצים מהר יותר ממה ש-agent מפגר קורא, ושורות נעלמות בשקט. תנטרו lag של ה-agent ו-dropped bytes.</blockquote>`
+<blockquote>⚠️ שים לב: log rotation של ה-kubelet (ברירת מחדל 10 MB) יכול לסובב קבצים מהר יותר ממה ש-agent מפגר קורא, ושורות נעלמות בשקט. תנטר lag של ה-agent ו-dropped bytes.</blockquote>`
       }
     },
     {
@@ -2088,7 +2088,7 @@ dr_state (in DynamoDB global table or Route 53 ARC): {active_region, fenced_regi
 <tr><td>Warm standby (stack מוקטן)</td><td>10-15 דק'</td><td>שניות</td><td>+30-40%</td></tr>
 <tr><td>Active-active</td><td>~0-2 דק'</td><td>~0 עד שניות</td><td>+100% ועוד מורכבות</td></tr></table>
 <p>עם RTO של 15 דקות ו-RPO של דקה, <strong>warm standby</strong> הוא ה-sweet spot: Postgres streaming replica, S3 CRR, Kafka MirrorMaker 2, וכל ה-deployment של Kubernetes (אותם manifests של Helm/ArgoCD) רץ ב-25% replicas, כך שהוא <em>מוכח כעובד כל הזמן</em>. Pilot light נראה זול יותר, אבל stack ש"אף אחד לא הריץ" זה בדיוק המקום שבו תוכניות DR מתות: IAM roles חסרים, AMIs ישנים, quota limits.</p>
-<blockquote>💡 מהשטח: תבקשו הגדלת service quotas (vCPUs של EC2, ELBs, IPs) ב-region ה-standby <em>עכשיו</em>. בזמן אירוע אמיתי ב-us-east-1 כל העולם מנסה לעשות scale ל-us-west-2 באותו רגע.</blockquote>`
+<blockquote>💡 מהשטח: תבקש הגדלת service quotas (vCPUs של EC2, ELBs, IPs) ב-region ה-standby <em>עכשיו</em>. בזמן אירוע אמיתי ב-us-east-1 כל העולם מנסה לעשות scale ל-us-west-2 באותו רגע.</blockquote>`
       }
     },
     {
@@ -2101,7 +2101,7 @@ dr_state (in DynamoDB global table or Route 53 ARC): {active_region, fenced_regi
 <li><strong>Kafka:</strong> MirrorMaker 2 with offset translation so consumers resume roughly where they left off; consumers must be idempotent because some messages will replay.</li></ul>
 <p>The dangerous moment is a <em>partial</em> outage: east is unreachable from the health checker but still alive and accepting writes. If west is promoted too, you have two primaries — split-brain. Fix with <strong>fencing</strong>: before promoting, flip a flag in a control plane outside both regions (Route 53 Application Recovery Controller, or a DynamoDB global table with an epoch number) that east's app checks and turns read-only; also revoke east's DB security group.</p>`,
         he: `<p>ה-tier ה-stateless קל; <strong>ה-state הוא כל הבעיה</strong>. לפי store:</p>
-<ul><li><strong>Postgres:</strong> streaming replica פיזי אסינכרוני ב-us-west-2 (או Aurora Global Database, lag טיפוסי מתחת לשנייה, promote מנוהל של כדקה). alert על <code>replica_lag_seconds &gt; 30</code> — ה-lag <em>הוא</em> ה-RPO החי שלכם.</li>
+<ul><li><strong>Postgres:</strong> streaming replica פיזי אסינכרוני ב-us-west-2 (או Aurora Global Database, lag טיפוסי מתחת לשנייה, promote מנוהל של כדקה). alert על <code>replica_lag_seconds &gt; 30</code> — ה-lag <em>הוא</em> ה-RPO החי שלך.</li>
 <li><strong>S3:</strong> CRR עם Replication Time Control (99.99% מהאובייקטים תוך 15 דקות). לתמונות קטלוג זה מספיק.</li>
 <li><strong>Redis:</strong> מתייחסים אליו כ-cache בלבד, בלי רפליקציה. אחרי failover הוא מתחיל קר → מגינים על ה-DB עם request coalescing ועושים pre-warm ל-10k מפתחות המוצר החמים.</li>
 <li><strong>Kafka:</strong> MirrorMaker 2 עם offset translation כדי שה-consumers ימשיכו בערך מאיפה שהפסיקו; ה-consumers חייבים להיות idempotent כי חלק מההודעות יחזרו.</li></ul>
@@ -2137,7 +2137,7 @@ dr_state (in DynamoDB global table or Route 53 ARC): {active_region, fenced_regi
 <li>מיילים של אישור הזמנה יוצאים דרך טבלת outbox → Kafka, כך שהזמנה שנאבדה ב-DB גם לא שלחה מייל.</li>
 <li>אחרי failover רץ <strong>reconciliation job</strong> שמושך מספק התשלומים את רשימת החיובים המוצלחים בחלון ה-outage ומשווה מול ההזמנות ב-primary החדש. הזמנות חסרות נוצרות מחדש מהדאטה של הספק; חיובים יתומים מקבלים refund.</li>
 <li>כש-east חוזר, אף פעם לא פשוט "מחברים אותו בחזרה": את הזנב שלא שוכפל (הכתיבות ה"אבודות") שולפים עם logical decoding לבדיקה, ואז בונים את east מחדש כ-replica טרי של west.</li></ul>
-<blockquote>⚠️ טיפ מה-production: ספק התשלומים הוא single source of truth נסתר — וגם SPOF נסתר. תבדקו מה הסיפור ה-multi-region שלו.</blockquote>`
+<blockquote>⚠️ טיפ מה-production: ספק התשלומים הוא single source of truth נסתר — וגם SPOF נסתר. תבדוק מה הסיפור ה-multi-region שלו.</blockquote>`
       }
     },
     {
@@ -2500,7 +2500,7 @@ Queues: Kafka topic "executions.ready" partitioned by tenant/job_id (or per-tena
 <li><strong>Dispatch:</strong> התור יכול לשלוח שוב; ה-worker תופס את ה-execution עם <code>UPDATE executions SET state='running', worker_id=?, lease_until=now()+60s WHERE id=? AND state='queued'</code> — update מותנה = רק תופס אחד.</li>
 <li><strong>הרצה:</strong> ה-worker שולח heartbeats שמאריכים את ה-lease. אם הוא מת, reaper רואה ש-<code>lease_until</code> פג ומכניס שוב לתור עם attempt+1.</li>
 <li><strong>Side effect:</strong> מעבירים את <code>execution_id</code> כ-<strong>idempotency key</strong> ליעד (header של HTTP בשם <code>Idempotency-Key</code>). היעד אחראי לכך שהאפקט יקרה פעם אחת — למשל job של billing שומר את ה-keys שעובדו ב-DB שלו באותה טרנזקציה של החיוב.</li></ol>
-<p>תהיו כנים עם המראיין: "ה-scheduler מבטיח at-least-once ונותן key יציב; effectively-once זה חוזה עם הבעלים של ה-job."</p>`
+<p>תהיה כן עם המראיין: "ה-scheduler מבטיח at-least-once ונותן key יציב; effectively-once זה חוזה עם הבעלים של ה-job."</p>`
       }
     },
     {

@@ -41,7 +41,7 @@ INFRA.lessons.push({
 <li><strong>מה כבר קיים?</strong> Auth קיים, Postgres קיים, Kafka קיים, צוות on-call קיים. שימוש חוזר בתשתית משעממת עדיף על להכניס משהו נוצץ.</li>
 <li><strong>מה האינטגרציות?</strong> ספק תשלומים, ספק מייל/SMS, ERP ישן, webhooks של שותפים — כל אחד הוא failure mode וחוזה.</li>
 </ul>
-<blockquote>💡 מהשטח: ב-Amazon הרבה צוותים מתחילים ב-"PR/FAQ" — הודעה לעיתונות על המוצר הגמור וה-FAQ שלקוח היה שואל. אם אי אפשר לכתוב את ההודעה לעיתונות, עוד לא הבנתם את הדרישות הפונקציונליות.</blockquote>`
+<blockquote>💡 מהשטח: ב-Amazon הרבה צוותים מתחילים ב-"PR/FAQ" — הודעה לעיתונות על המוצר הגמור וה-FAQ שלקוח היה שואל. אם אי אפשר לכתוב את ההודעה לעיתונות, עוד לא הבנת את הדרישות הפונקציונליות.</blockquote>`
       }
     },
     {
@@ -75,8 +75,8 @@ INFRA.lessons.push({
 <tr><td>עלות</td><td>תקציב חודשי? עלות לבקשה/משתמש?</td><td>&lt; $25k לחודש, &lt; $0.01 להזמנה</td></tr>
 <tr><td>תפעול</td><td>מי ב-on-call? מה הסקילים שלהם?</td><td>4 מפתחי backend, אין SRE ייעודי</td></tr>
 </table>
-<p>שתי NFRs נסתרות ששוכחים: <strong>time-to-market</strong> (דדליין של 6 שבועות הורג כל תכנון שדורש database חדש) ו-<strong>גודל הצוות</strong> (5 מהנדסים לא יכולים לתפעל 30 microservices — חוק Conway יעניש אתכם).</p>
-<blockquote>⚠️ טיפ לפרודקשן: "99.99%" נאמר הרבה פעמים בקלות. תתרגמו מיד: 4.3 דקות השבתה בחודש, כלומר אין failover ידני, multi-AZ להכול, ו-deploys בלי downtime. תשאלו: "אתם מוכנים לשלם בערך פי 3 על התשעה האחרונה?" רוב בעלי העניין יורדים ל-99.9% במקום.</blockquote>`
+<p>שתי NFRs נסתרות ששוכחים: <strong>time-to-market</strong> (דדליין של 6 שבועות הורג כל תכנון שדורש database חדש) ו-<strong>גודל הצוות</strong> (5 מהנדסים לא יכולים לתפעל 30 microservices — חוק Conway יעניש אותך).</p>
+<blockquote>⚠️ טיפ לפרודקשן: "99.99%" נאמר הרבה פעמים בקלות. תרגם מיד: 4.3 דקות השבתה בחודש, כלומר אין failover ידני, multi-AZ להכול, ו-deploys בלי downtime. שאל: "אתם מוכנים לשלם בערך פי 3 על התשעה האחרונה?" רוב בעלי העניין יורדים ל-99.9% במקום.</blockquote>`
       }
     },
     {
@@ -102,7 +102,7 @@ INFRA.lessons.push({
 </ul>
 <p>How to tell <em>important</em> from <em>nice-to-have</em>: ask "If we launch without it, what breaks, who complains, and how much does it cost?" If the answer is "a few people are mildly annoyed", it's nice-to-have. Also: "Is it hard to add later?" — data model, IDs, auth, multi-tenancy and audit trails are hard to retrofit, so they move up even if users don't ask for them.</p>
 <blockquote>💡 Real world: A rule many principals use — "Must" items should be ≤ 60% of the estimated effort. If everything is a Must, nothing is, and the deadline will decide for you in the worst possible way.</blockquote>`,
-        he: `<p>החלק הכי חזק בכל design doc הוא <strong>Non-goals</strong>. זו רשימה של דברים סבירים שקורא עשוי לצפות להם — ושאתם בכוונה לא עושים. זה מונע זחילת scope, סוגר ויכוחים מוקדם, ואומר ל-reviewers מה לא לבקר.</p>
+        he: `<p>החלק הכי חזק בכל design doc הוא <strong>Non-goals</strong>. זו רשימה של דברים סבירים שקורא עשוי לצפות להם — ושאתה בכוונה לא עושה. זה מונע זחילת scope, סוגר ויכוחים מוקדם, ואומר ל-reviewers מה לא לבקר.</p>
 <pre>## Goals
 - Customers can place an order and get a confirmation in &lt; 2 s (p99).
 - No acknowledged order is ever lost (RPO = 0 for orders).
@@ -121,7 +121,7 @@ INFRA.lessons.push({
 <li><strong>Won't (הפעם)</strong> — בחוץ במפורש; הופך ל-non-goal.</li>
 </ul>
 <p>איך מבדילים בין <em>חשוב</em> ל-<em>nice-to-have</em>: שואלים "אם נשיק בלי זה, מה נשבר, מי מתלונן, וכמה זה עולה?" אם התשובה היא "כמה אנשים קצת מתעצבנים" — זה nice-to-have. ועוד שאלה: "קשה להוסיף את זה אחר כך?" — מודל הדאטה, IDs, auth, multi-tenancy ו-audit trails קשים להוספה בדיעבד, אז הם עולים בעדיפות גם אם משתמשים לא מבקשים אותם.</p>
-<blockquote>💡 מהשטח: כלל שהרבה principals משתמשים בו — פריטי Must צריכים להיות ≤ 60% מהמאמץ המוערך. אם הכול Must, אז כלום לא Must, והדדליין יחליט בשבילכם בדרך הכי גרועה.</blockquote>`
+<blockquote>💡 מהשטח: כלל שהרבה principals משתמשים בו — פריטי Must צריכים להיות ≤ 60% מהמאמץ המוערך. אם הכול Must, אז כלום לא Must, והדדליין יחליט בשבילך בדרך הכי גרועה.</blockquote>`
       }
     },
     {
@@ -164,7 +164,7 @@ INFRA.lessons.push({
 <li>מה קורה כש-deploy רע יוצא ב-3 בלילה? מי שם לב, כמה מהר, איך עושים rollback?</li>
 <li>מה קורה כשהמהנדס המרכזי עוזב? זה מתועד ומשעמם מספיק בשביל מישהו אחר?</li>
 </ul>
-<blockquote>⚠️ טיפ לפרודקשן: תשאלו "מי מקבל page, ומה הוא יראה?" לפני שהתכנון מאושר. אם התשובה היא "אה, צוות הפיתוח, ואולי לוגים", התכנון לא גמור.</blockquote>`
+<blockquote>⚠️ טיפ לפרודקשן: שאל "מי מקבל page, ומה הוא יראה?" לפני שהתכנון מאושר. אם התשובה היא "אה, צוות הפיתוח, ואולי לוגים", התכנון לא גמור.</blockquote>`
       }
     },
     {
@@ -249,8 +249,8 @@ INFRA.lessons.push({
                        v
                  now draw boxes`,
   handsOn: [
-    { cmd: "printf '## Goals\\n- \\n\\n## Non-goals\\n- \\n\\n## NFRs\\n| NFR | Target |\\n|---|---|\\n| p99 latency | |\\n| SLO | |\\n| RPO/RTO | |\\n' > design-scope.md", what: { en: "Create a scope skeleton for your current project and fill in at least 3 non-goals. If you can't name any, the scope isn't understood yet.", he: "צרו שלד scope לפרויקט הנוכחי שלכם ומלאו לפחות 3 non-goals. אם אתם לא מצליחים לחשוב על אף אחד — עוד לא הבנתם את ה-scope." } },
-    { cmd: "python -c \"slo=0.9995; print(round((1-slo)*30*24*60,1),'min/month')\"", what: { en: "Translate any availability target into minutes of downtime per month before you agree to it (99.95% = 21.6 min).", he: "תרגמו כל יעד זמינות לדקות השבתה בחודש לפני שאתם מסכימים לו (99.95% = 21.6 דקות)." } },
+    { cmd: "printf '## Goals\\n- \\n\\n## Non-goals\\n- \\n\\n## NFRs\\n| NFR | Target |\\n|---|---|\\n| p99 latency | |\\n| SLO | |\\n| RPO/RTO | |\\n' > design-scope.md", what: { en: "Create a scope skeleton for your current project and fill in at least 3 non-goals. If you can't name any, the scope isn't understood yet.", he: "צור שלד scope לפרויקט הנוכחי שלך ומלא לפחות 3 non-goals. אם אתה לא מצליח לחשוב על אף אחד — עוד לא הבנת את ה-scope." } },
+    { cmd: "python -c \"slo=0.9995; print(round((1-slo)*30*24*60,1),'min/month')\"", what: { en: "Translate any availability target into minutes of downtime per month before you agree to it (99.95% = 21.6 min).", he: "תרגם כל יעד זמינות לדקות השבתה בחודש לפני שאתה מסכים לו (99.95% = 21.6 דקות)." } },
     { cmd: "grep -iE 'fast|scalable|secure|real-?time|robust' design-doc.md", what: { en: "Hunt adjectives in a design doc. Every hit should be replaced by a number (ms, QPS, SLO, RPO).", he: "צדו תארים ב-design doc. כל התאמה צריכה להיות מוחלפת במספר (ms, QPS, SLO, RPO)." } }
   ],
   mnemonic: {
@@ -335,7 +335,7 @@ INFRA.lessons.push({
 <tr><td>Redis shard יחיד</td><td>~100k ops/s</td><td>sizing ל-cache</td></tr>
 <tr><td>Kafka partition</td><td>~5–10 MB/s כתיבה לכל partition</td><td>מספר partitions</td></tr>
 </table>
-<blockquote>⚠️ טיפ לפרודקשן: אלה עוגנים של סדר גודל, לא benchmarks. המטרה היא להיות בטווח של פי 2–3, וזה מספיק כדי להבדיל בין "Postgres אחד" ל-"cluster עם sharding". מאמתים עם load test לפני שמתחייבים לכסף (ראו pr-validate-yourself).</blockquote>`
+<blockquote>⚠️ טיפ לפרודקשן: אלה עוגנים של סדר גודל, לא benchmarks. המטרה היא להיות בטווח של פי 2–3, וזה מספיק כדי להבדיל בין "Postgres אחד" ל-"cluster עם sharding". מאמתים עם load test לפני שמתחייבים לכסף (ראה pr-validate-yourself).</blockquote>`
       }
     },
     {
@@ -475,7 +475,7 @@ object storage: avg ~8 PB in year 1 × ~$0.02/GB-month           ≈ $160,000
 CDN egress: ~10 PB/month × ~$0.02/GB                            ≈ $200,000
 -------------------------------------------------------------------------
 total ≈ $370k/month; compute &lt; 2% -&gt; optimize STORAGE &amp; EGRESS, not pods</pre>
-<p>זה הכוח האמיתי של sizing: הוא אומר לכם <strong>איפה להשקיע את זמן ההנדסה</strong>. כאן, הקטנת thumbnails מ-60 KB ל-30 KB (WebP/AVIF) חוסכת ~$100k בחודש; כיוונון קוד ה-Go חוסך ~$500.</p>
+<p>זה הכוח האמיתי של sizing: הוא אומר לך <strong>איפה להשקיע את זמן ההנדסה</strong>. כאן, הקטנת thumbnails מ-60 KB ל-30 KB (WebP/AVIF) חוסכת ~$100k בחודש; כיוונון קוד ה-Go חוסך ~$500.</p>
 <p>מציגים את התוצאה כטבלה עם הנחות מפורשות, כדי ש-reviewers יתקפו הנחה ("50 צפיות ב-feed ביום זה יותר מדי") ולא את המסקנה.</p>
 <blockquote>💡 מהשטח: עלות ליחידה היא המטריקה שמנהלים מבינים: "$0.037 ל-DAU לחודש" או "$0.002 להזמנה". עוקבים אחריה אחרי ההשקה — אם היא גדלה מהר יותר מהשימוש, משהו לא בסדר (לרוב לוגים, egress, או overprovisioning שעומד idle).</blockquote>`
       }
@@ -492,10 +492,10 @@ item size x writes/day -> storage/day x 365 x replication x indexes x free space
 peak reads x response size -> egress Gbps -> CDN?
           everything x unit prices -> $/month -> $/user (track after launch)`,
   handsOn: [
-    { cmd: "python -c \"dau=10e6; r=dau*50/86400; print('avg',round(r),'peak',round(r*3))\"", what: { en: "Compute average and peak read QPS for the worked example. Change DAU and peak factor and watch what moves.", he: "חשבו QPS ממוצע ובשיא לקריאות בדוגמה. שנו DAU ומקדם שיא ותראו מה זז." } },
+    { cmd: "python -c \"dau=10e6; r=dau*50/86400; print('avg',round(r),'peak',round(r*3))\"", what: { en: "Compute average and peak read QPS for the worked example. Change DAU and peak factor and watch what moves.", he: "חשב QPS ממוצע ובשיא לקריאות בדוגמה. שנה DAU ומקדם שיא ותראה מה זז." } },
     { cmd: "python -c \"print('in-flight =', 17500*0.080)\"", what: { en: "Little's Law: requests in flight = arrival rate × latency. Use it to size thread pools and DB connection pools.", he: "Little's Law: בקשות באוויר = קצב הגעה × latency. משתמשים בזה כדי לקבוע גודל של thread pools ו-connection pools ל-DB." } },
     { cmd: "psql -c \"SELECT pg_size_pretty(pg_total_relation_size('orders')) AS total, pg_size_pretty(pg_relation_size('orders')) AS heap;\"", what: { en: "Measure the real index overhead on an existing table (total vs heap) to calibrate your multipliers.", he: "מדדו את ה-overhead האמיתי של אינדקסים בטבלה קיימת (total מול heap) כדי לכייל את המכפילים." } },
-    { cmd: "k6 run --vus 200 --duration 2m load.js", what: { en: "Measure the real per-core throughput of your service instead of trusting the cheat sheet; divide RPS by cores used.", he: "מדדו throughput אמיתי ל-core של השירות שלכם במקום לסמוך על השליף; מחלקים RPS במספר ה-cores שנוצלו." } }
+    { cmd: "k6 run --vus 200 --duration 2m load.js", what: { en: "Measure the real per-core throughput of your service instead of trusting the cheat sheet; divide RPS by cores used.", he: "מדוד throughput אמיתי ל-core של השירות שלך במקום לסמוך על השליף; מחלקים RPS במספר ה-cores שנוצלו." } }
   ],
   mnemonic: {
     en: "\"Users → Seconds → Peak → Bytes → Cores → Dollars.\" One day ≈ 10^5 seconds; 1M/day ≈ 12/s.",
@@ -520,7 +520,7 @@ peak reads x response size -> egress Gbps -> CDN?
     { q: { en: "A service handles 2,000 req/s at 50 ms average latency. How many requests are in flight?", he: "שירות מטפל ב-2,000 req/s עם latency ממוצע של 50 ms. כמה בקשות באוויר?" },
       options: [ { en: "40", he: "40" }, { en: "100", he: "100" }, { en: "400", he: "400" }, { en: "2,000", he: "2,000" } ],
       answer: 1, explain: { en: "Little's Law: 2,000 × 0.05 = 100.", he: "Little's Law: 2,000 × 0.05 = 100." } },
-    { q: { en: "You run in 3 AZs and must survive losing one at peak. Each AZ must be able to carry at least…", he: "אתם רצים ב-3 AZs וחייבים לשרוד אובדן של אחד בשיא. כל AZ צריך להיות מסוגל להחזיק לפחות…" },
+    { q: { en: "You run in 3 AZs and must survive losing one at peak. Each AZ must be able to carry at least…", he: "אתה רץ ב-3 AZs וחייב לשרוד אובדן של אחד בשיא. כל AZ צריך להיות מסוגל להחזיק לפחות…" },
       options: [ { en: "33% of peak", he: "33% מהשיא" }, { en: "50% of peak", he: "50% מהשיא" }, { en: "66% of peak", he: "66% מהשיא" }, { en: "100% of peak", he: "100% מהשיא" } ],
       answer: 1, explain: { en: "After losing one AZ, the remaining two share 100%, i.e. 50% each.", he: "אחרי אובדן AZ אחד, השניים הנותרים מתחלקים ב-100%, כלומר 50% כל אחד." } },
     { q: { en: "In the photo-app estimate, what dominated the monthly cost?", he: "בהערכה של אפליקציית התמונות, מה שלט בעלות החודשית?" },
@@ -629,7 +629,7 @@ k8s pod CIDR (overlay or secondary range): 100.64.0.0/10 (CGNAT space, non-routa
         he: `<p><strong>מסלול ה-ingress</strong> למערכת ציבורית: <code>DNS → CDN (cache, ספיגת DDoS) → WAF (חוקי OWASP, rate limits, bot control) → L7 load balancer (סיום TLS) → service</code>. רק ה-LB נמצא ב-subnet ציבורי. כלי אדמין פנימיים עומדים מאחורי identity-aware proxy (Cloudflare Access, IAP, Pomerium) — לא IP ציבורי עם סיסמה.</p>
 <p><strong>שליטה ב-egress</strong> זה המקום שבו רוב התכנונים עצלנים. ברירת מחדל של "הכול מותר החוצה דרך NAT" אומרת ש-pod שנפרץ יכול להוציא דאטה לכל מקום. עדיף:</p>
 <ul>
-<li>Egress דרך proxy/firewall עם <strong>allowlist של דומיינים</strong> (Stripe, SendGrid, ה-registry שלכם): AWS Network Firewall, Squid, או policies של FQDN ב-Cilium.</li>
+<li>Egress דרך proxy/firewall עם <strong>allowlist של דומיינים</strong> (Stripe, SendGrid, ה-registry שלך): AWS Network Firewall, Squid, או policies של FQDN ב-Cilium.</li>
 <li>כתובות IP יציבות ליציאה (EIPs של NAT) ששותפים יכולים לשים ב-allowlist — שואלים את השותפים אם הם צריכים את זה.</li>
 <li><strong>Private endpoints</strong> (AWS PrivateLink/VPC endpoints, Azure Private Link, GCP Private Service Connect) ל-APIs של הענן ול-SaaS: תנועה ל-S3, KMS, ECR, Snowflake נשארת מחוץ לאינטרנט ומחוץ לחשבון ה-NAT.</li>
 </ul>
@@ -660,7 +660,7 @@ k8s pod CIDR (overlay or secondary range): 100.64.0.0/10 (CGNAT space, non-routa
 <tr><td>Direct Connect / ExpressRoute / Interconnect</td><td>היברידי יציב בנפח גבוה, latency צפוי</td><td>שבועות להקמה; קונים שניים במיקומים שונים</td></tr>
 </table>
 <p><strong>Service-to-service</strong> בתוך הפלטפורמה: מחליטים מוקדם בין חוקי SG/NetworkPolicy פשוטים לבין <strong>service mesh / mTLS</strong> (Istio, Linkerd, Cilium) שנותן authz מבוסס זהות (<code>orders</code> מותר לקרוא ל-<code>payments</code>, לאף אחד אחר לא). במערכת של 5 שירותים, NetworkPolicies + TLS הרבה פעמים מספיקים; ב-50 שירותים, policy מבוסס זהות משתלם.</p>
-<p><strong>IPv6</strong>: dual-stack היום זול בכל העננים ומונע מיצוי IPv4 ב-clusters ענקיים של k8s; AWS גם גובה על כל IPv4 ציבורי (~$3.6 לחודש לכל אחד מאז 2024). מחליטים אם ה-edge שלכם dual-stack מהיום הראשון.</p>
+<p><strong>IPv6</strong>: dual-stack היום זול בכל העננים ומונע מיצוי IPv4 ב-clusters ענקיים של k8s; AWS גם גובה על כל IPv4 ציבורי (~$3.6 לחודש לכל אחד מאז 2024). מחליטים אם ה-edge שלך dual-stack מהיום הראשון.</p>
 <blockquote>⚠️ טיפ לפרודקשן: ציירו את <em>מטריצת התנועה</em> הצפויה (מי מדבר עם מי, כמה Gbps, באותו AZ/region או בין). תנועה בין AZs עולה ~$0.01–0.02 ל-GB לכל כיוון — זוג שירותים פטפטני ב-1 Gbps בין AZs זה ~$6k בחודש.</blockquote>`
       }
     },
@@ -694,7 +694,7 @@ k8s pod CIDR (overlay or secondary range): 100.64.0.0/10 (CGNAT space, non-routa
 - East-west: Cilium NetworkPolicies default-deny; mTLS via Linkerd for payments path
 - Traffic matrix: app&lt;-&gt;db ~200 Mbps (same-AZ preferred), egress to Stripe &lt; 5 Mbps
 - Non-goals: multi-region active-active; IPv6 internally (edge is dual-stack)</pre>
-<p>שימו לב על מה זה עונה: מאיפה מגיעים ה-IPs, מה נגיש ממה, איך דאטה יוצא, איך שולטים בעלות, ומה במפורש בחוץ.</p>`
+<p>שים לב על מה זה עונה: מאיפה מגיעים ה-IPs, מה נגיש ממה, איך דאטה יוצא, איך שולטים בעלות, ומה במפורש בחוץ.</p>`
       }
     }
   ],
@@ -716,7 +716,7 @@ k8s pod CIDR (overlay or secondary range): 100.64.0.0/10 (CGNAT space, non-routa
           +--------------------+-------------------+
        staging VPC        shared-services       on-prem (2x DX)`,
   handsOn: [
-    { cmd: "python -c \"import ipaddress as i; print(list(i.ip_network('10.0.0.0/16').subnets(new_prefix=20))[:4])\"", what: { en: "Carve a /16 into /20 app subnets and check there's no overlap with your other ranges.", he: "חלקו /16 ל-subnets של /20 לאפליקציה ובדקו שאין חפיפה עם הטווחים האחרים שלכם." } },
+    { cmd: "python -c \"import ipaddress as i; print(list(i.ip_network('10.0.0.0/16').subnets(new_prefix=20))[:4])\"", what: { en: "Carve a /16 into /20 app subnets and check there's no overlap with your other ranges.", he: "חלק /16 ל-subnets של /20 לאפליקציה ובדוק שאין חפיפה עם הטווחים האחרים שלך." } },
     { cmd: "python -c \"import ipaddress as i; print(i.ip_network('10.0.0.0/16').overlaps(i.ip_network('10.0.128.0/17')))\"", what: { en: "Overlap check — run it for every new range against the IPAM list before creating a VPC.", he: "בדיקת חפיפה — מריצים לכל טווח חדש מול רשימת ה-IPAM לפני שיוצרים VPC." } },
     { cmd: "aws ec2 describe-subnets --query 'Subnets[].{AZ:AvailabilityZone,CIDR:CidrBlock,Free:AvailableIpAddressCount}' --output table", what: { en: "See free IPs per subnet — watch app subnets in EKS clusters before they run out.", he: "רואים IPs פנויים לכל subnet — עוקבים אחרי subnets של אפליקציה ב-clusters של EKS לפני שהם נגמרים." } },
     { cmd: "dig +short orders.prod.internal @169.254.169.253", what: { en: "Verify private DNS resolves from inside the VPC (AWS resolver address); from outside it should not.", he: "מוודאים ש-DNS פרטי נפתר מתוך ה-VPC (כתובת ה-resolver של AWS); מבחוץ זה לא אמור לעבוד." } }
@@ -765,7 +765,7 @@ INFRA.lessons.push({
   title: { en: "Test Strategy: From Unit Tests to Testing in Production", he: "אסטרטגיית בדיקות: מ-Unit Tests ועד בדיקות בפרודקשן" },
   tldr: {
     en: "Tests are a portfolio: many fast unit tests for logic, real-dependency integration tests for wiring, contract tests between teams, few end-to-end tests for critical journeys, load tests for the numbers you promised, and canaries for everything you couldn't predict.",
-    he: "בדיקות הן תיק השקעות: הרבה unit tests מהירים ללוגיקה, integration tests מול dependencies אמיתיים לחיווט, contract tests בין צוותים, מעט end-to-end לזרימות קריטיות, load tests למספרים שהבטחתם, ו-canaries לכל מה שלא יכולתם לחזות."
+    he: "בדיקות הן תיק השקעות: הרבה unit tests מהירים ללוגיקה, integration tests מול dependencies אמיתיים לחיווט, contract tests בין צוותים, מעט end-to-end לזרימות קריטיות, load tests למספרים שהבטחת, ו-canaries לכל מה שלא יכולת לחזות."
   },
   analogy: {
     en: "Building a car. You test each bolt and each spark plug on the bench (unit). You test that the engine starts when bolted to the real gearbox (integration). You check the tire matches the rim spec the supplier promised (contract). You do a few full test drives on a track (end-to-end). You put it on a dyno at 200 km/h for 10 hours (load/soak). You crash it into a wall on purpose (chaos). And after it ships, you still collect telemetry from the first 1,000 cars before shipping a million (canary). Skipping any layer doesn't save time — it moves the discovery to the customer.",
@@ -932,8 +932,8 @@ export default function () {
                  'Idempotency-Key': crypto.randomUUID() } });
   check(r, { '201': (x) =&gt; x.status === 201 });
 }</pre>
-<p>מריצים load test מול נפח דאטה דמוי-פרודקשן (טבלה עם 10 שורות תמיד מהירה), מחוץ ל-cluster, ומסתכלים על ה-<em>dependencies</em> — ה-DB בדרך כלל נשבר לפני ה-pods שלכם.</p>
-<blockquote>⚠️ טיפ לפרודקשן: <strong>ניסויי Chaos</strong> (להרוג pod, להוסיף 300 ms latency ל-DB, להפיל AZ) הם בדיקות של <em>הטענות</em> שלכם על חוסן. מריצים קודם ב-staging, אחר כך ב-prod בשעות עבודה עם כפתור עצירה (Gremlin, Litmus, AWS FIS, Chaos Mesh).</blockquote>`
+<p>מריצים load test מול נפח דאטה דמוי-פרודקשן (טבלה עם 10 שורות תמיד מהירה), מחוץ ל-cluster, ומסתכלים על ה-<em>dependencies</em> — ה-DB בדרך כלל נשבר לפני ה-pods שלך.</p>
+<blockquote>⚠️ טיפ לפרודקשן: <strong>ניסויי Chaos</strong> (להרוג pod, להוסיף 300 ms latency ל-DB, להפיל AZ) הם בדיקות של <em>הטענות</em> שלך על חוסן. מריצים קודם ב-staging, אחר כך ב-prod בשעות עבודה עם כפתור עצירה (Gremlin, Litmus, AWS FIS, Chaos Mesh).</blockquote>`
       }
     },
     {
@@ -1172,9 +1172,9 @@ Deploy        bad config         100% errors            canary analysis     auto
 <tr><td>Cost not estimated</td><td>Surprise bill in month 2</td></tr>
 </table>`,
         he: `<ul>
-<li><strong>בוחרים reviewers שיחלקו עליכם</strong>: ה-SRE שיקבל את ה-page, מהנדס האבטחה, ה-DBA, principal מארגון אחר. reviewers ידידותיים נותנים reviews ידידותיים.</li>
+<li><strong>בוחרים reviewers שיחלקו עליך</strong>: ה-SRE שיקבל את ה-page, מהנדס האבטחה, ה-DBA, principal מארגון אחר. reviewers ידידותיים נותנים reviews ידידותיים.</li>
 <li><strong>מבקשים התקפות ספציפיות</strong>: "בבקשה תנסה לשבור את סיפור העקביות בסעיף 4" מקבל פידבק טוב יותר מ-"LGTM?".</li>
-<li><strong>Red team לתכנון</strong>: התפקיד של מישהו לשעה הוא לטעון בעד האופציה שנדחתה. אם הוא ניצח — למדתם משהו.</li>
+<li><strong>Red team לתכנון</strong>: התפקיד של מישהו לשעה הוא לטעון בעד האופציה שנדחתה. אם הוא ניצח — למדת משהו.</li>
 <li><strong>להסביר לג'וניור ב-5 דקות</strong> על לוח. אם אי אפשר, זה או לא מובן או מורכב מדי. מורכבות שאי אפשר להסביר תתופעל רע ב-3 בלילה.</li>
 <li><strong>Disagree and commit</strong>: רושמים התנגדות ב-doc ("X העדיף DynamoDB כי...") — זה שווה זהב אם ה-trigger יופעל בהמשך.</li>
 </ul>
@@ -1211,7 +1211,7 @@ p99 POST /orders     &lt; 400 ms         310 ms            ok
 DB CPU at peak       &lt; 60%            72%               +12pt  add read replica for support queries
 cost / month         $28k             $41k              +46%   NAT egress to vendor; add PrivateLink
 pages / week         &lt; 2              6                 x3     4 were noisy lag alerts -&gt; burn-rate</pre>
-<p>ככה ההערכות שלכם מתכיילות (לומדים את ההטיות השיטתיות שלכם — רוב האנשים מעריכים בחסר את מקדם השיא ואת העלות), וככה הארגון לומד לסמוך על המספרים שלכם. זה גם סוגר triggers להערכה מחדש ב-ADRs.</p>
+<p>ככה ההערכות שלך מתכיילות (לומדים את ההטיות השיטתיות שלך — רוב האנשים מעריכים בחסר את מקדם השיא ואת העלות), וככה הארגון לומד לסמוך על המספרים שלך. זה גם סוגר triggers להערכה מחדש ב-ADRs.</p>
 <blockquote>⚠️ טיפ לפרודקשן: הפכו את "תחזית מול בפועל" לסעיף סטנדרטי בתבנית ה-design doc. זה עולה 30 דקות לפרויקט וזה אחד הסימנים הכי חזקים ל-ownership ברמת principal.</blockquote>`
       }
     }
@@ -1243,7 +1243,7 @@ pages / week         &lt; 2              6                 x3     4 were noisy l
   ],
   mnemonic: {
     en: "\"Write it, Attack it, Prove it, Review it, Guard it, Check it.\" (WAPRGC — 'We Always Prove, Review, Guard, Check.')",
-    he: "\"לכתוב, לתקוף, להוכיח, לעבור review, לשמור, לבדוק.\" — מניחים שאתם טועים איפשהו, ויוצאים לחפש איפה."
+    he: "\"לכתוב, לתקוף, להוכיח, לעבור review, לשמור, לבדוק.\" — מניחים שאתה טועה איפשהו, ויוצאים לחפש איפה."
   },
   pitfalls: [
     { en: "Choosing friendly reviewers and asking 'any comments?' — you get approval, not validation.", he: "לבחור reviewers ידידותיים ולשאול 'יש הערות?' — מקבלים אישור, לא אימות." },
@@ -1424,7 +1424,7 @@ LB -&gt; orders (span) -&gt; payments (span) -&gt; Stripe (client span)
 LB -&gt; orders (span) -&gt; payments (span) -&gt; Stripe (client span)
                     -&gt; Kafka publish (span, header carries traceparent)
                          -&gt; email-worker consume (span, same trace)</pre>
-<p>משתמשים ב-SDKs/auto-instrumentation של <strong>OpenTelemetry</strong> בכל service ושולחים הכול ל-<strong>OTel Collector</strong>, שעושה batching, השחרה, sampling ומייצא ל-backends (Prometheus/Mimir, Loki/Elastic, Tempo/Jaeger, או ספק). זה שומר אתכם vendor-neutral — החלפת backend הופכת לשינוי קונפיג ב-collector.</p>
+<p>משתמשים ב-SDKs/auto-instrumentation של <strong>OpenTelemetry</strong> בכל service ושולחים הכול ל-<strong>OTel Collector</strong>, שעושה batching, השחרה, sampling ומייצא ל-backends (Prometheus/Mimir, Loki/Elastic, Tempo/Jaeger, או ספק). זה שומר אותך vendor-neutral — החלפת backend הופכת לשינוי קונפיג ב-collector.</p>
 <p><strong>Sampling</strong>: head sampling (מחליטים בהתחלה, למשל 5%) זול אבל מפספס שגיאות נדירות; <strong>tail sampling</strong> ב-collector שומר 100% מהשגיאות וה-traces האיטיים ועוד אחוז קטן מהרגילים — הבחירה הרגילה בפרודקשן.</p>
 <p><strong>מלכודת ה-cardinality</strong>: כל צירוף ייחודי של labels הוא time series נפרד. <code>http_requests_total{route="/orders/{id}"}</code> זה בסדר; <code>{path="/orders/o-81"}</code> או <code>{user_id=...}</code> יוצר מיליוני series ויכול להפיל את Prometheus או להכפיל את החשבון פי 10. IDs עם cardinality גבוה שייכים ללוגים ול-traces, לא ל-labels של metrics.</p>`
       }
@@ -1476,7 +1476,7 @@ LB -&gt; orders (span) -&gt; payments (span) -&gt; Stripe (client span)
     v
   email-worker (same trace)            dashboards: SLO -> edge RED -> endpoints -> deps -> USE`,
   handsOn: [
-    { cmd: "curl -s localhost:9090/api/v1/status/tsdb | jq '.data.seriesCountByMetricName[:5]'", what: { en: "Find your top-cardinality metrics in Prometheus before they find your bill.", he: "מוצאים את ה-metrics עם ה-cardinality הכי גבוה ב-Prometheus לפני שהם מוצאים את החשבון שלכם." } },
+    { cmd: "curl -s localhost:9090/api/v1/status/tsdb | jq '.data.seriesCountByMetricName[:5]'", what: { en: "Find your top-cardinality metrics in Prometheus before they find your bill.", he: "מוצאים את ה-metrics עם ה-cardinality הכי גבוה ב-Prometheus לפני שהם מוצאים את החשבון שלך." } },
     { cmd: "curl -s -H 'traceparent: 00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01' https://staging.api/orders/o-81 -o /dev/null -w '%{http_code}\\n'", what: { en: "Send a request with a known trace ID, then search it in logs and the tracing UI to verify propagation end to end.", he: "שולחים בקשה עם trace ID ידוע, ואז מחפשים אותו בלוגים וב-UI של ה-tracing כדי לאמת propagation מקצה לקצה." } },
     { cmd: "kubectl logs deploy/orders --since=10m | jq -r 'select(.level==\"error\") | [.ts,.trace_id,.event] | @tsv' | head", what: { en: "Structured logs pay off: filter errors and pull trace IDs in one line.", he: "לוגים מובנים משתלמים: מסננים שגיאות ושולפים trace IDs בשורה אחת." } },
     { cmd: "promtool check rules alerts.yml", what: { en: "Validate alert rules in CI like any other code.", he: "מאמתים חוקי התראות ב-CI כמו כל קוד אחר." } }
@@ -1492,7 +1492,7 @@ LB -&gt; orders (span) -&gt; payments (span) -&gt; Stripe (client span)
     { en: "Logging PII/tokens 'temporarily for debugging' — now it's in 3 systems with 30-day retention and a compliance incident.", he: "לכתוב PII/tokens ללוג 'זמנית בשביל דיבאג' — עכשיו זה ב-3 מערכות עם retention של 30 יום ואירוע רגולציה." }
   ],
   interview: [
-    { q: { en: "You're launching a new service next month. What observability do you require before launch?", he: "אתם משיקים service חדש בחודש הבא. איזה observability אתם דורשים לפני ההשקה?" },
+    { q: { en: "You're launching a new service next month. What observability do you require before launch?", he: "אתה משיק service חדש בחודש הבא. איזה observability אתה דורש לפני ההשקה?" },
       a: { en: "SLIs/SLOs for the top journeys measured at the edge; RED per endpoint and per dependency; USE and runtime metrics; structured JSON logs with trace_id and a level policy; OpenTelemetry tracing with propagation through queues; burn-rate paging alerts each with a runbook; one overview dashboard; business KPIs with week-over-week comparison; synthetic probes; PII redaction; retention and cost estimate. Verified in a game day before launch.", he: "SLIs/SLOs למסעות המרכזיים שנמדדים ב-edge; RED לכל endpoint ולכל dependency; USE ו-metrics של runtime; לוגי JSON מובנים עם trace_id ומדיניות רמות; tracing עם OpenTelemetry כולל propagation דרך תורים; התראות page לפי burn rate, כל אחת עם runbook; דשבורד overview אחד; KPIs עסקיים עם השוואה לשבוע שעבר; synthetic probes; השחרת PII; הערכת retention ועלות. מאומת ב-game day לפני ההשקה." } },
     { q: { en: "Why alert on burn rate instead of 'error rate > 1% for 5 minutes'?", he: "למה להתריע על burn rate במקום 'error rate > 1% במשך 5 דקות'?" },
       a: { en: "A fixed threshold ignores the SLO: it pages on short blips that don't threaten the budget and misses slow burns that do. Burn rate ties the alert to how fast you're consuming the error budget; multi-window (1h + 5m) gives fast detection for big outages and fast reset when they end, while a slower window pair (6h/30m) catches slow leaks as tickets.", he: "סף קבוע מתעלם מה-SLO: הוא מקפיץ על הבהובים קצרים שלא מאיימים על התקציב ומפספס שריפות איטיות שכן. Burn rate קושר את ההתראה לקצב שבו צורכים את ה-error budget; רב-חלונות (1h + 5m) נותן זיהוי מהיר להשבתות גדולות ואיפוס מהיר כשהן נגמרות, וזוג חלונות איטי (6h/30m) תופס דליפות איטיות כטיקטים." } }
@@ -1582,7 +1582,7 @@ INFRA.lessons.push({
 </ol>
 <blockquote>💡 Real world: When principals disagree, the productive move is to make the disagreement concrete: "We differ on whether peak will exceed 5k writes/s within 18 months. If it will, DynamoDB wins; if not, Postgres wins. Let's look at the growth data." Arguments about tools become arguments about numbers.</blockquote>`,
         he: `<ol>
-<li><strong>Trade-offs, לא תשובות.</strong> כל בחירה קונה משהו ועולה משהו. "Kafka נותן replay ו-fan-out; הוא עולה במורכבות תפעולית וב-eventual consistency." אם אתם לא יודעים לנקוב במחיר, לא הבנתם את הבחירה.</li>
+<li><strong>Trade-offs, לא תשובות.</strong> כל בחירה קונה משהו ועולה משהו. "Kafka נותן replay ו-fan-out; הוא עולה במורכבות תפעולית וב-eventual consistency." אם אתה לא יודע לנקוב במחיר, לא הבנת את הבחירה.</li>
 <li><strong>Blast radius.</strong> כש(לא אם) זה נכשל, כמה משתמשים/tenants/regions נפגעים? Cells, bulkheads, limits לכל tenant ו-rollouts מדורגים מקטינים אותו.</li>
 <li><strong>הפיכות.</strong> דלתות חד-כיווניות מקבלות החלטות איטיות, כתובות, עם review; דו-כיווניות מקבלות החלטות מהירות ומואצלות. הופכים דלתות לדו-כיווניות כשאפשר (feature flags, מיגרציות expand/contract, אבסטרקציה בתפר האינטגרציה).</li>
 <li><strong>פשטות היא פיצ'ר.</strong> התכנון הכי טוב הוא הפשוט ביותר שעומד ב-NFRs. טכנולוגיה משעממת, פחות חלקים נעים, פחות שירותים. מורכבות צריכה להיות ממומנת ע"י דרישה.</li>
@@ -1620,7 +1620,7 @@ INFRA.lessons.push({
 <tr><td>הפיכות (2)</td><td>✅</td><td>✅</td><td>⚠️ lock-in לפורמט התבניות</td></tr>
 <tr><td><strong>החלטה</strong></td><td colspan="3">B — עומד בשני ה-Musts, תפעולי, זול; A כפתרון ביניים השבוע (טבלת dedupe) כי השליחות הכפולות כואבות עכשיו.</td></tr>
 </table>
-<p>שימו לב למהלכים: אופציה של <strong>"משהו קטן עכשיו"</strong> לצד התיקון האמיתי, אופציית <strong>קנייה</strong> שנשקלת ברצינות, משקלים שקשורים לדרישות, וההחלטה מוסברת במשפט אחד. הטבלה הזו, יחד עם ה-sizing, היא הרבה פעמים 80% מ-design review מוצלח.</p>`
+<p>שים לב למהלכים: אופציה של <strong>"משהו קטן עכשיו"</strong> לצד התיקון האמיתי, אופציית <strong>קנייה</strong> שנשקלת ברצינות, משקלים שקשורים לדרישות, וההחלטה מוסברת במשפט אחד. הטבלה הזו, יחד עם ה-sizing, היא הרבה פעמים 80% מ-design review מוצלח.</p>`
       }
     },
     {
@@ -1659,7 +1659,7 @@ INFRA.lessons.push({
 <tr><td>תפעול</td><td>SLOs, RED/USE, לוגים, traces, התראות burn-rate, runbooks</td><td>pr-observability-plan, rel-sli-slo-sla</td></tr>
 <tr><td>מנהיגות</td><td>Design docs, אסטרטגיה, השפעה, מיגרציות</td><td>staff-design-docs, staff-tech-strategy, staff-influence</td></tr>
 </table>
-<p>איך משתמשים: בוחרים מערכת שאתם מכירים (זו של העבודה הנוכחית), ולכל שורה כותבים שני משפטים על איך <em>המערכת הזו</em> מטפלת בזה. כל שורה שאתם לא מצליחים למלא היא נושא הלימוד הבא שלכם — וכנראה גם סיכון במערכת הזו.</p>`
+<p>איך משתמשים: בחר מערכת שאתה מכיר (זו של העבודה הנוכחית), ולכל שורה כתוב שני משפטים על איך <em>המערכת הזו</em> מטפלת בזה. כל שורה שאתה לא מצליח למלא היא נושא הלימוד הבא שלך — וכנראה גם סיכון במערכת הזו.</p>`
       }
     },
     {
@@ -1675,12 +1675,12 @@ INFRA.lessons.push({
 </ul>
 <blockquote>⚠️ Production tip: The fastest way to lose principal-level trust is a confident wrong answer. "I don't know — here's how I'd find out in a day" builds more trust than a guess dressed as certainty.</blockquote>`,
         he: `<ul>
-<li><strong>קוראים postmortems כל שבוע</strong> (שלכם וציבוריים: Cloudflare, GitHub, AWS, Google). רוב הכישלונות ה"חדשים" הם ישנים בבגדים חדשים.</li>
-<li><strong>מחזיקים מחברת מספרים</strong>: נתוני throughput, latency ועלות אמיתיים מהמערכות שלכם. ההערכות נהיות חדות כי הן מעוגנות.</li>
+<li><strong>קוראים postmortems כל שבוע</strong> (שלך וציבוריים: Cloudflare, GitHub, AWS, Google). רוב הכישלונות ה"חדשים" הם ישנים בבגדים חדשים.</li>
+<li><strong>מחזיקים מחברת מספרים</strong>: נתוני throughput, latency ועלות אמיתיים מהמערכות שלך. ההערכות נהיות חדות כי הן מעוגנות.</li>
 <li><strong>כותבים יותר ממדברים</strong>: מסמך של 2 עמודים מגיע ל-50 אנשים; פגישה מגיעה ל-8.</li>
 <li><strong>מוחקים דברים</strong>: ה-PRs הכי טובים של principal מוחקים הרבה פעמים service, תור, דשבורד, התראה.</li>
 <li><strong>עושים on-call מדי פעם</strong>: שום דבר לא מכייל שיקול דעת תכנוני כמו לקבל page מהתכנון של עצמך.</li>
-<li><strong>מצמיחים אחרים</strong>: עושים review לתכנונים ע"י שאלות, לא הכתבת תשובות. המינוף שלכם הוא איכות ההחלטות שמתקבלות כשאתם לא בחדר.</li>
+<li><strong>מצמיחים אחרים</strong>: עושים review לתכנונים ע"י שאלות, לא הכתבת תשובות. המינוף שלך הוא איכות ההחלטות שמתקבלות כשאתה לא בחדר.</li>
 </ul>
 <blockquote>⚠️ טיפ לפרודקשן: הדרך הכי מהירה לאבד אמון ברמת principal היא תשובה שגויה בביטחון. "אני לא יודע — ככה הייתי בודק את זה תוך יום" בונה יותר אמון מניחוש שמחופש לוודאות.</blockquote>`
       }
@@ -1700,7 +1700,7 @@ INFRA.lessons.push({
   [trade-offs] [blast radius] [reversibility] [simplicity]
   [cost/unit]  [operability]  [data outlives code] [people/Conway]`,
   handsOn: [
-    { cmd: "printf '| Area | How does OUR system handle it? |\\n|---|---|\\n| Requirements | |\\n| Sizing | |\\n| Data/CAP | |\\n| Scaling | |\\n| Integration/idempotency | |\\n| Observability | |\\n| Rollout | |\\n' > my-system-map.md", what: { en: "Fill the mega-checklist for the system you work on today. Empty rows = study topics and probably risks.", he: "מלאו את הצ'קליסט הגדול עבור המערכת שאתם עובדים עליה היום. שורות ריקות = נושאי לימוד וכנראה סיכונים." } },
+    { cmd: "printf '| Area | How does OUR system handle it? |\\n|---|---|\\n| Requirements | |\\n| Sizing | |\\n| Data/CAP | |\\n| Scaling | |\\n| Integration/idempotency | |\\n| Observability | |\\n| Rollout | |\\n' > my-system-map.md", what: { en: "Fill the mega-checklist for the system you work on today. Empty rows = study topics and probably risks.", he: "מלא את הצ'קליסט הגדול עבור המערכת שאתה עובד עליה היום. שורות ריקות = נושאי לימוד וכנראה סיכונים." } },
     { cmd: "curl -s https://api.github.com/repos/danluu/post-mortems | jq '.description'", what: { en: "A curated list of public postmortems — read one a week and write down the failure pattern.", he: "רשימה אוצרת של postmortems ציבוריים — קוראים אחד בשבוע ורושמים את דפוס הכישלון." } },
     { cmd: "printf 'Option | Must1 | Must2 | Effort | Ops | Cost | Reversible\\n' > tradeoffs.csv", what: { en: "Start a weighted trade-off matrix for your next decision, including a 'do something small now' and a 'buy' option.", he: "מתחילים מטריצת trade-offs ממושקלת להחלטה הבאה, כולל אופציית 'משהו קטן עכשיו' ואופציית 'לקנות'." } }
   ],

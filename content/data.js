@@ -15,7 +15,7 @@ INFRA.lessons.push({
   title: { en: "SQL vs NoSQL: Picking the Right Database", he: "SQL מול NoSQL: איך בוחרים database" },
   tldr: {
     en: "Start with Postgres unless your access pattern screams otherwise; every other database is a specialist that trades flexibility for one superpower.",
-    he: "מתחילים עם Postgres, אלא אם ה-access pattern שלכם צועק אחרת. כל database אחר הוא מומחה שמוותר על גמישות בשביל כוח-על אחד."
+    he: "מתחילים עם Postgres, אלא אם ה-access pattern שלך צועק אחרת. כל database אחר הוא מומחה שמוותר על גמישות בשביל כוח-על אחד."
   },
   analogy: {
     en: "A relational DB is a Swiss Army knife: it does everything well enough. Redis is a scalpel, Cassandra is a conveyor belt, Neo4j is a spiderweb, Elasticsearch is a librarian with a photographic memory. You don't perform surgery with a Swiss Army knife — but you also don't open a can of beans with a scalpel.",
@@ -28,7 +28,7 @@ INFRA.lessons.push({
         en: `<p><strong>PostgreSQL</strong> and <strong>MySQL</strong> store data in tables with a fixed schema, enforce relationships with foreign keys, and give you <strong>ACID transactions</strong> and a query language (SQL) that can answer questions you didn't anticipate when you designed the schema. That last part is the killer feature: with <code>JOIN</code>, <code>GROUP BY</code> and ad-hoc filters, you don't need to know every query up front.</p>
 <p>Modern Postgres also does JSON (<code>jsonb</code> with GIN indexes), full-text search, geospatial (PostGIS), and even vectors (pgvector). A single well-tuned Postgres on a decent box handles tens of thousands of transactions per second and multiple TB of data — far more than most startups will ever need.</p>
 <blockquote>💡 Real world: "We need NoSQL to scale" is said far more often than it's true. Many unicorns ran on a single primary Postgres + read replicas for years. Choose NoSQL for a specific access pattern, not for vibes.</blockquote>`,
-        he: `<p><strong>PostgreSQL</strong> ו-<strong>MySQL</strong> שומרים data בטבלאות עם schema קבוע, אוכפים קשרים עם foreign keys, ונותנים <strong>ACID transactions</strong> ושפת שאילתות (SQL) שיודעת לענות על שאלות שלא חשבתם עליהן כשתכננתם את ה-schema. זה הקטע הכי חזק: עם <code>JOIN</code>, <code>GROUP BY</code> ופילטרים אד-הוק, לא צריך לדעת מראש כל query.</p>
+        he: `<p><strong>PostgreSQL</strong> ו-<strong>MySQL</strong> שומרים data בטבלאות עם schema קבוע, אוכפים קשרים עם foreign keys, ונותנים <strong>ACID transactions</strong> ושפת שאילתות (SQL) שיודעת לענות על שאלות שלא חשבת עליהן כשתכננת את ה-schema. זה הקטע הכי חזק: עם <code>JOIN</code>, <code>GROUP BY</code> ופילטרים אד-הוק, לא צריך לדעת מראש כל query.</p>
 <p>Postgres מודרני עושה גם JSON (<code>jsonb</code> עם GIN index), full-text search, גיאו (PostGIS) ואפילו וקטורים (pgvector). Postgres אחד מכויל טוב על מכונה סבירה מחזיק עשרות אלפי טרנזקציות בשנייה וכמה TB של data — הרבה יותר ממה שרוב הסטארטאפים יצטרכו אי פעם.</p>
 <blockquote>💡 מהשטח: "אנחנו צריכים NoSQL כדי לעשות scale" נאמר הרבה יותר פעמים ממה שזה נכון. הרבה יוניקורנים רצו שנים על primary אחד של Postgres ועוד כמה read replicas. בוחרים NoSQL בגלל access pattern ספציפי, לא בגלל vibe.</blockquote>`
       }
@@ -39,9 +39,9 @@ INFRA.lessons.push({
         en: `<p><strong>Document stores</strong> (MongoDB, Couchbase) store JSON-like documents. Great when an entity is naturally a tree (an order with its line items) and you read it whole. Schema is flexible — which is a feature on day 1 and a liability on day 500 when you have 7 shapes of "user".</p>
 <p><strong>Key-value stores</strong> do one thing: <code>GET key</code> / <code>PUT key value</code>, blazing fast. <strong>Redis</strong> is in-memory (sub-millisecond, ~100k+ ops/sec per core) and adds data structures: lists, sets, sorted sets (leaderboards!), streams, TTLs. Use it for caching, sessions, rate limiting, locks. <strong>DynamoDB</strong> is a managed, durable key-value/document store with single-digit-ms latency at any scale — but you must design around your access patterns up front (partition key + sort key), because queries outside them are expensive scans.</p>
 <blockquote>⚠️ Production tip: Redis is not a primary database by default. With default persistence settings you can lose the last second(s) of writes on crash. Treat it as a cache unless you've deliberately configured AOF and replication.</blockquote>`,
-        he: `<p><strong>Document stores</strong> (MongoDB, Couchbase) שומרים מסמכים בסגנון JSON. מעולה כשישות היא בטבעה עץ (הזמנה עם כל השורות שלה) וקוראים אותה בשלמותה. ה-schema גמיש — פיצ'ר ביום 1, ובעיה ביום 500 כשיש לכם 7 צורות שונות של "user".</p>
+        he: `<p><strong>Document stores</strong> (MongoDB, Couchbase) שומרים מסמכים בסגנון JSON. מעולה כשישות היא בטבעה עץ (הזמנה עם כל השורות שלה) וקוראים אותה בשלמותה. ה-schema גמיש — פיצ'ר ביום 1, ובעיה ביום 500 כשיש לך 7 צורות שונות של "user".</p>
 <p><strong>Key-value stores</strong> עושים דבר אחד: <code>GET key</code> / <code>PUT key value</code>, ממש מהר. <strong>Redis</strong> יושב בזיכרון (תת-מילישנייה, 100k+ פעולות בשנייה לליבה) ומוסיף מבני נתונים: lists, sets, sorted sets (טבלאות ניקוד!), streams ו-TTL. משתמשים בו ל-cache, sessions, rate limiting ו-locks. <strong>DynamoDB</strong> הוא key-value/document מנוהל ועמיד, עם latency של מילישניות בודדות בכל scale — אבל חייבים לתכנן מראש סביב ה-access patterns (partition key + sort key), כי query מחוץ להם הופך ל-scan יקר.</p>
-<blockquote>⚠️ טיפ לפרודקשן: Redis הוא לא database ראשי כברירת מחדל. עם הגדרות persistence דיפולטיות אפשר לאבד את השנייה-שתיים האחרונות של כתיבות בקריסה. תתייחסו אליו כ-cache, אלא אם הגדרתם בכוונה AOF ו-replication.</blockquote>`
+<blockquote>⚠️ טיפ לפרודקשן: Redis הוא לא database ראשי כברירת מחדל. עם הגדרות persistence דיפולטיות אפשר לאבד את השנייה-שתיים האחרונות של כתיבות בקריסה. תתייחס אליו כ-cache, אלא אם הגדרת בכוונה AOF ו-replication.</blockquote>`
       }
     },
     {
@@ -54,7 +54,7 @@ INFRA.lessons.push({
         he: `<p><strong>Wide-column</strong> (Cassandra, ScyllaDB, HBase, Bigtable): בלי master, בנוי ל-<em>write throughput מטורף</em> על פני הרבה nodes ו-data centers — אירועי IoT, תיבות הודעות, activity feeds. ממדלים טבלה אחת לכל query; אין joins, ו-query אד-הוק מוגבל.</p>
 <p><strong>Graph</strong> (Neo4j, Neptune): הקשרים הם אזרח ראשון. "חברים של חברים שאוהבים ג'אז" זה כמה self-joins ב-SQL, אבל traversal קליל ב-Cypher: <code>MATCH (me)-[:FRIEND*2]-&gt;(f)-[:LIKES]-&gt;(:Genre {name:'jazz'})</code>. טבעות הונאה, המלצות, גרפים של הרשאות.</p>
 <p><strong>Time-series</strong> (InfluxDB, Prometheus TSDB, TimescaleDB): data שרובו append לפי timestamp, דחיסה אגרסיבית, downsampling ו-retention policies. מטריקות ונתוני חיישנים.</p>
-<p><strong>Search</strong> (Elasticsearch/OpenSearch): inverted index ל-full-text search, התאמה מקורבת (fuzzy), דירוג רלוונטיות ו-log analytics. זה index <em>משני</em> שמוזן מה-source of truth — לא המקום היחיד שבו ה-data שלכם צריך לחיות.</p>`
+<p><strong>Search</strong> (Elasticsearch/OpenSearch): inverted index ל-full-text search, התאמה מקורבת (fuzzy), דירוג רלוונטיות ו-log analytics. זה index <em>משני</em> שמוזן מה-source of truth — לא המקום היחיד שבו ה-data שלך צריך לחיות.</p>`
       }
     },
     {
@@ -132,7 +132,7 @@ INFRA.lessons.push({
   ],
   interview: [
     {
-      q: { en: "When would you NOT choose a relational database?", he: "מתי לא הייתם בוחרים database רלציוני?" },
+      q: { en: "When would you NOT choose a relational database?", he: "מתי לא היית בוחר database רלציוני?" },
       a: {
         en: "When the access pattern is narrow and known, and the scale or latency needs exceed what a single primary gives: e.g. massive append-only writes across regions (Cassandra), sub-ms key lookups (Redis), deep relationship traversal (graph), full-text relevance (Elasticsearch), or metrics with retention/downsampling (TSDB). Otherwise SQL's flexibility and ACID usually win.",
         he: "כשה-access pattern צר וידוע, וה-scale או ה-latency עוברים את מה ש-primary אחד נותן: למשל כתיבות append-only מסיביות על פני regions (Cassandra), שליפות key בתת-מילישנייה (Redis), traversal עמוק על קשרים (graph), רלוונטיות ב-full-text (Elasticsearch), או מטריקות עם retention ו-downsampling (TSDB). אחרת, הגמישות וה-ACID של SQL בדרך כלל מנצחים."
@@ -232,7 +232,7 @@ INFRA.lessons.push({
 <blockquote>💡 Real world: A <strong>covering index</strong> includes every column the query needs (Postgres: <code>CREATE INDEX ... INCLUDE (amount)</code>), enabling an <em>Index Only Scan</em> that never touches the table. That's often a 10x win on hot queries.</blockquote>`,
         he: `<p>Index על <code>(tenant_id, status, created_at)</code> ממוין לפי tenant, בתוכו לפי status, ובתוכו לפי זמן. הוא יכול לשרת:</p>
 <ul><li><code>WHERE tenant_id = 7</code> ✅</li><li><code>WHERE tenant_id = 7 AND status = 'open'</code> ✅</li><li><code>WHERE tenant_id = 7 AND status = 'open' ORDER BY created_at DESC LIMIT 20</code> ✅ (בלי מיון בכלל!)</li><li><code>WHERE status = 'open'</code> ❌ — מדלג על העמודה השמאלית</li></ul>
-<p>זה <strong>חוק ה-leftmost prefix</strong>. כלל אצבע: עמודות <strong>שוויון</strong> קודם, ועמודת <strong>טווח/מיון</strong> בסוף. בין עמודות השוויון, שימו ראשונה את זו שתמיד מופיעה ב-queries. תנאי טווח (<code>created_at &gt; ...</code>) "עוצר" את השימוש היעיל ב-index לעמודות שאחריו.</p>
+<p>זה <strong>חוק ה-leftmost prefix</strong>. כלל אצבע: עמודות <strong>שוויון</strong> קודם, ועמודת <strong>טווח/מיון</strong> בסוף. בין עמודות השוויון, שים ראשונה את זו שתמיד מופיעה ב-queries. תנאי טווח (<code>created_at &gt; ...</code>) "עוצר" את השימוש היעיל ב-index לעמודות שאחריו.</p>
 <blockquote>💡 מהשטח: <strong>Covering index</strong> כולל את כל העמודות שה-query צריך (ב-Postgres: <code>CREATE INDEX ... INCLUDE (amount)</code>), וזה מאפשר <em>Index Only Scan</em> שלא נוגע בטבלה בכלל. על queries חמים זה הרבה פעמים שיפור של פי 10.</blockquote>`
       }
     },
@@ -260,7 +260,7 @@ Seq Scan on orders  (cost=0.00..185432.00 rows=12 width=96)
   Rows Removed by Filter: 9999989
 Execution Time: 812.6 ms</pre>
 <p>"Seq Scan" ועוד "Rows Removed by Filter: 9,999,989" = קוראים 10 מיליון שורות כדי להחזיר 11. מוסיפים <code>CREATE INDEX CONCURRENTLY idx_orders_customer ON orders(customer_id);</code> וזה הופך ל-<code>Index Scan using idx_orders_customer ... Execution Time: 0.08 ms</code>. פי 10,000.</p>
-<p>שימו לב: seq scan זה לא תמיד רע. אם ה-query מחזיר חלק גדול מהטבלה, סריקה רציפה זולה יותר ממיליוני קפיצות אקראיות דרך ה-index, וה-planner יודע את זה. חפשו הערכות (<code>rows=12</code>) שרחוקות מאוד מהמספרים האמיתיים — זה אומר סטטיסטיקות ישנות; הריצו <code>ANALYZE</code>.</p>`
+<p>שים לב: seq scan זה לא תמיד רע. אם ה-query מחזיר חלק גדול מהטבלה, סריקה רציפה זולה יותר ממיליוני קפיצות אקראיות דרך ה-index, וה-planner יודע את זה. חפש הערכות (<code>rows=12</code>) שרחוקות מאוד מהמספרים האמיתיים — זה אומר סטטיסטיקות ישנות; הרץ <code>ANALYZE</code>.</p>`
       }
     },
     {
@@ -410,7 +410,7 @@ UPDATE accounts SET balance = balance - 100 WHERE id = 1;
 UPDATE accounts SET balance = balance + 100 WHERE id = 2;
 COMMIT;   -- or ROLLBACK;</pre>
 <blockquote>💡 Real world: Durability has a dial. Postgres <code>synchronous_commit = off</code> or MySQL <code>innodb_flush_log_at_trx_commit = 2</code> trade up to ~1 s of committed writes on a crash for big throughput gains. Fine for analytics events, terrible for payments.</blockquote>`,
-        he: `<ul><li><strong>Atomicity</strong> — כל הפקודות עושות commit או אף אחת. קריסה באמצע העברה? מתבצע rollback.</li><li><strong>Consistency</strong> — אילוצים (FK, CHECK, UNIQUE) מתקיימים לפני ואחרי. בעיקר <em>האחריות שלכם</em> דרך תכנון ה-schema.</li><li><strong>Isolation</strong> — טרנזקציות במקביל מתנהגות כאילו הן (פחות או יותר) לבד. זה הפרמטר שמכווננים.</li><li><strong>Durability</strong> — ברגע ש-COMMIT חזר, זה שורד קריסה. ממומש עם write-ahead log (WAL) שנכתב לדיסק עם <code>fsync</code>.</li></ul>
+        he: `<ul><li><strong>Atomicity</strong> — כל הפקודות עושות commit או אף אחת. קריסה באמצע העברה? מתבצע rollback.</li><li><strong>Consistency</strong> — אילוצים (FK, CHECK, UNIQUE) מתקיימים לפני ואחרי. בעיקר <em>האחריות שלך</em> דרך תכנון ה-schema.</li><li><strong>Isolation</strong> — טרנזקציות במקביל מתנהגות כאילו הן (פחות או יותר) לבד. זה הפרמטר שמכווננים.</li><li><strong>Durability</strong> — ברגע ש-COMMIT חזר, זה שורד קריסה. ממומש עם write-ahead log (WAL) שנכתב לדיסק עם <code>fsync</code>.</li></ul>
 <pre>BEGIN;
 UPDATE accounts SET balance = balance - 100 WHERE id = 1;
 UPDATE accounts SET balance = balance + 100 WHERE id = 2;
@@ -447,7 +447,7 @@ COMMIT;   -- or ROLLBACK;</pre>
 <tr><td>Serializable</td><td>לא</td><td>לא</td><td>לא</td></tr>
 </table>
 <p>הדיפולטים חשובים: <strong>Postgres = Read Committed</strong>, <strong>MySQL InnoDB = Repeatable Read</strong>. *בפועל, Repeatable Read של Postgres (snapshot isolation) חוסם גם phantoms, ו-InnoDB משתמש ב-gap/next-key locks כדי למנוע את רובם. אף אחד מהם לא מונע write skew — רק Serializable.</p>
-<p>Serializable לא בחינם: ה-SSI של Postgres יעשה abort לטרנזקציות עם <code>ERROR: could not serialize access</code> (SQLSTATE 40001), אז הקוד שלכם <strong>חייב לעשות retry</strong>. זה הדיל: נכונות תמורת retries.</p>`
+<p>Serializable לא בחינם: ה-SSI של Postgres יעשה abort לטרנזקציות עם <code>ERROR: could not serialize access</code> (SQLSTATE 40001), אז הקוד שלך <strong>חייב לעשות retry</strong>. זה הדיל: נכונות תמורת retries.</p>`
       }
     },
     {
@@ -460,7 +460,7 @@ COMMIT;   -- or ROLLBACK;</pre>
         he: `<p>כותבים לוקחים <strong>row locks</strong>; כותב שני על אותה שורה מחכה. <code>SELECT ... FOR UPDATE</code> לוקח את ה-lock במפורש; <code>FOR UPDATE SKIP LOCKED</code> מאפשר ל-workers של job queue לתפוס שורות שונות בלי לחסום אחד את השני — pattern מעולה ל-queue מעל Postgres.</p>
 <p><strong>Deadlock</strong>: T1 נועל שורה A ואז רוצה את B; T2 נועל את B ואז רוצה את A. שניהם היו מחכים לנצח — אז ה-DB מזהה את המעגל (Postgres בודק אחרי <code>deadlock_timeout</code> = שנייה) והורג אחד מהם עם <code>ERROR: deadlock detected</code>.</p>
 <p>מניעה: <strong>נועלים בסדר עקבי</strong> (למשל תמיד את ה-id הנמוך קודם), שומרים טרנזקציות קצרות, ואף פעם לא מחזיקים טרנזקציה פתוחה בזמן קריאה ל-API חיצוני.</p>
-<blockquote>⚠️ טיפ לפרודקשן: הגדירו <code>lock_timeout</code> (למשל 5s) ו-<code>idle_in_transaction_session_timeout</code> ב-Postgres. session אחד שנשכח במצב "idle in transaction" יכול להחזיק locks שעות ולחסום את הניקוי של VACUUM, מה שגורם ל-bloat בכל ה-DB.</blockquote>`
+<blockquote>⚠️ טיפ לפרודקשן: הגדר <code>lock_timeout</code> (למשל 5s) ו-<code>idle_in_transaction_session_timeout</code> ב-Postgres. session אחד שנשכח במצב "idle in transaction" יכול להחזיק locks שעות ולחסום את הניקוי של VACUUM, מה שגורם ל-bloat בכל ה-DB.</blockquote>`
       }
     },
     {
@@ -497,7 +497,7 @@ COMMIT;   -- or ROLLBACK;</pre>
     { en: "Read-modify-write in application code (read balance, add in Python, write back) under Read Committed → lost updates. Use atomic SQL or FOR UPDATE.", he: "Read-modify-write בקוד האפליקציה (קוראים balance, מחברים ב-Python, כותבים חזרה) תחת Read Committed → lost updates. משתמשים ב-SQL אטומי או FOR UPDATE." },
     { en: "Calling an HTTP API inside a DB transaction: the API takes 30 s, your row locks are held for 30 s, and everything queues behind them.", he: "לקרוא ל-HTTP API בתוך טרנזקציה: ה-API לוקח 30 שניות, ה-row locks מוחזקים 30 שניות, והכול נערם מאחוריהם." },
     { en: "Switching to SERIALIZABLE without adding retry logic — users now see random 40001 errors.", he: "לעבור ל-SERIALIZABLE בלי להוסיף retry — עכשיו המשתמשים רואים שגיאות 40001 אקראיות." },
-    { en: "Assuming the same isolation level name means the same behavior across Postgres and MySQL. It doesn't — read the docs for your engine.", he: "להניח שאותו שם של isolation level אומר אותה התנהגות ב-Postgres וב-MySQL. זה לא — קראו את התיעוד של המנוע שלכם." }
+    { en: "Assuming the same isolation level name means the same behavior across Postgres and MySQL. It doesn't — read the docs for your engine.", he: "להניח שאותו שם של isolation level אומר אותה התנהגות ב-Postgres וב-MySQL. זה לא — קרא את התיעוד של המנוע שלך." }
   ],
   interview: [
     {
@@ -630,7 +630,7 @@ INFRA.lessons.push({
         he: `<p><strong>Failover</strong> = מזהים שה-primary מת → בוחרים את ה-replica הכי מעודכן → עושים לו promote → מפנים את הלקוחות (DNS, VIP, proxy) → עושים fencing ל-primary הישן. כלים: Patroni (Postgres, עם etcd/Consul לבחירת leader), Orchestrator / MySQL Group Replication, או ה-failover המנוהל של הענן (RDS Multi-AZ: בדרך כלל 60-120 שניות).</p>
 <p>החלק הקשה הוא <strong>"הוא באמת מת?"</strong>. network partition גורם ל-primary בריא <em>להיראות</em> מת. אם עושים promote ל-replica בזמן שה-primary הישן עדיין מקבל כתיבות, מקבלים <strong>split brain</strong>: שני primaries, data שמתפצל, ו-merge ידני כואב.</p>
 <p>הגנות: <strong>consensus/quorum</strong> לבחירת leader (רוב של 3 או 5 קולות, כך שרק צד אחד של ה-partition יכול לנצח), <strong>fencing</strong> (STONITH — "Shoot The Other Node In The Head": מנתקים לו חשמל, שוללים גישה ל-storage, או שהוא עושה לעצמו demote כשה-lease פג), ומספר אי-זוגי של מצביעים.</p>
-<blockquote>⚠️ טיפ לפרודקשן: תתרגלו failover ב-game day. הפעם הראשונה שאתם מריצים את זה לא צריכה להיות בתקלה אמיתית בשלוש לפנות בוקר — ותמדדו כמה זמן לוקח לאפליקציות להתחבר מחדש, לא רק כמה זמן לוקח ה-promote.</blockquote>`
+<blockquote>⚠️ טיפ לפרודקשן: תתרגל failover ב-game day. הפעם הראשונה שאתה מריץ את זה לא צריכה להיות בתקלה אמיתית בשלוש לפנות בוקר — ותמדוד כמה זמן לוקח לאפליקציות להתחבר מחדש, לא רק כמה זמן לוקח ה-promote.</blockquote>`
       }
     },
     {
@@ -700,7 +700,7 @@ INFRA.lessons.push({
       explain: { en: "The replica hasn't replayed the write yet. Route that user's reads to the primary briefly, or wait for the replica to reach the write's LSN/GTID.", he: "ה-replica עוד לא הריץ את הכתיבה. מנתבים את הקריאות של המשתמש ל-primary לזמן קצר, או מחכים שה-replica יגיע ל-LSN/GTID של הכתיבה." }
     },
     {
-      q: { en: "Someone runs DELETE FROM orders without WHERE on the primary. What do the replicas give you?", he: "מישהו מריץ DELETE FROM orders בלי WHERE על ה-primary. מה ה-replicas נותנים לכם?" },
+      q: { en: "Someone runs DELETE FROM orders without WHERE on the primary. What do the replicas give you?", he: "מישהו מריץ DELETE FROM orders בלי WHERE על ה-primary. מה ה-replicas נותנים לך?" },
       options: [
         { en: "Nothing — they replicated the delete within milliseconds", he: "כלום — הם שכפלו את ה-delete תוך מילישניות" },
         { en: "A full copy of the orders you can restore from", he: "עותק מלא של ההזמנות שאפשר לשחזר ממנו" },
@@ -808,9 +808,9 @@ CREATE TABLE events_2025_06 PARTITION OF events
         en: `<p>Picture a ring of hash values from 0 to 2^32. Each node is placed at several points on the ring (<strong>virtual nodes</strong>, e.g. 256 per server). A key is hashed onto the ring and walks clockwise to the first node it meets — that's its owner.</p>
 <p>Add a 5th node: it takes over only the arcs right before its points, so only ~<strong>1/5 of keys move</strong> (vs ~80% with modulo). Remove a node: only its keys move, to their clockwise neighbors. Virtual nodes smooth the distribution and let a bigger machine own more points.</p>
 <p>Where you'll meet it: Cassandra and DynamoDB partitioning, Riak, memcached client libraries (ketama), load balancers doing sticky routing (Envoy's ring hash / Maglev), CDNs mapping objects to cache servers.</p>`,
-        he: `<p>תדמיינו טבעת של ערכי hash מ-0 עד 2^32. כל node ממוקם בכמה נקודות על הטבעת (<strong>virtual nodes</strong>, למשל 256 לכל שרת). key עובר hash לנקודה על הטבעת והולך עם כיוון השעון עד ל-node הראשון שהוא פוגש — זה הבעלים שלו.</p>
+        he: `<p>תדמיין טבעת של ערכי hash מ-0 עד 2^32. כל node ממוקם בכמה נקודות על הטבעת (<strong>virtual nodes</strong>, למשל 256 לכל שרת). key עובר hash לנקודה על הטבעת והולך עם כיוון השעון עד ל-node הראשון שהוא פוגש — זה הבעלים שלו.</p>
 <p>מוסיפים node חמישי: הוא לוקח רק את הקשתות שממש לפני הנקודות שלו, אז רק בערך <strong>1/5 מה-keys זזים</strong> (לעומת 80% עם modulo). מורידים node: רק ה-keys שלו זזים, לשכנים עם כיוון השעון. Virtual nodes מחליקים את הפיזור ומאפשרים למכונה גדולה יותר להחזיק יותר נקודות.</p>
-<p>איפה תפגשו את זה: partitioning ב-Cassandra וב-DynamoDB, Riak, ספריות client של memcached (ketama), load balancers עם ניתוב sticky (ring hash / Maglev ב-Envoy), CDNs שממפים אובייקטים לשרתי cache.</p>`
+<p>איפה תפגוש את זה: partitioning ב-Cassandra וב-DynamoDB, Riak, ספריות client של memcached (ketama), load balancers עם ניתוב sticky (ring hash / Maglev ב-Envoy), CDNs שממפים אובייקטים לשרתי cache.</p>`
       }
     },
     {
@@ -821,7 +821,7 @@ CREATE TABLE events_2025_06 PARTITION OF events
 <p>Also plan for <strong>global IDs</strong>: auto-increment per shard collides. Use UUIDv7/ULID or Snowflake-style IDs (timestamp + shard + sequence).</p>`,
         he: `<p><strong>Resharding</strong> — הזזת data בזמן שהאפליקציה ממשיכה לרוץ — זו הפעולה הכי קשה בשיעור הזה. ה-playbook הטיפוסי: (1) מתחילים להעתיק טווח keys ל-shard החדש, (2) מזרימים שינויים שוטפים (CDC/logical replication), (3) מאמתים ספירות ו-checksums, (4) חוסמים כתיבות לטווח לרגע קט ומחליפים את הניתוב, (5) מוחקים את העותק הישן אחר כך. כלים כמו Vitess (<code>MoveTables</code>/<code>Reshard</code>), ה-rebalancer של Citus וה-balancer של MongoDB עושים את זה אוטומטית; פתרונות ביתיים לוקחים רבעונים.</p>
 <p><strong>Queries בין shards</strong>: "10 המוצרים המובילים בכל ה-tenants" חייב לעשות <em>scatter-gather</em> — query לכל shard ומיזוג תוצאות. ה-latency = ה-shard הכי איטי. עדיף: store אנליטי נפרד (warehouse דרך CDC) ל-queries גלובליים, ולשמור את ה-OLTP על shard יחיד.</p>
-<p>תכננו גם <strong>IDs גלובליים</strong>: auto-increment לכל shard מתנגש. משתמשים ב-UUIDv7/ULID או IDs בסגנון Snowflake (timestamp + shard + sequence).</p>`
+<p>תכנן גם <strong>IDs גלובליים</strong>: auto-increment לכל shard מתנגש. משתמשים ב-UUIDv7/ULID או IDs בסגנון Snowflake (timestamp + shard + sequence).</p>`
       }
     }
   ],
@@ -838,7 +838,7 @@ CREATE TABLE events_2025_06 PARTITION OF events
   Add node E between A and B -> only keys in arc (A..E] move to E (~1/N)
   With hash % N, changing N from 4 to 5 moves ~80% of all keys`,
   handsOn: [
-    { cmd: "node -e \"const h=s=>[...s].reduce((a,c)=>(a*31+c.charCodeAt(0))>>>0,7);let m=0;for(let i=0;i<100000;i++){const k='user'+i;if(h(k)%4!==h(k)%5)m++}console.log((m/1000).toFixed(1)+'% of keys move going 4->5 shards with modulo')\"", what: { en: "Prove to yourself how many keys move with naive modulo sharding.", he: "מוכיחים לעצמכם כמה keys זזים עם modulo sharding נאיבי." } },
+    { cmd: "node -e \"const h=s=>[...s].reduce((a,c)=>(a*31+c.charCodeAt(0))>>>0,7);let m=0;for(let i=0;i<100000;i++){const k='user'+i;if(h(k)%4!==h(k)%5)m++}console.log((m/1000).toFixed(1)+'% of keys move going 4->5 shards with modulo')\"", what: { en: "Prove to yourself how many keys move with naive modulo sharding.", he: "תוכיח לעצמך כמה keys זזים עם modulo sharding נאיבי." } },
     { cmd: "psql -c \"EXPLAIN SELECT count(*) FROM events WHERE created_at >= '2025-06-01' AND created_at < '2025-07-01';\"", what: { en: "On a partitioned table, see partition pruning: only one partition appears in the plan.", he: "על טבלה עם partitions, רואים partition pruning: רק partition אחד מופיע ב-plan." } },
     { cmd: "redis-cli -c CLUSTER KEYSLOT user:42 && redis-cli -c CLUSTER KEYSLOT '{user:42}:cart'", what: { en: "Redis Cluster: see which of 16,384 slots a key maps to; hash tags {...} force related keys into the same slot.", he: "Redis Cluster: רואים לאיזה slot מתוך 16,384 key ממופה; hash tags {...} מכריחים keys קשורים לאותו slot." } }
   ],
@@ -854,14 +854,14 @@ CREATE TABLE events_2025_06 PARTITION OF events
   ],
   interview: [
     {
-      q: { en: "How would you shard a multi-tenant SaaS database, and what about one huge tenant?", he: "איך הייתם עושים sharding ל-DB של SaaS מרובה tenants, ומה עם tenant ענק אחד?" },
+      q: { en: "How would you shard a multi-tenant SaaS database, and what about one huge tenant?", he: "איך היית עושה sharding ל-DB של SaaS מרובה tenants, ומה עם tenant ענק אחד?" },
       a: {
         en: "Shard by tenant_id via a directory (tenant → shard map) so most queries are single-shard and tenants can be moved individually. Put whales on dedicated shards, or sub-shard them by a second key (tenant_id, user_id). Use global IDs (UUIDv7/Snowflake), and keep cross-tenant analytics in a warehouse fed by CDC.",
         he: "Sharding לפי tenant_id דרך directory (מיפוי tenant → shard) כך שרוב ה-queries הם על shard יחיד ואפשר להזיז tenants אחד-אחד. לווייתנים מקבלים shards ייעודיים, או sub-sharding לפי key שני (tenant_id, user_id). IDs גלובליים (UUIDv7/Snowflake), ואנליטיקס בין tenants ב-warehouse שמוזן מ-CDC."
       }
     },
     {
-      q: { en: "Explain consistent hashing and why virtual nodes exist.", he: "הסבירו consistent hashing ולמה יש virtual nodes." },
+      q: { en: "Explain consistent hashing and why virtual nodes exist.", he: "הסבר consistent hashing ולמה יש virtual nodes." },
       a: {
         en: "Nodes and keys hash onto a ring; each key belongs to the next node clockwise. Adding/removing a node moves only the keys in its adjacent arc (~1/N). With few physical points, arcs are uneven; virtual nodes place each server at many points, evening out load and allowing weighting by capacity.",
         he: "Nodes ו-keys עוברים hash לטבעת; כל key שייך ל-node הבא עם כיוון השעון. הוספה/הסרה של node מזיזה רק את ה-keys בקשת הסמוכה (~1/N). עם מעט נקודות פיזיות, הקשתות לא שוות; virtual nodes ממקמים כל שרת בהרבה נקודות, מאזנים את העומס ומאפשרים משקל לפי קיבולת."
@@ -870,7 +870,7 @@ CREATE TABLE events_2025_06 PARTITION OF events
   ],
   quiz: [
     {
-      q: { en: "You range-shard an events table by created_at. What happens?", he: "עשיתם range sharding לטבלת events לפי created_at. מה קורה?" },
+      q: { en: "You range-shard an events table by created_at. What happens?", he: "עשית range sharding לטבלת events לפי created_at. מה קורה?" },
       options: [
         { en: "Writes spread evenly across all shards", he: "הכתיבות מתפזרות באופן אחיד על כל ה-shards" },
         { en: "All new writes land on the newest shard — a hot shard", he: "כל הכתיבות החדשות נוחתות על ה-shard החדש — hot shard" },
@@ -982,7 +982,7 @@ INFRA.lessons.push({
         he: `<p><strong>Strong consistency</strong>: אחרי שכתיבה אושרה, כל הקוראים רואים אותה. נחוץ ל: יתרות חשבון, הורדת מלאי, תפיסת username ייחודי, distributed locks, בחירת leader.</p>
 <p><strong>Eventual consistency</strong>: אם הכתיבות נעצרות, כל ה-replicas <em>בסוף</em> מתכנסים — בדרך כלל תוך מילישניות, אבל אין הבטחה לחסם עליון. בסדר ל: ספירת לייקים, מוני צפיות, פידים של המלצות, cache של קטלוג מוצרים, DNS.</p>
 <p>המודלים של האמצע השימושי (הרבה פעמים מספיקים וזולים יותר):</p>
-<ul><li><strong>Read-your-writes</strong> — תמיד רואים את העדכונים של עצמכם.</li><li><strong>Monotonic reads</strong> — אף פעם לא רואים את הזמן חוזר אחורה (מצמידים משתמש ל-replica אחד).</li><li><strong>Causal consistency</strong> — אם B נגרם בגלל A (תגובה לתגובה), כולם רואים את A לפני B.</li></ul>
+<ul><li><strong>Read-your-writes</strong> — אתה תמיד רואה את העדכונים של עצמך.</li><li><strong>Monotonic reads</strong> — אף פעם לא רואים את הזמן חוזר אחורה (מצמידים משתמש ל-replica אחד).</li><li><strong>Causal consistency</strong> — אם B נגרם בגלל A (תגובה לתגובה), כולם רואים את A לפני B.</li></ul>
 <p>שואלים את שאלת המוצר: "מה הדבר הכי גרוע שקורה אם משתמש רואה data בן 2 שניות?" אם התשובה היא "כלום", לא משלמים על strong.</p>`
       }
     },
@@ -1013,7 +1013,7 @@ INFRA.lessons.push({
   PACELC:   Partition?  -- yes -->  Availability  vs  Consistency
                         -- no  -->  Latency       vs  Consistency`,
   handsOn: [
-    { cmd: "cqlsh -e \"CONSISTENCY QUORUM; SELECT * FROM shop.carts WHERE user_id = 42;\"", what: { en: "Cassandra: run a query at QUORUM consistency (try ONE vs ALL and compare behavior while stopping a node).", he: "Cassandra: מריצים query ב-QUORUM (נסו ONE מול ALL ותשוו התנהגות תוך כדי שעוצרים node)." } },
+    { cmd: "cqlsh -e \"CONSISTENCY QUORUM; SELECT * FROM shop.carts WHERE user_id = 42;\"", what: { en: "Cassandra: run a query at QUORUM consistency (try ONE vs ALL and compare behavior while stopping a node).", he: "Cassandra: מריצים query ב-QUORUM (נסה ONE מול ALL ותשווה התנהגות תוך כדי שעוצרים node)." } },
     { cmd: "aws dynamodb get-item --table-name Orders --key '{\"pk\":{\"S\":\"order#1\"}}' --consistent-read", what: { en: "DynamoDB: force a strongly consistent read (costs 2x read capacity).", he: "DynamoDB: מכריחים קריאה strongly consistent (עולה פי 2 ב-read capacity)." } },
     { cmd: "etcdctl endpoint status --cluster -w table", what: { en: "See a CP system: etcd shows the leader and raft term; stop 2 of 3 members and writes are refused.", he: "רואים מערכת CP: etcd מציג את ה-leader וה-raft term; עוצרים 2 מתוך 3 חברים והכתיבות נדחות." } }
   ],
@@ -1036,7 +1036,7 @@ INFRA.lessons.push({
       }
     },
     {
-      q: { en: "N=5. Pick R and W for fast reads while staying consistent.", he: "N=5. בחרו R ו-W לקריאות מהירות תוך שמירה על consistency." },
+      q: { en: "N=5. Pick R and W for fast reads while staying consistent.", he: "N=5. בחר R ו-W לקריאות מהירות תוך שמירה על consistency." },
       a: {
         en: "Need R + W > 5. For the fastest reads, R=1 and W=5 — but one node down blocks writes. A balanced choice is W=4, R=2 (tolerates 1 down for writes, 3 for reads) or the symmetric W=3, R=3 tolerating 2 down for both.",
         he: "צריך R + W > 5. לקריאות הכי מהירות, R=1 ו-W=5 — אבל node אחד שנופל חוסם כתיבות. בחירה מאוזנת היא W=4, R=2 (שורד 1 למטה בכתיבות, 3 בקריאות) או הסימטרי W=3, R=3 ששורד 2 למטה בשניהם."
@@ -1106,7 +1106,7 @@ INFRA.lessons.push({
   },
   analogy: {
     en: "A full backup is a photo of your apartment. The WAL is a security camera recording every change since the photo. PITR = 'take the photo, then fast-forward the tape to 14:31:59, one second before the toddler drew on the wall'. A replica is a twin apartment — great if yours burns down, useless if the toddler draws in both at once.",
-    he: "Full backup הוא תמונה של הדירה. ה-WAL הוא מצלמת אבטחה שמקליטה כל שינוי מאז התמונה. PITR = \"לוקחים את התמונה ומריצים את הסרט קדימה עד 14:31:59, שנייה לפני שהפעוט צייר על הקיר\". Replica היא דירת תאומה — מעולה אם שלכם נשרפת, חסרת תועלת אם הפעוט מצייר בשתיהן באותו רגע."
+    he: "Full backup הוא תמונה של הדירה. ה-WAL הוא מצלמת אבטחה שמקליטה כל שינוי מאז התמונה. PITR = \"לוקחים את התמונה ומריצים את הסרט קדימה עד 14:31:59, שנייה לפני שהפעוט צייר על הקיר\". Replica היא דירת תאומה — מעולה אם שלך נשרפת, חסרת תועלת אם הפעוט מצייר בשתיהן באותו רגע."
   },
   sections: [
     {
@@ -1140,7 +1140,7 @@ pgbackrest --stanza=main --type=time \
 # MySQL - replay binlog up to a moment
 mysqlbinlog --stop-datetime="2025-06-12 14:31:59" binlog.000412 | mysql</pre>
 <p>ה-<strong>RPO</strong> הופך ל"כל כמה זמן ה-WAL מאורכב" (שניות עד דקה עם <code>archive_timeout = 60</code>), במקום "מאז ה-backup של אתמול בלילה". ה-<strong>RTO</strong> = זמן הבאת ה-base backup ועוד הרצת כל ה-WAL מאז. הרצה של שבוע WAL יכולה לקחת שעות — לכן לוקחים fulls/differentials באופן קבוע.</p>
-<blockquote>💡 מהשטח: DBs מנוהלים נותנים PITR בתור checkbox — RDS שומר retention של 1-35 ימים ומשחזר לכל שנייה לתוך instance <em>חדש</em>. שימו לב שזה יוצר endpoint חדש; ה-runbook חייב לכסות הפניה מחדש של האפליקציות.</blockquote>`
+<blockquote>💡 מהשטח: DBs מנוהלים נותנים PITR בתור checkbox — RDS שומר retention של 1-35 ימים ומשחזר לכל שנייה לתוך instance <em>חדש</em>. שים לב שזה יוצר endpoint חדש; ה-runbook חייב לכסות הפניה מחדש של האפליקציות.</blockquote>`
       }
     },
     {
@@ -1151,9 +1151,9 @@ mysqlbinlog --stop-datetime="2025-06-12 14:31:59" binlog.000412 | mysql</pre>
 <ul><li><strong>Object Lock / WORM</strong>: S3 Object Lock in <em>compliance mode</em>, Azure immutable blob storage, GCS bucket lock — nobody, not even root, can delete before retention expires.</li><li><strong>Separate account</strong>: copy backups to a dedicated "vault" AWS account / subscription with different credentials (AWS Backup Vault Lock).</li><li><strong>Encryption</strong> with keys you can still access if the main account is compromised.</li></ul>
 <blockquote>⚠️ Production tip: Backups contain all your PII. Encrypt them, restrict access, and apply the same retention/deletion obligations (GDPR "right to be forgotten" is a real headache for long-retention backups — document your policy).</blockquote>`,
         he: `<p><strong>3-2-1</strong>: שומרים <strong>3</strong> עותקים של ה-data, על <strong>2</strong> סוגי מדיה/storage שונים, כש-<strong>1</strong> מחוץ לאתר (region או account אחר). ההרחבה המודרנית: <strong>3-2-1-1-0</strong> — ועוד עותק <strong>1</strong> immutable/offline ו-<strong>0</strong> שגיאות באימות שחזור.</p>
-<p>למה immutable? כנופיות ransomware (וגם עובדים כועסים וסקריפטים עם באגים) הולכים קודם כל על ה-backups. אם אותם credentials של admin שיכולים להפיל את ה-DB יכולים גם למחוק את ה-backups, יש לכם עותק אחד, לא שלושה. הגנות:</p>
+<p>למה immutable? כנופיות ransomware (וגם עובדים כועסים וסקריפטים עם באגים) הולכים קודם כל על ה-backups. אם אותם credentials של admin שיכולים להפיל את ה-DB יכולים גם למחוק את ה-backups, יש לך עותק אחד, לא שלושה. הגנות:</p>
 <ul><li><strong>Object Lock / WORM</strong>: S3 Object Lock ב-<em>compliance mode</em>, Azure immutable blob storage, GCS bucket lock — אף אחד, אפילו לא root, לא יכול למחוק לפני שה-retention נגמר.</li><li><strong>Account נפרד</strong>: מעתיקים backups ל-account/subscription ייעודי של "כספת" עם credentials אחרים (AWS Backup Vault Lock).</li><li><strong>הצפנה</strong> עם מפתחות שעדיין נגישים גם אם ה-account הראשי נפרץ.</li></ul>
-<blockquote>⚠️ טיפ לפרודקשן: ב-backups יש את כל ה-PII שלכם. מצפינים, מגבילים גישה, ומחילים את אותן חובות retention ומחיקה (ה"זכות להישכח" של GDPR היא כאב ראש אמיתי ב-backups עם retention ארוך — תתעדו את המדיניות).</blockquote>`
+<blockquote>⚠️ טיפ לפרודקשן: ב-backups יש את כל ה-PII שלך. מצפינים, מגבילים גישה, ומחילים את אותן חובות retention ומחיקה (ה"זכות להישכח" של GDPR היא כאב ראש אמיתי ב-backups עם retention ארוך — תתעד את המדיניות).</blockquote>`
       }
     },
     {
@@ -1195,7 +1195,7 @@ mysqlbinlog --stop-datetime="2025-06-12 14:31:59" binlog.000412 | mysql</pre>
   ],
   interview: [
     {
-      q: { en: "Someone ran a bad UPDATE at 14:32 that corrupted a column in prod. Walk through recovery.", he: "מישהו הריץ UPDATE רע ב-14:32 שהשחית עמודה בפרודקשן. תעברו על השחזור." },
+      q: { en: "Someone ran a bad UPDATE at 14:32 that corrupted a column in prod. Walk through recovery.", he: "מישהו הריץ UPDATE רע ב-14:32 שהשחית עמודה בפרודקשן. תעבור על השחזור." },
       a: {
         en: "Stop the bleeding (disable the job/feature). Don't overwrite prod. PITR-restore to a new instance at 14:31:59. Extract the affected column/rows from the restored copy, and carefully merge them back into prod (UPDATE ... FROM restored data), preserving legitimate writes made after 14:32. Verify, then post-mortem: why could this UPDATE run unreviewed?",
         he: "עוצרים את הדימום (מכבים את ה-job או הפיצ'ר). לא דורסים את פרודקשן. עושים PITR ל-instance חדש ל-14:31:59. מחלצים את העמודה או השורות שנפגעו מהעותק המשוחזר, וממזגים בזהירות חזרה לפרודקשן (UPDATE ... FROM מה-data המשוחזר), תוך שמירה על כתיבות לגיטימיות אחרי 14:32. מאמתים, ואז post-mortem: איך ה-UPDATE הזה רץ בלי review?"
@@ -1262,7 +1262,7 @@ INFRA.lessons.push({
   },
   analogy: {
     en: "A database is a popular restaurant kitchen. Connections are seats: give every passer-by their own chair and the room jams (pooling = a host seating people efficiently). Migrations are renovating while serving dinner: build the new counter first, move people over, then tear down the old one — never knock out the wall mid-service.",
-    he: "Database הוא מטבח של מסעדה פופולרית. Connections הם כיסאות: תנו לכל עובר אורח כיסא משלו והחדר נתקע (pooling = מארחת שמושיבה אנשים ביעילות). Migrations זה שיפוץ תוך כדי הגשת ארוחת ערב: בונים קודם את הדלפק החדש, מעבירים אנשים, ורק אז מפרקים את הישן — אף פעם לא שוברים קיר באמצע משמרת."
+    he: "Database הוא מטבח של מסעדה פופולרית. Connections הם כיסאות: תן לכל עובר אורח כיסא משלו והחדר נתקע (pooling = מארחת שמושיבה אנשים ביעילות). Migrations זה שיפוץ תוך כדי הגשת ארוחת ערב: בונים קודם את הדלפק החדש, מעבירים אנשים, ורק אז מפרקים את הישן — אף פעם לא שוברים קיר באמצע משמרת."
   },
   sections: [
     {
@@ -1275,7 +1275,7 @@ INFRA.lessons.push({
         he: `<p>ב-Postgres כל connection הוא process נפרד של מערכת ההפעלה שצורך 5-10 MB RAM ועוד <code>work_mem</code> לכל query. <code>max_connections</code> דיפולטי הוא 100. עכשיו חשבון: 40 pods ב-Kubernetes × pool באפליקציה של 20 = <strong>800 connections</strong>. ה-DB מבלה את הזמן ב-context switching, הזיכרון נגמר, ו-pods חדשים בזמן deploy מקבלים <code>FATAL: sorry, too many clients already</code>.</p>
 <p>מתקנים בשתי שכבות: <strong>pool צנוע באפליקציה</strong> (HikariCP, SQLAlchemy, pgx) ו-<strong>pooler בצד השרת</strong> כמו <strong>PgBouncer</strong> (או RDS Proxy, pgcat, ProxySQL ל-MySQL) שממלטפלקס אלפי connections של לקוחות על כמה עשרות אמיתיים. ב-<code>pool_mode = transaction</code>, connection לשרת מושאל רק למשך טרנזקציה.</p>
 <p>כמה גדול צריך להיות ה-pool האמיתי? הרבה יותר קטן ממה שחושבים. נקודת התחלה טובה: <strong>connections ≈ (ליבות CPU × 2) + מספר הדיסקים האפקטיבי</strong> — למשל 20-30 ל-DB עם 16 vCPU. יותר connections פעילים מליבות פשוט עומדים בתור בתוך ה-DB עם יותר overhead.</p>
-<blockquote>⚠️ טיפ לפרודקשן: transaction mode של PgBouncer שובר state של session: משתני <code>SET</code>, advisory locks, <code>LISTEN</code>, ו-(לפני PgBouncer 1.21) prepared statements עם שם. בדקו את הגדרות ה-driver לפני שמדליקים.</blockquote>`
+<blockquote>⚠️ טיפ לפרודקשן: transaction mode של PgBouncer שובר state של session: משתני <code>SET</code>, advisory locks, <code>LISTEN</code>, ו-(לפני PgBouncer 1.21) prepared statements עם שם. בדוק את הגדרות ה-driver לפני שמדליקים.</blockquote>`
       }
     },
     {
@@ -1303,11 +1303,11 @@ INFRA.lessons.push({
 </table>
 <blockquote>💡 Real world: For most teams, the DBA-hours saved make managed the cheaper option. Self-host when you have DB expertise in-house and a concrete need (cost at very large scale, unsupported extensions, strict on-prem requirements).</blockquote>`,
         he: `<p>שירותים <strong>מנוהלים</strong> (AWS RDS ו-Aurora, Google Cloud SQL ו-AlloyDB, Azure SQL Database ו-Azure Database for PostgreSQL) מטפלים ב-provisioning, patching, backups אוטומטיים + PITR, failover של Multi-AZ, ניטור ו-autoscaling של storage. מוותרים על superuser, על חלק מה-extensions ועל כיוונון kernel, ומשלמים בערך פי 1.5-3 מעלות ה-VM הגולמית.</p>
-<p><strong>Self-hosted</strong> (על VMs או על Kubernetes עם operators כמו CloudNativePG, Zalando, Percona) נותן שליטה מלאה ועלות גולמית נמוכה יותר — אבל <em>אתם</em> אחראים ל-failover, backups, שדרוגים, security patches וההתראות בשלוש לפנות בוקר. ב-Kubernetes אתם אחראים גם להתנהגות ה-storage (PVs, StorageClass, הגדלת volume).</p>
+<p><strong>Self-hosted</strong> (על VMs או על Kubernetes עם operators כמו CloudNativePG, Zalando, Percona) נותן שליטה מלאה ועלות גולמית נמוכה יותר — אבל <em>אתה</em> אחראי ל-failover, backups, שדרוגים, security patches וההתראות בשלוש לפנות בוקר. ב-Kubernetes אתה אחראי גם להתנהגות ה-storage (PVs, StorageClass, הגדלת volume).</p>
 <table>
 <tr><th></th><th>מנוהל</th><th>Self-hosted</th></tr>
 <tr><td>זמן עד פרודקשן</td><td>דקות</td><td>ימים-שבועות</td></tr>
-<tr><td>Backups/PITR/failover</td><td>מובנה</td><td>אתם בונים ובודקים</td></tr>
+<tr><td>Backups/PITR/failover</td><td>מובנה</td><td>אתה בונה ובודק</td></tr>
 <tr><td>שליטה / extensions</td><td>מוגבל</td><td>מלא</td></tr>
 <tr><td>עלות ב-scale גדול</td><td>גבוהה יותר</td><td>נמוכה יותר (+ עלות אנשים)</td></tr>
 </table>
@@ -1349,7 +1349,7 @@ INFRA.lessons.push({
   ],
   interview: [
     {
-      q: { en: "Your app gets 'too many connections' during deploys. Diagnose and fix.", he: "האפליקציה מקבלת 'too many connections' בזמן deploys. תאבחנו ותתקנו." },
+      q: { en: "Your app gets 'too many connections' during deploys. Diagnose and fix.", he: "האפליקציה מקבלת 'too many connections' בזמן deploys. תאבחן ותתקן." },
       a: {
         en: "During a rolling deploy, old and new pods coexist, temporarily doubling connections (pods × pool size). Fix: put PgBouncer/RDS Proxy in front, shrink per-pod pools, set maxSurge sensibly, make sure old pods close pools on SIGTERM, and size max_connections for the pooler, not for every client.",
         he: "בזמן rolling deploy, pods ישנים וחדשים חיים יחד, וזה מכפיל זמנית את ה-connections (pods × גודל pool). התיקון: PgBouncer/RDS Proxy מלפנים, הקטנת ה-pool לכל pod, maxSurge הגיוני, לוודא ש-pods ישנים סוגרים את ה-pool ב-SIGTERM, ולתכנן את max_connections ל-pooler ולא לכל לקוח."
@@ -1363,7 +1363,7 @@ INFRA.lessons.push({
       }
     },
     {
-      q: { en: "Which 5 DB metrics would you put on the first dashboard?", he: "אילו 5 מטריקות DB הייתם שמים ב-dashboard הראשון?" },
+      q: { en: "Which 5 DB metrics would you put on the first dashboard?", he: "אילו 5 מטריקות DB היית שם ב-dashboard הראשון?" },
       a: {
         en: "Query latency p99 (plus top queries by total time), connections used vs max (and pooler wait queue), CPU/IOPS saturation, free disk with growth trend, and replication lag. Close runners-up: lock waits/deadlocks and oldest transaction age.",
         he: "Query latency p99 (ועוד ה-queries המובילים לפי זמן כולל), connections בשימוש מול max (ותור ההמתנה ב-pooler), רוויה של CPU/IOPS, מקום פנוי בדיסק עם מגמת גידול, ו-replication lag. מקומות קרובים: המתנות ל-locks / deadlocks וגיל הטרנזקציה הכי ישנה."

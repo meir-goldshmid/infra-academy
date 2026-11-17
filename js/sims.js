@@ -474,7 +474,7 @@
   I.sims.dr = {
     icon: "🌪️", track: "reliability",
     title: { en: "Disaster recovery: RPO & RTO", he: "התאוששות מאסון: RPO ו-RTO" },
-    desc: { en: "Pick a DR strategy, set business targets, then trigger a disaster. How much data did you lose? How long were you down? What did it cost?", he: "בחר אסטרטגיית DR, קבע יעדים עסקיים, ואז הפעל אסון. כמה מידע איבדתם? כמה זמן הייתם למטה? כמה זה עלה?" },
+    desc: { en: "Pick a DR strategy, set business targets, then trigger a disaster. How much data did you lose? How long were you down? What did it cost?", he: "בחר אסטרטגיית DR, קבע יעדים עסקיים, ואז הפעל אסון. כמה מידע איבדת? כמה זמן היית למטה? כמה זה עלה?" },
     mount(el, H) {
       const t = T(H);
       const S = {
@@ -512,7 +512,7 @@
         const okRpo = rpo <= rpoT, okRto = rto <= rtoT;
         $("#out").innerHTML = metric("RPO " + t("(data lost)", "(מידע שאבד)"), dur(rpo), okRpo ? "good" : "bad") + metric("RTO " + t("(downtime)", "(זמן השבתה)"), dur(rto), okRto ? "good" : "bad") +
           metric(t("Monthly cost", "עלות חודשית"), "$" + fmt(+$("#base").value * s.cost), "") + metric(t("Targets met?", "עמדנו ביעדים?"), okRpo && okRto ? "✅" : "❌", okRpo && okRto ? "good" : "bad");
-        let msg = okRpo && okRto ? t("✅ Targets met. Now ask: is this strategy over-paying? Pick the CHEAPEST strategy that meets the business RPO/RTO — not the fanciest.", "✅ עמדנו ביעדים. עכשיו שאלו: האם אנחנו משלמים יותר מדי? בוחרים את האסטרטגיה הזולה ביותר שעומדת ב-RPO/RTO העסקי — לא את המפוארת ביותר.")
+        let msg = okRpo && okRto ? t("✅ Targets met. Now ask: is this strategy over-paying? Pick the CHEAPEST strategy that meets the business RPO/RTO — not the fanciest.", "✅ עמדנו ביעדים. עכשיו תשאל: האם אנחנו משלמים יותר מדי? בוחרים את האסטרטגיה הזולה ביותר שעומדת ב-RPO/RTO העסקי — לא את המפוארת ביותר.")
           : t(`❌ ${!okRpo ? "RPO missed: you lost more data than the business allows — replicate more often. " : ""}${!okRto ? "RTO missed: restoring took too long — keep more infra warm, automate failover." : ""}`, `❌ ${!okRpo ? "פספסנו RPO: איבדנו יותר מידע ממה שהעסק מרשה — לשכפל בתדירות גבוהה יותר. " : ""}${!okRto ? "פספסנו RTO: השחזור לקח יותר מדי — להשאיר יותר תשתית חמה, לאטמט failover." : ""}`);
         msg += "<br>" + t("🧠 RPO = how far BACK in time you lose data (Point). RTO = how long until you're back (Time). And a DR plan you never drilled is a wish.", "🧠 RPO = כמה אחורה בזמן איבדת מידע (Point). RTO = כמה זמן עד שחזרת (Time). ותוכנית DR שלא תורגלה היא משאלה.");
         $("#lesson").innerHTML = msg;
@@ -525,7 +525,7 @@
   I.sims.cache = {
     icon: "⚡", track: "architecture",
     title: { en: "Cache hit-ratio lab", he: "מעבדת Cache Hit Ratio" },
-    desc: { en: "Tune cache size and TTL against a realistic (Zipf) traffic pattern. Then flush the cache and watch the database get stampeded.", he: "כוונן גודל cache ו-TTL מול תבנית תעבורה מציאותית (Zipf). אז תרוקנו את ה-cache ותראה את ה-DB נרמס." },
+    desc: { en: "Tune cache size and TTL against a realistic (Zipf) traffic pattern. Then flush the cache and watch the database get stampeded.", he: "כוונן גודל cache ו-TTL מול תבנית תעבורה מציאותית (Zipf). אז תרוקן את ה-cache ותראה את ה-DB נרמס." },
     mount(el, H) {
       const t = T(H);
       el.innerHTML = `<div class="sim-controls">
@@ -633,7 +633,7 @@
         "help": () => t(`Mission: checkout is failing. Find the root cause, then type:  answer <cause>
 Commands: kubectl get pods|nodes|events|svc|deploy · kubectl describe pod <name> · kubectl logs <pod> [--previous]
 kubectl top pods|nodes · kubectl get deploy checkout -o yaml · docker ps · docker stats · free -h · df -h · uptime
-top · ss -tlnp · dig <host> · curl -v <url> · ping <host> · clear`, `משימה: checkout נכשל. מצאו את שורש הבעיה ואז הקלד:  answer <cause>
+top · ss -tlnp · dig <host> · curl -v <url> · ping <host> · clear`, `משימה: checkout נכשל. מצא את שורש הבעיה ואז הקלד:  answer <cause>
 פקודות: kubectl get pods|nodes|events|svc|deploy · kubectl describe pod <name> · kubectl logs <pod> [--previous]
 kubectl top pods|nodes · kubectl get deploy checkout -o yaml · docker ps · docker stats · free -h · df -h · uptime
 top · ss -tlnp · dig <host> · curl -v <url> · ping <host> · clear`),

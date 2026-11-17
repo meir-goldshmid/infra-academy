@@ -8,7 +8,7 @@
 
   const behavioral = [
     { q: { en: "Tell me about the worst production incident you were part of.", he: "ספר על התקלה הכי גרועה בפרודקשן שהיית חלק ממנה." },
-      tip: { en: "STAR: Situation (impact in numbers), Task (your role — IC? responder?), Action (how you detected, mitigated FIRST, then found root cause), Result (MTTR, postmortem action items you drove). Show blamelessness.", he: "STAR: Situation (ההשפעה במספרים), Task (התפקיד שלך — IC? מגיב?), Action (איך זוהה, איך ייצבתם קודם, ואז שורש הבעיה), Result (MTTR, ה-action items מה-postmortem שהובלת). להראות גישה blameless." } },
+      tip: { en: "STAR: Situation (impact in numbers), Task (your role — IC? responder?), Action (how you detected, mitigated FIRST, then found root cause), Result (MTTR, postmortem action items you drove). Show blamelessness.", he: "STAR: Situation (ההשפעה במספרים), Task (התפקיד שלך — IC? מגיב?), Action (איך זוהה, איך ייצבת קודם, ואז שורש הבעיה), Result (MTTR, ה-action items מה-postmortem שהובלת). להראות גישה blameless." } },
     { q: { en: "How do you decide between shipping a feature and improving reliability?", he: "איך מחליטים בין לשחרר פיצ'ר לבין לשפר אמינות?" },
       tip: { en: "Talk SLOs and error budgets: budget left → ship; budget burned → reliability work wins. Data over opinions.", he: "לדבר על SLO ו-error budget: נשאר תקציב → משחררים; נשרף → עבודת אמינות מנצחת. נתונים במקום דעות." } },
     { q: { en: "Tell me about a time you reduced cloud cost.", he: "ספר על פעם שהורדת עלויות ענן." },
@@ -249,7 +249,7 @@
       };
       const setup = () => {
         app.innerHTML = `${crumbs}<h1>🎙️ ${T("Mock interview", "ראיון מדומה")}</h1>
-          <p class="muted">${T("Random questions, a timer per question, you answer (out loud or typed), then compare with the model answer and grade yourself honestly.", "שאלות אקראיות, טיימר לכל שאלה, עונים (בקול או בכתב), משווים לתשובה לדוגמה ומדרגים את עצמכם בכנות.")}</p>
+          <p class="muted">${T("Random questions, a timer per question, you answer (out loud or typed), then compare with the model answer and grade yourself honestly.", "שאלות אקראיות, טיימר לכל שאלה, אתה עונה (בקול או בכתב), משווה לתשובה לדוגמה ומדרג את עצמך בכנות.")}</p>
           <div class="card"><b>${T("Topics", "נושאים")}</b><div class="row" style="margin:8px 0">${I.tracks.map(tr => `<label class="tag" style="font-size:.9em;padding:4px 10px"><input type="checkbox" data-tr="${tr.id}" checked> ${tr.icon} ${esc(L(tr.title))}</label>`).join("")}${I.designs.length ? `<label class="tag" style="font-size:.9em;padding:4px 10px"><input type="checkbox" data-tr="design" checked> 🏛️ System design</label>` : ""}</div>
           <div class="row"><label>${T("Questions", "שאלות")} <select id="cnt" class="btn"><option>5</option><option selected>8</option><option>12</option></select></label>
           <label>${T("Minutes per question", "דקות לשאלה")} <select id="mpq" class="btn"><option>2</option><option selected>3</option><option>5</option></select></label>

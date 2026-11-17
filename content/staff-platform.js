@@ -123,8 +123,8 @@ ${MESH_MODES}
 <ul>
 <li><strong>Istio sidecar</strong> – Envoy בכל pod, מוזרק ע״י mutating webhook. הכי הרבה פיצ'רים, הכי הרבה כפתורים, העלות הכי גבוהה לכל pod. עם native sidecars (SidecarContainers של Kubernetes, GA ב-1.33) הבעיות הישנות של "האפליקציה עולה לפני ה-proxy" ו-"Job שלא נגמר לעולם" כמעט נעלמו.</li>
 <li><strong>Istio ambient</strong> – <code>ztunnel</code> אחד לכל node (Rust, רק L4) עושה mTLS דרך מנהרת HBONE (HTTP CONNECT מעל mTLS בפורט 15008). פיצ'רים של L7 דורשים <em>waypoint</em> – Envoy שנפרס לכל namespace או service account ועושה scale כמו Deployment רגיל. משלמים על L7 רק איפה שמשתמשים בו.</li>
-<li><strong>Linkerd</strong> – sidecar עם micro-proxy ייעודי ב-Rust; פחות פיצ'רים, overhead נמוך יותר באופן עקבי ותפעול פשוט יותר. שימו לב לשינוי הרישוי: מאז 2024 ה-artifacts של גרסאות stable מגיעים מההפצה של Buoyant (חינם לארגונים קטנים, בתשלום לגדולים), בעוד ש-edge releases נשארו פתוחים – תבדקו את התנאים העדכניים לפני שמתקננים עליו.</li>
-<li><strong>Cilium service mesh</strong> – eBPF ל-L3/L4 + Envoy אחד לכל node ל-L7, בלי sidecars; אטרקטיבי אם Cilium כבר ה-CNI שלכם.</li>
+<li><strong>Linkerd</strong> – sidecar עם micro-proxy ייעודי ב-Rust; פחות פיצ'רים, overhead נמוך יותר באופן עקבי ותפעול פשוט יותר. שים לב לשינוי הרישוי: מאז 2024 ה-artifacts של גרסאות stable מגיעים מההפצה של Buoyant (חינם לארגונים קטנים, בתשלום לגדולים), בעוד ש-edge releases נשארו פתוחים – בדוק את התנאים העדכניים לפני שמתקננים עליו.</li>
+<li><strong>Cilium service mesh</strong> – eBPF ל-L3/L4 + Envoy אחד לכל node ל-L7, בלי sidecars; אטרקטיבי אם Cilium כבר ה-CNI שלך.</li>
 </ul>
 ${MESH_AMBIENT}`
       }
@@ -139,11 +139,11 @@ ${MESH_GATEWAY_API}
 <p>Retries are the most dangerous feature in the mesh. Istio applies a <strong>default retry policy of 2 attempts</strong> to HTTP routes even if you never configured one, and every tier that retries multiplies load on the tier below:</p>
 ${MESH_RETRY_MATH}
 <blockquote>⚠️ Production tip: write a timeout budget top-down. If the edge SLO is p99 &lt; 1s, give the api 800ms, orders 500ms, db 200ms. A downstream timeout that is <em>longer</em> than its caller's is pure waste: the caller has already given up while the callee keeps burning a thread and a DB connection.</blockquote>`,
-        he: `<p>ב-mesh, progressive delivery נהיה זול: 5% מהתעבורה האמיתית ל-v2, ניתוב לפי header לבודקים פנימיים, והוצאה אוטומטית של hosts שמתחילים להחזיר 5xx. Argo Rollouts ו-Flagger מזיזים את המשקלים האלה בשבילכם לפי ניתוח של Prometheus.</p>
+        he: `<p>ב-mesh, progressive delivery נהיה זול: 5% מהתעבורה האמיתית ל-v2, ניתוב לפי header לבודקים פנימיים, והוצאה אוטומטית של hosts שמתחילים להחזיר 5xx. Argo Rollouts ו-Flagger מזיזים את המשקלים האלה בשבילך לפי ניתוח של Prometheus.</p>
 ${MESH_SHIFT}
 <p>לקונפיגים חדשים עדיף <strong>Gateway API</strong> (HTTPRoute שמחובר ל-Service – פרופיל ה-mesh שנקרא "GAMMA"): הוא נייד בין Istio, Linkerd ו-Cilium, כך שהחלפת mesh בעתיד לא אומרת לשכתב כל route.</p>
 ${MESH_GATEWAY_API}
-<p>Retries הם הפיצ'ר הכי מסוכן ב-mesh. Istio מפעיל <strong>retry policy ברירת מחדל של 2 ניסיונות</strong> על HTTP routes גם אם מעולם לא הגדרתם, וכל שכבה שעושה retry מכפילה את העומס על השכבה שמתחתיה:</p>
+<p>Retries הם הפיצ'ר הכי מסוכן ב-mesh. Istio מפעיל <strong>retry policy ברירת מחדל של 2 ניסיונות</strong> על HTTP routes גם אם מעולם לא הגדרת, וכל שכבה שעושה retry מכפילה את העומס על השכבה שמתחתיה:</p>
 ${MESH_RETRY_MATH}
 <blockquote>⚠️ טיפ לפרודקשן: כותבים timeout budget מלמעלה למטה. אם ה-SLO ב-edge הוא p99 &lt; 1s, נותנים ל-api 800ms, ל-orders 500ms, ל-db 200ms. timeout של שירות downstream שהוא <em>ארוך</em> יותר משל מי שקורא לו הוא בזבוז נטו: הקורא כבר ויתר, והנקרא ממשיך לשרוף thread ו-connection ל-DB.</blockquote>`
       }
@@ -165,19 +165,19 @@ ${MESH_RETRY_MATH}
 <li><strong>Upgrades</strong> — the control plane supports a narrow version window; use revision-based canary upgrades (<code>istio.io/rev=1-27</code> labels) and budget a quarterly upgrade train. Sidecar upgrades need pod restarts; ambient ztunnel upgrades restart a DaemonSet that every pod on the node depends on.</li>
 <li><strong>Debuggability</strong> — a 503 now has twice as many suspects. Learn <code>istioctl proxy-status</code>, <code>istioctl analyze</code> and Envoy's response flags (<code>UF</code> upstream failure, <code>UO</code> overflow/circuit open, <code>NR</code> no route, <code>URX</code> retry limit exceeded).</li>
 </ul>`,
-        he: `<p>מספרים שכדאי שיהיו לכם בראש (משתנים לפי גרסה, גודל payload ופיצ'רים – תמדדו אצלכם):</p>
+        he: `<p>מספרים שכדאי שיהיו לך בראש (משתנים לפי גרסה, גודל payload ופיצ'רים – מדוד אצלך):</p>
 <table>
 <tr><th>עלות</th><th>Sidecar (Envoy)</th><th>Ambient L4 (ztunnel)</th><th>Ambient + waypoint</th></tr>
 <tr><td>CPU</td><td>בערך 0.2-0.5 vCPU לכל 1000 rps לכל proxy, כפול 2 hops לכל קריאה</td><td>קטן, משותף לכל node</td><td>ה-waypoint גדל רק עם תעבורת L7</td></tr>
 <tr><td>זיכרון</td><td>50-100 MiB לכל pod (יותר עם קונפיג גדול)</td><td>עשרות MiB לכל node</td><td>לכל replica של waypoint</td></tr>
 <tr><td>Latency נוסף</td><td>בערך 1-3 ms ב-p99 לכל hop (שני proxies לכל קריאה)</td><td>פחות ממילישנייה</td><td>hop נוסף של L7</td></tr>
 </table>
-<p>תעשו חשבון: 2,000 pods כפול 80 MiB = 160 GiB זיכרון, ועם requests של 100m CPU לכל אחד = 200 vCPU שמוקצים רק ל-proxies. זה הרבה פעמים 10-20% מה-cluster, ובדיוק בגלל זה ambient קיים.</p>
+<p>עשה חשבון: 2,000 pods כפול 80 MiB = 160 GiB זיכרון, ועם requests של 100m CPU לכל אחד = 200 vCPU שמוקצים רק ל-proxies. זה הרבה פעמים 10-20% מה-cluster, ובדיוק בגלל זה ambient קיים.</p>
 <p>העלויות הנסתרות חשובות יותר מה-CPU:</p>
 <ul>
 <li><strong>Config scale</strong> – כברירת מחדל כל sidecar מקבל קונפיג של כל השירותים ב-mesh. ב-cluster עם 5,000 שירותים זה מאות MiB לכל proxy ו-pushes איטיים. משתמשים במשאב <code>Sidecar</code> של Istio (או ב-<code>discoverySelectors</code>) כדי לצמצם מה כל namespace רואה.</li>
 <li><strong>שדרוגים</strong> – ה-control plane תומך בחלון גרסאות צר; עושים canary upgrades מבוססי revision (labels של <code>istio.io/rev=1-27</code>) ומתקצבים רכבת שדרוגים רבעונית. שדרוג sidecars דורש restart ל-pods; שדרוג ztunnel ב-ambient עושה restart ל-DaemonSet שכל pod על ה-node תלוי בו.</li>
-<li><strong>Debuggability</strong> – ל-503 יש עכשיו פי שניים חשודים. תלמדו את <code>istioctl proxy-status</code>, <code>istioctl analyze</code> ואת ה-response flags של Envoy (<code>UF</code> כשל upstream, <code>UO</code> overflow/circuit פתוח, <code>NR</code> אין route, <code>URX</code> עברנו את מגבלת ה-retries).</li>
+<li><strong>Debuggability</strong> – ל-503 יש עכשיו פי שניים חשודים. למד את <code>istioctl proxy-status</code>, <code>istioctl analyze</code> ואת ה-response flags של Envoy (<code>UF</code> כשל upstream, <code>UO</code> overflow/circuit פתוח, <code>NR</code> אין route, <code>URX</code> עברנו את מגבלת ה-retries).</li>
 </ul>`
       }
     },
@@ -205,7 +205,7 @@ ${MESH_RETRY_MATH}
 <tr><td>Golden signals לכל שירות</td><td>OpenTelemetry auto-instrumentation, או Hubble/Beyla (eBPF)</td></tr>
 </table>
 <p><strong>מאמצים</strong> כשכמה מאלה נכונים ביחד: עשרות שירותים ומעלה בהרבה שפות, דרישת zero-trust/mTLS עם authz מבוסס זהות, תעבורה multi-cluster, וצוות פלטפורמה שיכול להחזיק את ה-mesh כמוצר. <strong>לא מאמצים</strong> כשיש קומץ שירותים, שפה אחת עם RPC framework טוב, אין מי שיחזיק שדרוגים, או נתיבים קריטיים ל-latency (trading, real-time bidding) שבהם כל hop נוסף מופיע ב-p99.</p>
-<blockquote>💡 מהשטח: הדפוס שעובד הוא הדרגתי – מתחילים עם ambient ב-L4 (mTLS + טלמטריה, אפס restarts לאפליקציות), מוכיחים ערך, ואז מוסיפים waypoints רק ל-namespaces שצריכים policy של L7 או traffic shifting. ותחזיקו exit plan: routing ב-Gateway API, כוונות ה-authz מתועדות, כך שיציאה מה-mesh היא מיגרציה ולא שכתוב.</blockquote>`
+<blockquote>💡 מהשטח: הדפוס שעובד הוא הדרגתי – מתחילים עם ambient ב-L4 (mTLS + טלמטריה, אפס restarts לאפליקציות), מוכיחים ערך, ואז מוסיפים waypoints רק ל-namespaces שצריכים policy של L7 או traffic shifting. ותחזיק exit plan: routing ב-Gateway API, כוונות ה-authz מתועדות, כך שיציאה מה-mesh היא מיגרציה ולא שכתוב.</blockquote>`
       }
     }
   ],
@@ -225,7 +225,7 @@ ${MESH_RETRY_MATH}
   ],
   interview: [
     {
-      q: { en: "Your org has 40 services, mostly Go with gRPC, and security asks for mTLS everywhere. Would you adopt Istio?", he: "בארגון 40 שירותים, רובם Go עם gRPC, והאבטחה מבקשת mTLS בכל מקום. הייתם מאמצים Istio?" },
+      q: { en: "Your org has 40 services, mostly Go with gRPC, and security asks for mTLS everywhere. Would you adopt Istio?", he: "בארגון 40 שירותים, רובם Go עם gRPC, והאבטחה מבקשת mTLS בכל מקום. היית מאמץ Istio?" },
       a: { en: "Separate the requirement from the tool. mTLS-everywhere alone can be met by Cilium transparent encryption or Istio ambient L4 only — no sidecars, no L7. gRPC already gives good retries/deadlines via service config. I'd propose ambient L4 (identity-based mTLS + telemetry, enroll namespace by namespace, no restarts), define success metrics (percent of traffic mTLS, p99 delta under 1ms, zero incidents from the mesh), assign an owning team and upgrade cadence, and defer waypoints until a concrete L7 need — canaries or path-level authz — appears. I'd reject full sidecar Istio as the first step: 40 services don't justify the operational surface.", he: "מפרידים בין הדרישה לכלי. mTLS בכל מקום לבד אפשר להשיג עם הצפנה שקופה של Cilium או Istio ambient ב-L4 בלבד – בלי sidecars, בלי L7. gRPC כבר נותן retries ו-deadlines טובים דרך service config. הייתי מציע ambient L4 (mTLS מבוסס זהות + טלמטריה, צירוף namespace אחרי namespace, בלי restarts), מגדיר מדדי הצלחה (אחוז תעבורה ב-mTLS, תוספת p99 מתחת ל-1ms, אפס תקלות בגלל ה-mesh), ממנה צוות בעלים וקצב שדרוגים, ודוחה waypoints עד שיש צורך L7 קונקרטי – canaries או authz לפי path. הייתי דוחה Istio מלא עם sidecars כצעד ראשון: 40 שירותים לא מצדיקים את המשטח התפעולי." }
     },
     {
@@ -375,7 +375,7 @@ INFRA.lessons.push({
   title: { en: "Platform Engineering: IDPs, Golden Paths & Multi-Tenancy", he: "Platform Engineering: IDP, Golden Paths ו-Multi-Tenancy" },
   tldr: {
     en: "An Internal Developer Platform is a product whose customers are your engineers: paved golden paths (repo + CI + deploy + observability in minutes), self-service APIs behind guardrails, a catalog that knows who owns what, and a tenancy model chosen per isolation need — measured by adoption and DORA, not by how many tools you installed.",
-    he: "Internal Developer Platform הוא מוצר שהלקוחות שלו הם המהנדסים שלכם: golden paths סלולים (repo + CI + deploy + observability תוך דקות), APIs של self-service מאחורי guardrails, catalog שיודע מי הבעלים של מה, ומודל tenancy שנבחר לפי צורך הבידוד – ונמדד ב-adoption וב-DORA, לא בכמה כלים התקנתם."
+    he: "Internal Developer Platform הוא מוצר שהלקוחות שלו הם המהנדסים שלך: golden paths סלולים (repo + CI + deploy + observability תוך דקות), APIs של self-service מאחורי guardrails, catalog שיודע מי הבעלים של מה, ומודל tenancy שנבחר לפי צורך הבידוד – ונמדד ב-adoption וב-DORA, לא בכמה כלים התקנת."
   },
   analogy: {
     en: "A city planner doesn't forbid walking on the grass; she paves the paths people already walk, adds lights and signs, and the grass survives on its own. A golden path is the paved route: so much easier than the alternative that nobody needs a policy to force it. Ticket-ops is the opposite: a guard at every junction asking you to fill a form.",
@@ -396,13 +396,13 @@ ${IDP_LAYERS}
 <blockquote>⚠️ Production tip: avoid the leaky "abstraction over Kubernetes" trap. A custom 30-field YAML that compiles into a Deployment hides nothing when the pod crashloops at 3 AM. Good abstractions hide <em>decisions</em> (which node pool, which IAM wiring, which dashboards), not <em>debugging</em>.</blockquote>`,
         he: `<p><strong>Internal Developer Platform</strong> הוא סך הכלים, ה-APIs וה-workflows הסלולים שמאפשרים לצוות מוצר להגיע מרעיון לפרודקשן – ולתפעל את זה – בלי לפתוח tickets. זה <em>לא</em> "התקנו Backstage". פורטל הוא רק ממשק אחד; הערך נמצא בשכבות שמתחתיו:</p>
 ${IDP_LAYERS}
-<p>הרעיון המרכזי מ-<em>Team Topologies</em>: צוות הפלטפורמה קיים כדי להוריד את ה-<strong>cognitive load</strong> של צוותי המוצר. אם כל צוות צריך להבין Karpenter, IRSA, sync waves של Argo CD ו-recording rules של Prometheus כדי להעלות שירות, בניתם ארגז כלים, לא פלטפורמה.</p>
+<p>הרעיון המרכזי מ-<em>Team Topologies</em>: צוות הפלטפורמה קיים כדי להוריד את ה-<strong>cognitive load</strong> של צוותי המוצר. אם כל צוות צריך להבין Karpenter, IRSA, sync waves של Argo CD ו-recording rules של Prometheus כדי להעלות שירות, בנית ארגז כלים, לא פלטפורמה.</p>
 <ul>
 <li><strong>Golden path</strong> – מסלול מקצה לקצה, דעתני ונתמך, למקרה נפוץ. אופציונלי, אבל כל כך נוח ש-80%+ מהשירותים החדשים בוחרים בו. מותר לצאת מהמסלול, אבל אז הצוות לוקח על עצמו את התמיכה הנוספת.</li>
 <li><strong>Self-service עם guardrails</strong> – מפתחים יכולים ליצור database או namespace תוך דקות, כי ה-policy (quotas, חוקי admission, cost labels, הצפנה כברירת מחדל) נאכף אוטומטית, לא ע״י reviewer.</li>
 <li><strong>Thinnest viable platform</strong> – אם דף wiki ו-template repo פותרים את הכאב, מתחילים משם. בונים אבסטרקציות רק איפה שרואים toil חוזר.</li>
 </ul>
-<blockquote>⚠️ טיפ לפרודקשן: היזהרו ממלכודת ה-"אבסטרקציה מעל Kubernetes" שדולפת. YAML מותאם עם 30 שדות שמתקמפל ל-Deployment לא מסתיר כלום כשה-pod עושה crashloop בשלוש בלילה. אבסטרקציות טובות מסתירות <em>החלטות</em> (איזה node pool, איזה חיווט IAM, אילו dashboards), לא <em>דיבאגינג</em>.</blockquote>`
+<blockquote>⚠️ טיפ לפרודקשן: היזהר ממלכודת ה-"אבסטרקציה מעל Kubernetes" שדולפת. YAML מותאם עם 30 שדות שמתקמפל ל-Deployment לא מסתיר כלום כשה-pod עושה crashloop בשלוש בלילה. אבסטרקציות טובות מסתירות <em>החלטות</em> (איזה node pool, איזה חיווט IAM, אילו dashboards), לא <em>דיבאגינג</em>.</blockquote>`
       }
     },
     {
@@ -417,7 +417,7 @@ ${IDP_TEMPLATE}
 ${IDP_CATALOG}
 <p>ה-catalog הוא היסוד: ownership, תלויות, on-call ותיעוד בגרף אחד. רק זה כבר עונה על שאלות בזמן תקלה כמו "מי הבעלים של השירות שקורא ל-<code>payments-db</code>?". אחר כך ה-templates הופכים את ה-golden path לקליק אחד:</p>
 ${IDP_TEMPLATE}
-<blockquote>💡 מהשטח: Backstage הוא אפליקציית React + Node.js שצריך לבנות, לשדרג (releases חודשיים) ולאייש – תצפו לפחות ל-1-2 מהנדסים באופן שוטף להטמעה רצינית. צוותים שנכשלים איתו בדרך כלל השיקו פורטל עם catalog ריק ולא מעודכן. תעשו ingest אוטומטי של <code>catalog-info.yaml</code> מכל ה-repos, תכשילו CI כשהוא חסר, ותשתמשו ב-scorecards (יש owner, יש runbook, יש SLO, על base image עדכני) כדי לשמור אותו חי.</blockquote>`
+<blockquote>💡 מהשטח: Backstage הוא אפליקציית React + Node.js שצריך לבנות, לשדרג (releases חודשיים) ולאייש – צפה לפחות ל-1-2 מהנדסים באופן שוטף להטמעה רצינית. צוותים שנכשלים איתו בדרך כלל השיקו פורטל עם catalog ריק ולא מעודכן. עשה ingest אוטומטי של <code>catalog-info.yaml</code> מכל ה-repos, הכשל CI כשהוא חסר, והשתמש ב-scorecards (יש owner, יש runbook, יש SLO, על base image עדכני) כדי לשמור אותו חי.</blockquote>`
       }
     },
     {
@@ -481,7 +481,7 @@ services on golden path:   0%     -&gt; 72%</pre>
   ],
   diagram: "dev --(Backstage template)--> new repo [code + CI + Dockerfile + chart + catalog-info]\n   --> CI (build, scan, sign) --> GitOps repo --> Argo CD --> namespace (quota, netpol, PSA, IAM)\n   --> dashboards + alerts + SLO auto-created --> catalog shows owner/on-call/docs",
   handsOn: [
-    { cmd: "npx @backstage/create-app@latest && cd my-portal && yarn start", what: { en: "Spin up a local Backstage instance and register a catalog-info.yaml from one of your repos.", he: "מרימים Backstage מקומי ורושמים catalog-info.yaml מאחד ה-repos שלכם." } },
+    { cmd: "npx @backstage/create-app@latest && cd my-portal && yarn start", what: { en: "Spin up a local Backstage instance and register a catalog-info.yaml from one of your repos.", he: "מרימים Backstage מקומי ורושמים catalog-info.yaml מאחד ה-repos שלך." } },
     { cmd: "vcluster create dev-alice -n vc-dev-alice && vcluster connect dev-alice -- kubectl get ns", what: { en: "Create a virtual cluster inside a host namespace and see it behaves like a full cluster.", he: "יוצרים cluster וירטואלי בתוך namespace של ה-host ורואים שהוא מתנהג כמו cluster מלא." } },
     { cmd: "kubectl describe resourcequota -n team-payments", what: { en: "See how much of the team's quota is used — the guardrail behind namespace self-service.", he: "רואים כמה מה-quota של הצוות בשימוש – ה-guardrail שמאחורי self-service של namespaces." } },
     { cmd: "gh api repos/acme/payments-api/deployments --paginate -q '.[].created_at' | cut -c1-10 | sort | uniq -c | tail", what: { en: "A quick-and-dirty deployment frequency count from GitHub deployments, a first DORA data point.", he: "ספירה מהירה ומלוכלכת של deployment frequency מתוך GitHub deployments – נקודת נתונים ראשונה ל-DORA." } }
@@ -489,13 +489,13 @@ services on golden path:   0%     -&gt; 72%</pre>
   mnemonic: { en: "PAVE: Product mindset, Adoption over mandate, Visible ownership (catalog), Escape hatch.", he: "PAVE: Product mindset, Adoption ולא כפייה, Visible ownership (catalog), Escape hatch." },
   pitfalls: [
     { en: "Launching a portal before solving a real pain: a pretty Backstage with a stale catalog and no golden path gets abandoned in a quarter.", he: "להשיק פורטל לפני שפותרים כאב אמיתי: Backstage יפה עם catalog לא מעודכן ובלי golden path ננטש תוך רבעון." },
-    { en: "Abstractions that hide debugging instead of decisions — developers end up learning both Kubernetes and your DSL.", he: "אבסטרקציות שמסתירות דיבאגינג במקום החלטות – המפתחים נאלצים ללמוד גם Kubernetes וגם את ה-DSL שלכם." },
+    { en: "Abstractions that hide debugging instead of decisions — developers end up learning both Kubernetes and your DSL.", he: "אבסטרקציות שמסתירות דיבאגינג במקום החלטות – המפתחים נאלצים ללמוד גם Kubernetes וגם את ה-DSL שלך." },
     { en: "Picking namespace tenancy for untrusted tenants: shared kernel, shared CRDs and shared API server limits make it soft isolation only.", he: "לבחור tenancy לפי namespace ל-tenants לא אמינים: kernel משותף, CRDs משותפים ו-API server משותף הופכים את זה לבידוד רך בלבד." },
     { en: "Golden path templates that are copied once and never updated: add a template version label and a scorecard so drift from the path is visible.", he: "Templates של golden path שמועתקים פעם אחת ולא מתעדכנים לעולם: מוסיפים label של גרסת template ו-scorecard כדי שסטייה מהמסלול תהיה גלויה." }
   ],
   interview: [
     {
-      q: { en: "You're asked to build an IDP for 300 engineers. What do you do in the first 90 days?", he: "מבקשים מכם לבנות IDP ל-300 מהנדסים. מה עושים ב-90 הימים הראשונים?" },
+      q: { en: "You're asked to build an IDP for 300 engineers. What do you do in the first 90 days?", he: "מבקשים ממך לבנות IDP ל-300 מהנדסים. מה עושים ב-90 הימים הראשונים?" },
       a: { en: "Weeks 1-3: discovery — interview 8-10 teams, shadow a new-service creation end to end, mine the ticket queue to find the top toil (usually: new service setup, environments, DB provisioning, access requests), and baseline DORA and time-to-first-deploy. Weeks 4-8: ship the thinnest slice of one golden path for the most common service type with a pilot team — template repo, CI, GitOps deploy, default dashboards/alerts — using existing tools. Weeks 9-12: measure the pilot vs baseline, fix friction, add a catalog with ownership auto-ingested, and publish a roadmap. I would explicitly not start by choosing a portal or building a custom abstraction layer.", he: "שבועות 1-3: discovery – ראיונות עם 8-10 צוותים, ליווי של יצירת שירות חדש מקצה לקצה, ניתוח תור ה-tickets כדי למצוא את ה-toil המוביל (בדרך כלל: הקמת שירות חדש, סביבות, הקצאת DB, בקשות גישה), ומדידת baseline של DORA ו-time-to-first-deploy. שבועות 4-8: מוציאים את הפרוסה הכי דקה של golden path אחד לסוג השירות הנפוץ ביותר עם צוות pilot – template repo, CI, deploy ב-GitOps, dashboards/alerts ברירת מחדל – עם כלים קיימים. שבועות 9-12: מודדים את ה-pilot מול ה-baseline, מתקנים חיכוכים, מוסיפים catalog עם ownership שנאסף אוטומטית, ומפרסמים roadmap. במפורש לא הייתי מתחיל מבחירת פורטל או מבניית שכבת אבסטרקציה מותאמת." }
     },
     {
@@ -504,7 +504,7 @@ services on golden path:   0%     -&gt; 72%</pre>
     },
     {
       q: { en: "How do you prove the platform team is worth its headcount?", he: "איך מוכיחים שצוות הפלטפורמה שווה את ה-headcount שלו?" },
-      a: { en: "Translate platform metrics into business terms. Engineering hours saved: (old setup time - new setup time) x services created per year, plus ticket volume reduction x average handling time. Reliability: change failure rate and recovery time for golden-path vs off-path services. Cost: infra savings from standardised right-sizing and spot/consolidation defaults. Risk: % of services meeting security baselines (signed images, workload identity, no static keys). Pair numbers with developer survey trends. If a capability has low adoption after two quarters, deprecate it — showing you kill things is part of credibility.", he: "מתרגמים מדדי פלטפורמה למונחים עסקיים. שעות הנדסה שנחסכו: (זמן הקמה ישן פחות חדש) כפול שירותים שנוצרים בשנה, ועוד ירידה בנפח tickets כפול זמן טיפול ממוצע. אמינות: change failure rate ו-recovery time לשירותים על ה-golden path מול שירותים מחוצה לו. עלות: חיסכון בתשתית מ-right-sizing סטנדרטי וברירות מחדל של spot/consolidation. סיכון: % שירותים שעומדים ב-baseline אבטחה (images חתומים, workload identity, בלי מפתחות סטטיים). מצמידים למספרים את מגמות סקר המפתחים. ואם יכולת מסוימת עם adoption נמוך אחרי שני רבעונים – עושים לה deprecation; להראות שאתם גם הורגים דברים זה חלק מהאמינות." }
+      a: { en: "Translate platform metrics into business terms. Engineering hours saved: (old setup time - new setup time) x services created per year, plus ticket volume reduction x average handling time. Reliability: change failure rate and recovery time for golden-path vs off-path services. Cost: infra savings from standardised right-sizing and spot/consolidation defaults. Risk: % of services meeting security baselines (signed images, workload identity, no static keys). Pair numbers with developer survey trends. If a capability has low adoption after two quarters, deprecate it — showing you kill things is part of credibility.", he: "מתרגמים מדדי פלטפורמה למונחים עסקיים. שעות הנדסה שנחסכו: (זמן הקמה ישן פחות חדש) כפול שירותים שנוצרים בשנה, ועוד ירידה בנפח tickets כפול זמן טיפול ממוצע. אמינות: change failure rate ו-recovery time לשירותים על ה-golden path מול שירותים מחוצה לו. עלות: חיסכון בתשתית מ-right-sizing סטנדרטי וברירות מחדל של spot/consolidation. סיכון: % שירותים שעומדים ב-baseline אבטחה (images חתומים, workload identity, בלי מפתחות סטטיים). מצמידים למספרים את מגמות סקר המפתחים. ואם יכולת מסוימת עם adoption נמוך אחרי שני רבעונים – עושים לה deprecation; להראות שאתה גם הורג דברים זה חלק מהאמינות." }
     }
   ],
   quiz: [
@@ -762,7 +762,7 @@ ${ZT_VAULT}
 ${ZT_ESO}
 <p><strong>SPIFFE/SPIRE</strong> נותן ל-workloads זהות נייטרלית לפלטפורמה על פני Kubernetes, VMs ועננים – שימושי כשה-CA המובנה של ה-mesh לא מספיק (multi-cluster, VMs, federation בין ארגונים). Istio ו-Linkerd כבר מנפיקים IDs בפורמט SPIFFE; SPIRE הוא המימוש העצמאי.</p>
 ${ZT_SPIFFE}
-<p><strong>Rotation</strong>: מתכננים כל צרכן לשני credentials תקפים במקביל (dual secrets / חלון חפיפה), reload בלי restart (watch על הקובץ, או Reloader של stakater שמגלגל pods כשה-Secret משתנה), ומתרגלים – rotation שמעולם לא עשיתם הוא outage עתידי.</p>`
+<p><strong>Rotation</strong>: מתכננים כל צרכן לשני credentials תקפים במקביל (dual secrets / חלון חפיפה), reload בלי restart (watch על הקובץ, או Reloader של stakater שמגלגל pods כשה-Secret משתנה), ומתרגלים – rotation שמעולם לא עשית הוא outage עתידי.</p>`
       }
     }
   ],
@@ -782,7 +782,7 @@ ${ZT_SPIFFE}
   ],
   interview: [
     {
-      q: { en: "A static AWS access key with admin rights leaked to a public repo 20 minutes ago. Walk through your response and the long-term fix.", he: "Access key סטטי של AWS עם הרשאות admin דלף ל-repo ציבורי לפני 20 דקות. תעברו על התגובה ועל התיקון לטווח ארוך." },
+      q: { en: "A static AWS access key with admin rights leaked to a public repo 20 minutes ago. Walk through your response and the long-term fix.", he: "Access key סטטי של AWS עם הרשאות admin דלף ל-repo ציבורי לפני 20 דקות. עבור על התגובה ועל התיקון לטווח ארוך." },
       a: { en: "Contain first: deactivate the key (not delete — keep it for forensics), attach an explicit deny-all policy to the user, and revoke active sessions (deny on aws:TokenIssueTime older than now for roles it may have assumed). Investigate with CloudTrail by access key ID across all regions: new IAM users/keys/roles, EC2 in odd regions (crypto mining), S3 GetObject bursts, changes to CloudTrail itself. Eradicate any persistence found. Long term: remove IAM users with keys entirely — CI via OIDC federation, humans via SSO with short sessions, workloads via Pod Identity; SCP denying access-key creation; secret scanning with push protection; and a metric of remaining static credentials reported monthly.", he: "קודם מכילים: מבטלים את המפתח (deactivate, לא delete – שומרים לפורנזיקה), מצמידים ל-user policy של deny-all מפורש, ומבטלים sessions פעילים (deny על aws:TokenIssueTime ישן מעכשיו ל-roles שאולי הוא לקח). חוקרים ב-CloudTrail לפי access key ID בכל ה-regions: IAM users/keys/roles חדשים, EC2 ב-regions מוזרים (כריית קריפטו), פרצי S3 GetObject, שינויים ב-CloudTrail עצמו. מנקים כל persistence שנמצא. לטווח ארוך: מעלימים IAM users עם מפתחות לגמרי – CI דרך OIDC federation, בני אדם דרך SSO עם sessions קצרים, workloads דרך Pod Identity; SCP שחוסם יצירת access keys; secret scanning עם push protection; ומדד של credentials סטטיים שנשארו שמדווח כל חודש." }
     },
     {
@@ -790,7 +790,7 @@ ${ZT_SPIFFE}
       a: { en: "They solve different problems. If the target system supports it (databases, cloud IAM, PKI), dynamic secrets beat any static secret: unique per consumer, short TTL, instant revocation. But Vault is a tier-0 system you must run, scale and secure, and apps need lease renewal logic or an agent. ESO + a managed secret manager is cheap to operate and fits third-party API keys that can't be dynamic, with rotation done by the provider (e.g. Secrets Manager rotation Lambdas). Many orgs run both: managed store + ESO by default, Vault (or OpenBao) for DB credentials and internal PKI where the risk justifies it. And for cloud resources, prefer workload identity — no secret at all beats any secret.", he: "הם פותרים בעיות שונות. אם מערכת היעד תומכת (databases, cloud IAM, PKI), dynamic secrets עדיפים על כל סוד סטטי: ייחודי לכל צרכן, TTL קצר, ביטול מיידי. אבל Vault הוא מערכת tier-0 שצריך להריץ, להגדיל ולאבטח, ואפליקציות צריכות לוגיקה של חידוש lease או agent. ESO + secret manager מנוהל זול לתפעול ומתאים ל-API keys של צד שלישי שלא יכולים להיות דינמיים, עם rotation שהספק עושה (למשל Lambdas של rotation ב-Secrets Manager). הרבה ארגונים מריצים את שניהם: store מנוהל + ESO כברירת מחדל, Vault (או OpenBao) ל-credentials של DB ול-PKI פנימי איפה שהסיכון מצדיק. ולמשאבי ענן מעדיפים workload identity – אין סוד בכלל עדיף על כל סוד." }
     },
     {
-      q: { en: "Design secret rotation for a DB password used by 30 services without downtime.", he: "תתכננו rotation לסיסמת DB שמשמשת 30 שירותים בלי downtime." },
+      q: { en: "Design secret rotation for a DB password used by 30 services without downtime.", he: "תכנן rotation לסיסמת DB שמשמשת 30 שירותים בלי downtime." },
       a: { en: "First question why 30 services share one password — split into per-service roles, ideally dynamic. For the rotation itself use the two-credential pattern: create user_b (or a second password slot), publish it to the secret store, let ESO/agents sync and apps hot-reload or roll (track which pods use which credential via pg_stat_activity.usename), wait until all connections use the new one, then revoke the old one. Automate it, make it periodic (e.g. every 30 days), and alert when any consumer still uses the old credential before revocation. Connection pools must recycle connections (max lifetime) or old sessions survive revocation.", he: "קודם שואלים למה 30 שירותים חולקים סיסמה אחת – מפצלים ל-roles לכל שירות, באידיאל דינמיים. ל-rotation עצמו משתמשים בתבנית שני ה-credentials: יוצרים user_b (או slot שני לסיסמה), מפרסמים ל-secret store, נותנים ל-ESO/agents לסנכרן ולאפליקציות לעשות hot-reload או roll (עוקבים איזה pod משתמש באיזה credential דרך pg_stat_activity.usename), מחכים שכל ה-connections על החדש, ורק אז מבטלים את הישן. עושים את זה אוטומטי ומחזורי (למשל כל 30 יום), ומתריעים כשצרכן כלשהו עדיין משתמש בישן לפני הביטול. Connection pools חייבים למחזר connections (max lifetime), אחרת sessions ישנים שורדים את הביטול." }
     }
   ],
@@ -816,7 +816,7 @@ ${ZT_SPIFFE}
       explain: { en: "Uniqueness gives attribution, TTL limits the value of a leak, and lease revocation gives a one-command incident response.", he: "ייחודיות נותנת שיוך, TTL מגביל את ערך הדליפה, וביטול lease נותן תגובה לאירוע בפקודה אחת." }
     },
     {
-      q: { en: "Your fleet is 60 EKS clusters and IRSA trust policies keep hitting size limits. What is the natural fix?", he: "ה-fleet שלכם הוא 60 clusters של EKS ו-trust policies של IRSA כל הזמן נתקעים במגבלות גודל. מה התיקון הטבעי?" },
+      q: { en: "Your fleet is 60 EKS clusters and IRSA trust policies keep hitting size limits. What is the natural fix?", he: "ה-fleet שלך הוא 60 clusters של EKS ו-trust policies של IRSA כל הזמן נתקעים במגבלות גודל. מה התיקון הטבעי?" },
       options: [
         { en: "Create one IAM user per cluster", he: "ליצור IAM user לכל cluster" },
         { en: "Move to EKS Pod Identity associations, which don't need per-cluster OIDC entries in trust policies", he: "לעבור ל-associations של EKS Pod Identity, שלא צריכים רשומת OIDC לכל cluster ב-trust policies" },
@@ -1007,7 +1007,7 @@ ${SC_SIGN}
 <tr><td>Build L2</td><td>פלטפורמת build מנוהלת מייצרת וחותמת על ה-provenance</td><td>שינוי אחרי ה-build</td></tr>
 <tr><td>Build L3</td><td>פלטפורמה מוקשחת: builds מבודדים וזמניים; מפתחות החתימה לא נגישים מצעדי ה-build של המשתמש</td><td>שינוי בזמן ה-build, provenance מזויף</td></tr>
 </table>
-<p>GitHub artifact attestations על runners מנוהלים של GitHub או ה-SLSA GitHub generator (reusable workflows) מביאים ל-L2-L3 מהר. גרסאות SLSA מאוחרות יותר מוסיפות Source track (branch protection, דרישות review) – תבדקו את ה-spec העדכני לשמות הרמות המדויקים.</p>
+<p>GitHub artifact attestations על runners מנוהלים של GitHub או ה-SLSA GitHub generator (reusable workflows) מביאים ל-L2-L3 מהר. גרסאות SLSA מאוחרות יותר מוסיפות Source track (branch protection, דרישות review) – בדוק את ה-spec העדכני לשמות הרמות המדויקים.</p>
 <blockquote>⚠️ טיפ לפרודקשן: "לוודא שזה חתום" חסר משמעות ב-keyless – כל מי שיש לו חשבון GitHub יכול לחתום על כל דבר. תמיד מאמתים את ה-<em>identity</em> (נתיב ה-workflow המדויק, תבנית ה-ref) ואת ה-<em>issuer</em>.</blockquote>`
       }
     },
@@ -1041,7 +1041,7 @@ ${SC_PIN}
     { en: "Verifying only that a signature exists: with keyless, any GitHub user can sign. Pin issuer + exact workflow identity.", he: "לאמת רק שקיימת חתימה: ב-keyless כל משתמש GitHub יכול לחתום. מצמידים issuer + זהות workflow מדויקת." },
     { en: "Signing the tag instead of the digest, or deploying by tag after verifying: a repointed tag bypasses everything. Sign and deploy digests.", he: "לחתום על ה-tag במקום על ה-digest, או לעשות deploy לפי tag אחרי האימות: tag שהוזז עוקף הכל. חותמים ועושים deploy ל-digests." },
     { en: "Failing builds on every CVE including unfixable ones: teams add --exit-code 0 and the program dies. Gate on fixable, track the rest with SLAs.", he: "להכשיל builds על כל CVE כולל כאלה בלי תיקון: צוותים מוסיפים --exit-code 0 והתוכנית מתה. חוסמים על מה שניתן לתיקון, ועוקבים אחרי השאר עם SLAs." },
-    { en: "Pinning third-party GitHub Actions by tag (@v4): tags are mutable, and a hijacked action runs with your CI secrets.", he: "להצמיד GitHub Actions של צד שלישי לפי tag (@v4): tags ניתנים לשינוי, ו-action שנחטף רץ עם סודות ה-CI שלכם." }
+    { en: "Pinning third-party GitHub Actions by tag (@v4): tags are mutable, and a hijacked action runs with your CI secrets.", he: "להצמיד GitHub Actions של צד שלישי לפי tag (@v4): tags ניתנים לשינוי, ו-action שנחטף רץ עם סודות ה-CI שלך." }
   ],
   interview: [
     {
@@ -1054,7 +1054,7 @@ ${SC_PIN}
     },
     {
       q: { en: "Kyverno or Sigstore policy-controller or Gatekeeper for image verification?", he: "Kyverno, policy-controller של Sigstore או Gatekeeper לאימות images?" },
-      a: { en: "If Kyverno is already your policy engine, use its verifyImages: one engine, policy reports, digest mutation and attestation conditions in YAML. Sigstore policy-controller is purpose-built and minimal — good if you want only signature policy without a general engine. Gatekeeper needs an external data provider such as Ratify for signatures, which adds a moving part; choose it if Rego/OPA is your org standard. Whatever you choose: HA replicas, PDB, sensible failurePolicy and timeouts, exclusions for kube-system, caching of verification results, and an audit-first rollout.", he: "אם Kyverno כבר מנוע ה-policy שלכם, משתמשים ב-verifyImages שלו: מנוע אחד, policy reports, מוטציה ל-digest ותנאים על attestations ב-YAML. ה-policy-controller של Sigstore בנוי ייעודית ומינימלי – טוב אם רוצים רק policy של חתימות בלי מנוע כללי. Gatekeeper צריך external data provider כמו Ratify לחתימות, וזה עוד חלק נע; בוחרים בו אם Rego/OPA הוא הסטנדרט הארגוני. מה שלא תבחרו: replicas ל-HA, PDB, failurePolicy ו-timeouts הגיוניים, החרגה ל-kube-system, caching של תוצאות אימות, ו-rollout שמתחיל ב-audit." }
+      a: { en: "If Kyverno is already your policy engine, use its verifyImages: one engine, policy reports, digest mutation and attestation conditions in YAML. Sigstore policy-controller is purpose-built and minimal — good if you want only signature policy without a general engine. Gatekeeper needs an external data provider such as Ratify for signatures, which adds a moving part; choose it if Rego/OPA is your org standard. Whatever you choose: HA replicas, PDB, sensible failurePolicy and timeouts, exclusions for kube-system, caching of verification results, and an audit-first rollout.", he: "אם Kyverno כבר מנוע ה-policy שלך, משתמשים ב-verifyImages שלו: מנוע אחד, policy reports, מוטציה ל-digest ותנאים על attestations ב-YAML. ה-policy-controller של Sigstore בנוי ייעודית ומינימלי – טוב אם רוצים רק policy של חתימות בלי מנוע כללי. Gatekeeper צריך external data provider כמו Ratify לחתימות, וזה עוד חלק נע; בוחרים בו אם Rego/OPA הוא הסטנדרט הארגוני. מה שלא תבחר: replicas ל-HA, PDB, failurePolicy ו-timeouts הגיוניים, החרגה ל-kube-system, caching של תוצאות אימות, ו-rollout שמתחיל ב-audit." }
     }
   ],
   quiz: [
@@ -1236,7 +1236,7 @@ ${EB_MODEL}
 ${EB_MODEL}
 <ul>
 <li><strong>בטיחות</strong>: בניגוד ל-kernel module, תוכנית eBPF עם באג נדחית בזמן הטעינה במקום להפיל את ה-node ב-panic. זה לא נטול סיכון (באגים ב-verifier, עלות CPU של hooks חמים), אבל זה ברמת פרודקשן.</li>
-<li><strong>גרסאות kernel חשובות</strong>: פיצ'רים מגיעים לפי release של ה-kernel. משתמשים ב-kernel LTS מודרני (5.15+/6.x; תבדקו את המינימום המתועד של ה-CNI) – images מנוהלים ל-nodes (Bottlerocket, AL2023, COS, Ubuntu) בסדר; kernels עתיקים מתקופת RHEL 7 לא.</li>
+<li><strong>גרסאות kernel חשובות</strong>: פיצ'רים מגיעים לפי release של ה-kernel. משתמשים ב-kernel LTS מודרני (5.15+/6.x; בדוק את המינימום המתועד של ה-CNI) – images מנוהלים ל-nodes (Bottlerocket, AL2023, COS, Ubuntu) בסדר; kernels עתיקים מתקופת RHEL 7 לא.</li>
 <li><strong>הרשאות</strong>: טעינת תוכניות דורשת <code>CAP_BPF</code> + <code>CAP_PERFMON</code>/<code>CAP_NET_ADMIN</code> (או root). כל pod שיכול לטעון eBPF רואה הכל על ה-node – מתייחסים ל-agents של eBPF כרכיבים privileged ומהימנים.</li>
 </ul>`
       }
@@ -1254,7 +1254,7 @@ ${EB_POLICY}
 ${EB_KPR}
 <p>בקנה מידה קטן kube-proxy (iptables, או מצב nftables החדש, GA ב-Kubernetes 1.33) בסדר גמור. באלפי Services מסלול ה-eBPF מנצח ב-latency של עדכונים, ב-CPU של ה-node ובהקמת connections. הרעיון הגדול השני הוא policy מבוסס זהות: Cilium מקצה <strong>security identity</strong> מספרית לכל סט labels, כך שה-policy לא תלוי בכתובות IP של pods שמשתנות כל הזמן.</p>
 ${EB_POLICY}
-<p>Policy של L3/L4 נאכף כולו ב-eBPF. חוקי L7 (HTTP, gRPC, Kafka, DNS) מפנים את התעבורה המתאימה ל-Envoy אחד לכל node – חזק, אבל מוסיף latency ו-CPU של proxy רק ל-flows שבחרתם. <strong>Hubble</strong> חושף כל flow עם verdict ו-metadata של L7; <code>hubble observe</code> הוא התשובה הכי מהירה ל-"האם NetworkPolicy מפיל לי תעבורה?", והמטריקות שלו נותנות golden signals לכל שירות בלי instrumentation באפליקציה.</p>
+<p>Policy של L3/L4 נאכף כולו ב-eBPF. חוקי L7 (HTTP, gRPC, Kafka, DNS) מפנים את התעבורה המתאימה ל-Envoy אחד לכל node – חזק, אבל מוסיף latency ו-CPU של proxy רק ל-flows שבחרת. <strong>Hubble</strong> חושף כל flow עם verdict ו-metadata של L7; <code>hubble observe</code> הוא התשובה הכי מהירה ל-"האם NetworkPolicy מפיל לי תעבורה?", והמטריקות שלו נותנות golden signals לכל שירות בלי instrumentation באפליקציה.</p>
 <blockquote>⚠️ טיפ לפרודקשן: החלפת CNI ב-cluster חי היא החלק המסוכן ביותר. עדיף לבנות node pool / cluster חדש עם Cilium ולהעביר workloads, או להשתמש במצב ה-migration המתועד של Cilium לכל node. מורידים את kube-proxy רק אחרי שמוודאים <code>KubeProxyReplacement: True</code> בכל node, ומכניסים לתוכנית הבדיקות את ההתנהגות של NodePort/HostPort/externalTrafficPolicy.</blockquote>`
       }
     },
@@ -1278,7 +1278,7 @@ ${EB_RUNTIME}
 <tr><td>פלט</td><td>Alerts ל-Falcosidekick → Slack, SIEM, PagerDuty</td><td>אירועי JSON (עץ exec של תהליכים, רשת, קבצים), ייצוא ל-SIEM</td></tr>
 <tr><td>חוזקה</td><td>חוקים בשלים לדפוסי תקיפה נפוצים</td><td>סינון ב-kernel עם overhead נמוך, יכול לעצור את הפעולה באופן סינכרוני</td></tr>
 </table>
-<p>אכיפה (הריגת תהליכים) חזקה ומסוכנת: policy רחב מדי יהרוג את ה-package manager שלכם באמצע session דיבאג או init script לגיטימי. מריצים זיהוי כמה שבועות, בונים baseline של התנהגות נורמלית לכל workload, ורק אז אוכפים בצורה צרה (למשל "בלי כתיבה ל-/etc, בלי exec של shells ב-pods של payments").</p>`
+<p>אכיפה (הריגת תהליכים) חזקה ומסוכנת: policy רחב מדי יהרוג את ה-package manager שלך באמצע session דיבאג או init script לגיטימי. מריצים זיהוי כמה שבועות, בונים baseline של התנהגות נורמלית לכל workload, ורק אז אוכפים בצורה צרה (למשל "בלי כתיבה ל-/etc, בלי exec של shells ב-pods של payments").</p>`
       }
     },
     {
@@ -1288,7 +1288,7 @@ ${EB_RUNTIME}
 ${EB_PERF}
 <p>Inside Kubernetes run them from a privileged debug pod on the node (<code>kubectl debug node/ip-10-0-1-5 -it --image=quay.io/iovisor/bpftrace --profile=sysadmin</code>, or an image with bcc), or use Inspektor Gadget which wraps these as <code>kubectl gadget</code> commands with pod/namespace filters. Continuous profilers (Parca, Pyroscope, Grafana Beyla/OTel eBPF profiler) use the same mechanism always-on, giving fleet-wide flame graphs for a few percent CPU.</p>
 <blockquote>💡 Real world: a classic find — p99 spikes every 30s on a Java service; <code>offcputime</code> shows threads blocked in <code>futex</code> under a logging lock, and <code>biolatency</code> shows 200ms writes when the log volume flushes to an EBS volume hitting its IOPS limit. No app metric would have shown that chain.</blockquote>`,
-        he: `<p>כשהמטריקות אומרות "ה-p99 עלה" אבל לא למה, כלי eBPF נותנים אמת ברמת ה-kernel על מכונה חיה, עם overhead שבדרך כלל של אחוזים בודדים (תמדדו לפני שמריצים probes בתדירות גבוהה על נתיבים חמים). ה-workflow של Brendan Gregg: מתחילים מצ'קליסט 60 השניות (uptime, vmstat, iostat, sar), ואז שולפים כלים ממוקדים:</p>
+        he: `<p>כשהמטריקות אומרות "ה-p99 עלה" אבל לא למה, כלי eBPF נותנים אמת ברמת ה-kernel על מכונה חיה, עם overhead שבדרך כלל של אחוזים בודדים (מדוד לפני שמריצים probes בתדירות גבוהה על נתיבים חמים). ה-workflow של Brendan Gregg: מתחילים מצ'קליסט 60 השניות (uptime, vmstat, iostat, sar), ואז שולפים כלים ממוקדים:</p>
 ${EB_PERF}
 <p>בתוך Kubernetes מריצים אותם מ-debug pod עם הרשאות על ה-node (<code>kubectl debug node/ip-10-0-1-5 -it --image=quay.io/iovisor/bpftrace --profile=sysadmin</code>, או image עם bcc), או משתמשים ב-Inspektor Gadget שעוטף אותם כפקודות <code>kubectl gadget</code> עם סינון לפי pod/namespace. Continuous profilers (Parca, Pyroscope, Grafana Beyla/OTel eBPF profiler) משתמשים באותו מנגנון כל הזמן, ונותנים flame graphs לכל ה-fleet בעלות של כמה אחוזי CPU.</p>
 <blockquote>💡 מהשטח: ממצא קלאסי – p99 קופץ כל 30 שניות בשירות Java; <code>offcputime</code> מראה threads שחסומים ב-<code>futex</code> על lock של logging, ו-<code>biolatency</code> מראה כתיבות של 200ms כשנפח הלוגים נשטף ל-volume של EBS שמגיע למגבלת ה-IOPS שלו. שום מטריקה של האפליקציה לא הייתה מראה את השרשרת הזאת.</blockquote>`
@@ -1300,13 +1300,13 @@ ${EB_PERF}
     { cmd: "cilium status --wait && cilium connectivity test --test-namespace cilium-test", what: { en: "Check Cilium health and run the built-in end-to-end connectivity and policy test suite.", he: "בודקים את בריאות Cilium ומריצים את חבילת בדיקות ה-connectivity וה-policy המובנית." } },
     { cmd: "hubble observe -n shop --verdict DROPPED -f", what: { en: "Stream dropped flows live while you reproduce a 'connection timed out' — see which policy direction blocks it.", he: "צופים ב-flows שנדחו בזמן אמת בזמן שמשחזרים 'connection timed out' – רואים איזה כיוון policy חוסם." } },
     { cmd: "sudo bpftrace -e 'tracepoint:syscalls:sys_enter_execve { printf(\"%s -> %s\\n\", comm, str(args->filename)); }'", what: { en: "Print every exec on the node — find the cron job or sidecar spawning thousands of short processes.", he: "מדפיסים כל exec על ה-node – מוצאים את ה-cron job או ה-sidecar שמוליד אלפי תהליכים קצרים." } },
-    { cmd: "sudo bpftool prog show | head -20 && sudo bpftool map show | head", what: { en: "List eBPF programs and maps loaded on the node (Cilium, Tetragon, profilers) — know what runs in your kernel.", he: "מציגים את תוכניות וה-maps של eBPF שטעונים על ה-node (Cilium, Tetragon, profilers) – לדעת מה רץ לכם ב-kernel." } }
+    { cmd: "sudo bpftool prog show | head -20 && sudo bpftool map show | head", what: { en: "List eBPF programs and maps loaded on the node (Cilium, Tetragon, profilers) — know what runs in your kernel.", he: "מציגים את תוכניות וה-maps של eBPF שטעונים על ה-node (Cilium, Tetragon, profilers) – לדעת מה רץ לך ב-kernel." } }
   ],
   mnemonic: { en: "eBPF = Verify, JIT, Hook, Map. Cilium = see (Hubble), route (no kube-proxy), guard (identity policy).", he: "eBPF = Verify, JIT, Hook, Map. Cilium = לראות (Hubble), לנתב (בלי kube-proxy), לשמור (policy מבוסס זהות)." },
   pitfalls: [
     { en: "Assuming any kernel works: missing BTF or old kernels silently disable features or force fallbacks. Pin node images and test kernel upgrades with your CNI.", he: "להניח שכל kernel עובד: BTF חסר או kernels ישנים מבטלים פיצ'רים בשקט או מכריחים fallbacks. מצמידים node images ובודקים שדרוגי kernel יחד עם ה-CNI." },
     { en: "Turning on L7 policy everywhere: every L7-matched flow goes through a node Envoy, adding latency and CPU. Use L7 only where you need path/method control.", he: "להפעיל policy של L7 בכל מקום: כל flow שתואם L7 עובר דרך Envoy של ה-node, ומוסיף latency ו-CPU. משתמשים ב-L7 רק איפה שצריך שליטה לפי path/method." },
-    { en: "Enforcing Tetragon kill policies without a baseline: you will kill legitimate processes in production.", he: "לאכוף policies של הריגה ב-Tetragon בלי baseline: תהרגו תהליכים לגיטימיים בפרודקשן." },
+    { en: "Enforcing Tetragon kill policies without a baseline: you will kill legitimate processes in production.", he: "לאכוף policies של הריגה ב-Tetragon בלי baseline: תהרוג תהליכים לגיטימיים בפרודקשן." },
     { en: "Running high-frequency kprobes on hot kernel functions on a loaded box: the tracing itself becomes the latency problem.", he: "להריץ kprobes בתדירות גבוהה על פונקציות kernel חמות במכונה עמוסה: ה-tracing עצמו הופך לבעיית ה-latency." }
   ],
   interview: [
@@ -1507,7 +1507,7 @@ INFRA.lessons.push({
   title: { en: "PostgreSQL at Scale: MVCC, Vacuum, Pooling, Replication & Locks", he: "PostgreSQL בקנה מידה: MVCC, Vacuum, Pooling, Replication ו-Locks" },
   tldr: {
     en: "Postgres never updates in place: every UPDATE writes a new row version, and vacuum must clean up — unless a long transaction pins the horizon. Most large-scale Postgres incidents are one of five things: bloat/autovacuum lag, XID wraparound, connection exhaustion, replication lag/slots, or a lock queue behind DDL. Know the queries that detect each.",
-    he: "Postgres אף פעם לא מעדכן במקום: כל UPDATE כותב גרסת שורה חדשה, ו-vacuum צריך לנקות – אלא אם טרנזקציה ארוכה מקבעת את ה-horizon. רוב התקלות של Postgres בקנה מידה גדול הן אחד מחמישה: bloat/פיגור של autovacuum, XID wraparound, מיצוי connections, replication lag/slots, או תור locks מאחורי DDL. תכירו את השאילתות שמזהות כל אחד."
+    he: "Postgres אף פעם לא מעדכן במקום: כל UPDATE כותב גרסת שורה חדשה, ו-vacuum צריך לנקות – אלא אם טרנזקציה ארוכה מקבעת את ה-horizon. רוב התקלות של Postgres בקנה מידה גדול הן אחד מחמישה: bloat/פיגור של autovacuum, XID wraparound, מיצוי connections, replication lag/slots, או תור locks מאחורי DDL. הכר את השאילתות שמזהות כל אחד."
   },
   analogy: {
     en: "MVCC is a library that never erases a book: every edit prints a new edition and shelves it next to the old one, so readers who started with the old edition can finish. Vacuum is the librarian who removes editions nobody can still be reading. One reader who fell asleep in the reading room for six hours (an idle transaction) blocks the librarian from clearing anything newer than his book — and the shelves overflow.",
@@ -1538,8 +1538,8 @@ ${PG_WRAP}
 <blockquote>⚠️ Production tip: alert on <code>age(datfrozenxid)</code> above ~40-50% of 2^31 (well past the 200M routine trigger, but early enough to act calmly), and on the oldest transaction age in <code>pg_stat_activity</code>. If you're near the cliff: kill horizon holders, drop dead slots, then run a manual <code>VACUUM (FREEZE, VERBOSE)</code> on the oldest tables — without <code>FULL</code>.</blockquote>`,
         he: `<p>Transaction IDs הם 32-bit ומושווים מודולו 2^32, כך שרק כ-2.1 מיליארד טרנזקציות יכולות להיות "בעבר". שורות ישנות מזה חייבות לעבור <strong>freeze</strong>, אחרת הן פתאום ייראו כאילו הן בעתיד (בלתי נראות = אובדן מידע). Postgres מגן על עצמו בהסלמה – ובסוף מסרב לכתיבות:</p>
 ${PG_WRAP}
-<p>מערכת עם הרבה כתיבות ששורפת 5,000 txid בשנייה צורכת 432M XIDs ביום; יש לכם ימים, לא חודשים, אם ה-freeze נתקע. מה תוקע אותו: טרנזקציה ארוכה או prepared transaction שנשכחה, replication slot לא פעיל, <code>hot_standby_feedback</code> מ-replica עם שאילתות ארוכות, או autovacuum שמוגבל מדי בשביל לסיים טבלה של כמה TB.</p>
-<blockquote>⚠️ טיפ לפרודקשן: מתריעים על <code>age(datfrozenxid)</code> מעל 40-50% מ-2^31 בערך (הרבה אחרי הטריגר השגרתי של 200M, אבל מוקדם מספיק כדי לפעול ברוגע), ועל גיל הטרנזקציה הכי ישנה ב-<code>pg_stat_activity</code>. אם אתם קרובים לצוק: הורגים את מי שמחזיק את ה-horizon, מוחקים slots מתים, ואז מריצים ידנית <code>VACUUM (FREEZE, VERBOSE)</code> על הטבלאות הכי ישנות – בלי <code>FULL</code>.</blockquote>`
+<p>מערכת עם הרבה כתיבות ששורפת 5,000 txid בשנייה צורכת 432M XIDs ביום; יש לך ימים, לא חודשים, אם ה-freeze נתקע. מה תוקע אותו: טרנזקציה ארוכה או prepared transaction שנשכחה, replication slot לא פעיל, <code>hot_standby_feedback</code> מ-replica עם שאילתות ארוכות, או autovacuum שמוגבל מדי בשביל לסיים טבלה של כמה TB.</p>
+<blockquote>⚠️ טיפ לפרודקשן: מתריעים על <code>age(datfrozenxid)</code> מעל 40-50% מ-2^31 בערך (הרבה אחרי הטריגר השגרתי של 200M, אבל מוקדם מספיק כדי לפעול ברוגע), ועל גיל הטרנזקציה הכי ישנה ב-<code>pg_stat_activity</code>. אם אתה קרוב לצוק: הורגים את מי שמחזיק את ה-horizon, מוחקים slots מתים, ואז מריצים ידנית <code>VACUUM (FREEZE, VERBOSE)</code> על הטבלאות הכי ישנות – בלי <code>FULL</code>.</blockquote>`
       }
     },
     {
@@ -1601,7 +1601,7 @@ ${PG_EXPLAIN}`
   ],
   interview: [
     {
-      q: { en: "Disk usage on a 2 TB Postgres primary grows 50 GB/day while row counts are flat. Diagnose.", he: "השימוש בדיסק ב-primary של Postgres בגודל 2TB גדל ב-50GB ביום, בזמן שמספר השורות קבוע. תאבחנו." },
+      q: { en: "Disk usage on a 2 TB Postgres primary grows 50 GB/day while row counts are flat. Diagnose.", he: "השימוש בדיסק ב-primary של Postgres בגודל 2TB גדל ב-50GB ביום, בזמן שמספר השורות קבוע. אבחן." },
       a: { en: "Flat rows + growing disk = either bloat or retained WAL. Check pg_replication_slots for inactive slots retaining WAL, and pg_wal size. Then dead tuples per table (pg_stat_user_tables) and what holds the xmin horizon: oldest xact_start in pg_stat_activity, idle in transaction sessions, pg_prepared_xacts, backend_xmin of replicas with hot_standby_feedback. Fix the holder first (timeouts, drop slot, cap with max_slot_wal_keep_size), let autovacuum catch up with per-table tuning and more workers/cost limit, then reclaim existing bloat online with pg_repack. Prevent with alerts on oldest transaction age and slot retention.", he: "שורות קבועות + דיסק שגדל = או bloat או WAL שנשמר. בודקים pg_replication_slots ל-slots לא פעילים שמחזיקים WAL, ואת הגודל של pg_wal. אחר כך dead tuples לכל טבלה (pg_stat_user_tables) ומה מחזיק את ה-xmin horizon: ה-xact_start הכי ישן ב-pg_stat_activity, sessions במצב idle in transaction, pg_prepared_xacts, ה-backend_xmin של replicas עם hot_standby_feedback. קודם מתקנים את המחזיק (timeouts, drop ל-slot, הגבלה עם max_slot_wal_keep_size), נותנים ל-autovacuum להדביק את הפער עם כוונון לכל טבלה ועוד workers/cost limit, ואז משחררים את ה-bloat הקיים אונליין עם pg_repack. מונעים עם התראות על גיל הטרנזקציה הכי ישנה ועל WAL שנשמר ב-slots." }
     },
     {
@@ -1609,7 +1609,7 @@ ${PG_EXPLAIN}`
       a: { en: "With per-pod pools of 10, connections go from 500 to 5,000 — beyond max_connections, or under it but with memory pressure and contention that cuts throughput. Design: a pooler tier (PgBouncer transaction mode or RDS Proxy) so client connections are decoupled from server connections sized to cores; small per-pod pools; HPA max tied to DB capacity, not just CPU; offload reads to replicas with read-your-writes handling; cache hot reads; and load test the sale with realistic connection counts. Also set statement_timeout and pool acquire timeouts so overload fails fast instead of queuing forever.", he: "עם pool של 10 לכל pod, ה-connections עולים מ-500 ל-5,000 – מעבר ל-max_connections, או מתחת אבל עם memory pressure ותחרות שמורידים את ה-throughput. תכנון: שכבת pooler (PgBouncer במצב transaction או RDS Proxy) כך ש-connections של clients מנותקים מ-connections לשרת שמוגדרים לפי מספר ה-cores; pools קטנים לכל pod; ה-max של HPA קשור לקיבולת ה-DB, לא רק ל-CPU; העברת קריאות ל-replicas עם טיפול ב-read-your-writes; cache לקריאות חמות; ו-load test למבצע עם מספרי connections מציאותיים. וגם statement_timeout ו-timeouts לקבלת connection מה-pool, כך שעומס יתר נכשל מהר במקום לחכות בתור לנצח." }
     },
     {
-      q: { en: "When would you choose partitioning, and what does it cost?", he: "מתי הייתם בוחרים ב-partitioning, ומה זה עולה?" },
+      q: { en: "When would you choose partitioning, and what does it cost?", he: "מתי היית בוחר ב-partitioning, ומה זה עולה?" },
       a: { en: "For very large, time-series-like tables (events, audit logs) where most queries filter by the partition key and retention is by age: dropping a monthly partition is instant and creates no bloat, vacuum and index maintenance work per partition, and partition pruning skips irrelevant data. Costs: queries without the partition key scan all partitions; unique constraints must include the partition key; too many partitions (thousands) slow planning; and you need automation (pg_partman) to create future partitions. It's not a substitute for indexes, and it doesn't scale writes beyond one node — that's sharding (Citus, app-level).", he: "לטבלאות גדולות מאוד בסגנון time-series (events, audit logs) שבהן רוב השאילתות מסננות לפי מפתח ה-partition וה-retention הוא לפי גיל: drop ל-partition חודשי הוא מיידי ולא יוצר bloat, עבודת vacuum ותחזוקת אינדקסים היא לכל partition, ו-partition pruning מדלג על מידע לא רלוונטי. עלויות: שאילתות בלי מפתח ה-partition סורקות את כל ה-partitions; unique constraints חייבים לכלול את מפתח ה-partition; יותר מדי partitions (אלפים) מאטים את ה-planning; וצריך אוטומציה (pg_partman) ליצירת partitions עתידיים. זה לא תחליף לאינדקסים, וזה לא מגדיל כתיבות מעבר ל-node אחד – בשביל זה יש sharding (Citus, ברמת האפליקציה)." }
     }
   ],
@@ -1642,7 +1642,7 @@ ${PG_EXPLAIN}`
         { en: "SELECT queries", he: "שאילתות SELECT" },
         { en: "COMMIT", he: "COMMIT" }
       ], answer: 1,
-      explain: { en: "Your next transaction may run on a different server connection, so session state disappears. Use SET LOCAL, role/database defaults and transaction-level advisory locks.", he: "הטרנזקציה הבאה שלכם עשויה לרוץ על connection אחר לשרת, כך ש-session state נעלם. משתמשים ב-SET LOCAL, ברירות מחדל לפי role/database ו-advisory locks ברמת טרנזקציה." }
+      explain: { en: "Your next transaction may run on a different server connection, so session state disappears. Use SET LOCAL, role/database defaults and transaction-level advisory locks.", he: "הטרנזקציה הבאה שלך עשויה לרוץ על connection אחר לשרת, כך ש-session state נעלם. משתמשים ב-SET LOCAL, ברירות מחדל לפי role/database ו-advisory locks ברמת טרנזקציה." }
     },
     {
       q: { en: "An ALTER TABLE ADD COLUMN (metadata-only) caused a 10-minute outage. Most likely cause?", he: "ALTER TABLE ADD COLUMN (שינוי metadata בלבד) גרם ל-outage של 10 דקות. מה הסיבה הסבירה ביותר?" },
@@ -1850,7 +1850,7 @@ ${ZD_DUAL}
 ${ZD_DUAL}
 <ul>
 <li><strong>Dual writes</strong> בקוד האפליקציה אינם אטומיים בין שני stores – כתיבה אחת יכולה להצליח והשנייה להיכשל. מתייחסים ל-store החדש כ-follower: מתקנים דרך outbox/תור, או עדיף, משתמשים ב-<strong>CDC</strong> (Debezium שקורא את ה-WAL/binlog) כדי להזרים שינויים, מה שנותן סדר ולא תלוי בזה שכל נתיב קוד יזכור לעשות dual write.</li>
-<li><strong>Shadow reads</strong> משווים תוצאות בלי להגיש אותן; dashboard של שיעור mismatch הוא אות ה-go/no-go שלכם.</li>
+<li><strong>Shadow reads</strong> משווים תוצאות בלי להגיש אותן; dashboard של שיעור mismatch הוא אות ה-go/no-go שלך.</li>
 <li><strong>Feature flags</strong> הופכים את ה-cut-over להדרגתי (1% מה-tenants → 10% → 100%) ואת ה-rollback לשינוי קונפיג במקום deploy.</li>
 <li><strong>תוכנית rollback</strong>, כתובה לפני שמתחילים: לכל שלב, איך חוזרים, כמה זמן זה לוקח, ומהי נקודת האל-חזור. משאירים reverse sync (חדש → ישן) רץ לזמן מה אחרי ה-cut-over, כדי ש-rollback לא יאבד כתיבות שנעשו ב-store החדש.</li>
 </ul>
@@ -1878,7 +1878,7 @@ ${ZD_DUAL}
       a: { en: "ALTER COLUMN TYPE rewrites the table under AccessExclusive — hours of outage — so: add id_new bigint (nullable, instant); a trigger copies id to id_new on insert/update; backfill existing rows in throttled keyset batches watching replica lag; build a unique index concurrently on id_new; also migrate every FK column referencing it (orders_items.order_id) the same way. Cut-over in one short transaction with lock_timeout: lock table, final sync check, rename columns, swap the sequence ownership and default, attach the PK using the prebuilt index, recreate FKs as NOT VALID then validate. App code must not care about the column type (use int64 already). Practise on a restored copy, have the rollback (rename back) scripted, and calculate runway: at the current insert rate, how many weeks until 2^31 — that sets the urgency.", he: "ALTER COLUMN TYPE כותב את הטבלה מחדש תחת AccessExclusive – שעות של outage – אז: מוסיפים id_new bigint (nullable, מיידי); trigger מעתיק את id ל-id_new ב-insert/update; backfill לשורות קיימות ב-batches של keyset מווסתים תוך מעקב אחרי replica lag; בונים unique index ב-CONCURRENTLY על id_new; וגם מעבירים כל עמודת FK שמפנה אליה (orders_items.order_id) באותה דרך. Cut-over בטרנזקציה קצרה אחת עם lock_timeout: lock על הטבלה, בדיקת סנכרון אחרונה, שינוי שמות עמודות, העברת הבעלות וה-default של ה-sequence, חיבור ה-PK עם האינדקס שנבנה מראש, ויצירת FKs מחדש כ-NOT VALID ואז validate. קוד האפליקציה לא צריך להיות תלוי בסוג העמודה (כבר להשתמש ב-int64). מתרגלים על עותק משוחזר, ה-rollback (rename בחזרה) כתוב כסקריפט, ומחשבים runway: בקצב ה-inserts הנוכחי, כמה שבועות עד 2^31 – זה קובע את הדחיפות." }
     },
     {
-      q: { en: "You're moving the orders domain out of a shared monolith database into its own service and store. Outline the migration and the go/no-go criteria.", he: "מוציאים את ה-domain של orders מ-database משותף של מונוליט לשירות ו-store משלו. תארו את המיגרציה ואת קריטריוני ה-go/no-go." },
+      q: { en: "You're moving the orders domain out of a shared monolith database into its own service and store. Outline the migration and the go/no-go criteria.", he: "מוציאים את ה-domain של orders מ-database משותף של מונוליט לשירות ו-store משלו. תאר את המיגרציה ואת קריטריוני ה-go/no-go." },
       a: { en: "First, own the interface: route all orders access in the monolith through one module/API, killing direct joins from other domains (often the longest step). Then stand up the new store, stream changes via CDC (Debezium) from the old tables so the new store is a continuously updated follower, and backfill history. Enable shadow reads from the new service and track mismatch rate and latency. Flip reads by tenant percentage behind a flag; then flip writes so the new service is the source of truth, with reverse CDC back to the old tables for rollback and for remaining legacy readers. Go/no-go per step: mismatch rate under an agreed threshold (ideally zero unexplained) for N days, p99 within SLO, error budget healthy, rollback rehearsed. Only after legacy readers are gone and the window passes: stop reverse sync and drop old tables.", he: "קודם משתלטים על הממשק: מנתבים כל גישה ל-orders במונוליט דרך מודול/API אחד, והורגים joins ישירים מ-domains אחרים (לרוב השלב הכי ארוך). אחר כך מקימים את ה-store החדש, מזרימים שינויים דרך CDC (Debezium) מהטבלאות הישנות כך שה-store החדש הוא follower שמתעדכן כל הזמן, ועושים backfill להיסטוריה. מפעילים shadow reads מהשירות החדש ועוקבים אחרי שיעור mismatch ו-latency. מעבירים קריאות לפי אחוז tenants מאחורי flag; אחר כך מעבירים כתיבות כך שהשירות החדש הוא מקור האמת, עם reverse CDC חזרה לטבלאות הישנות בשביל rollback ובשביל קוראי legacy שנשארו. Go/no-go לכל שלב: שיעור mismatch מתחת לסף מוסכם (באידיאל אפס בלי הסבר) במשך N ימים, p99 בתוך ה-SLO, error budget בריא, rollback שתורגל. רק אחרי שקוראי ה-legacy נעלמו והחלון עבר: עוצרים את ה-reverse sync ומוחקים את הטבלאות הישנות." }
     },
     {
@@ -2086,7 +2086,7 @@ INFRA.lessons.push({
   },
   analogy: {
     en: "State files are the land registry of your cloud. One registry book for the whole country means every clerk waits for the same book and one coffee spill ruins everything. Split it per district (component/env) and clerks work in parallel, a spill ruins one district. The PR workflow is the notary: no change to the registry without a signed, reviewed deed (the saved plan), and the zoning laws (policy-as-code) are checked automatically before the stamp.",
-    he: "קבצי state הם הטאבו של הענן שלכם. ספר טאבו אחד לכל המדינה אומר שכל פקיד מחכה לאותו ספר, וכוס קפה אחת שנשפכת הורסת הכל. מפצלים לפי מחוז (component/env) והפקידים עובדים במקביל, ונזק הורס מחוז אחד. ה-PR workflow הוא הנוטריון: אין שינוי בטאבו בלי שטר חתום ונבדק (ה-plan השמור), וחוקי התכנון והבנייה (policy-as-code) נבדקים אוטומטית לפני החותמת."
+    he: "קבצי state הם הטאבו של הענן שלך. ספר טאבו אחד לכל המדינה אומר שכל פקיד מחכה לאותו ספר, וכוס קפה אחת שנשפכת הורסת הכל. מפצלים לפי מחוז (component/env) והפקידים עובדים במקביל, ונזק הורס מחוז אחד. ה-PR workflow הוא הנוטריון: אין שינוי בטאבו בלי שטר חתום ונבדק (ה-plan השמור), וחוקי התכנון והבנייה (policy-as-code) נבדקים אוטומטית לפני החותמת."
   },
   sections: [
     {
@@ -2100,7 +2100,7 @@ ${TF_LAYOUT}
 <li>Pass data between states via <code>terraform_remote_state</code> or, with looser coupling, published outputs (SSM parameters, tags + data sources). Every cross-state link is a deploy-order dependency — keep the graph shallow.</li>
 <li>Terragrunt (or HCP Terraform Stacks / Terramate) keeps many root modules DRY: shared backend generation, dependency ordering, <code>run --all</code> across components.</li>
 </ul>`,
-        he: `<p>כל <code>terraform apply</code> יכול לגעת בכל דבר ב-state שלו. אז הגבול של ה-state <em>הוא</em> ה-blast radius שלכם, הרזולוציה של ה-lock וזמן ה-plan. מפצלים לאורך שלושה צירים: <strong>סביבה</strong> (prod אף פעם לא חולק state עם staging), <strong>region</strong>, ו-<strong>רכיב לפי קצב שינוי וסיכון</strong> (רשת ו-data משתנים לעיתים רחוקות וקטסטרופליים כשנשברים; משאבי אפליקציה משתנים כל יום).</p>
+        he: `<p>כל <code>terraform apply</code> יכול לגעת בכל דבר ב-state שלו. אז הגבול של ה-state <em>הוא</em> ה-blast radius שלך, הרזולוציה של ה-lock וזמן ה-plan. מפצלים לאורך שלושה צירים: <strong>סביבה</strong> (prod אף פעם לא חולק state עם staging), <strong>region</strong>, ו-<strong>רכיב לפי קצב שינוי וסיכון</strong> (רשת ו-data משתנים לעיתים רחוקות וקטסטרופליים כשנשברים; משאבי אפליקציה משתנים כל יום).</p>
 ${TF_LAYOUT}
 <ul>
 <li>כהיוריסטיקה, מכוונים ל-50-300 משאבים לכל state; plan של יותר מכמה דקות הורג את לולאת הפידבק ב-PR ונתקע ב-rate limits של ה-API של ה-provider.</li>
@@ -2160,7 +2160,7 @@ ${TF_ATLANTIS}
 <tr><th></th><th>Atlantis</th><th>HCP Terraform (לשעבר Terraform Cloud)</th><th>Spacelift / env0 / Scalr</th></tr>
 <tr><td>מודל</td><td>Self-hosted, קוד פתוח, תגובות ב-PR</td><td>SaaS (או Terraform Enterprise), workspaces, ריצות מבוססות VCS</td><td>SaaS, stacks, multi-IaC (TF, OpenTofu, Pulumi, CFN)</td></tr>
 <tr><td>Policy</td><td>מביאים לבד (conftest, Checkov) בצעדי workflow מותאמים</td><td>Sentinel או OPA policy sets, מובנה</td><td>OPA (Rego) מובנה בשלבי plan/approve/push</td></tr>
-<tr><td>Trade-off</td><td>זול, גמיש, אתם מריצים ומאבטחים</td><td>מנוהל, תמחור לפי משאב מנוהל; רק Terraform</td><td>פיצ'רים עשירים (drift, תלויות בין stacks), עלות ספק</td></tr>
+<tr><td>Trade-off</td><td>זול, גמיש, אתה מריץ ומאבטח</td><td>מנוהל, תמחור לפי משאב מנוהל; רק Terraform</td><td>פיצ'רים עשירים (drift, תלויות בין stacks), עלות ספק</td></tr>
 </table>
 <p><strong>Policy-as-code</strong> רץ מול ה-JSON של ה-plan, כך שהוא שופט את ה-<em>שינוי</em> ולא רק קוד סטטי: חוסם buckets ציבוריים, מחיקת databases, instance types מחוץ ל-allow-list, tags חסרים. סורקים סטטיים (Checkov, Trivy config, חוקי tfsec שעברו ל-Trivy) תופסים misconfigurations ב-HCL מוקדם יותר, ב-PR של המפתח.</p>
 ${TF_POLICY}
@@ -2184,7 +2184,7 @@ ${TF_POLICY}
   ],
   interview: [
     {
-      q: { en: "You inherit one Terraform state with 3,000 resources across all environments; plans take 15 minutes and teams queue on the lock. Plan the fix.", he: "ירשתם state אחד של Terraform עם 3,000 משאבים בכל הסביבות; plans לוקחים 15 דקות וצוותים מחכים בתור ל-lock. תכננו את התיקון." },
+      q: { en: "You inherit one Terraform state with 3,000 resources across all environments; plans take 15 minutes and teams queue on the lock. Plan the fix.", he: "ירשת state אחד של Terraform עם 3,000 משאבים בכל הסביבות; plans לוקחים 15 דקות וצוותים מחכים בתור ל-lock. תכנן את התיקון." },
       a: { en: "Target layout first: env x region x component, sized by change rate and blast radius, with owners (CODEOWNERS) per directory. Freeze big changes, back up the state (bucket versioning plus a copy). Migrate one component at a time, starting with the most frequently changed (app resources) to relieve the lock fastest: new root module with import blocks for its resources, old module with removed{destroy=false}; both plans must show only imports/forgets. Replace in-state references with remote_state or published outputs. Put each new state behind the PR workflow with policy checks and nightly drift detection. Measure success: plan time per state under 1-2 minutes, lock wait near zero, change failure rate for infra PRs.", he: "קודם מבנה יעד: env x region x component, בגודל לפי קצב שינוי ו-blast radius, עם בעלים (CODEOWNERS) לכל תיקייה. מקפיאים שינויים גדולים, מגבים את ה-state (versioning ב-bucket ועוד עותק). מעבירים רכיב אחד בכל פעם, ומתחילים מזה שמשתנה הכי הרבה (משאבי אפליקציה) כדי לשחרר את ה-lock הכי מהר: root module חדש עם בלוקי import למשאבים שלו, ובמודול הישן removed{destroy=false}; שני ה-plans חייבים להראות רק imports/forgets. מחליפים הפניות בתוך ה-state ב-remote_state או ב-outputs מפורסמים. כל state חדש עובר דרך ה-PR workflow עם בדיקות policy וזיהוי drift לילי. מודדים הצלחה: זמן plan לכל state מתחת ל-1-2 דקות, המתנה ל-lock קרובה לאפס, change failure rate ל-PRs של תשתית." }
     },
     {

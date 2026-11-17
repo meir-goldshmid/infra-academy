@@ -94,7 +94,7 @@ SELECT id, title FROM docs ORDER BY embedding &lt;=&gt; '[0.12, -0.03, ...]' LIM
 -- Columnar (ClickHouse): scan 2B rows, read only 2 columns
 SELECT toStartOfHour(ts) h, count() FROM events WHERE ts &gt; now() - INTERVAL 1 DAY GROUP BY h;</pre>
 <blockquote>⚠️ Production tip: In Cassandra/DynamoDB you model <em>queries first</em> and duplicate data per query (one table per access pattern). In relational you model <em>entities first</em> and let the planner answer any query. Mixing the mindsets is the #1 cause of NoSQL regret.</blockquote>`,
-        he: `<p>הדרך הכי מהירה להרגיש את ההבדל היא לראות את ה-query ה"טבעי" של כל אחד. שימו לב איך כל מודל הופך סוג שאלה אחד לטריוויאלי ואחרים לכואבים.</p>
+        he: `<p>הדרך הכי מהירה להרגיש את ההבדל היא לראות את ה-query ה"טבעי" של כל אחד. שים לב איך כל מודל הופך סוג שאלה אחד לטריוויאלי ואחרים לכואבים.</p>
 <pre>-- Relational (Postgres): invariants + joins
 SELECT o.id, SUM(i.qty * i.price_cents) FROM orders o
 JOIN order_items i ON i.order_id = o.id
@@ -217,7 +217,7 @@ Amplification: B-tree pays on writes, LSM pays on reads + compaction (space amp 
 <blockquote>💡 Real world: Managed (RDS/Aurora, Cloud SQL, Atlas, Elastic Cloud) costs 20–60% more per vCPU than self-hosting on VMs, but a single DBA salary buys a lot of managed instances. Self-host only when scale makes the premium large or when you need control the provider won't give you.</blockquote>`,
         he: `<p>לפני שמתחייבים ל-database כלשהו, מתחקרים אותו כמו מועמד לעבודה:</p>
 <ul>
-<li><strong>Consistency</strong>: מה מחזירה קריאה מיד אחרי כתיבה? טרנזקציות per-key או בין keys? (ראו pr-cap-pacelc)</li>
+<li><strong>Consistency</strong>: מה מחזירה קריאה מיד אחרי כתיבה? טרנזקציות per-key או בין keys? (ראה pr-cap-pacelc)</li>
 <li><strong>יחידת הסקייל</strong>: איך מוסיפים יכולת כתיבה? האם resharding קורה online? מה ה-partition/מסמך/שורה הכי גדולים?</li>
 <li><strong>כשל</strong>: מה קורה כש-node מת — failover אוטומטי תוך כמה שניות, עם כמה איבוד דאטה (RPO)?</li>
 <li><strong>תפעול</strong>: גיבויים + point-in-time restore, שדרוג major בלי downtime, schema migrations על טבלה של 1 TB.</li>
@@ -311,7 +311,7 @@ Amplification: B-tree pays on writes, LSM pays on reads + compaction (space amp 
         { en: "Neo4j", he: "Neo4j" }
       ],
       answer: 1,
-      explain: { en: "At a few million vectors pgvector + HNSW is fast enough, transactional with your data, and adds no new system to operate.", he: "בכמה מיליוני וקטורים pgvector + HNSW מספיק מהיר, טרנזקציוני יחד עם הדאטה שלכם, ולא מוסיף מערכת חדשה לתפעל." }
+      explain: { en: "At a few million vectors pgvector + HNSW is fast enough, transactional with your data, and adds no new system to operate.", he: "בכמה מיליוני וקטורים pgvector + HNSW מספיק מהיר, טרנזקציוני יחד עם הדאטה שלך, ולא מוסיף מערכת חדשה לתפעל." }
     }
   ],
   related: ["db-sql-vs-nosql", "db-indexes", "db-sharding", "redis-deep", "staff-postgres-at-scale", "pr-cap-pacelc", "pr-scaling-kinds"]
@@ -415,7 +415,7 @@ default_pool_size = 100</pre>
 <tr><td>Directory / lookup</td><td>טבלה שממפה tenant → shard</td><td>אפשר להזיז tenant גדול לכל מקום; גמיש</td><td>ה-lookup ב-critical path — חייב cache ו-HA</td><td>הרבה מוצרי SaaS</td></tr>
 <tr><td>Geo</td><td>משתמשי EU → shard ב-EU</td><td>Latency, data residency (GDPR)</td><td>משתמשים שנוסעים או עוברים; אזורים לא מאוזנים</td><td>SaaS גלובלי, בנקים</td></tr>
 </table>
-<p>בחירת ה-<strong>shard key</strong> היא ההחלטה שתחיו איתה שנים. keys טובים: cardinality גבוה, פיזור אחיד, מופיעים כמעט בכל query (כך ש-queries פוגעים ב-shard אחד), ומיושרים עם גבולות טרנזקציה (הדאטה של tenant ביחד). <code>tenant_id</code> הוא הבחירה הקלאסית ב-SaaS; שימו לב ל-tenants "לווייתנים" שצריכים shard משלהם.</p>
+<p>בחירת ה-<strong>shard key</strong> היא ההחלטה שתחיה איתה שנים. keys טובים: cardinality גבוה, פיזור אחיד, מופיעים כמעט בכל query (כך ש-queries פוגעים ב-shard אחד), ומיושרים עם גבולות טרנזקציה (הדאטה של tenant ביחד). <code>tenant_id</code> הוא הבחירה הקלאסית ב-SaaS; שים לב ל-tenants "לווייתנים" שצריכים shard משלהם.</p>
 <blockquote>💡 מהשטח: Notion חילקו Postgres ל-480 shards לוגיים על 32 hosts פיזיים (לפי workspace_id). הרבה יותר shards לוגיים מ-hosts פיזיים מאפשר rebalancing ע"י הזזת shards לוגיים שלמים במקום hash מחדש של שורות.</blockquote>`
       }
     },
@@ -444,7 +444,7 @@ spec:
 <li><strong>מתוזמן</strong>: שיאים ידועים (Black Friday, סערת ההתחברויות ב-9:00, חיוב סוף חודש) — מגדילים ב-08:45, לא כשההתראה קופצת.</li>
 <li><strong>חזוי</strong>: תחזיות מההיסטוריה (למשל AWS predictive scaling). טוב לעונתיות יומית חזקה.</li>
 <li><strong>ארכיטקטורת Cells</strong>: N עותקים שלמים ובלתי תלויים של כל ה-stack (אפליקציה + DB + תור), כל אחד משרת תת-קבוצה של לקוחות, עם router דק מלפנים. מגדילים ע"י הוספת cells; deploy רע או tenant מורעל פוגע ב-cell אחד (למשל 1/20 מהלקוחות), לא בכולם.</li>
-<li><strong>סקיילינג גאוגרפי</strong>: כמה regions בשביל latency (אור בסיב צריך ~70 ms ל-round trip של 7,000 ק"מ — זו פיזיקה) ועמידות לאסונות. Read-local/write-home הכי פשוט; כתיבות multi-region צריכות טיפול בקונפליקטים (ראו pr-cap-pacelc).</li>
+<li><strong>סקיילינג גאוגרפי</strong>: כמה regions בשביל latency (אור בסיב צריך ~70 ms ל-round trip של 7,000 ק"מ — זו פיזיקה) ועמידות לאסונות. Read-local/write-home הכי פשוט; כתיבות multi-region צריכות טיפול בקונפליקטים (ראה pr-cap-pacelc).</li>
 </ul>
 <pre># Kubernetes HPA: scale on RPS per pod, fast up / slow down
 spec:
@@ -488,7 +488,7 @@ Stage 7  (global)    cells x regions, router in front, data residency</pre>
 <pre>Amdahl:  speedup(N) = 1 / (s + (1 - s)/N)        s = serial fraction
          s = 0.05  -&gt; N=16: 9.1x   N=64: 15.4x   N=inf: 20x
 USL:     C(N) = N / (1 + a(N-1) + b*N(N-1))      a = contention, b = coherency</pre>
-<blockquote>💡 מהשטח: Instagram הגיעו ל-~30M משתמשים עם צוות קטנטן על Postgres + Redis + Memcached + שרתי Django אופקיים — שלבים 2–4. רוב המערכות אף פעם לא צריכות את שלב 6; לעשות אותו מוקדם קונה שנים של מורכבות בשביל טראפיק שאין לכם.</blockquote>`
+<blockquote>💡 מהשטח: Instagram הגיעו ל-~30M משתמשים עם צוות קטנטן על Postgres + Redis + Memcached + שרתי Django אופקיים — שלבים 2–4. רוב המערכות אף פעם לא צריכות את שלב 6; לעשות אותו מוקדם קונה שנים של מורכבות בשביל טראפיק שאין לך.</blockquote>`
       }
     }
   ],
@@ -509,7 +509,7 @@ USL:     C(N) = N / (1 + a(N-1) + b*N(N-1))      a = contention, b = coherency</
     { cmd: "kubectl autoscale deployment api --cpu-percent=60 --min=3 --max=30 && kubectl get hpa -w", what: { en: "Reactive X-axis scaling: watch replicas follow CPU.", he: "סקיילינג ריאקטיבי בציר X: צופים ב-replicas עוקבים אחרי ה-CPU." } },
     { cmd: "psql -h replica -c \"SELECT now() - pg_last_xact_replay_timestamp() AS replica_lag;\"", what: { en: "Measure read-replica lag before routing 'read after write' traffic to it.", he: "מודדים lag של read replica לפני שמנתבים אליו טראפיק של 'קריאה אחרי כתיבה'." } },
     { cmd: "psql -c \"SELECT state, count(*) FROM pg_stat_activity GROUP BY state;\"", what: { en: "Count DB connections by state — the first sign you need PgBouncer.", he: "סופרים connections ל-DB לפי state — הסימן הראשון שצריך PgBouncer." } },
-    { cmd: "hey -z 60s -c 200 https://staging.example.com/api/items", what: { en: "Load-test to find the knee of the throughput curve before production finds it for you.", he: "Load test כדי למצוא את נקודת השבירה של עקומת ה-throughput לפני שהפרודקשן ימצא אותה בשבילכם." } }
+    { cmd: "hey -z 60s -c 200 https://staging.example.com/api/items", what: { en: "Load-test to find the knee of the throughput curve before production finds it for you.", he: "Load test כדי למצוא את נקודת השבירה של עקומת ה-throughput לפני שהפרודקשן ימצא אותה בשבילך." } }
   ],
   mnemonic: {
     en: "\"Up, Out, Cache, Copy, Queue, Split, Shard, Cell\" — climb the ladder one rung at a time, and only when a measured bottleneck pushes you.",
@@ -528,7 +528,7 @@ USL:     C(N) = N / (1 + a(N-1) + b*N(N-1))      a = contention, b = coherency</
     },
     {
       q: { en: "What is a cell-based architecture and when is it worth it?", he: "מה זו ארכיטקטורה מבוססת cells ומתי היא שווה את זה?" },
-      a: { en: "The whole stack is replicated into independent cells, each owning a subset of customers, with a thin routing layer mapping customer → cell. It caps blast radius (a bad deploy or noisy tenant affects one cell), gives a tested unit of scale (add a cell instead of growing a giant cluster), and enables per-cell staged rollouts. Worth it when outages are very expensive and you're past single-cluster limits; the cost is the router, cross-cell operations (migrating a customer, global reporting) and N copies to operate.", he: "כל ה-stack משוכפל ל-cells עצמאיים, כל אחד אחראי על תת-קבוצת לקוחות, עם שכבת ניתוב דקה שממפה לקוח → cell. זה מגביל blast radius (deploy רע או tenant רועש פוגע ב-cell אחד), נותן יחידת סקייל בדוקה (מוסיפים cell במקום להגדיל קלאסטר ענק), ומאפשר rollout מדורג לפי cell. שווה כשהשבתות יקרות מאוד ועברתם את הגבולות של קלאסטר יחיד; העלות היא ה-router, פעולות בין cells (העברת לקוח, דוחות גלובליים) ו-N עותקים לתפעל." }
+      a: { en: "The whole stack is replicated into independent cells, each owning a subset of customers, with a thin routing layer mapping customer → cell. It caps blast radius (a bad deploy or noisy tenant affects one cell), gives a tested unit of scale (add a cell instead of growing a giant cluster), and enables per-cell staged rollouts. Worth it when outages are very expensive and you're past single-cluster limits; the cost is the router, cross-cell operations (migrating a customer, global reporting) and N copies to operate.", he: "כל ה-stack משוכפל ל-cells עצמאיים, כל אחד אחראי על תת-קבוצת לקוחות, עם שכבת ניתוב דקה שממפה לקוח → cell. זה מגביל blast radius (deploy רע או tenant רועש פוגע ב-cell אחד), נותן יחידת סקייל בדוקה (מוסיפים cell במקום להגדיל קלאסטר ענק), ומאפשר rollout מדורג לפי cell. שווה כשהשבתות יקרות מאוד ועברת את הגבולות של קלאסטר יחיד; העלות היא ה-router, פעולות בין cells (העברת לקוח, דוחות גלובליים) ו-N עותקים לתפעל." }
     }
   ],
   quiz: [
@@ -668,8 +668,8 @@ INFRA.lessons.push({
 <tr><td><strong>Linearizable</strong></td><td>מתנהג כמו עותק אחד; ברגע שכתיבה אושרה, כל קריאה אחריה בכל מקום רואה אותה</td><td>לוח מחיק אחד בחדר אחד</td><td>Locks, leader election, שמות משתמש ייחודיים, יתרות</td></tr>
 <tr><td><strong>Sequential</strong></td><td>כולם רואים את אותו סדר פעולות, לא בהכרח בזמן אמת</td><td>שידור טלוויזיה בהשהיה — אותה תוכנית, אותו סדר, כמה שניות באיחור</td><td>לוגים משוכפלים</td></tr>
 <tr><td><strong>Causal</strong></td><td>סיבה לפני תוצאה: אף פעם לא רואים תשובה לפני השאלה</td><td>קבוצת WhatsApp: תגובות תמיד מופיעות אחרי ההודעה שהן מצטטות</td><td>תגובות, צ'אט, אפליקציות שיתופיות</td></tr>
-<tr><td><strong>Read-your-writes</strong></td><td>תמיד רואים את העדכונים של עצמכם</td><td>מחליפים תמונת פרופיל ומיד רואים את החדשה (אחרים אולי באיחור)</td><td>עריכת פרופיל, הגדרות, פרסום</td></tr>
-<tr><td><strong>Monotonic reads</strong></td><td>אף פעם לא חוזרים אחורה בזמן</td><td>לוח התוצאות לא מראה 2–1 אחרי שראיתם 3–1</td><td>Feeds, דשבורדים מאחורי replicas עם load balancing</td></tr>
+<tr><td><strong>Read-your-writes</strong></td><td>אתה תמיד רואה את העדכונים של עצמך</td><td>מחליפים תמונת פרופיל ומיד רואים את החדשה (אחרים אולי באיחור)</td><td>עריכת פרופיל, הגדרות, פרסום</td></tr>
+<tr><td><strong>Monotonic reads</strong></td><td>אף פעם לא חוזרים אחורה בזמן</td><td>לוח התוצאות לא מראה 2–1 אחרי שראית 3–1</td><td>Feeds, דשבורדים מאחורי replicas עם load balancing</td></tr>
 <tr><td><strong>Eventual</strong></td><td>אם הכתיבות נעצרות, ה-replicas מתכנסים</td><td>רכילות בכפר — עד מחר כולם יידעו</td><td>לייקים, מוני צפיות, DNS, המלצות</td></tr>
 </table>
 <p>Read-your-writes ו-monotonic reads הן <em>הבטחות session</em> — זולות למימוש עם sticky sessions, ניתוב ל-primary ל-N שניות אחרי כתיבה, או העברת token של version/LSN שה-replica חייב להגיע אליו לפני שהוא עונה.</p>`
@@ -734,7 +734,7 @@ aws dynamodb get-item --table-name Accounts --key '{"id":{"S":"42"}}' --consiste
 <tr><td>Username uniqueness</td><td>Linearizable</td><td>Unique constraint on one primary or a consensus store</td></tr>
 <tr><td>Social feed</td><td>Causal / monotonic</td><td>Fan-out with versioning, sticky reads</td></tr>
 </table>`,
-        he: `<p><strong>ACID</strong> (Atomic, Consistent, Isolated, Durable) עוסק בטרנזקציות על database אחד; <strong>BASE</strong> (Basically Available, Soft state, Eventually consistent) הוא הפילוסופיה של AP. שימו לב: ה-"C" ב-ACID (ה-invariants נשמרים) <em>אינו</em> ה-"C" ב-CAP (linearizability).</p>
+        he: `<p><strong>ACID</strong> (Atomic, Consistent, Isolated, Durable) עוסק בטרנזקציות על database אחד; <strong>BASE</strong> (Basically Available, Soft state, Eventually consistent) הוא הפילוסופיה של AP. שים לב: ה-"C" ב-ACID (ה-invariants נשמרים) <em>אינו</em> ה-"C" ב-CAP (linearizability).</p>
 <table>
 <tr><th>רמת isolation</th><th>מונעת</th><th>עדיין מאפשרת</th><th>ברירת מחדל ב-</th></tr>
 <tr><td>Read committed</td><td>Dirty reads</td><td>Non-repeatable reads, lost updates, write skew</td><td>Postgres, SQL Server, Oracle</td></tr>
@@ -1017,7 +1017,7 @@ else { require('./server'); }                       // all workers share port 30
   handsOn: [
     { cmd: "etcdctl --endpoints=$EPS endpoint status -w table && etcdctl --endpoints=$EPS member list -w table", what: { en: "See which member is leader, the raft term, and DB size per member.", he: "רואים מי ה-leader, ה-raft term וגודל ה-DB לכל member." } },
     { cmd: "redis-cli -c -p 7000 cluster info && redis-cli -p 7000 cluster keyslot user:{42}:cart", what: { en: "Check Redis Cluster health and which hash slot a key lands in (hash tags keep related keys together).", he: "בודקים בריאות Redis Cluster ולאיזה hash slot key נוחת (hash tags שומרים keys קשורים יחד)." } },
-    { cmd: "kafka-topics.sh --bootstrap-server localhost:9092 --describe --under-replicated-partitions", what: { en: "Find Kafka partitions whose followers fell out of the ISR — your durability is degraded there.", he: "מוצאים partitions ב-Kafka שה-followers שלהם נפלו מה-ISR — שם העמידות שלכם נפגעה." } },
+    { cmd: "kafka-topics.sh --bootstrap-server localhost:9092 --describe --under-replicated-partitions", what: { en: "Find Kafka partitions whose followers fell out of the ISR — your durability is degraded there.", he: "מוצאים partitions ב-Kafka שה-followers שלהם נפלו מה-ISR — שם העמידות שלך נפגעה." } },
     { cmd: "curl -s localhost:9200/_cluster/health?pretty && curl -s 'localhost:9200/_cat/shards?v&s=store:desc' | head", what: { en: "Elasticsearch cluster status (green/yellow/red) and the biggest shards.", he: "סטטוס קלאסטר Elasticsearch (green/yellow/red) וה-shards הכי גדולים." } },
     { cmd: "nodetool status && nodetool describecluster", what: { en: "Cassandra ring view: UN = Up/Normal, ownership per node, schema agreement.", he: "תמונת ה-ring של Cassandra: UN = Up/Normal, בעלות לכל node, הסכמה על ה-schema." } }
   ],

@@ -1967,7 +1967,7 @@ spec:
 <li><strong>טראפיק נמוך הוא האויב</strong>: ב-5% מתוך 20 RPS, ה-canary מקבל request אחד בשנייה; שני 500 נראים כמו 3% שגיאות. דורשים מינימום requests ב-query, או מחכים יותר זמן.</li>
 <li><code>ClusterAnalysisTemplate</code> משתף templates בין namespaces; צוותי פלטפורמה מפרסמים gate סטנדרטי של "golden signals".</li>
 </ul>
-<blockquote>⚠️ טיפ לפרודקשן: תבדקו את מסלול הכישלון. עושים deploy ל-image שבור בכוונה (מחזיר 500 על 10% מה-requests) ב-staging ומוודאים שה-Rollout באמת עושה abort. שגיאת כתיב ב-PromQL שמחזירה vector ריק גורמת ל-<code>result[0]</code> להיכשל – ואף אחד לא שם לב עד היום שזה באמת חשוב.</blockquote>`
+<blockquote>⚠️ טיפ לפרודקשן: תבדוק את מסלול הכישלון. עושים deploy ל-image שבור בכוונה (מחזיר 500 על 10% מה-requests) ב-staging ומוודאים שה-Rollout באמת עושה abort. שגיאת כתיב ב-PromQL שמחזירה vector ריק גורמת ל-<code>result[0]</code> להיכשל – ואף אחד לא שם לב עד היום שזה באמת חשוב.</blockquote>`
       }
     },
     {
@@ -2008,7 +2008,7 @@ kubectl argo rollouts retry rollout checkout           # retry after an abort
 kubectl argo rollouts undo checkout                    # roll back to previous revision
 kubectl argo rollouts set image checkout app=ghcr.io/acme/checkout:4.2.1
 kubectl argo rollouts dashboard                        # local UI on :3100</pre>
-<p><strong>Flagger</strong> (ממשפחת Flux, CNCF) הוא האלטרנטיבה העיקרית. במקום להחליף את ה-Deployment, משאירים Deployment רגיל ומוסיפים משאב <code>Canary</code>; Flagger מייצר עותקים <code>-primary</code> ו-<code>-canary</code>, מנהל את ה-weights ב-mesh/ingress (Istio, Linkerd, App Mesh, NGINX, Contour, Gloo, Gateway API), ומריץ בדיקות <code>MetricTemplate</code> ועוד webhooks (load tests). בוחרים Argo Rollouts אם אתם על Argo CD ורוצים רשימת steps מפורשת וה-UI שלו; Flagger אם אתם על Flux או רוצים להשאיר Deployments רגילים.</p>`
+<p><strong>Flagger</strong> (ממשפחת Flux, CNCF) הוא האלטרנטיבה העיקרית. במקום להחליף את ה-Deployment, משאירים Deployment רגיל ומוסיפים משאב <code>Canary</code>; Flagger מייצר עותקים <code>-primary</code> ו-<code>-canary</code>, מנהל את ה-weights ב-mesh/ingress (Istio, Linkerd, App Mesh, NGINX, Contour, Gloo, Gateway API), ומריץ בדיקות <code>MetricTemplate</code> ועוד webhooks (load tests). בוחרים Argo Rollouts אם אתה על Argo CD ורוצה רשימת steps מפורשת וה-UI שלו; Flagger אם אתה על Flux או רוצה להשאיר Deployments רגילים.</p>`
       }
     },
     {

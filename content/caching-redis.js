@@ -35,9 +35,9 @@ redis-cli CONFIG SET latency-monitor-threshold 100
 redis-cli LATENCY DOCTOR            # human-readable analysis of latency spikes
 redis-cli --latency -i 1            # live PING round-trip</pre>
 <blockquote>⚠️ Production tip: Use <code>SCAN</code> (cursor-based, small batches) instead of <code>KEYS</code>, and <code>UNLINK</code> instead of <code>DEL</code> for big values — UNLINK frees memory in a background thread. Rename or ACL-deny <code>KEYS</code>, <code>FLUSHALL</code> and <code>DEBUG</code> in production.</blockquote>`,
-        he: `<p>Redis מריץ פקודות על <strong>main thread אחד</strong> שמונע על ידי event loop (<code>epoll</code> ב-Linux). הדאטה ב-RAM, רוב הפקודות הן O(1) או O(log N), אז core יחיד עושה בערך 100k-200k פעולות פשוטות בשנייה בלי locks, בלי context switches ובלי מלחמות על cache lines. תופעת לוואי שאתם נשענים עליה כל יום: <strong>כל פקודה בודדת היא atomic</strong> — <code>INCR</code> אף פעם לא מאבד עדכון.</p>
+        he: `<p>Redis מריץ פקודות על <strong>main thread אחד</strong> שמונע על ידי event loop (<code>epoll</code> ב-Linux). הדאטה ב-RAM, רוב הפקודות הן O(1) או O(log N), אז core יחיד עושה בערך 100k-200k פעולות פשוטות בשנייה בלי locks, בלי context switches ובלי מלחמות על cache lines. תופעת לוואי שאתה נשען עליה כל יום: <strong>כל פקודה בודדת היא atomic</strong> — <code>INCR</code> אף פעם לא מאבד עדכון.</p>
 <ul>
-<li><strong>I/O threads</strong> (<code>io-threads 4</code>, מ-Redis 6): מעבירים קריאה ו-parsing מה-sockets וכתיבת תשובות ל-threads נוספים. ה-<em>execution</em> של הפקודות עדיין על thread אחד. עוזר כשאתם חסומים ברשת עם הרבה clients; ב-Valkey 8 שכתבו את זה שוב בשביל throughput גבוה יותר לכל node.</li>
+<li><strong>I/O threads</strong> (<code>io-threads 4</code>, מ-Redis 6): מעבירים קריאה ו-parsing מה-sockets וכתיבת תשובות ל-threads נוספים. ה-<em>execution</em> של הפקודות עדיין על thread אחד. עוזר כשאתה חסום ברשת עם הרבה clients; ב-Valkey 8 שכתבו את זה שוב בשביל throughput גבוה יותר לכל node.</li>
 <li><strong>Background threads</strong> מטפלים ב-<code>UNLINK</code>/lazy free, ב-fsync של AOF ובסגירת קבצים, ו-<code>BGSAVE</code> משתמש ב-child שנוצר עם <code>fork()</code>.</li>
 <li><strong>המחיר:</strong> כל פקודה איטית תוקעת את <em>כולם</em>. <code>KEYS *</code> על 50M keys, <code>HGETALL</code> על hash עם 2M שדות, <code>DEL</code> של set בגודל 1 GB, או סקריפט Lua ארוך = שניות של p99 latency לכל ה-clients.</li>
 </ul>
@@ -92,7 +92,7 @@ ZADD rl:user:42 now_ms req-uuid
 ZCARD rl:user:42                                # &gt; 100 ? reject
 EXPIRE rl:user:42 60
 EXEC</pre>
-<blockquote>💡 מהשטח: hashes/sets/sorted sets קטנים נשמרים ב-encoding קומפקטי שנקרא <strong>listpack</strong> (למשל <code>hash-max-listpack-entries 128</code>). פיצול של 10M string keys שטוחים ל-hashes של ~100 שדות יכול לחתוך את הזיכרון ביותר מחצי — <code>OBJECT ENCODING key</code> מראה איזה encoding קיבלתם.</blockquote>`
+<blockquote>💡 מהשטח: hashes/sets/sorted sets קטנים נשמרים ב-encoding קומפקטי שנקרא <strong>listpack</strong> (למשל <code>hash-max-listpack-entries 128</code>). פיצול של 10M string keys שטוחים ל-hashes של ~100 שדות יכול לחתוך את הזיכרון ביותר מחצי — <code>OBJECT ENCODING key</code> מראה איזה encoding קיבלת.</blockquote>`
       }
     },
     {
@@ -163,7 +163,7 @@ redis-cli -p 26379 SENTINEL get-master-addr-by-name mymaster</pre>`,
 <tr><td>Client</td><td>Client שמכיר Sentinel</td><td>Client שמכיר Cluster, עוקב אחרי redirects של <code>MOVED</code>/<code>ASK</code> ושומר את מפת ה-slots</td></tr>
 <tr><td>מגבלות</td><td>קיבולת כתיבה = node אחד</td><td>פעולות multi-key רק בתוך slot אחד; רק DB 0</td></tr>
 </table>
-<p><strong>Hash tags</strong> מכריחים keys קשורים לאותו slot: רק החלק שבתוך <code>{}</code> עובר hash, אז <code>cart:{user42}</code> ו-<code>orders:{user42}</code> נוחתים יחד ואפשר להשתמש בהם ב-<code>MULTI</code> או בסקריפט Lua אחד. תגזימו עם זה (<code>{global}</code>) ובניתם מחדש shard חם אחד.</p>
+<p><strong>Hash tags</strong> מכריחים keys קשורים לאותו slot: רק החלק שבתוך <code>{}</code> עובר hash, אז <code>cart:{user42}</code> ו-<code>orders:{user42}</code> נוחתים יחד ואפשר להשתמש בהם ב-<code>MULTI</code> או בסקריפט Lua אחד. תגזים עם זה (<code>{global}</code>) ובנית מחדש shard חם אחד.</p>
 <pre>redis-cli -c -h node1 CLUSTER INFO | head -3        # cluster_state:ok, slots assigned
 redis-cli -c CLUSTER KEYSLOT "cart:{user42}"        # same as KEYSLOT user42
 redis-cli -p 26379 SENTINEL get-master-addr-by-name mymaster</pre>`
@@ -205,14 +205,14 @@ EVAL "if redis.call('get',KEYS[1])==ARGV[1] then return redis.call('del',KEYS[1]
 <tr><td>GCP</td><td>Memorystore for Redis, Memorystore for Redis Cluster, Memorystore for Valkey</td><td>Cluster variants give sharding without running it yourself.</td></tr>
 </table>
 <blockquote>💡 Real world: "Managed" doesn't remove the physics. You still pick the eviction policy, still get a failover blip (seconds) with possible lost writes on non-durable tiers, still need clients with proper timeouts and reconnect logic, and still own hot keys and big keys.</blockquote>`,
-        he: `<p><strong>היסטוריית הרישוי (בקצרה ובזהירות):</strong> Redis היה ברישיון BSD במשך ~15 שנה. במרץ 2024 Redis Inc. העבירה גרסאות חדשות (7.4 והלאה) לרישיון כפול RSALv2/SSPLv1 מסוג source-available. תוך שבועות, maintainers בגיבוי AWS, Google, Oracle ואחרים עשו fork לגרסת ה-BSD האחרונה (7.2.4) בשם <strong>Valkey</strong> תחת ה-Linux Foundation. ב-2025, עם Redis 8, Redis הוסיפה את <strong>AGPLv3</strong> כאופציית רישוי נוספת. בפועל: Valkey ו-Redis נשארים תואמים בפרוטוקול ובפקודות לרוב המוחלט של ה-workloads (אותם clients, אותו <code>redis-cli</code>), אבל הם כבר מתפצלים בפיצ'רים חדשים — תבדקו את ה-docs של הגרסה המדויקת שאתם מריצים.</p>
+        he: `<p><strong>היסטוריית הרישוי (בקצרה ובזהירות):</strong> Redis היה ברישיון BSD במשך ~15 שנה. במרץ 2024 Redis Inc. העבירה גרסאות חדשות (7.4 והלאה) לרישיון כפול RSALv2/SSPLv1 מסוג source-available. תוך שבועות, maintainers בגיבוי AWS, Google, Oracle ואחרים עשו fork לגרסת ה-BSD האחרונה (7.2.4) בשם <strong>Valkey</strong> תחת ה-Linux Foundation. ב-2025, עם Redis 8, Redis הוסיפה את <strong>AGPLv3</strong> כאופציית רישוי נוספת. בפועל: Valkey ו-Redis נשארים תואמים בפרוטוקול ובפקודות לרוב המוחלט של ה-workloads (אותם clients, אותו <code>redis-cli</code>), אבל הם כבר מתפצלים בפיצ'רים חדשים — תבדוק את ה-docs של הגרסה המדויקת שאתה מריץ.</p>
 <table>
 <tr><th>ענן</th><th>שירותים</th><th>הערות</th></tr>
 <tr><td>AWS</td><td>ElastiCache (Valkey, Redis OSS, Memcached; מבוסס nodes או Serverless), MemoryDB</td><td>ElastiCache = cache, replication אסינכרוני. MemoryDB = primary store עמיד עם transaction log multi-AZ; כתיבות איטיות יותר, אבל כתיבה שקיבלה ack שורדת failover. ב-AWS ה-Valkey זול יותר מ-Redis OSS.</td></tr>
-<tr><td>Azure</td><td>Azure Managed Redis (בנוי על Redis Enterprise), Azure Cache for Redis</td><td>Microsoft ממצבת את Azure Managed Redis כיורש והכריזה על לוחות זמנים ל-retirement של Azure Cache for Redis — תבדקו את התאריכים העדכניים לפני שמתחילים פרויקט חדש.</td></tr>
-<tr><td>GCP</td><td>Memorystore for Redis, Memorystore for Redis Cluster, Memorystore for Valkey</td><td>גרסאות ה-Cluster נותנות sharding בלי להריץ אותו בעצמכם.</td></tr>
+<tr><td>Azure</td><td>Azure Managed Redis (בנוי על Redis Enterprise), Azure Cache for Redis</td><td>Microsoft ממצבת את Azure Managed Redis כיורש והכריזה על לוחות זמנים ל-retirement של Azure Cache for Redis — תבדוק את התאריכים העדכניים לפני שמתחילים פרויקט חדש.</td></tr>
+<tr><td>GCP</td><td>Memorystore for Redis, Memorystore for Redis Cluster, Memorystore for Valkey</td><td>גרסאות ה-Cluster נותנות sharding בלי להריץ אותו בעצמך.</td></tr>
 </table>
-<blockquote>💡 מהשטח: "מנוהל" לא מבטל את הפיזיקה. עדיין בוחרים eviction policy, עדיין חוטפים קפיצה ב-failover (שניות) עם אפשרות לאיבוד כתיבות ב-tiers לא עמידים, עדיין צריך clients עם timeouts ולוגיקת reconnect נכונה, ועדיין ה-hot keys וה-big keys שלכם.</blockquote>`
+<blockquote>💡 מהשטח: "מנוהל" לא מבטל את הפיזיקה. עדיין בוחרים eviction policy, עדיין חוטפים קפיצה ב-failover (שניות) עם אפשרות לאיבוד כתיבות ב-tiers לא עמידים, עדיין צריך clients עם timeouts ולוגיקת reconnect נכונה, ועדיין ה-hot keys וה-big keys שלך.</blockquote>`
       }
     }
   ],
@@ -242,7 +242,7 @@ EVAL "if redis.call('get',KEYS[1])==ARGV[1] then return redis.call('del',KEYS[1]
   pitfalls: [
     { en: "Running KEYS *, HGETALL/SMEMBERS on huge collections, or DEL on a multi-GB key in production — the single thread stalls and every client times out. Use SCAN/HSCAN, pagination and UNLINK.", he: "להריץ KEYS *, HGETALL/SMEMBERS על collections ענקיים, או DEL על key של כמה GB בפרודקשן — ה-thread היחיד נתקע וכל ה-clients נופלים על timeout. SCAN/HSCAN, pagination ו-UNLINK." },
     { en: "Leaving maxmemory unset (or equal to container memory) with persistence on: fork + copy-on-write during BGSAVE pushes RSS past the limit and the kernel OOM-kills Redis.", he: "להשאיר maxmemory לא מוגדר (או שווה לזיכרון ה-container) עם persistence דלוק: fork + copy-on-write בזמן BGSAVE דוחף את ה-RSS מעל הגבול וה-kernel הורג את Redis ב-OOM." },
-    { en: "Using noeviction on a cache (writes start failing when full) or allkeys-lru on an instance that also holds queues/locks (your locks get evicted). Separate cache and state into different instances.", he: "noeviction על cache (כתיבות מתחילות להיכשל כשמתמלא) או allkeys-lru על instance שמחזיק גם תורים/locks (ה-locks שלכם נזרקים). מפרידים cache ו-state ל-instances שונים." },
+    { en: "Using noeviction on a cache (writes start failing when full) or allkeys-lru on an instance that also holds queues/locks (your locks get evicted). Separate cache and state into different instances.", he: "noeviction על cache (כתיבות מתחילות להיכשל כשמתמלא) או allkeys-lru על instance שמחזיק גם תורים/locks (ה-locks שלך נזרקים). מפרידים cache ו-state ל-instances שונים." },
     { en: "Treating a SET NX lock as a correctness guarantee for money or exactly-once work. Without fencing tokens, a paused client can act after its lock expired.", he: "להתייחס ל-lock של SET NX כאל הבטחת נכונות לכסף או לעבודת exactly-once. בלי fencing tokens, client שנתקע יכול לפעול אחרי שה-lock שלו כבר פג." }
   ],
   interview: [
@@ -325,7 +325,7 @@ INFRA.lessons.push({
   },
   analogy: {
     en: "Think of a restaurant kitchen's prep station. Cache-aside is the chef fetching from the walk-in fridge only when an order needs it; write-through is restocking the station every time the fridge is restocked; refresh-ahead is the sous-chef topping up the tomatoes before they run out. The eviction algorithm is how the chef decides what leaves the tiny counter, and a stampede is twenty waiters all running to the fridge for the same sauce at once.",
-    he: "תחשבו על עמדת ההכנה במטבח של מסעדה. Cache-aside זה השף שהולך למקרר הגדול רק כשהזמנה צריכה משהו; write-through זה למלא את העמדה בכל פעם שממלאים את המקרר; refresh-ahead זה הסו-שף שממלא עגבניות לפני שנגמרות. אלגוריתם ה-eviction זה איך השף מחליט מה יורד מהדלפק הקטן, ו-stampede זה עשרים מלצרים שרצים למקרר לאותו רוטב באותו רגע."
+    he: "תחשוב על עמדת ההכנה במטבח של מסעדה. Cache-aside זה השף שהולך למקרר הגדול רק כשהזמנה צריכה משהו; write-through זה למלא את העמדה בכל פעם שממלאים את המקרר; refresh-ahead זה הסו-שף שממלא עגבניות לפני שנגמרות. אלגוריתם ה-eviction זה איך השף מחליט מה יורד מהדלפק הקטן, ו-stampede זה עשרים מלצרים שרצים למקרר לאותו רוטב באותו רגע."
   },
   sections: [
     {
@@ -375,7 +375,7 @@ INFRA.lessons.push({
 <tr><td>W-TinyLFU</td><td>"חלון" LRU קטן (~1%) + segmented LRU ראשי, עם <strong>admission filter</strong>: פריט חדש נכנס רק אם התדירות המשוערת שלו (Count-Min Sketch, שמתחלק בחצי מדי פעם) גבוהה מזו של הקורבן</td><td>Hit ratio כמעט אופטימלי על workloads מעורבים; עמיד ל-scans; metadata זעיר</td><td>רק ברמת ספרייה (in-process)</td><td>Caffeine (Java), Ristretto (Go), הרבה proxies</td></tr>
 </table>
 <p>הרעיון שהרבה מהנדסים מפספסים: <strong>eviction</strong> שואל "מי יוצא?", <strong>admission</strong> שואל "האם החדש בכלל צריך להיכנס?". רוב ה-one-hit-wonders לא אמורים לדחוק פריט חם מוכח — בגלל זה TinyLFU מנצח LRU טהור על traces אמיתיים.</p>
-<blockquote>💡 מהשטח: נסו את ה-<strong>Eviction playground</strong> בעמוד הזה: מריצים אותו workload של Zipf עם scan תקופתי דרך LRU, LFU ו-FIFO ורואים את ה-hit ratio של LRU קורס בזמן ה-scan בזמן ש-LFU כמעט לא זז.</blockquote>`
+<blockquote>💡 מהשטח: נסה את ה-<strong>Eviction playground</strong> בעמוד הזה: מריצים אותו workload של Zipf עם scan תקופתי דרך LRU, LFU ו-FIFO ורואים את ה-hit ratio של LRU קורס בזמן ה-scan בזמן ש-LFU כמעט לא זז.</blockquote>`
       }
     },
     {
@@ -428,7 +428,7 @@ t5  Reader A: SET user:42 v1        ← stale value now cached until TTL</pre>
         he: `<p>בהמשך ליסודות של stampede ב-<em>Caching: Patterns, Eviction &amp; Stampedes</em>, הנה איך כל הגנה באמת מתנהגת:</p>
 <ul>
 <li><strong>Request coalescing (singleflight):</strong> בתוך תהליך, misses מקבילים לאותו key חולקים טעינה אחת. 200 pods × טעינה אחת = עדיין 200 queries ל-DB — בסדר לרוב המקרים, לא ל-query של 2 שניות.</li>
-<li><strong>Distributed lock על המילוי:</strong> <code>SET rebuild:key 1 NX EX 10</code>; המנצח בונה מחדש, המפסידים מגישים stale (אם שמרתם) או ישנים 50 ms ומנסים שוב. טעינה אחת לכל ה-cluster, במחיר round-trip ל-Redis.</li>
+<li><strong>Distributed lock על המילוי:</strong> <code>SET rebuild:key 1 NX EX 10</code>; המנצח בונה מחדש, המפסידים מגישים stale (אם שמרת) או ישנים 50 ms ומנסים שוב. טעינה אחת לכל ה-cluster, במחיר round-trip ל-Redis.</li>
 <li><strong>Probabilistic early expiration (XFetch):</strong> מרעננים מוקדם אם <code>now - delta * beta * ln(rand()) &gt;= expiry</code>, כש-delta = כמה זמן לקח החישוב. keys יקרים מתרעננים מוקדם יותר, ורק כמה קוראים "בני מזל" עושים את זה — בלי תיאום.</li>
 <li><strong>TTL jitter:</strong> <code>ttl = base * (0.9 + 0.2*rand())</code> מפזר keys שנכתבו יחד (warm-up, deploy) כדי שלא יפוגו יחד.</li>
 <li><strong>Serve stale:</strong> שומרים "soft TTL" בתוך הערך ו-hard TTL ארוך יותר על ה-key; אחרי ה-soft TTL מחזירים stale ומרעננים ברקע. אותו רעיון כמו <code>stale-while-revalidate</code> ב-HTTP.</li>
@@ -470,7 +470,7 @@ t5  Reader A: SET user:42 v1        ← stale value now cached until TTL</pre>
 </table>
 <pre>Cache-Control: public, max-age=60, s-maxage=600, stale-while-revalidate=30, stale-if-error=86400</pre>
 <p>מתכון נפוץ: static assets עם hash ב-<code>max-age=31536000, immutable</code>; HTML ב-<code>no-cache</code> עם ETag; GET-ים של API ציבורי עם <code>s-maxage</code> קצר ו-SWR; תשובות אישיות ב-<code>private</code>. עושים purge לפי tag (surrogate keys ב-Fastly, cache tags ב-Cloudflare) במקום לפי URL, או משנים גרסה ב-URL.</p>
-<p><strong>Sizing עם המתמטיקה של hit ratio.</strong> הפופולריות בדרך כלל בהתפלגות דמוית Zipf, אז cache שמחזיק אחוז קטן מהפריטים מקבל את רוב ה-hits — אבל עם תשואה פוחתת. תחשבו ב-<em>miss ratio</em>: עומס על ה-DB = קצב בקשות × miss ratio. מעבר מ-98% ל-99% hit ratio חוצה את העומס על ה-DB. זיכרון ≈ מספר keys × (גודל ערך ממוצע + overhead לכל key, בערך 50-100 bytes ב-Redis). מודדים את העקומה: מריצים יום של keys דרך סימולטור בכמה גדלים, או עוקבים אחרי <code>keyspace_misses</code> ו-<code>evicted_keys</code> תוך כדי הגדלת <code>maxmemory</code>.</p>`
+<p><strong>Sizing עם המתמטיקה של hit ratio.</strong> הפופולריות בדרך כלל בהתפלגות דמוית Zipf, אז cache שמחזיק אחוז קטן מהפריטים מקבל את רוב ה-hits — אבל עם תשואה פוחתת. תחשוב ב-<em>miss ratio</em>: עומס על ה-DB = קצב בקשות × miss ratio. מעבר מ-98% ל-99% hit ratio חוצה את העומס על ה-DB. זיכרון ≈ מספר keys × (גודל ערך ממוצע + overhead לכל key, בערך 50-100 bytes ב-Redis). מודדים את העקומה: מריצים יום של keys דרך סימולטור בכמה גדלים, או עוקבים אחרי <code>keyspace_misses</code> ו-<code>evicted_keys</code> תוך כדי הגדלת <code>maxmemory</code>.</p>`
       }
     }
   ],
@@ -491,10 +491,10 @@ t5  Reader A: SET user:42 v1        ← stale value now cached until TTL</pre>
    binlog/WAL ─► CDC (Debezium) ─► invalidator ─► DEL key (L2) + pub/sub "evict" (L1s)`,
   handsOn: [
     { cmd: "curl -sI https://www.cloudflare.com/ | grep -iE 'cache-control|age|etag|cf-cache-status|vary'", what: { en: "Inspect real CDN caching headers: Cache-Control, Age (seconds in cache) and the CDN's HIT/MISS status header.", he: "בודקים headers אמיתיים של CDN: Cache-Control, Age (כמה שניות ב-cache) ו-header ה-HIT/MISS של ה-CDN." } },
-    { cmd: "ETAG=$(curl -sI https://developer.mozilla.org/en-US/ | grep -i '^etag' | cut -d' ' -f2 | tr -d '\\r'); curl -sI -H \"If-None-Match: $ETAG\" https://developer.mozilla.org/en-US/ | head -1", what: { en: "Revalidate with the ETag you just got; a 304 Not Modified means no body was sent (if the site doesn't return an ETag, try another URL).", he: "עושים revalidate עם ה-ETag שקיבלתם; 304 Not Modified אומר שלא נשלח body (אם האתר לא מחזיר ETag, נסו URL אחר)." } },
+    { cmd: "ETAG=$(curl -sI https://developer.mozilla.org/en-US/ | grep -i '^etag' | cut -d' ' -f2 | tr -d '\\r'); curl -sI -H \"If-None-Match: $ETAG\" https://developer.mozilla.org/en-US/ | head -1", what: { en: "Revalidate with the ETag you just got; a 304 Not Modified means no body was sent (if the site doesn't return an ETag, try another URL).", he: "עושים revalidate עם ה-ETag שקיבלת; 304 Not Modified אומר שלא נשלח body (אם האתר לא מחזיר ETag, נסה URL אחר)." } },
     { cmd: "redis-cli INFO stats | grep -E 'keyspace_(hits|misses)|evicted_keys|expired_keys'", what: { en: "Compute your real hit ratio = hits / (hits + misses), and check if evictions are eating the working set.", he: "מחשבים hit ratio אמיתי = hits / (hits + misses), ובודקים אם ה-evictions אוכלים את ה-working set." } },
-    { cmd: "redis-cli SET rebuild:home 1 NX EX 10 ; redis-cli SET rebuild:home 1 NX EX 10", what: { en: "The stampede lock: the first call returns OK (you rebuild), the second returns (nil) (you serve stale or wait).", he: "ה-lock נגד stampede: הקריאה הראשונה מחזירה OK (אתם בונים מחדש), השנייה מחזירה (nil) (מגישים stale או מחכים)." } },
-    { cmd: "redis-cli -3   # then type: CLIENT TRACKING ON, GET user:42  -- and in a 2nd shell: redis-cli SET user:42 x", what: { en: "RESP3 client-side caching: after tracking is on, modifying a key you read pushes an 'invalidate' message to your connection.", he: "Client-side caching עם RESP3: אחרי שמדליקים tracking, שינוי של key שקראתם דוחף הודעת 'invalidate' לחיבור שלכם." } }
+    { cmd: "redis-cli SET rebuild:home 1 NX EX 10 ; redis-cli SET rebuild:home 1 NX EX 10", what: { en: "The stampede lock: the first call returns OK (you rebuild), the second returns (nil) (you serve stale or wait).", he: "ה-lock נגד stampede: הקריאה הראשונה מחזירה OK (אתה בונה מחדש), השנייה מחזירה (nil) (מגישים stale או מחכים)." } },
+    { cmd: "redis-cli -3   # then type: CLIENT TRACKING ON, GET user:42  -- and in a 2nd shell: redis-cli SET user:42 x", what: { en: "RESP3 client-side caching: after tracking is on, modifying a key you read pushes an 'invalidate' message to your connection.", he: "Client-side caching עם RESP3: אחרי שמדליקים tracking, שינוי של key שקראת דוחף הודעת 'invalidate' לחיבור שלך." } }
   ],
   mnemonic: {
     en: "\"Load, Leave, Lie, Line\": who LOADS it (pattern), who LEAVES (eviction + admission), how long can it LIE (TTL/invalidation/race), and what happens when everyone LINES up on one key (stampede/hot key).",
@@ -579,7 +579,7 @@ INFRA.lessons.push({
   title: { en: "The Data Structures Inside Real Infrastructure", he: "מבני הנתונים שבתוך התשתית האמיתית" },
   tldr: {
     en: "Every database, cache, broker and router is a few classic data structures with a disk and a network attached — know which one, and you can predict its performance, failure modes and tuning knobs.",
-    he: "כל database, cache, broker ו-router הם כמה מבני נתונים קלאסיים עם דיסק ורשת מחוברים — תדעו איזה מבנה יש בפנים, ותוכלו לחזות ביצועים, תקלות וכפתורי כיוונון."
+    he: "כל database, cache, broker ו-router הם כמה מבני נתונים קלאסיים עם דיסק ורשת מחוברים — תדע איזה מבנה יש בפנים, ותוכל לחזות ביצועים, תקלות וכפתורי כיוונון."
   },
   analogy: {
     en: "A B-tree is a library with a strict shelf order — you walk straight to the book, but every new book means shuffling a shelf. An LSM tree is a mailroom: new letters go into an inbox (fast!), and at night clerks sort and merge the piles into the archive. A Bloom filter is the receptionist who can say 'definitely not here' instantly, but only 'probably here' otherwise.",
@@ -610,7 +610,7 @@ INFRA.lessons.push({
 <tr><td>עלות חבויה</td><td>Page splits, bloat, vacuum</td><td>CPU/IO של compaction, tombstones, stalls</td></tr>
 </table>
 <p><strong>שלוש ההגברות</strong> (אפשר למזער לכל היותר שתיים): <em>write amplification</em> (bytes שנכתבו לדיסק ÷ bytes שהאפליקציה כתבה — leveled compaction יכול להגיע ל-10-30x), <em>read amplification</em> (קריאות דיסק לכל query), <em>space amplification</em> (דיסק בשימוש ÷ דאטה חי — size-tiered compaction יכול לדרוש זמנית ~2x). ב-Cassandra, <code>LeveledCompactionStrategy</code> מעדיף קריאות ומקום; <code>SizeTieredCompactionStrategy</code> מעדיף כתיבות; <code>TimeWindowCompactionStrategy</code> ל-time-series עם TTL.</p>
-<blockquote>💡 איפה תפגשו את זה: "למה ה-read latency ב-Cassandra קופץ?" — יותר מדי SSTables לקריאה (<code>nodetool tablehistograms</code>) או סריקות של tombstones. בראיון: "תתכנן metrics store עם הרבה כתיבות" → LSM; "OLTP עם range queries ו-secondary indexes" → B-tree.</blockquote>`
+<blockquote>💡 איפה תפגוש את זה: "למה ה-read latency ב-Cassandra קופץ?" — יותר מדי SSTables לקריאה (<code>nodetool tablehistograms</code>) או סריקות של tombstones. בראיון: "תתכנן metrics store עם הרבה כתיבות" → LSM; "OLTP עם range queries ו-secondary indexes" → B-tree.</blockquote>`
       }
     },
     {
@@ -629,7 +629,7 @@ INFRA.lessons.push({
 <li><strong>HyperLogLog</strong> — "כמה ערכים שונים?" עושים hash לכל פריט ושומרים לכל register את הרצף הארוך ביותר של אפסים מובילים; יותר ערכים שונים → רצפים ארוכים יותר. Redis משתמש ב-16384 registers × 6 ביטים = 12 KB לשגיאת תקן של ~0.81%, לכל cardinality. אפשר למזג: <code>PFMERGE</code> של HLLs יומיים ל-HLL שבועי. <em>איפה:</em> unique visitors, כמות IPs שונים לדקה, <code>approx_count_distinct</code> ב-BigQuery/Spark/Presto.</li>
 <li><strong>Count-Min Sketch</strong> — "כמה פעמים X הופיע?" טבלה של d × w counters; כל פריט מגדיל counter אחד בכל שורה; ההערכה = המינימום בין השורות. <strong>רק מעריך ביתר</strong>; שגיאה ≤ εN עם w = e/ε, ביטחון 1 - δ עם d = ln(1/δ). משלבים עם min-heap בגודל K בשביל <strong>heavy hitters</strong> (top-K IPs, hot keys). <em>איפה:</em> הערכת התדירות של W-TinyLFU ב-Caffeine, טלמטריית רשת, זיהוי abuse.</li>
 </ul>
-<blockquote>💡 בראיון: "לספור משתמשים ייחודיים ליום מתוך 1B events" → HLL. "למצוא את 100 ה-IPs המובילים ב-stream של 10 Gbps" → Count-Min Sketch + heap (ראו את בעיית הקוד <em>Top K frequent IPs</em>). "להימנע מקריאות דיסק ל-keys שלא קיימים" → Bloom filter. תמיד להגיד את חסם השגיאה ושהתשובה מקורבת.</blockquote>`
+<blockquote>💡 בראיון: "לספור משתמשים ייחודיים ליום מתוך 1B events" → HLL. "למצוא את 100 ה-IPs המובילים ב-stream של 10 Gbps" → Count-Min Sketch + heap (ראה את בעיית הקוד <em>Top K frequent IPs</em>). "להימנע מקריאות דיסק ל-keys שלא קיימים" → Bloom filter. תמיד להגיד את חסם השגיאה ושהתשובה מקורבת.</blockquote>`
       }
     },
     {
@@ -656,7 +656,7 @@ git cat-file -p HEAD^{tree} | head -5    # a Merkle tree node: entries with chil
         he: `<ul>
 <li><strong>Merkle tree</strong> — עץ של hashes: העלים הם hash של בלוקי דאטה, ההורים hash של הילדים. שתי replicas משוות root hash; אם שווה, הן זהות; אם לא, יורדים רק לתתי-עצים שונים — מוצאים את הטווח השונה ב-O(log n) השוואות במקום לשלוח את כל הדאטה. <em>איפה:</em> anti-entropy repair ב-Cassandra (<code>nodetool repair</code> בונה Merkle trees לכל token range) ובמערכות בסגנון Dynamo; git (commits → trees → blobs יוצרים Merkle DAG, ובגלל זה hash של commit נועל את כל ה-snapshot); לוגים של Certificate Transparency; checksums של בלוקים ב-ZFS; blockchains.</li>
 <li><strong>Trie / radix tree</strong> — keys חולקים prefixes לאורך המסלול. השימוש הקטלני בתשתית הוא <strong>longest-prefix match</strong>: בהינתן 10.1.2.3, למצוא את ה-route הכי ספציפי מבין 10.0.0.0/8, 10.1.0.0/16, 10.1.2.0/24. ה-FIB של IPv4 ב-Linux משתמש ב-LC-trie; routers משתמשים ב-tries או בחומרת TCAM. Radix trees גם מאנדקסים את ה-page cache של Linux (XArray) ואת ה-streams של Redis (<code>rax</code>). <em>בראיון:</em> "תממש IP allow-list / חיפוש route" → trie בינארי על ביטי הכתובת, O(32) ל-IPv4.</li>
-<li><strong>Heap (priority queue)</strong> — הצצה למינימום/מקסימום ב-O(1), push/pop ב-O(log n). <em>איפה:</em> timers (ה-runtime של Go משתמש ב-heap 4-ארי של timers; ה-delaying work queue של client-go ב-Kubernetes מחזיק heap לפי זמן מוכנות), schedulers שבוחרים את ה-job עם העדיפות הגבוהה, Dijkstra בניתוב (SPF של OSPF), מיזוג K קבצי לוג ממוינים, top-K עם min-heap בגודל K. שימו לב: ה-scheduler של Linux משתמש ב-red-black tree, לא ב-heap — הוא צריך גם הסרה מסודרת של tasks שרירותיים.</li>
+<li><strong>Heap (priority queue)</strong> — הצצה למינימום/מקסימום ב-O(1), push/pop ב-O(log n). <em>איפה:</em> timers (ה-runtime של Go משתמש ב-heap 4-ארי של timers; ה-delaying work queue של client-go ב-Kubernetes מחזיק heap לפי זמן מוכנות), schedulers שבוחרים את ה-job עם העדיפות הגבוהה, Dijkstra בניתוב (SPF של OSPF), מיזוג K קבצי לוג ממוינים, top-K עם min-heap בגודל K. שים לב: ה-scheduler של Linux משתמש ב-red-black tree, לא ב-heap — הוא צריך גם הסרה מסודרת של tasks שרירותיים.</li>
 </ul>
 <pre>ip route get 10.1.2.3                   # kernel longest-prefix match in action
 git cat-file -p HEAD^{tree} | head -5    # a Merkle tree node: entries with child hashes</pre>`
@@ -686,7 +686,7 @@ git cat-file -p HEAD^{tree} | head -5    # a Merkle tree node: entries with chil
 <tr><td>LSM stores</td><td>WAL ל-memtable</td><td>SSTables + compaction</td></tr>
 </table>
 <p>התבנית לזהות: <strong>log + materialised view + compaction</strong>. ה-log נותן עמידות, סדר ו-replication; ה-view (B-tree, memtable, state בזיכרון) נותן קריאות מהירות; compaction מונע מה-log לגדול לנצח. Event sourcing, CDC ו-Kafka Streams זה אותו רעיון ברמת האפליקציה.</p>
-<blockquote>💡 בראיון: "תתכנן key-value store עמיד" — מתחילים עם append-only log ו-hash index בזיכרון (Bitcask), מוסיפים segments ו-compaction, אחר כך segments ממוינים עם sparse index (זה LSM tree), ואז Bloom filters. ללכת בהתקדמות הזאת מראה שאתם מבינים למה מנועים אמיתיים נראים כמו שהם נראים.</blockquote>`
+<blockquote>💡 בראיון: "תתכנן key-value store עמיד" — מתחילים עם append-only log ו-hash index בזיכרון (Bitcask), מוסיפים segments ו-compaction, אחר כך segments ממוינים עם sparse index (זה LSM tree), ואז Bloom filters. ללכת בהתקדמות הזאת מראה שאתה מבין למה מנועים אמיתיים נראים כמו שהם נראים.</blockquote>`
       }
     }
   ],
@@ -707,7 +707,7 @@ git cat-file -p HEAD^{tree} | head -5    # a Merkle tree node: entries with chil
     { cmd: "redis-cli ZADD z 1 a 2 b 3 c && redis-cli OBJECT ENCODING z && redis-cli CONFIG SET zset-max-listpack-entries 0 && redis-cli ZADD z2 1 a && redis-cli OBJECT ENCODING z2", what: { en: "See a small sorted set stored as a compact listpack, then force the skiplist encoding by lowering the threshold.", he: "רואים sorted set קטן שנשמר כ-listpack קומפקטי, ואז מכריחים encoding של skiplist על ידי הורדת הסף." } },
     { cmd: "psql -c \"CREATE EXTENSION IF NOT EXISTS pageinspect\" -c \"SELECT * FROM bt_metap('users_pkey')\"", what: { en: "Inspect a Postgres B-tree index: the 'level' column is the tree height above the leaves (typically 1-3 even for big tables).", he: "בודקים index של B-tree ב-Postgres: עמודת ה-'level' היא גובה העץ מעל העלים (בדרך כלל 1-3 גם בטבלאות גדולות)." } },
     { cmd: "nodetool tablehistograms my_keyspace my_table", what: { en: "Cassandra: the 'SSTables' column shows how many SSTables a read touches — read amplification of the LSM tree, before Bloom filters skip the rest.", he: "Cassandra: עמודת ה-'SSTables' מראה כמה SSTables קריאה נוגעת בהם — ה-read amplification של ה-LSM tree, אחרי שה-Bloom filters מדלגים על השאר." } },
-    { cmd: "ip route get 10.1.2.3 ; git cat-file -p HEAD^{tree} | head -5", what: { en: "Two structures you use daily: the kernel's longest-prefix match (trie) and a git tree object (a Merkle tree node).", he: "שני מבנים שאתם משתמשים בהם כל יום: longest-prefix match של ה-kernel (trie) ו-tree object של git (צומת ב-Merkle tree)." } }
+    { cmd: "ip route get 10.1.2.3 ; git cat-file -p HEAD^{tree} | head -5", what: { en: "Two structures you use daily: the kernel's longest-prefix match (trie) and a git tree object (a Merkle tree node).", he: "שני מבנים שאתה משתמש בהם כל יום: longest-prefix match של ה-kernel (trie) ו-tree object של git (צומת ב-Merkle tree)." } }
   ],
   mnemonic: {
     en: "\"Logs write, trees read, sketches guess\": append-only logs make writes durable and fast, trees (B-tree, LSM, trie, skip list) make reads fast, and probabilistic sketches (Bloom, HLL, Count-Min) answer in kilobytes by guessing within a known error.",
@@ -722,7 +722,7 @@ git cat-file -p HEAD^{tree} | head -5    # a Merkle tree node: entries with chil
   interview: [
     {
       q: { en: "Explain why an LSM-based store can ingest far more writes than a B-tree store, and what you pay for it.", he: "תסביר למה store מבוסס LSM יכול לקלוט הרבה יותר כתיבות מ-store מבוסס B-tree, ומה משלמים על זה." },
-      a: { en: "An LSM turns random writes into sequential ones: append to the WAL, insert into an in-memory memtable, flush full memtables as sorted immutable SSTables. No in-place page updates, no page splits, and writes batch naturally. The bill comes later: compaction rewrites data repeatedly (write amplification, 10x+ with leveled compaction) and competes with foreground IO; a point read may have to check the memtable and several SSTables (read amplification), mitigated by per-SSTable Bloom filters and block caches; deletes are tombstones that cost reads until compacted; and size-tiered compaction can temporarily need lots of free disk (space amplification). Choosing the compaction strategy is choosing which amplification you can afford.", he: "LSM הופך כתיבות אקראיות לרציפות: append ל-WAL, הכנסה ל-memtable בזיכרון, ו-flush של memtables מלאים כ-SSTables ממוינים ובלתי ניתנים לשינוי. אין עדכוני page במקום, אין page splits, והכתיבות מתאגדות באופן טבעי. החשבון מגיע אחר כך: compaction כותב את הדאטה שוב ושוב (write amplification, 10x ומעלה ב-leveled compaction) ומתחרה ב-IO של התעבורה; קריאת נקודה עלולה לבדוק את ה-memtable וכמה SSTables (read amplification), מה שמתמתן עם Bloom filters לכל SSTable ו-block caches; מחיקות הן tombstones שעולים בקריאות עד ה-compaction; ו-size-tiered compaction יכול לדרוש זמנית הרבה דיסק פנוי (space amplification). לבחור compaction strategy זה לבחור איזו הגברה אתם יכולים להרשות לעצמכם." }
+      a: { en: "An LSM turns random writes into sequential ones: append to the WAL, insert into an in-memory memtable, flush full memtables as sorted immutable SSTables. No in-place page updates, no page splits, and writes batch naturally. The bill comes later: compaction rewrites data repeatedly (write amplification, 10x+ with leveled compaction) and competes with foreground IO; a point read may have to check the memtable and several SSTables (read amplification), mitigated by per-SSTable Bloom filters and block caches; deletes are tombstones that cost reads until compacted; and size-tiered compaction can temporarily need lots of free disk (space amplification). Choosing the compaction strategy is choosing which amplification you can afford.", he: "LSM הופך כתיבות אקראיות לרציפות: append ל-WAL, הכנסה ל-memtable בזיכרון, ו-flush של memtables מלאים כ-SSTables ממוינים ובלתי ניתנים לשינוי. אין עדכוני page במקום, אין page splits, והכתיבות מתאגדות באופן טבעי. החשבון מגיע אחר כך: compaction כותב את הדאטה שוב ושוב (write amplification, 10x ומעלה ב-leveled compaction) ומתחרה ב-IO של התעבורה; קריאת נקודה עלולה לבדוק את ה-memtable וכמה SSTables (read amplification), מה שמתמתן עם Bloom filters לכל SSTable ו-block caches; מחיקות הן tombstones שעולים בקריאות עד ה-compaction; ו-size-tiered compaction יכול לדרוש זמנית הרבה דיסק פנוי (space amplification). לבחור compaction strategy זה לבחור איזו הגברה אתה יכול להרשות לעצמך." }
     },
     {
       q: { en: "Two replicas of a 2 TB dataset may have drifted. How do you find and fix the differences without copying 2 TB over the network?", he: "שתי replicas של dataset בגודל 2 TB אולי התפצלו. איך מוצאים ומתקנים את ההבדלים בלי להעתיק 2 TB ברשת?" },

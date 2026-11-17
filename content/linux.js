@@ -37,7 +37,7 @@ INFRA.lessons.push({
 <tr><td><code>/dev</code></td><td>Devices: <code>/dev/sda</code>, <code>/dev/null</code>, <code>/dev/urandom</code></td></tr>
 </table>
 <blockquote>💡 Real world: "Where's the config?" → <code>/etc</code>. "Why did it crash?" → <code>/var/log</code> or <code>journalctl</code>. "Why is the disk full?" → usually <code>/var/lib/docker</code> or <code>/var/log</code>. Those three answers cover most of your first year on-call.</blockquote>`,
-        he: `<p>אין אותיות כונן. הכל תלוי על <code>/</code>. התיקיות שבאמת תיגע בהן בתורנות:</p>
+        he: `<p>אין אותיות כונן. הכל תלוי על <code>/</code>. התיקיות שבאמת תיגע בהן ב-on-call:</p>
 <table>
 <tr><th>נתיב</th><th>מה יש שם</th></tr>
 <tr><td><code>/etc</code></td><td>קונפיגורציה של המערכת: <code>nginx/</code>, <code>ssh/sshd_config</code>, <code>fstab</code>, <code>hosts</code></td></tr>
@@ -50,7 +50,7 @@ INFRA.lessons.push({
 <tr><td><code>/usr/bin</code>, <code>/usr/local/bin</code></td><td>בינאריים; <code>/usr/local</code> = מה שאתה התקנת, לא ה-package manager</td></tr>
 <tr><td><code>/dev</code></td><td>התקנים: <code>/dev/sda</code>, <code>/dev/null</code>, <code>/dev/urandom</code></td></tr>
 </table>
-<blockquote>💡 מהשטח: "איפה הקונפיג?" ← <code>/etc</code>. "למה זה קרס?" ← <code>/var/log</code> או <code>journalctl</code>. "למה הדיסק מלא?" ← בדרך כלל <code>/var/lib/docker</code> או <code>/var/log</code>. שלוש התשובות האלה מכסות את רוב השנה הראשונה שלך בתורנות.</blockquote>`
+<blockquote>💡 מהשטח: "איפה הקונפיג?" ← <code>/etc</code>. "למה זה קרס?" ← <code>/var/log</code> או <code>journalctl</code>. "למה הדיסק מלא?" ← בדרך כלל <code>/var/lib/docker</code> או <code>/var/log</code>. שלוש התשובות האלה מכסות את רוב השנה הראשונה שלך ב-on-call.</blockquote>`
       }
     },
     {
