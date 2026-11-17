@@ -869,7 +869,10 @@ INFRA.paths = INFRA.paths || [];
         "להיות אחראי על פרודקשן זה לראות אותו, לדבג אותו תחת לחץ, ויותר ויותר לתת ל-agents לעשות את ה-toil עם guardrails.",
         [
           s("obs-datadog-victoriametrics", "Pick and run the observability stack, and keep cardinality from eating the budget.", "לבחור ולהריץ את ה-stack של observability, ולמנוע מ-cardinality לאכול את התקציב."),
+          s("runtime-threads-in-containers", "CPU limits vs thread pools: the throttling behind many latency mysteries.", "CPU limits מול thread pools: ה-throttling שמאחורי הרבה תעלומות latency."),
           s("k8s-troubleshooting-playbook", "A repeatable way to debug any cluster incident.", "דרך קבועה לדבג כל תקלה ב-cluster."),
+          s("python-infra-toolbox", "boto3, paginators and retries: the scripts you write every week, done right.", "boto3, paginators ו-retries: הסקריפטים שאתה כותב כל שבוע, כמו שצריך."),
+          s("go-platform-toolbox", "CLIs, client-go and controllers: the internal tools a platform team ships.", "CLIs, client-go ו-controllers: הכלים הפנימיים שצוות פלטפורמה משחרר."),
           s("ai-agent-infra-mcp", "Agents and MCP servers for audits, migrations and drift detection.", "Agents ו-MCP servers ל-audits, למיגרציות ולזיהוי drift."),
           s("staff-large-incidents", "Lead the incident and write the postmortem that changes things.", "להוביל את התקלה ולכתוב postmortem שבאמת משנה משהו.")
         ])
@@ -895,6 +898,7 @@ INFRA.paths = INFRA.paths || [];
         [
           s("nestjs-in-depth", "Modules, DI and the request pipeline: guards, interceptors, pipes and filters.", "Modules, DI וה-pipeline של הבקשה: guards, interceptors, pipes ו-filters."),
           s("nestjs-ddd-event-driven", "DDD, CQRS, the outbox and idempotent consumers in one real service.", "DDD, CQRS, outbox ו-consumers אידמפוטנטיים ב-service אמיתי אחד."),
+          s("ts-platform-toolbox", "AWS SDK v3, zod, pino and OpenTelemetry: the libraries around the framework.", "AWS SDK v3, zod, pino ו-OpenTelemetry: הספריות שמסביב ל-framework."),
           s("arch-event-driven", "The theory behind events, choreography and eventual consistency.", "התיאוריה שמאחורי events, choreography ו-eventual consistency."),
           s("staff-exactly-once", "Why exactly-once is really at-least-once plus idempotency.", "למה exactly-once הוא בעצם at-least-once ועוד idempotency.")
         ]),
@@ -902,6 +906,7 @@ INFRA.paths = INFRA.paths || [];
         "Every team calling models directly means leaked keys and surprise bills. Put a gateway in front, then build the paved road that makes the right way the easy way.",
         "כשכל צוות קורא למודלים ישירות, מקבלים keys שדולפים וחשבונות מפתיעים. שמים gateway מקדימה, ואז בונים paved road שהופך את הדרך הנכונה לדרך הקלה.",
         [
+          s("ml-llm-library-map", "From NumPy to vLLM: which library does what, and what infra must pin and scan.", "מ-NumPy ועד vLLM: איזו ספרייה עושה מה, ומה התשתית צריכה לנעול ולסרוק."),
           s("ai-gateway-design", "Keys, token-aware limits, routing, fallbacks and per-team cost.", "Keys, מגבלות לפי token-ים, ניתוב, fallbacks ועלות לכל צוות."),
           s("ai-llmops", "Evals, tracing and prompt versioning: production hygiene for LLM features.", "Evals, tracing וניהול גרסאות של prompts: היגיינת פרודקשן לפיצ'רים של LLM."),
           s("ai-platform-paved-road", "SDK, templates, quotas and a launch checklist for 100+ engineers.", "SDK, templates, quotas ו-checklist להשקה עבור 100+ מהנדסים.")
