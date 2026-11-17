@@ -214,15 +214,15 @@ INFRA.lessons.push({
       h: { en: "Reading the rwx string", he: "לקרוא את מחרוזת ה-rwx" },
       body: {
         en: `<pre>$ ls -l deploy.sh id_ed25519 /var/www
--rwxr-xr-x 1 meir devops  812 Nov 12 10:01 deploy.sh
--rw------- 1 meir meir    411 Nov 10 09:12 id_ed25519
+-rwxr-xr-x 1 dev  devops  812 Nov 12 10:01 deploy.sh
+-rw------- 1 dev  dev     411 Nov 10 09:12 id_ed25519
 drwxr-x--- 5 www-data www-data 4096 Nov 11 18:40 /var/www</pre>
 <p>Skip the first char (type), then three triplets: <strong>user</strong> (owner), <strong>group</strong>, <strong>other</strong>. Each is <code>r</code> read, <code>w</code> write, <code>x</code> execute, or <code>-</code>.</p>
 <p>On a <strong>directory</strong> the bits mean something different, and this is where people get burned: <code>r</code> = list names, <code>w</code> = create/delete/rename entries inside, <code>x</code> = enter/traverse (<code>cd</code>, or reach a file by path). To read <code>/var/www/html/index.html</code> you need <code>x</code> on <em>every</em> directory along the path plus <code>r</code> on the file.</p>
 <blockquote>💡 Real world: deleting a file is a <em>directory</em> permission. If you have <code>w</code> on the dir, you can delete a file you can't even read. That's why <code>/tmp</code> has the sticky bit (<code>drwxrwxrwt</code>): only the owner can delete their own files there.</blockquote>`,
         he: `<pre>$ ls -l deploy.sh id_ed25519 /var/www
--rwxr-xr-x 1 meir devops  812 Nov 12 10:01 deploy.sh
--rw------- 1 meir meir    411 Nov 10 09:12 id_ed25519
+-rwxr-xr-x 1 dev  devops  812 Nov 12 10:01 deploy.sh
+-rw------- 1 dev  dev     411 Nov 10 09:12 id_ed25519
 drwxr-x--- 5 www-data www-data 4096 Nov 11 18:40 /var/www</pre>
 <p>מדלגים על התו הראשון (סוג), ואז שלוש שלשות: <strong>user</strong> (הבעלים), <strong>group</strong>, <strong>other</strong>. בכל אחת יש <code>r</code> קריאה, <code>w</code> כתיבה, <code>x</code> הרצה, או <code>-</code>.</p>
 <p>על <strong>תיקייה</strong> הביטים אומרים משהו אחר, ופה אנשים נשרפים: <code>r</code> = לראות את השמות, <code>w</code> = ליצור/למחוק/לשנות שם לרשומות בפנים, <code>x</code> = להיכנס/לעבור דרכה (<code>cd</code>, או להגיע לקובץ לפי נתיב). כדי לקרוא את <code>/var/www/html/index.html</code> צריך <code>x</code> על <em>כל</em> תיקייה בדרך ועוד <code>r</code> על הקובץ.</p>
@@ -268,21 +268,21 @@ $ umask
       h: { en: "Users, groups, sudo and setuid", he: "משתמשים, groups, sudo ו-setuid" },
       body: {
         en: `<pre>$ id
-uid=1000(meir) gid=1000(meir) groups=1000(meir),27(sudo),998(docker)
+uid=1000(dev) gid=1000(dev) groups=1000(dev),27(sudo),998(docker)
 $ grep www-data /etc/passwd
 www-data:x:33:33:www-data:/var/www:/usr/sbin/nologin
 $ getent group docker
-docker:x:998:meir,jenkins
+docker:x:998:dev,jenkins
 $ sudo usermod -aG docker jenkins     # -a = APPEND, never forget it</pre>
 <p><code>/etc/passwd</code> fields: <code>name:x:UID:GID:comment:home:shell</code> (the <code>x</code> means the hash lives in <code>/etc/shadow</code>). Service accounts get <code>/usr/sbin/nologin</code> as their shell. Group changes apply on the <em>next login</em> — run <code>newgrp docker</code> or log out/in.</p>
 <p><code>sudo cmd</code> runs one command as root and logs it to <code>/var/log/auth.log</code>; <code>sudo -u postgres psql</code> runs as another user; <code>sudo -l</code> shows what you're allowed. Edit rules only with <code>visudo</code> (it syntax-checks — a broken sudoers file locks everyone out).</p>
 <p><strong>setuid</strong> (<code>chmod u+s</code>, shows as <code>rwsr-xr-x</code>) makes a binary run as its <em>owner</em>: that's how <code>passwd</code> writes to <code>/etc/shadow</code>. A setuid-root binary with a bug is a privilege escalation — audit with <code>find / -perm -4000</code>.</p>`,
         he: `<pre>$ id
-uid=1000(meir) gid=1000(meir) groups=1000(meir),27(sudo),998(docker)
+uid=1000(dev) gid=1000(dev) groups=1000(dev),27(sudo),998(docker)
 $ grep www-data /etc/passwd
 www-data:x:33:33:www-data:/var/www:/usr/sbin/nologin
 $ getent group docker
-docker:x:998:meir,jenkins
+docker:x:998:dev,jenkins
 $ sudo usermod -aG docker jenkins     # -a = APPEND, never forget it</pre>
 <p>השדות ב-<code>/etc/passwd</code>: <code>name:x:UID:GID:comment:home:shell</code> (ה-<code>x</code> אומר שה-hash יושב ב-<code>/etc/shadow</code>). ל-service accounts נותנים shell של <code>/usr/sbin/nologin</code>. שינוי groups נכנס לתוקף רק ב<em>login הבא</em> — תריץ <code>newgrp docker</code> או תתנתק ותתחבר.</p>
 <p><code>sudo cmd</code> מריץ פקודה אחת כ-root ומתעד ב-<code>/var/log/auth.log</code>; <code>sudo -u postgres psql</code> מריץ כמשתמש אחר; <code>sudo -l</code> מראה מה מותר לך. עורכים חוקים רק עם <code>visudo</code> (הוא בודק syntax — קובץ sudoers שבור נועל את כולם בחוץ).</p>
@@ -1532,27 +1532,27 @@ INFRA.lessons.push({
     {
       h: { en: "Keys: ssh-keygen, ssh-copy-id, agent", he: "מפתחות: ssh-keygen, ‏ssh-copy-id, ‏agent" },
       body: {
-        en: `<pre>$ ssh-keygen -t ed25519 -C "meir@laptop-2026" -f ~/.ssh/id_ed25519
+        en: `<pre>$ ssh-keygen -t ed25519 -C "dev@laptop-2026" -f ~/.ssh/id_ed25519
 Generating public/private ed25519 key pair.
 Enter passphrase (empty for no passphrase): ********
-Your public key has been saved in /home/meir/.ssh/id_ed25519.pub
+Your public key has been saved in /home/dev/.ssh/id_ed25519.pub
 $ ssh-copy-id -i ~/.ssh/id_ed25519.pub ubuntu@10.0.1.23
 Number of key(s) added: 1
 $ eval "$(ssh-agent -s)" &amp;&amp; ssh-add ~/.ssh/id_ed25519   # type the passphrase once
 $ ssh-add -l
-256 SHA256:Xq3v...9ZQ meir@laptop-2026 (ED25519)
+256 SHA256:Xq3v...9ZQ dev@laptop-2026 (ED25519)
 $ ssh -v ubuntu@10.0.1.23 2&gt;&amp;1 | grep -E "Offering|Authenticated|denied"</pre>
 <p><strong>ed25519</strong> keys are short, fast and secure — prefer them over RSA (if you must use RSA, 4096 bits). Always set a passphrase on laptop keys and let <code>ssh-agent</code> (or macOS Keychain) remember it. <code>ssh-copy-id</code> appends the <code>.pub</code> to the server's <code>~/.ssh/authorized_keys</code> with correct permissions. Without it: <code>cat ~/.ssh/id_ed25519.pub | ssh host 'cat &gt;&gt; ~/.ssh/authorized_keys'</code>.</p>
 <p>When login fails, <code>ssh -v</code> (up to <code>-vvv</code>) shows which keys were offered and why they were rejected; on the server, <code>journalctl -u ssh</code> or <code>/var/log/auth.log</code> tells the other half (often "bad ownership or modes").</p>`,
-        he: `<pre>$ ssh-keygen -t ed25519 -C "meir@laptop-2026" -f ~/.ssh/id_ed25519
+        he: `<pre>$ ssh-keygen -t ed25519 -C "dev@laptop-2026" -f ~/.ssh/id_ed25519
 Generating public/private ed25519 key pair.
 Enter passphrase (empty for no passphrase): ********
-Your public key has been saved in /home/meir/.ssh/id_ed25519.pub
+Your public key has been saved in /home/dev/.ssh/id_ed25519.pub
 $ ssh-copy-id -i ~/.ssh/id_ed25519.pub ubuntu@10.0.1.23
 Number of key(s) added: 1
 $ eval "$(ssh-agent -s)" &amp;&amp; ssh-add ~/.ssh/id_ed25519   # type the passphrase once
 $ ssh-add -l
-256 SHA256:Xq3v...9ZQ meir@laptop-2026 (ED25519)
+256 SHA256:Xq3v...9ZQ dev@laptop-2026 (ED25519)
 $ ssh -v ubuntu@10.0.1.23 2&gt;&amp;1 | grep -E "Offering|Authenticated|denied"</pre>
 <p>מפתחות <strong>ed25519</strong> קצרים, מהירים ומאובטחים — עדיף אותם על RSA (אם חייבים RSA, אז 4096 ביט). תמיד לשים passphrase על מפתחות בלפטופ ולתת ל-<code>ssh-agent</code> (או ל-Keychain ב-macOS) לזכור אותו. ‏<code>ssh-copy-id</code> מוסיף את ה-<code>.pub</code> ל-<code>~/.ssh/authorized_keys</code> בשרת עם הרשאות נכונות. בלעדיו: <code>cat ~/.ssh/id_ed25519.pub | ssh host 'cat &gt;&gt; ~/.ssh/authorized_keys'</code>.</p>
 <p>כשה-login נכשל, ‏<code>ssh -v</code> (עד <code>-vvv</code>) מראה אילו מפתחות הוצעו ולמה נדחו; בצד השרת, <code>journalctl -u ssh</code> או <code>/var/log/auth.log</code> מספרים את החצי השני (הרבה פעמים "bad ownership or modes").</p>`
@@ -1564,7 +1564,7 @@ $ ssh -v ubuntu@10.0.1.23 2&gt;&amp;1 | grep -E "Offering|Authenticated|denied"<
         en: `<pre>$ cat ~/.ssh/config
 Host bastion
     HostName bastion.prod.example.com
-    User meir
+    User dev
     IdentityFile ~/.ssh/id_ed25519
 
 Host prod-*
@@ -1580,13 +1580,13 @@ Host *
     ServerAliveCountMax 4
     AddKeysToAgent yes
 $ ssh prod-db1                     # → hops through bastion automatically
-$ ssh -J meir@bastion.prod.example.com ubuntu@10.0.3.12   # same, ad hoc</pre>
+$ ssh -J dev@bastion.prod.example.com ubuntu@10.0.3.12   # same, ad hoc</pre>
 <p><code>ProxyJump</code> / <code>-J</code> opens a TCP tunnel <em>through</em> the bastion; your private key never touches it. Contrast with <strong>agent forwarding</strong> (<code>ssh -A</code>, <code>ForwardAgent yes</code>): it exposes your agent socket on the remote host, and anyone with root there can use your keys to log in elsewhere <em>as you</em> while you're connected.</p>
 <blockquote>⚠️ Production tip: never set <code>ForwardAgent yes</code> under <code>Host *</code>. Use <code>ProxyJump</code> for hopping; if you truly need forwarding (e.g. git pull on a box), enable it per-host and only for hosts you trust. <code>ServerAliveInterval</code> stops idle sessions being killed by NAT/firewall timeouts.</blockquote>`,
         he: `<pre>$ cat ~/.ssh/config
 Host bastion
     HostName bastion.prod.example.com
-    User meir
+    User dev
     IdentityFile ~/.ssh/id_ed25519
 
 Host prod-*
@@ -1602,7 +1602,7 @@ Host *
     ServerAliveCountMax 4
     AddKeysToAgent yes
 $ ssh prod-db1                     # → hops through bastion automatically
-$ ssh -J meir@bastion.prod.example.com ubuntu@10.0.3.12   # same, ad hoc</pre>
+$ ssh -J dev@bastion.prod.example.com ubuntu@10.0.3.12   # same, ad hoc</pre>
 <p><code>ProxyJump</code> / ‏<code>-J</code> פותח מנהרת TCP <em>דרך</em> ה-bastion; המפתח הפרטי שלך לא נוגע בו. לעומת זאת, <strong>agent forwarding</strong> (‏<code>ssh -A</code>, ‏<code>ForwardAgent yes</code>) חושף את ה-socket של ה-agent שלך בשרת המרוחק, וכל מי שיש לו root שם יכול להשתמש במפתחות שלך כדי להתחבר למקומות אחרים <em>בתור אתה</em> כל עוד אתה מחובר.</p>
 <blockquote>⚠️ טיפ לפרודקשן: אף פעם לא לשים <code>ForwardAgent yes</code> תחת <code>Host *</code>. לקפיצות משתמשים ב-<code>ProxyJump</code>; אם באמת צריך forwarding (למשל git pull על שרת), מפעילים per-host ורק לשרתים שסומכים עליהם. ‏<code>ServerAliveInterval</code> מונע מ-sessions שקטים להיחתך ע"י timeouts של NAT/firewall.</blockquote>`
       }

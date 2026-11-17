@@ -387,16 +387,16 @@ INFRA.lessons.push({
 <tr><td><strong>time</strong></td><td>CLONE_NEWTIME</td><td>Offsets for <code>CLOCK_MONOTONIC</code> and <code>CLOCK_BOOTTIME</code> (not wall-clock time!)</td><td>5.6</td></tr></table>
 <p>Every process's namespaces are symlinks in <code>/proc/PID/ns</code>. Two processes share a namespace if the inode numbers match:</p>
 <pre>$ ls -l /proc/$$/ns
-lrwxrwxrwx 1 meir meir 0 Nov 15 10:20 cgroup -&gt; 'cgroup:[4026531835]'
-lrwxrwxrwx 1 meir meir 0 Nov 15 10:20 ipc -&gt; 'ipc:[4026531839]'
-lrwxrwxrwx 1 meir meir 0 Nov 15 10:20 mnt -&gt; 'mnt:[4026531841]'
-lrwxrwxrwx 1 meir meir 0 Nov 15 10:20 net -&gt; 'net:[4026531840]'
-lrwxrwxrwx 1 meir meir 0 Nov 15 10:20 pid -&gt; 'pid:[4026531836]'
-lrwxrwxrwx 1 meir meir 0 Nov 15 10:20 pid_for_children -&gt; 'pid:[4026531836]'
-lrwxrwxrwx 1 meir meir 0 Nov 15 10:20 time -&gt; 'time:[4026531834]'
-lrwxrwxrwx 1 meir meir 0 Nov 15 10:20 time_for_children -&gt; 'time:[4026531834]'
-lrwxrwxrwx 1 meir meir 0 Nov 15 10:20 user -&gt; 'user:[4026531837]'
-lrwxrwxrwx 1 meir meir 0 Nov 15 10:20 uts -&gt; 'uts:[4026531838]'
+lrwxrwxrwx 1 dev dev 0 Nov 15 10:20 cgroup -&gt; 'cgroup:[4026531835]'
+lrwxrwxrwx 1 dev dev 0 Nov 15 10:20 ipc -&gt; 'ipc:[4026531839]'
+lrwxrwxrwx 1 dev dev 0 Nov 15 10:20 mnt -&gt; 'mnt:[4026531841]'
+lrwxrwxrwx 1 dev dev 0 Nov 15 10:20 net -&gt; 'net:[4026531840]'
+lrwxrwxrwx 1 dev dev 0 Nov 15 10:20 pid -&gt; 'pid:[4026531836]'
+lrwxrwxrwx 1 dev dev 0 Nov 15 10:20 pid_for_children -&gt; 'pid:[4026531836]'
+lrwxrwxrwx 1 dev dev 0 Nov 15 10:20 time -&gt; 'time:[4026531834]'
+lrwxrwxrwx 1 dev dev 0 Nov 15 10:20 time_for_children -&gt; 'time:[4026531834]'
+lrwxrwxrwx 1 dev dev 0 Nov 15 10:20 user -&gt; 'user:[4026531837]'
+lrwxrwxrwx 1 dev dev 0 Nov 15 10:20 uts -&gt; 'uts:[4026531838]'
 
 $ sudo lsns                      # all namespaces on the box, with their first process
         NS TYPE   NPROCS   PID USER   COMMAND
@@ -424,16 +424,16 @@ $ sudo lsns -t net -p 48211      # just the net namespace of one process</pre>
 <tr><td><strong>time</strong></td><td>CLONE_NEWTIME</td><td>Offsets ל-<code>CLOCK_MONOTONIC</code> ול-<code>CLOCK_BOOTTIME</code> (לא שעון הקיר!)</td><td>5.6</td></tr></table>
 <p>ה-namespaces של כל תהליך הם symlinks תחת <code>/proc/PID/ns</code>. שני תהליכים חולקים namespace אם מספרי ה-inode זהים:</p>
 <pre>$ ls -l /proc/$$/ns
-lrwxrwxrwx 1 meir meir 0 Nov 15 10:20 cgroup -&gt; 'cgroup:[4026531835]'
-lrwxrwxrwx 1 meir meir 0 Nov 15 10:20 ipc -&gt; 'ipc:[4026531839]'
-lrwxrwxrwx 1 meir meir 0 Nov 15 10:20 mnt -&gt; 'mnt:[4026531841]'
-lrwxrwxrwx 1 meir meir 0 Nov 15 10:20 net -&gt; 'net:[4026531840]'
-lrwxrwxrwx 1 meir meir 0 Nov 15 10:20 pid -&gt; 'pid:[4026531836]'
-lrwxrwxrwx 1 meir meir 0 Nov 15 10:20 pid_for_children -&gt; 'pid:[4026531836]'
-lrwxrwxrwx 1 meir meir 0 Nov 15 10:20 time -&gt; 'time:[4026531834]'
-lrwxrwxrwx 1 meir meir 0 Nov 15 10:20 time_for_children -&gt; 'time:[4026531834]'
-lrwxrwxrwx 1 meir meir 0 Nov 15 10:20 user -&gt; 'user:[4026531837]'
-lrwxrwxrwx 1 meir meir 0 Nov 15 10:20 uts -&gt; 'uts:[4026531838]'
+lrwxrwxrwx 1 dev dev 0 Nov 15 10:20 cgroup -&gt; 'cgroup:[4026531835]'
+lrwxrwxrwx 1 dev dev 0 Nov 15 10:20 ipc -&gt; 'ipc:[4026531839]'
+lrwxrwxrwx 1 dev dev 0 Nov 15 10:20 mnt -&gt; 'mnt:[4026531841]'
+lrwxrwxrwx 1 dev dev 0 Nov 15 10:20 net -&gt; 'net:[4026531840]'
+lrwxrwxrwx 1 dev dev 0 Nov 15 10:20 pid -&gt; 'pid:[4026531836]'
+lrwxrwxrwx 1 dev dev 0 Nov 15 10:20 pid_for_children -&gt; 'pid:[4026531836]'
+lrwxrwxrwx 1 dev dev 0 Nov 15 10:20 time -&gt; 'time:[4026531834]'
+lrwxrwxrwx 1 dev dev 0 Nov 15 10:20 time_for_children -&gt; 'time:[4026531834]'
+lrwxrwxrwx 1 dev dev 0 Nov 15 10:20 user -&gt; 'user:[4026531837]'
+lrwxrwxrwx 1 dev dev 0 Nov 15 10:20 uts -&gt; 'uts:[4026531838]'
 
 $ sudo lsns                      # all namespaces on the box, with their first process
         NS TYPE   NPROCS   PID USER   COMMAND
@@ -695,14 +695,14 @@ $ sudo nsenter -t $PID -a sh                    # ALL namespaces = like docker e
       h: { en: "User namespaces, rootless containers — and what namespaces do NOT isolate", he: "User namespaces, ‏rootless containers — ומה namespaces לא מבודדים" },
       body: {
         en: `<p><strong>Rootless containers</strong> (Podman, rootless Docker, Kubernetes <code>hostUsers: false</code>) run the whole container in a user namespace. UID 0 inside maps to an unprivileged range on the host, taken from <code>/etc/subuid</code>:</p>
-<pre>$ grep meir /etc/subuid
-meir:100000:65536
+<pre>$ grep dev /etc/subuid
+dev:100000:65536
 $ podman run --rm alpine cat /proc/self/uid_map
          0       1000          1           # root in container = me (1000) on host
          1     100000      65536           # uid 1..65536 in container = 100000..165535 on host
 $ podman run -d --name w alpine sleep 999; ps -o user,pid,cmd -C sleep
 USER        PID CMD
-meir      61204 sleep 999                  # "root" inside, plain user outside</pre>
+dev      61204 sleep 999                  # "root" inside, plain user outside</pre>
 <p>If a process escapes such a container, it lands on the host as UID 100000 — owning nothing. Root capabilities inside a user namespace (<code>CAP_NET_ADMIN</code>, <code>CAP_SYS_ADMIN</code>) apply only to resources <em>owned by</em> that namespace, not to the host. The flip side: unprivileged user namespaces expose much more kernel code to normal users, which is why some distros restrict them (<code>kernel.apparmor_restrict_unprivileged_userns=1</code> on Ubuntu 24.04).</p>
 <p><strong>What namespaces do NOT isolate</strong>:</p>
 <table><tr><th>Shared</th><th>Consequence</th></tr>
@@ -714,14 +714,14 @@ meir      61204 sleep 999                  # "root" inside, plain user outside</
 <tr><td><strong>Resources</strong></td><td>Namespaces limit what you <em>see</em>, not what you <em>use</em> — CPU, memory, I/O and PIDs are cgroups' job</td></tr></table>
 <blockquote>⚠️ Production tip: "containers aren't VMs" in one sentence — a VM has its own kernel behind a hypervisor (a small attack surface of virtual hardware); a container is a host process behind ~350 syscalls. For multi-tenant untrusted code (CI runners for strangers, customer plugins), add a sandbox: gVisor (<code>runtimeClassName: gvisor</code>), Kata Containers, or Firecracker.</blockquote>`,
         he: `<p><strong>Rootless containers</strong> (‏Podman, ‏rootless Docker, ‏<code>hostUsers: false</code> ב-Kubernetes) מריצים את כל הקונטיינר בתוך user namespace. ‏UID 0 בפנים ממופה לטווח לא מורשה על ה-host, שנלקח מ-<code>/etc/subuid</code>:</p>
-<pre>$ grep meir /etc/subuid
-meir:100000:65536
+<pre>$ grep dev /etc/subuid
+dev:100000:65536
 $ podman run --rm alpine cat /proc/self/uid_map
          0       1000          1           # root in container = me (1000) on host
          1     100000      65536           # uid 1..65536 in container = 100000..165535 on host
 $ podman run -d --name w alpine sleep 999; ps -o user,pid,cmd -C sleep
 USER        PID CMD
-meir      61204 sleep 999                  # "root" inside, plain user outside</pre>
+dev      61204 sleep 999                  # "root" inside, plain user outside</pre>
 <p>אם תהליך בורח מקונטיינר כזה, הוא נוחת על ה-host בתור UID 100000 — שלא מחזיק בכלום. ‏Capabilities של root בתוך user namespace (‏<code>CAP_NET_ADMIN</code>, ‏<code>CAP_SYS_ADMIN</code>) חלות רק על משאבים <em>ששייכים</em> ל-namespace הזה, לא על ה-host. הצד השני: user namespaces לא מורשים חושפים הרבה יותר קוד kernel למשתמשים רגילים, ובגלל זה חלק מההפצות מגבילות אותם (‏<code>kernel.apparmor_restrict_unprivileged_userns=1</code> ב-Ubuntu 24.04).</p>
 <p><strong>מה namespaces לא מבודדים</strong>:</p>
 <table><tr><th>משותף</th><th>ההשלכה</th></tr>
