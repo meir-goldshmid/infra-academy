@@ -60,8 +60,8 @@
       const step = (n, title, html, open) => `<details class="qa" ${open ? "open" : ""}><summary>${n}. ${title}</summary><div style="margin-top:8px">${html}</div></details>`;
       app.innerHTML = `${crumbs}<h1>${d.icon || "🏛️"} ${esc(L(d.title))}</h1>
         <div class="tldr">🎤 ${L(d.prompt)}</div>
-        <div class="card" style="margin-top:14px"><b>⏱️ ${T("Try it yourself first", "נסו קודם לבד")}</b>
-          <p class="muted" style="margin:.3em 0">${T("Set a timer, sketch on paper (or in the box below) and talk out loud. Then open the steps one by one and compare.", "הפעילו טיימר, שרטטו על דף (או בתיבה למטה) ודברו בקול. אחר כך פתחו את השלבים אחד-אחד והשוו.")}</p>
+        <div class="card" style="margin-top:14px"><b>⏱️ ${T("Try it yourself first", "נסה קודם לבד")}</b>
+          <p class="muted" style="margin:.3em 0">${T("Set a timer, sketch on paper (or in the box below) and talk out loud. Then open the steps one by one and compare.", "הפעל טיימר, שרטט על דף (או בתיבה למטה) ודבר בקול. אחר כך פתח את השלבים אחד-אחד והשווה.")}</p>
           <div class="row"><button class="btn" data-min="45">45:00</button><button class="btn" data-min="20">20:00</button><span id="timer" class="tag" style="font-size:1.1em"></span></div>
           <textarea class="notes" id="att" style="margin-top:10px" placeholder="${T("Your answer: requirements, numbers, components…", "התשובה שלך: דרישות, מספרים, רכיבים…")}">${esc(iv.attempts["d:" + d.id] || "")}</textarea></div>
         <h2>🪜 ${T("The model answer, step by step", "תשובה לדוגמה, שלב אחרי שלב")}</h2>
@@ -82,7 +82,7 @@
       $$("[data-min]").forEach(b => b.onclick = () => {
         clearInterval(timer); let left = +b.dataset.min * 60;
         const show = () => { $("#timer").textContent = `⏱️ ${String(Math.floor(left / 60)).padStart(2, "0")}:${String(left % 60).padStart(2, "0")}`; };
-        show(); timer = setInterval(() => { left--; show(); if (left <= 0) { clearInterval(timer); C.toast(T("⏰ Time! Now compare with the model answer.", "⏰ נגמר הזמן! עכשיו השוו לתשובה לדוגמה.")); } }, 1000);
+        show(); timer = setInterval(() => { left--; show(); if (left <= 0) { clearInterval(timer); C.toast(T("⏰ Time! Now compare with the model answer.", "⏰ נגמר הזמן! עכשיו השווה לתשובה לדוגמה.")); } }, 1000);
       });
       return () => clearInterval(timer);
     }
@@ -186,7 +186,9 @@
             <div>🧱 <b>${T("Answer outline", "שלד תשובה")}:</b>${L(q.outline)}</div>
             ${q.levelUp ? `<blockquote>🚀 <b>${T("Staff/Principal level-up", "שדרוג לרמת Staff/Principal")}:</b> ${L(q.levelUp)}</blockquote>` : ""}
             ${links ? `<div class="row" style="margin-top:8px">${links}</div>` : ""}
-            <label style="display:block;margin-top:10px"><input type="checkbox" data-tq="${q.id}" ${iv.top[q.id] ? "checked" : ""}> ${T("I practiced this out loud", "תרגלתי את זה בקול")}</label>
+            <div class="row" style="margin-top:10px;justify-content:space-between">
+              <label><input type="checkbox" data-tq="${q.id}" ${iv.top[q.id] ? "checked" : ""}> ${T("I practiced this out loud", "תרגלתי את זה בקול")}</label>
+              <a class="btn small" href="#/interview/top/${q.id}" data-tqlink="${q.id}">🔗 ${T("Link to this question", "קישור לשאלה")}</a></div>
           </div></details>`;
       };
       const draw = () => {
@@ -211,7 +213,21 @@
       $("#tqt").onchange = (e) => { todo = e.target.checked; draw(); };
       $("#tqf").oninput = (e) => { fq = e.target.value.trim(); draw(); };
       $("#tqr").onclick = () => { const els = [...$$("#tql2 details")]; if (!els.length) return; els.forEach(d => d.open = false); const d = els[Math.floor(Math.random() * els.length)]; d.scrollIntoView({ behavior: "smooth", block: "center" }); d.style.outline = "2px solid var(--accent)"; setTimeout(() => d.style.outline = "", 1500); };
-      draw(); return null;
+      // copy a deep link to one question (#/interview/top/<id>)
+      $("#tql2").addEventListener("click", (e) => {
+        const a = e.target.closest && e.target.closest("[data-tqlink]"); if (!a) return;
+        e.preventDefault();
+        const url = location.href.split("#")[0] + "#/interview/top/" + a.dataset.tqlink;
+        history.replaceState(null, "", url);
+        if (navigator.clipboard) navigator.clipboard.writeText(url).then(() => C.toast(T("Link copied", "הקישור הועתק")), () => {});
+      });
+      draw();
+      // deep link: open that question and scroll to it
+      if (id) {
+        const d = document.getElementById("tq-" + id);
+        if (d) { d.open = true; setTimeout(() => { d.scrollIntoView({ block: "start" }); d.style.outline = "2px solid var(--accent)"; setTimeout(() => d.style.outline = "", 1800); }, 50); }
+      }
+      return null;
     }
     if (sub === "behavioral") {
       app.innerHTML = `${crumbs}<h1>🗣️ ${T("Behavioral & scenario questions", "שאלות התנהגותיות ותרחישים")}</h1>
@@ -252,7 +268,7 @@
         const q = qs[i]; let left = mpq * 60;
         app.innerHTML = `${crumbs}<div class="row"><span class="tag">${i + 1} / ${qs.length}</span><span class="spacer"></span><span class="tag" id="tm" style="font-size:1.1em"></span></div>
           <div class="card" style="margin-top:12px"><h2 style="margin-top:0">🎤 ${L(q.q)}</h2>
-          <textarea class="notes" id="ans" placeholder="${T("Answer out loud, or type key points…", "ענו בקול, או הקלידו נקודות עיקריות…")}"></textarea>
+          <textarea class="notes" id="ans" placeholder="${T("Answer out loud, or type key points…", "ענה בקול, או הקלד נקודות עיקריות…")}"></textarea>
           <div class="row" style="margin-top:10px"><button class="btn primary" id="rev">${t("reveal")}</button></div><div id="model"></div></div>`;
         const tm = $("#tm"); const show = () => tm.textContent = `⏱️ ${Math.floor(left / 60)}:${String(left % 60).padStart(2, "0")}`; show();
         timer = setInterval(() => { left--; show(); if (left <= 0) { clearInterval(timer); tm.style.color = "var(--bad)"; } }, 1000);
@@ -269,7 +285,7 @@
         iv.mocks.push({ date: new Date().toISOString().slice(0, 10), pct, n: scores.length }); C.save(); C.addXP(10 * scores.length, `+${10 * scores.length} XP 🎙️`);
         const weak = {}; scores.filter(x => x.s < 2).forEach(x => weak[x.q.track] = (weak[x.q.track] || 0) + 1);
         const weakList = Object.entries(weak).sort((a, b) => b[1] - a[1]).map(([k]) => k === "design" ? `<a class="btn small" href="#/interview/design">🏛️ System design</a>` : `<a class="btn small" href="#/track/${k}">${C.trackOf(k).icon} ${esc(L(C.trackOf(k).title))}</a>`).join(" ");
-        app.innerHTML = `${crumbs}<div class="card" style="text-align:center"><h1>${pct >= 80 ? "🏆" : pct >= 50 ? "👍" : "📚"} ${pct}%</h1><p>${pct >= 80 ? T("Interview-ready on these topics.", "מוכנים לראיון בנושאים האלה.") : pct >= 50 ? T("Solid base — close the gaps below.", "בסיס טוב — לסגור את הפערים למטה.") : T("Good that you found this now and not in the interview 😉", "טוב שגילית את זה עכשיו ולא בראיון 😉")}</p>
+        app.innerHTML = `${crumbs}<div class="card" style="text-align:center"><h1>${pct >= 80 ? "🏆" : pct >= 50 ? "👍" : "📚"} ${pct}%</h1><p>${pct >= 80 ? T("Interview-ready on these topics.", "מוכן לראיון בנושאים האלה.") : pct >= 50 ? T("Solid base — close the gaps below.", "בסיס טוב — לסגור את הפערים למטה.") : T("Good that you found this now and not in the interview 😉", "טוב שגילית את זה עכשיו ולא בראיון 😉")}</p>
           ${weakList ? `<p>${T("Review:", "לחזור על:")} ${weakList}</p>` : ""}<button class="btn primary" id="again">${t("restart")}</button></div>
           <h2>${T("Your answers", "התשובות שלך")}</h2>${scores.map(x => `<details class="qa"><summary>${["😬", "🤏", "💪"][x.s]} ${L(x.q.q)}</summary><div style="margin-top:8px">${L(x.q.a)}</div></details>`).join("")}`;
         if (pct >= 80) C.confetti();

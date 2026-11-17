@@ -33,7 +33,7 @@
   I.sims.lb = {
     icon: "⚖️", track: "networking",
     title: { en: "Load balancer lab", he: "מעבדת Load Balancer" },
-    desc: { en: "Pick an algorithm, kill servers, make one slow, turn off health checks — and watch errors and latency.", he: "בחרו אלגוריתם, הפילו שרתים, האטו אחד, כבו health checks — וראו מה קורה ל-errors ול-latency." },
+    desc: { en: "Pick an algorithm, kill servers, make one slow, turn off health checks — and watch errors and latency.", he: "בחר אלגוריתם, הפל שרתים, האט אחד, כבה health checks — וראה מה קורה ל-errors ול-latency." },
     mount(el, H) {
       const t = T(H);
       el.innerHTML = `<div class="sim-controls">
@@ -44,7 +44,7 @@
         <label><span><input type="checkbox" id="slow"> ${t("Server 1 is slow (GC pauses)", "שרת 1 איטי (GC pauses)")}</span></label>
       </div>
       <div class="sim-stage"><div class="lb-box">⚖️ Load Balancer</div><div class="servers" id="srv"></div></div>
-      <p class="muted" style="font-size:.88em">${t("Tip: click a server to kill / revive it.", "טיפ: לחצו על שרת כדי להפיל / להחיות אותו.")}</p>
+      <p class="muted" style="font-size:.88em">${t("Tip: click a server to kill / revive it.", "טיפ: לחץ על שרת כדי להפיל / להחיות אותו.")}</p>
       <div class="sim-out" id="out"></div><div class="sim-lesson" id="lesson"></div>`;
       let servers = [], acc = 0, total = 0, errors = 0, lat = 50, rr = 0, errWin = [];
       const mk = (n) => { servers = Array.from({ length: n }, (_, i) => servers[i] || { up: true, active: 0, served: 0, downAt: 0 }); };
@@ -98,12 +98,12 @@
         $("#out").innerHTML = metric(t("Requests", "בקשות"), fmt(total)) + metric(t("Errors (5xx)", "שגיאות (5xx)"), `${fmt(errors)} (${fmt(errRate, 1)}%)`, errRate > 1 ? "bad" : "good") + metric(t("Avg latency", "Latency ממוצע"), fmt(lat) + " ms", lat > 300 ? "bad" : lat > 120 ? "warn" : "good");
         const down = servers.some(s => !s.up), alg = $("#alg").value;
         let msg;
-        if (down && !$("#hc").checked && recentErr) msg = t("💥 Without health checks the LB keeps sending traffic to a dead server — every Nth request fails. Turn health checks on.", "💥 בלי health checks ה-LB ממשיך לשלוח תעבורה לשרת מת — כל בקשה N נכשלת. הדליקו health checks.");
+        if (down && !$("#hc").checked && recentErr) msg = t("💥 Without health checks the LB keeps sending traffic to a dead server — every Nth request fails. Turn health checks on.", "💥 בלי health checks ה-LB ממשיך לשלוח תעבורה לשרת מת — כל בקשה N נכשלת. הדלק health checks.");
         else if (down && recentErr) msg = t("⏱️ Health checks remove a dead server only after a few failed probes (~1.5s here). Errors during that window are why probe interval & thresholds matter.", "⏱️ Health checks מוציאים שרת מת רק אחרי כמה בדיקות שנכשלו (~1.5 שניות כאן). השגיאות בחלון הזה הן הסיבה שתדירות הבדיקות והספים חשובים.");
-        else if ($("#slow").checked && alg === "rr") msg = t("🐢 Round robin is blind: the slow server gets the same share and its queue explodes. Try Least Connections.", "🐢 Round Robin עיוור: השרת האיטי מקבל אותו נתח והתור שלו מתפוצץ. נסו Least Connections.");
+        else if ($("#slow").checked && alg === "rr") msg = t("🐢 Round robin is blind: the slow server gets the same share and its queue explodes. Try Least Connections.", "🐢 Round Robin עיוור: השרת האיטי מקבל אותו נתח והתור שלו מתפוצץ. נסה Least Connections.");
         else if ($("#slow").checked && alg === "lc") msg = t("✅ Least Connections notices the slow server is busy and routes around it.", "✅ Least Connections מזהה שהשרת האיטי עמוס ועוקף אותו.");
         else if (alg === "hash") msg = t("📌 IP hash = stickiness: same client → same server. Great for caches, but load can be uneven and a dead server reshuffles clients.", "📌 IP Hash = דביקות: אותו לקוח → אותו שרת. טוב ל-cache, אבל העומס יכול להיות לא מאוזן ושרת שנופל מערבב לקוחות.");
-        else msg = t("Raise the request rate until latency climbs — that's saturation. Then add a server.", "העלו את קצב הבקשות עד שה-latency מטפס — זו רוויה (saturation). ואז הוסיפו שרת.");
+        else msg = t("Raise the request rate until latency climbs — that's saturation. Then add a server.", "העלה את קצב הבקשות עד שה-latency מטפס — זו רוויה (saturation). ואז הוסף שרת.");
         $("#lesson").innerHTML = msg;
       }, 100);
       return () => clearInterval(tick);
@@ -114,7 +114,7 @@
   I.sims.resources = {
     icon: "🎛️", track: "kubernetes",
     title: { en: "CPU & memory: requests vs limits", he: "CPU וזיכרון: Requests מול Limits" },
-    desc: { en: "Set requests/limits, push load, leak memory. See CPU throttling vs OOMKilled (exit 137) and the QoS class.", he: "קבעו requests/limits, העמיסו, תדליפו זיכרון. ראו CPU throttling מול OOMKilled (exit 137) ומחלקת ה-QoS." },
+    desc: { en: "Set requests/limits, push load, leak memory. See CPU throttling vs OOMKilled (exit 137) and the QoS class.", he: "קבע requests/limits, העמס, תדליף זיכרון. ראה CPU throttling מול OOMKilled (exit 137) ומחלקת ה-QoS." },
     mount(el, H) {
       const t = T(H);
       el.innerHTML = `<div class="sim-controls">
@@ -170,10 +170,10 @@
           metric("p99 latency", fmt(latency) + " ms", latency > 100 ? "bad" : "good") + metric(t("Restarts", "Restarts"), restarts, restarts ? "bad" : "good");
         let msg;
         if (state === "Pending") msg = t("⏳ Pending: the request is bigger than any node's allocatable capacity. The scheduler places pods by REQUESTS, not usage.", "⏳ Pending: ה-request גדול מהקיבולת של כל node. ה-scheduler משבץ לפי REQUESTS, לא לפי שימוש בפועל.");
-        else if (oomFlash > 0) msg = t("💀 OOMKilled! Memory is incompressible — crossing the memory limit kills the container (exit 137 = 128 + SIGKILL 9). Raise the limit or fix the leak.", "💀 OOMKilled! זיכרון הוא משאב שלא ניתן לדחיסה — חציית ה-limit הורגת את הקונטיינר (exit 137 = 128 + SIGKILL 9). הגדילו limit או תקנו את הדליפה.");
-        else if (throttle > 0) msg = t("🐢 CPU is compressible: above the limit you are THROTTLED, not killed. The app survives but latency goes up. Many teams drop CPU limits and keep requests.", "🐢 CPU ניתן לדחיסה: מעל ה-limit עושים לכם THROTTLE, לא הורגים. האפליקציה שורדת אבל ה-latency עולה. הרבה צוותים מוותרים על CPU limits ומשאירים requests.");
+        else if (oomFlash > 0) msg = t("💀 OOMKilled! Memory is incompressible — crossing the memory limit kills the container (exit 137 = 128 + SIGKILL 9). Raise the limit or fix the leak.", "💀 OOMKilled! זיכרון הוא משאב שלא ניתן לדחיסה — חציית ה-limit הורגת את הקונטיינר (exit 137 = 128 + SIGKILL 9). הגדל limit או תקן את הדליפה.");
+        else if (throttle > 0) msg = t("🐢 CPU is compressible: above the limit you are THROTTLED, not killed. The app survives but latency goes up. Many teams drop CPU limits and keep requests.", "🐢 CPU ניתן לדחיסה: מעל ה-limit עושים לך THROTTLE, לא הורגים. האפליקציה שורדת אבל ה-latency עולה. הרבה צוותים מוותרים על CPU limits ומשאירים requests.");
         else if (qos === "BestEffort") msg = t("⚠️ BestEffort: no requests/limits → first to be evicted when the node is under memory pressure.", "⚠️ BestEffort: בלי requests/limits → הראשון שמפונה כשיש לחץ זיכרון על ה-node.");
-        else msg = t("Try: turn on the leak, or push CPU demand above the limit. Then set request = limit for both to get Guaranteed QoS.", "נסו: הדליקו את הדליפה, או העלו ביקוש CPU מעל ה-limit. אחר כך קבעו request = limit לשניהם כדי לקבל Guaranteed QoS.");
+        else msg = t("Try: turn on the leak, or push CPU demand above the limit. Then set request = limit for both to get Guaranteed QoS.", "נסה: הדלק את הדליפה, או העלה ביקוש CPU מעל ה-limit. אחר כך קבע request = limit לשניהם כדי לקבל Guaranteed QoS.");
         if (oomFlash > 0) oomFlash--;
         $("#lesson").innerHTML = msg;
       }, 250);
@@ -185,7 +185,7 @@
   I.sims.queue = {
     icon: "📬", track: "architecture",
     title: { en: "Queue & consumers", he: "תור ו-Consumers" },
-    desc: { en: "Producers vs consumers. Watch the backlog grow, add consumers, inject a poison message, enable a DLQ.", he: "Producers מול Consumers. ראו את ה-backlog גדל, הוסיפו consumers, הזריקו poison message, הפעילו DLQ." },
+    desc: { en: "Producers vs consumers. Watch the backlog grow, add consumers, inject a poison message, enable a DLQ.", he: "Producers מול Consumers. ראה את ה-backlog גדל, הוסף consumers, הזרק poison message, הפעל DLQ." },
     mount(el, H) {
       const t = T(H);
       el.innerHTML = `<div class="sim-controls">
@@ -237,10 +237,10 @@
           metric(t("Capacity", "קיבולת"), fmt(capacity, 1) + "/s") + metric(t("Incoming", "נכנס"), prod + "/s") + metric(t("Processed", "עובדו"), fmt(processed));
         const stuck = workers.some(w => w.msg && w.msg.poison && w.msg.tries >= 3);
         let msg;
-        if (stuck) msg = t("☠️ A poison message is retried forever and blocks a consumer. That's why you need a max-retry + Dead Letter Queue — enable it.", "☠️ Poison message מנוסה שוב ושוב לנצח וחוסם consumer. בגלל זה צריך max-retry + Dead Letter Queue — הפעילו.");
-        else if (prod > capacity) msg = t(`📈 Incoming (${prod}/s) > capacity (${fmt(capacity, 1)}/s = consumers ÷ processing time). The backlog grows forever. Add consumers or make processing faster. Scale on LAG, not CPU (KEDA does this).`, `📈 נכנס (${prod}/s) > קיבולת (${fmt(capacity, 1)}/s = consumers ÷ זמן עיבוד). ה-backlog יגדל לנצח. הוסיפו consumers או האיצו עיבוד. עושים scale לפי LAG, לא לפי CPU (KEDA עושה את זה).`);
+        if (stuck) msg = t("☠️ A poison message is retried forever and blocks a consumer. That's why you need a max-retry + Dead Letter Queue — enable it.", "☠️ Poison message מנוסה שוב ושוב לנצח וחוסם consumer. בגלל זה צריך max-retry + Dead Letter Queue — הפעל.");
+        else if (prod > capacity) msg = t(`📈 Incoming (${prod}/s) > capacity (${fmt(capacity, 1)}/s = consumers ÷ processing time). The backlog grows forever. Add consumers or make processing faster. Scale on LAG, not CPU (KEDA does this).`, `📈 נכנס (${prod}/s) > קיבולת (${fmt(capacity, 1)}/s = consumers ÷ זמן עיבוד). ה-backlog יגדל לנצח. הוסף consumers או האיצו עיבוד. עושים scale לפי LAG, לא לפי CPU (KEDA עושה את זה).`);
         else if (q.length > 50) msg = t("🧽 Capacity > incoming, so the backlog drains. The queue absorbed the burst — that's the whole point: decoupling producers from consumers.", "🧽 קיבולת > נכנס, אז ה-backlog מתרוקן. התור ספג את הפרץ — זה כל הרעיון: ניתוק producers מ-consumers.");
-        else msg = t("Hit 'Traffic burst' and watch the queue absorb it instead of crashing the consumers.", "לחצו 'פרץ תעבורה' ותראו איך התור סופג אותו במקום להפיל את ה-consumers.");
+        else msg = t("Hit 'Traffic burst' and watch the queue absorb it instead of crashing the consumers.", "לחץ 'פרץ תעבורה' ותראה איך התור סופג אותו במקום להפיל את ה-consumers.");
         $("#lesson").innerHTML = msg;
       }, 200);
       return () => clearInterval(tick);
@@ -251,7 +251,7 @@
   I.sims.slo = {
     icon: "🎯", track: "reliability",
     title: { en: "SLO & error budget calculator", he: "מחשבון SLO ו-Error Budget" },
-    desc: { en: "How much downtime does 99.9% really allow? Burn your budget with incidents and see when releases freeze.", he: "כמה downtime באמת מותר ב-99.9%? שרפו את התקציב עם תקלות וראו מתי מקפיאים releases." },
+    desc: { en: "How much downtime does 99.9% really allow? Burn your budget with incidents and see when releases freeze.", he: "כמה downtime באמת מותר ב-99.9%? שרוף את התקציב עם תקלות וראה מתי מקפיאים releases." },
     mount(el, H) {
       const t = T(H);
       el.innerHTML = `<div class="sim-controls">
@@ -298,7 +298,7 @@
         let msg;
         if (pct <= 0) msg = t("🧊 Budget exhausted → per the error-budget policy: freeze feature releases, only reliability work ships until the window recovers.", "🧊 התקציב נגמר → לפי מדיניות ה-error budget: מקפיאים פיצ'רים, רק עבודת אמינות עולה עד שהחלון מתאושש.");
         else if (pct < 50) msg = t("⚠️ More than half the budget is gone. Slow down risky deploys, prioritize the postmortem action items.", "⚠️ יותר מחצי מהתקציב נשרף. מאטים deploys מסוכנים, מתעדפים את ה-action items מה-postmortem.");
-        else msg = t("💡 Budget left = permission to take risks: ship features, run chaos experiments. 100% is the wrong target — users can't tell 99.99% from 100% but your velocity can.", "💡 תקציב שנשאר = רשות לקחת סיכונים: לשחרר פיצ'רים, להריץ ניסויי chaos. 100% זו מטרה שגויה — משתמשים לא מבחינים בין 99.99% ל-100%, אבל הקצב שלכם כן.");
+        else msg = t("💡 Budget left = permission to take risks: ship features, run chaos experiments. 100% is the wrong target — users can't tell 99.99% from 100% but your velocity can.", "💡 תקציב שנשאר = רשות לקחת סיכונים: לשחרר פיצ'רים, להריץ ניסויי chaos. 100% זו מטרה שגויה — משתמשים לא מבחינים בין 99.99% ל-100%, אבל הקצב שלך כן.");
         $("#lesson").innerHTML = msg;
       };
       el.querySelectorAll("[data-burn]").forEach(b => b.onclick = () => {
@@ -317,7 +317,7 @@
   I.sims.cidr = {
     icon: "🧮", track: "networking",
     title: { en: "CIDR & subnet calculator", he: "מחשבון CIDR ו-Subnets" },
-    desc: { en: "Type an IP/prefix, see network vs host bits, ranges, usable IPs (and what AWS reserves). Split into subnets.", he: "הקלידו IP/prefix, ראו ביטים של רשת מול host, טווחים, כתובות שמישות (ומה AWS שומר לעצמו). פצלו ל-subnets." },
+    desc: { en: "Type an IP/prefix, see network vs host bits, ranges, usable IPs (and what AWS reserves). Split into subnets.", he: "הקלד IP/prefix, ראה ביטים של רשת מול host, טווחים, כתובות שמישות (ומה AWS שומר לעצמו). פצל ל-subnets." },
     mount(el, H) {
       const t = T(H);
       el.innerHTML = `<div class="sim-controls"><label>IP / prefix<input type="text" id="ip" value="10.0.0.0/16" style="direction:ltr;width:170px"></label>
@@ -357,7 +357,7 @@
   I.sims.firewall = {
     icon: "🧱", track: "networking",
     title: { en: "Firewall rule tester", he: "בודק חוקי Firewall" },
-    desc: { en: "Ordered rules, first match wins, implicit deny at the end. Build rules, fire packets, see which rule hit.", he: "חוקים מסודרים, ההתאמה הראשונה מנצחת, deny מובלע בסוף. בנו חוקים, שלחו packets, ראו איזה חוק תפס." },
+    desc: { en: "Ordered rules, first match wins, implicit deny at the end. Build rules, fire packets, see which rule hit.", he: "חוקים מסודרים, ההתאמה הראשונה מנצחת, deny מובלע בסוף. בנה חוקים, שלח packets, ראה איזה חוק תפס." },
     mount(el, H) {
       const t = T(H);
       const presets = {
@@ -408,7 +408,7 @@
   I.sims.scheduler = {
     icon: "🧩", track: "kubernetes",
     title: { en: "Kubernetes scheduler", he: "ה-Scheduler של Kubernetes" },
-    desc: { en: "Deploy pods by CPU request, kill nodes, taint the GPU node, add nodes like the Cluster Autoscaler.", he: "פרסו pods לפי CPU request, הפילו nodes, שימו taint על ה-node עם ה-GPU, הוסיפו nodes כמו Cluster Autoscaler." },
+    desc: { en: "Deploy pods by CPU request, kill nodes, taint the GPU node, add nodes like the Cluster Autoscaler.", he: "פרוס pods לפי CPU request, הפל nodes, שים taint על ה-node עם ה-GPU, הוסף nodes כמו Cluster Autoscaler." },
     mount(el, H) {
       const t = T(H);
       const colors = ["#4c6ef5", "#12b886", "#f76707", "#ae3ec9", "#e64980", "#1098ad"];
@@ -423,7 +423,7 @@
         <button class="btn primary" id="deploy">🚀 kubectl apply</button></div>
         <div class="row" style="margin-bottom:10px"><button class="btn small" id="addNode">➕ ${t("Add node (autoscaler)", "הוספת node (autoscaler)")}</button><button class="btn small" id="taint">🏷️ ${t("Toggle taint on gpu-1", "הדלקה/כיבוי taint על gpu-1")}</button><button class="btn small" id="clear">🧹 ${t("Delete all pods", "מחיקת כל ה-pods")}</button></div>
         <div class="sim-stage"><div class="nodes" id="nodes"></div><div style="margin-top:10px"><b>⏳ Pending:</b> <span class="pending" id="pend"></span></div></div>
-        <p class="muted" style="font-size:.88em">${t("Tip: click a node to crash / recover it.", "טיפ: לחצו על node כדי להפיל / לשחזר אותו.")}</p>
+        <p class="muted" style="font-size:.88em">${t("Tip: click a node to crash / recover it.", "טיפ: לחץ על node כדי להפיל / לשחזר אותו.")}</p>
         <pre id="ev" style="font-size:.8em;max-height:150px"></pre><div class="sim-lesson" id="lesson"></div>`;
       const $ = (s) => el.querySelector(s);
       const used = (n) => pods.filter(p => p.node === n.name).reduce((a, p) => a + p.req, 0);
@@ -455,7 +455,7 @@
         if (pend.length && nodes.some(n => !n.up)) msg = t("💀 A node died: its pods were evicted and rescheduled onto the survivors — if there's room. No room → Pending. That's why you keep headroom (N+1).", "💀 Node מת: ה-pods שלו פונו ושובצו מחדש על השורדים — אם יש מקום. אין מקום → Pending. בגלל זה שומרים headroom (N+1).");
         else if (pend.length) msg = t("⏳ Pending = no node has enough UNREQUESTED CPU (or a taint blocks it). Fix: smaller requests, add a node (Cluster Autoscaler does exactly this when it sees Pending pods), or add a toleration.", "⏳ Pending = לאף node אין מספיק CPU שלא הוזמן (או ש-taint חוסם). פתרון: requests קטנים יותר, להוסיף node (ה-Cluster Autoscaler עושה בדיוק את זה כשהוא רואה Pending), או להוסיף toleration.");
         else if ($("#strat").value === "pack") msg = t("📦 Bin-packing fills nodes tightly → fewer nodes, lower cost, but a node failure hurts more pods.", "📦 דחיסה ממלאת nodes עד הסוף → פחות nodes, פחות עלות, אבל נפילת node פוגעת ביותר pods.");
-        else msg = t("🌍 Spreading balances load and limits the blast radius of a node failure. Note gpu-1 is tainted: only pods with a matching toleration may land there.", "🌍 פיזור מאזן עומס ומקטין את ה-blast radius של נפילת node. שימו לב: על gpu-1 יש taint — רק pods עם toleration מתאים יכולים לנחות שם.");
+        else msg = t("🌍 Spreading balances load and limits the blast radius of a node failure. Note gpu-1 is tainted: only pods with a matching toleration may land there.", "🌍 פיזור מאזן עומס ומקטין את ה-blast radius של נפילת node. שים לב: על gpu-1 יש taint — רק pods עם toleration מתאים יכולים לנחות שם.");
         $("#lesson").innerHTML = msg;
       };
       $("#deploy").onclick = () => {
@@ -474,7 +474,7 @@
   I.sims.dr = {
     icon: "🌪️", track: "reliability",
     title: { en: "Disaster recovery: RPO & RTO", he: "התאוששות מאסון: RPO ו-RTO" },
-    desc: { en: "Pick a DR strategy, set business targets, then trigger a disaster. How much data did you lose? How long were you down? What did it cost?", he: "בחרו אסטרטגיית DR, קבעו יעדים עסקיים, ואז הפעילו אסון. כמה מידע איבדתם? כמה זמן הייתם למטה? כמה זה עלה?" },
+    desc: { en: "Pick a DR strategy, set business targets, then trigger a disaster. How much data did you lose? How long were you down? What did it cost?", he: "בחר אסטרטגיית DR, קבע יעדים עסקיים, ואז הפעל אסון. כמה מידע איבדתם? כמה זמן הייתם למטה? כמה זה עלה?" },
     mount(el, H) {
       const t = T(H);
       const S = {
@@ -525,7 +525,7 @@
   I.sims.cache = {
     icon: "⚡", track: "architecture",
     title: { en: "Cache hit-ratio lab", he: "מעבדת Cache Hit Ratio" },
-    desc: { en: "Tune cache size and TTL against a realistic (Zipf) traffic pattern. Then flush the cache and watch the database get stampeded.", he: "כווננו גודל cache ו-TTL מול תבנית תעבורה מציאותית (Zipf). אז תרוקנו את ה-cache ותראו את ה-DB נרמס." },
+    desc: { en: "Tune cache size and TTL against a realistic (Zipf) traffic pattern. Then flush the cache and watch the database get stampeded.", he: "כוונן גודל cache ו-TTL מול תבנית תעבורה מציאותית (Zipf). אז תרוקנו את ה-cache ותראה את ה-DB נרמס." },
     mount(el, H) {
       const t = T(H);
       el.innerHTML = `<div class="sim-controls">
@@ -569,7 +569,7 @@
   I.sims.scaling = {
     icon: "📈", track: "kubernetes",
     title: { en: "Autoscaling vs traffic", he: "Autoscaling מול תעבורה" },
-    desc: { en: "A day of traffic in 30 seconds. Tune min/max replicas, target CPU and pod startup time. Fire a spike. Watch errors and cost.", he: "יום של תעבורה ב-30 שניות. כווננו min/max replicas, יעד CPU וזמן עליית pod. שלחו spike. ראו שגיאות ועלות." },
+    desc: { en: "A day of traffic in 30 seconds. Tune min/max replicas, target CPU and pod startup time. Fire a spike. Watch errors and cost.", he: "יום של תעבורה ב-30 שניות. כוונן min/max replicas, יעד CPU וזמן עליית pod. שלח spike. ראה שגיאות ועלות." },
     mount(el, H) {
       const t = T(H);
       el.innerHTML = `<div class="sim-controls">
@@ -607,8 +607,8 @@
         $("#out").innerHTML = metric(t("Time", "שעה"), `${String(Math.floor(hour)).padStart(2, "0")}:${String(Math.floor(minute % 60)).padStart(2, "0")}`) + metric(t("Ready pods", "Pods מוכנים"), ready) + metric(t("Starting", "עולים"), starting.length) +
           metric(t("Dropped requests", "בקשות שנזרקו"), fmt(errPct, 2) + "%", errPct > 1 ? "bad" : "good") + metric(t("Cost (pod-hours)", "עלות (pod-hours)"), fmt(podMinutes / 60));
         let msg;
-        if (!$("#auto").checked) msg = t("🧱 Fixed capacity: either you over-provision for the peak (paying all night) or you drop traffic at peak. Turn HPA on.", "🧱 קיבולת קבועה: או שמקצים ל-peak (ומשלמים כל הלילה) או שזורקים תעבורה ב-peak. הדליקו HPA.");
-        else if (d > 0 && starting.length) msg = t("⏳ The autoscaler reacted, but new pods take time to start. Scaling is never instant: lower the target %, keep more min replicas before known events, make startup faster.", "⏳ ה-autoscaler הגיב, אבל pods חדשים לוקחים זמן לעלות. Scaling אף פעם לא מיידי: הורידו את יעד ה-%, החזיקו יותר min replicas לפני אירועים ידועים, קצרו את זמן העלייה.");
+        if (!$("#auto").checked) msg = t("🧱 Fixed capacity: either you over-provision for the peak (paying all night) or you drop traffic at peak. Turn HPA on.", "🧱 קיבולת קבועה: או שמקצים ל-peak (ומשלמים כל הלילה) או שזורקים תעבורה ב-peak. הדלק HPA.");
+        else if (d > 0 && starting.length) msg = t("⏳ The autoscaler reacted, but new pods take time to start. Scaling is never instant: lower the target %, keep more min replicas before known events, make startup faster.", "⏳ ה-autoscaler הגיב, אבל pods חדשים לוקחים זמן לעלות. Scaling אף פעם לא מיידי: הורד את יעד ה-%, החזיקו יותר min replicas לפני אירועים ידועים, קצרו את זמן העלייה.");
         else if (d > 0 && ready >= max) msg = t("🧢 Hit max replicas — the ceiling protects your budget (and your DB!), but traffic above it is dropped.", "🧢 הגענו ל-max replicas — התקרה מגינה על התקציב (ועל ה-DB!), אבל תעבורה מעליה נזרקת.");
         else msg = t("💡 HPA formula: desired = ceil(current × currentUtil / targetUtil). Lower target = more headroom = more cost. Scale-down is deliberately slow to avoid flapping.", "💡 נוסחת HPA: desired = ceil(current × currentUtil / targetUtil). יעד נמוך = יותר headroom = יותר עלות. ה-scale down איטי בכוונה כדי למנוע flapping.");
         $("#lesson").innerHTML = msg;
@@ -621,7 +621,7 @@
   I.sims.terminal = {
     icon: "💻", track: "kubernetes",
     title: { en: "Debug terminal: the mystery pod", he: "טרמינל דיבאג: ה-Pod המסתורי" },
-    desc: { en: "A fake shell with real-looking output. checkout is down — find out why using kubectl, docker and Linux tools. Type 'help'.", he: "Shell מדומה עם פלט שנראה אמיתי. checkout למטה — גלו למה עם kubectl, docker וכלי Linux. הקלידו help." },
+    desc: { en: "A fake shell with real-looking output. checkout is down — find out why using kubectl, docker and Linux tools. Type 'help'.", he: "Shell מדומה עם פלט שנראה אמיתי. checkout למטה — גלו למה עם kubectl, docker וכלי Linux. הקלד help." },
     mount(el, H) {
       const t = T(H);
       el.innerHTML = `<div class="term" id="out"></div><div class="term-input"><span>$</span><input id="in" autocomplete="off" spellcheck="false" placeholder="kubectl get pods"></div>
@@ -633,7 +633,7 @@
         "help": () => t(`Mission: checkout is failing. Find the root cause, then type:  answer <cause>
 Commands: kubectl get pods|nodes|events|svc|deploy · kubectl describe pod <name> · kubectl logs <pod> [--previous]
 kubectl top pods|nodes · kubectl get deploy checkout -o yaml · docker ps · docker stats · free -h · df -h · uptime
-top · ss -tlnp · dig <host> · curl -v <url> · ping <host> · clear`, `משימה: checkout נכשל. מצאו את שורש הבעיה ואז הקלידו:  answer <cause>
+top · ss -tlnp · dig <host> · curl -v <url> · ping <host> · clear`, `משימה: checkout נכשל. מצאו את שורש הבעיה ואז הקלד:  answer <cause>
 פקודות: kubectl get pods|nodes|events|svc|deploy · kubectl describe pod <name> · kubectl logs <pod> [--previous]
 kubectl top pods|nodes · kubectl get deploy checkout -o yaml · docker ps · docker stats · free -h · df -h · uptime
 top · ss -tlnp · dig <host> · curl -v <url> · ping <host> · clear`),
@@ -715,7 +715,7 @@ k8s_checkout_checkout-7d9f   61.2%   254MiB / 256MiB     99.2%`,
         "free -h": () => `               total        used        free      shared  buff/cache   available
 Mem:            7.7Gi       2.8Gi       412Mi        12Mi       4.5Gi       4.6Gi
 Swap:              0B          0B          0B
-# ${t("Note: low 'free' is fine — buff/cache is reclaimable. Look at 'available'. The node is NOT out of memory.", "שימו לב: 'free' נמוך זה בסדר — buff/cache ניתן לשחרור. מסתכלים על 'available'. ל-node יש זיכרון.")}`,
+# ${t("Note: low 'free' is fine — buff/cache is reclaimable. Look at 'available'. The node is NOT out of memory.", "שים לב: 'free' נמוך זה בסדר — buff/cache ניתן לשחרור. מסתכלים על 'available'. ל-node יש זיכרון.")}`,
         "df -h": () => `Filesystem      Size  Used Avail Use% Mounted on
 /dev/nvme0n1p1   80G   41G   39G  52% /
 overlay          80G   41G   39G  52% /var/lib/containerd`,
@@ -754,7 +754,7 @@ Fix properly: raise memory request+limit (e.g. 512Mi) based on measured usage, o
 תיקון אמיתי: להגדיל memory request+limit (למשל 512Mi) לפי מדידה, או לא לשמור את כל הקטלוג בזיכרון התהליך (Redis).
 +60 XP`), css("--good"));
             if (!found.oom) { found.oom = true; H.addXP(60, "+60 XP 🕵️"); }
-          } else print(t("❌ Not it. Hint: look at 'Last State' in kubectl describe.", "❌ לא זה. רמז: הסתכלו על 'Last State' ב-kubectl describe."), css("--bad"));
+          } else print(t("❌ Not it. Hint: look at 'Last State' in kubectl describe.", "❌ לא זה. רמז: הסתכל על 'Last State' ב-kubectl describe."), css("--bad"));
           return;
         }
         if (cmd.startsWith("kubectl rollout undo")) { print("deployment.apps/checkout rolled back\n" + t("👍 Good instinct: mitigate first. But what was the root cause? (answer <cause>)", "👍 אינסטינקט טוב: קודם מייצבים. אבל מה שורש הבעיה? (answer <cause>)")); return; }
@@ -776,9 +776,9 @@ Fix properly: raise memory request+limit (e.g. 512Mi) based on measured usage, o
           else if (/^free/.test(cmd)) key = "free -h";
           else if (/^df/.test(cmd)) key = "df -h";
         }
-        if (key) print(C[key]()); else print(t(`command not found in this simulator: ${cmd}  (type 'help')`, `הפקודה לא קיימת בסימולטור: ${cmd}  (הקלידו help)`), css("--warn"));
+        if (key) print(C[key]()); else print(t(`command not found in this simulator: ${cmd}  (type 'help')`, `הפקודה לא קיימת בסימולטור: ${cmd}  (הקלד help)`), css("--warn"));
       };
-      print(t("📟 PagerDuty: [P1] checkout — 100% of requests failing. You're on call. Type 'help' to start.", "📟 PagerDuty: [P1] checkout — 100% מהבקשות נכשלות. אתה בתורנות. הקלידו help כדי להתחיל."), css("--bad"));
+      print(t("📟 PagerDuty: [P1] checkout — 100% of requests failing. You're on call. Type 'help' to start.", "📟 PagerDuty: [P1] checkout — 100% מהבקשות נכשלות. אתה בתורנות. הקלד help כדי להתחיל."), css("--bad"));
       const inp = $("#in"); const hist = []; let hi = 0;
       inp.onkeydown = (e) => {
         if (e.key === "Enter") { hist.push(inp.value); hi = hist.length; run(inp.value); inp.value = ""; }
@@ -793,7 +793,7 @@ Fix properly: raise memory request+limit (e.g. 512Mi) based on measured usage, o
   I.sims.eviction = {
     icon: "🧹", track: "architecture",
     title: { en: "Cache eviction lab: FIFO vs LRU vs LFU", he: "מעבדת Eviction: FIFO מול LRU מול LFU" },
-    desc: { en: "Same requests, same cache size, three eviction policies side by side. Click keys yourself or play a traffic pattern and see who wins — and when LRU collapses.", he: "אותן בקשות, אותו גודל cache, שלוש מדיניות eviction זו לצד זו. לחצו על מפתחות בעצמכם או הריצו תבנית תעבורה וראו מי מנצח — ומתי LRU קורס." },
+    desc: { en: "Same requests, same cache size, three eviction policies side by side. Click keys yourself or play a traffic pattern and see who wins — and when LRU collapses.", he: "אותן בקשות, אותו גודל cache, שלוש מדיניות eviction זו לצד זו. לחץ על מפתחות בעצמך או הרץ תבנית תעבורה וראה מי מנצח — ומתי LRU קורס." },
     mount(el, H) {
       const t = T(H);
       const KEYS = "ABCDEFGHIJ".split("");
@@ -809,7 +809,7 @@ Fix properly: raise memory request+limit (e.g. 512Mi) based on measured usage, o
         <button class="btn small" id="step">⏭ ${t("Step", "צעד")}</button>
         <button class="btn small" id="reset">↺ ${t("Reset", "איפוס")}</button></div>
       <div style="display:flex;flex-wrap:wrap;gap:6px;margin:6px 0;direction:ltr">${KEYS.map(k => `<button class="btn small" data-k="${k}" style="min-width:2.4em;font-family:monospace">${k}</button>`).join("")}</div>
-      <div style="opacity:.75;font-size:.85em">${t("Click a key to request it, or use Play / Step.", "לחצו על מפתח כדי לבקש אותו, או Play / צעד.")}</div>
+      <div style="opacity:.75;font-size:.85em">${t("Click a key to request it, or use Play / Step.", "לחץ על מפתח כדי לבקש אותו, או Play / צעד.")}</div>
       <div id="seq" style="font-family:monospace;font-size:.85em;opacity:.8;min-height:1.4em;direction:ltr;text-align:left;overflow:hidden;white-space:nowrap;margin-top:4px"></div>
       <div id="cols" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-top:8px"></div>
       <div class="sim-out" id="out"></div><div class="sim-lesson" id="lesson"></div>`;
@@ -858,7 +858,7 @@ Fix properly: raise memory request+limit (e.g. 512Mi) based on measured usage, o
         }).join("");
         $("#out").innerHTML = metric(t("Requests", "בקשות"), fmt(step));
         const pat = $("#pat").value; let msg;
-        if (step < 8) msg = t("💡 Each column is the same cache size with a different eviction rule. Click keys or press Play.", "💡 כל עמודה היא אותו גודל cache עם כלל eviction אחר. לחצו על מפתחות או Play.");
+        if (step < 8) msg = t("💡 Each column is the same cache size with a different eviction rule. Click keys or press Play.", "💡 כל עמודה היא אותו גודל cache עם כלל eviction אחר. לחץ על מפתחות או Play.");
         else if (pat === "loop") msg = t("💥 Cyclic scan over N+1 keys: every policy here evicts exactly the key you need next → ~0% hits (LFU too: every key has the same count). A cache 1 slot too small is as bad as no cache. That's why databases use scan-resistant variants (Postgres ring buffers for sequential scans, InnoDB midpoint insertion).", "💥 סריקה מחזורית על N+1 מפתחות: כל המדיניות כאן מוציאות בדיוק את המפתח שיידרש הבא → כ-0% hits (גם LFU: לכל המפתחות אותו מונה). cache שקטן במשבצת אחת גרוע כמו בלי cache. בגלל זה מסדי נתונים משתמשים בגרסאות עמידות לסריקה (ring buffer ב-Postgres ל-seq scan, midpoint insertion ב-InnoDB).");
         else if (pat === "scan") msg = t("🧽 A one-off scan pollutes LRU: it pushes out the hot keys. LFU remembers that A/B/C are popular and keeps them. Modern caches (Caffeine W-TinyLFU, Redis allkeys-lfu) mix recency and frequency.", "🧽 סריקה חד-פעמית 'מזהמת' את LRU: היא דוחפת החוצה את המפתחות החמים. LFU זוכר ש-A/B/C פופולריים ומשאיר אותם. caches מודרניים (Caffeine W-TinyLFU, Redis allkeys-lfu) משלבים recency ו-frequency.");
         else if (pat === "shift") msg = t("🕰️ After the popularity shift, pure LFU clings to yesterday's heroes (A/B have big counters) while LRU adapts fast. That's why real LFU implementations decay counters over time (Redis lfu-decay-time).", "🕰️ אחרי שינוי הפופולריות, LFU טהור נאחז בלהיטים של אתמול (ל-A/B יש מונים גבוהים) בזמן ש-LRU מסתגל מהר. לכן מימושי LFU אמיתיים מדעיכים מונים עם הזמן (lfu-decay-time ב-Redis).");

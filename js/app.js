@@ -768,7 +768,7 @@ If the answer is worth keeping, also add it as a new lesson (or extend this one)
     app.innerHTML = `<h1>🤖 ${t("askTitle")}</h1>
       <p class="muted">${he ? "שלוש דרכים לקבל תשובה בלי לפתוח צ'אט או גוגל — מהמהירה לעמוקה." : "Three ways to get answers without opening a chat or Google — from fastest to deepest."}</p>
       <div class="card"><h3 style="margin-top:0">1️⃣ ${he ? "חיפוש בבסיס הידע (מיידי)" : "Search the knowledge base (instant)"}</h3>
-        <p>${he ? "כל שיעור, מונח, פקודה ותרחיש. לחצו <kbd>/</kbd> בכל מקום." : "Every lesson, term, command and scenario. Press <kbd>/</kbd> anywhere."}</p>
+        <p>${he ? "כל שיעור, מונח, פקודה ותרחיש. לחץ <kbd>/</kbd> בכל מקום." : "Every lesson, term, command and scenario. Press <kbd>/</kbd> anywhere."}</p>
         <button class="btn primary" id="askSearch">🔎 ${t("searchHint")}</button></div>
       <div class="card" style="margin-top:14px"><h3 style="margin-top:0">2️⃣ ${he ? "Claude Code בתיקיית הפרויקט — המורה הפרטי שלך" : "Claude Code in this project — your private tutor"}</h3>
         <p>${he ? "הפרויקט מגיע עם קובץ CLAUDE.md ו-skills ש\"מלמדים\" את Claude להיות מורה תשתיות. כל תשובה טובה יכולה להפוך לשיעור קבוע באפליקציה — כך הידע נצבר אצלך ולא נעלם בהיסטוריית צ'אט." : "The project ships a CLAUDE.md and skills that turn Claude into an infra tutor. Any good answer can become a permanent lesson in this app — knowledge accumulates here instead of vanishing in chat history."}</p>
@@ -779,7 +779,7 @@ If the answer is worth keeping, also add it as a new lesson (or extend this one)
         <div class="cmd"><code>/publish</code><button class="btn small" data-copy="/publish">${t("copy")}</button><div class="what">${he ? "מאמת את התוכן, עושה commit ו-push — והאתר ב-GitHub Pages מתעדכן" : "Validates content, commits and pushes — your GitHub Pages site updates"}</div></div>
       </div>
       <div class="card" style="margin-top:14px"><h3 style="margin-top:0">3️⃣ ${he ? "בונה פרומפטים (לכל Claude)" : "Prompt builder (for any Claude)"}</h3>
-        <p class="muted">${he ? "כתבו שאלה, בחרו סגנון — ומקבלים פרומפט שמחזיר תשובה בפורמט של האקדמיה." : "Type a question, pick a style — get a prompt that returns an Academy-format answer."}</p>
+        <p class="muted">${he ? "כתוב שאלה, בחר סגנון — ומקבלים פרומפט שמחזיר תשובה בפורמט של האקדמיה." : "Type a question, pick a style — get a prompt that returns an Academy-format answer."}</p>
         <textarea class="notes" id="pbQ" placeholder="${he ? "למשל: מה ההבדל בין Kafka ל-RabbitMQ ומתי לבחור כל אחד?" : "e.g. What's the difference between Kafka and RabbitMQ and when do I pick each?"}"></textarea>
         <div class="row" style="margin-top:8px">
           <select id="pbStyle" class="btn">
@@ -815,7 +815,7 @@ If the answer is worth keeping, also add it as a new lesson (or extend this one)
     I.glossary.forEach(g => idx.push({ type: "📖", href: g.lesson ? `#/lesson/${g.lesson}` : "#/glossary", title: () => g.term, sub: () => L(g.def), hay: (g.term + " " + both(g.def)).toLowerCase(), body: "" }));
     lessons.forEach(l => (l.handsOn || []).forEach(h => idx.push({ type: "⌨️", href: `#/lesson/${l.id}`, title: () => h.cmd, sub: () => strip(L(h.what)), hay: (h.cmd + " " + strip(both(h.what))).toLowerCase(), body: "" })));
     I.scenarios.forEach(s => idx.push({ type: s.kind === "design" ? "🏛️" : "📟", href: `#/${s.kind === "design" ? "decide" : "oncall"}/${s.id}`, title: () => L(s.title), sub: () => t(s.kind === "design" ? "decideTitle" : "oncallTitle"), hay: both(s.title).toLowerCase(), body: "" }));
-    (I.topQuestions || []).forEach(q => idx.push({ type: "🏆", href: `#/interview/top`, title: () => strip(L(q.q)), sub: () => (q.companies || []).join(" · "), hay: (both(q.q) + " " + (q.companies || []).join(" ")).toLowerCase(), body: strip(both(q.signal) + " " + both(q.outline)).toLowerCase() }));
+    (I.topQuestions || []).forEach(q => idx.push({ type: "🏆", href: `#/interview/top/${q.id}`, title: () => strip(L(q.q)), sub: () => (q.companies || []).join(" · "), hay: (both(q.q) + " " + (q.companies || []).join(" ")).toLowerCase(), body: strip(both(q.signal) + " " + both(q.outline)).toLowerCase() }));
     (I.designs || []).forEach(d => idx.push({ type: "🏛️", href: `#/interview/design/${d.id}`, title: () => `${d.icon || ""} ${L(d.title)}`, sub: () => strip(L(d.prompt)), hay: (both(d.title) + " " + both(d.prompt) + " " + d.id).toLowerCase(), body: strip((d.deepDives || []).map(x => both(x.h) + " " + both(x.body)).join(" ")).toLowerCase() }));
     (I.problems || []).forEach(p => idx.push({ type: "🧩", href: `#/interview/code/${p.id}`, title: () => `${p.icon || ""} ${L(p.title)}${p.leetcode ? " (LC " + p.leetcode + ")" : ""}`, sub: () => (p.tags || []).join(", "), hay: (both(p.title) + " " + (p.tags || []).join(" ") + " " + p.id + " lc" + (p.leetcode || "") + " " + (p.leetcode || "")).toLowerCase(), body: strip(both(p.statement)).toLowerCase() }));
     if (window.CQ && CQ.searchItems) CQ.searchItems(S.lang).forEach(({ u, l, text }) => idx.push({ type: "🎓", href: `#/cs/lesson/${u.id}/${l.id}`, title: () => `${l.emoji} ${l.title}`, sub: () => `${u.emoji} ${u.title}`, hay: (l.title + " " + u.title).toLowerCase(), body: strip(text).toLowerCase() }));
