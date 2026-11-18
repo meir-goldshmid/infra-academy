@@ -56,9 +56,9 @@ window.INFRA.designs.push({
 <li><strong>Re-index</strong>: 50M docs at ~20K docs/s with bulk API ≈ <strong>~45 minutes</strong> (plus enrichment time) into a new index.</li>
 </ul>`,
     he: `<ul>
-<li><strong>גודל אינדקס</strong>: ‏50M מוצרים × ~2KB של JSON מאונדקס (שם, attributes, facets) ≈ <strong>100GB</strong> של מקור; ה-inverted index וה-doc values בערך מכפילים → ~200GB ל-primary. עם replica אחת → <strong>~400GB</strong> בדיסק.</li>
-<li><strong>Sharding</strong>: יעד של 20-40GB ל-shard (ההמלצה של Elastic) → ‏200GB ÷ 30GB ≈ <strong>6-8 primaries</strong>; בוחרים 8 כדי שיתפזרו שווה על ה-data nodes.</li>
-<li><strong>עומס שאילתות</strong>: ‏5K QPS של search × fan-out ל-8 shards = ‏40K שאילתות shard בשנייה. Data node עם 16 vCPU מטפל בערך ב-1-2K שאילתות shard מורכבות בשנייה → שווה ערך CPU של 25-40 nodes, אז מוסיפים replicas (3 עותקים לכל shard) כדי לפזר קריאות: למשל <strong>12-16 data nodes</strong> של 16 vCPU ו-64GB.</li>
+<li><strong>גודל אינדקס</strong>: ‏50M מוצרים × ~2KB של JSON מאונדקס (שם, attributes, facets) ≈ <strong>100GB</strong> של מקור; ה-inverted index וה-doc values בערך מכפילים ← ~200GB ל-primary. עם replica אחת ← <strong>~400GB</strong> בדיסק.</li>
+<li><strong>Sharding</strong>: יעד של 20-40GB ל-shard (ההמלצה של Elastic) ← ‏200GB ÷ 30GB ≈ <strong>6-8 primaries</strong>; בוחרים 8 כדי שיתפזרו שווה על ה-data nodes.</li>
+<li><strong>עומס שאילתות</strong>: ‏5K QPS של search × fan-out ל-8 shards = ‏40K שאילתות shard בשנייה. Data node עם 16 vCPU מטפל בערך ב-1-2K שאילתות shard מורכבות בשנייה ← שווה ערך CPU של 25-40 nodes, אז מוסיפים replicas (3 עותקים לכל shard) כדי לפזר קריאות: למשל <strong>12-16 data nodes</strong> של 16 vCPU ו-64GB.</li>
 <li><strong>Autocomplete</strong>: ‏30K QPS אבל זעיר — אינדקס קטן נפרד של ~5M מחרוזות חיפוש פופולריות ושמות מוצרים (~2GB) כולו ב-RAM, או אפילו שירות trie בזיכרון.</li>
 <li><strong>עדכונים</strong>: ‏5M עדכונים ביום ≈ ‏60 בשנייה בממוצע, ‏peaks של ~2K בשנייה בשינוי מחירים גורף. Bulk indexing עם refresh של שנייה זול; העלות האמיתית היא segment merges.</li>
 <li><strong>Re-index</strong>: ‏50M מסמכים ב-~20K מסמכים בשנייה עם ה-bulk API ≈ <strong>~45 דקות</strong> (ועוד זמן enrichment) לאינדקס חדש.</li>
@@ -140,7 +140,7 @@ Autocomplete index: popular_queries(text, locale, count_7d, ctr) rebuilt hourly 
 <ul>
 <li><strong>Enrichment</strong>: מסמך search הוא denormalized (מוצר + מחיר + מלאי + נתיב קטגוריה + פופולריות). Job של Flink או consumer מחזיק את ה-state האחרון לכל מפתח ומוציא מסמך מלא ל-topic <strong>compacted</strong> בשם <code>search.docs</code>. בזכות ה-compaction אפשר לבנות אינדקס חדש ע"י replay של ה-topic מ-offset 0.</li>
 <li><strong>Indexing אידמפוטנטי ומסודר</strong>: משתמשים ב-<code>product_id</code> כ-<code>_id</code> וב-<code>version_type=external</code> עם ה-<code>updated_at</code> או ה-LSN מהמקור, כך ש-retry מאוחר לעולם לא דורס מידע חדש יותר.</li>
-<li><strong>טריות</strong>: ‏WAL → Kafka ‏(~100ms) + enrich ‏(~500ms) + bulk flush ‏(עד שנייה) + <code>refresh_interval=1s</code> → בדרך כלל <strong>2-3 שניות</strong> מקצה לקצה. תמדוד את זה: תוציא metric של lag מ-"commit ב-DB" עד "ניתן לחיפוש".</li>
+<li><strong>טריות</strong>: ‏WAL ← Kafka ‏(~100ms) + enrich ‏(~500ms) + bulk flush ‏(עד שנייה) + <code>refresh_interval=1s</code> ← בדרך כלל <strong>2-3 שניות</strong> מקצה לקצה. תמדוד את זה: תוציא metric של lag מ-"commit ב-DB" עד "ניתן לחיפוש".</li>
 <li><strong>מלאי זה מקרה מיוחד</strong>: ה-search יכול להיות כמה שניות מאחור, אבל ה-checkout חייב לבדוק מלאי בטרנזקציה. למוצרים שאזלו, מסננים <code>in_stock:true</code> כברירת מחדל ומקבלים חלון קטנטן של false positives.</li>
 </ul>`
       }
@@ -231,7 +231,7 @@ Autocomplete index: popular_queries(text, locale, count_7d, ctr) rebuilt hourly 
     { q: { en: "How would you add semantic search (\"shoes for a rainy hike\")?",
            he: "איך היית מוסיף search סמנטי (\"נעליים לטיול בגשם\")?" },
       a: { en: "Embed product text with an embedding model at index time (in the enricher, batched), store a dense_vector/knn_vector field with an HNSW index, and embed the query at search time (~10-20 ms with a small model, cached for popular queries). Run BM25 and kNN in parallel and fuse with reciprocal rank fusion, then LTR re-rank. Watch memory: 50M × 768 dims × 4 bytes ≈ 150 GB, so quantize (int8 → ~40 GB) or embed only the top-selling subset.",
-           he: "מייצרים embedding לטקסט המוצר עם embedding model בזמן indexing (ב-enricher, ב-batches), שומרים שדה dense_vector או knn_vector עם אינדקס HNSW, ומייצרים embedding לשאילתה בזמן החיפוש (~10-20ms עם מודל קטן, עם cache לשאילתות פופולריות). מריצים BM25 ו-kNN במקביל, ממזגים עם reciprocal rank fusion, ואז re-rank עם LTR. שים לב לזיכרון: ‏50M × 768 ממדים × 4 בייט ≈ ‏150GB, אז עושים quantization ‏(int8 → ~40GB) או embedding רק לתת-קבוצה של רבי-המכר." } },
+           he: "מייצרים embedding לטקסט המוצר עם embedding model בזמן indexing (ב-enricher, ב-batches), שומרים שדה dense_vector או knn_vector עם אינדקס HNSW, ומייצרים embedding לשאילתה בזמן החיפוש (~10-20ms עם מודל קטן, עם cache לשאילתות פופולריות). מריצים BM25 ו-kNN במקביל, ממזגים עם reciprocal rank fusion, ואז re-rank עם LTR. שים לב לזיכרון: ‏50M × 768 ממדים × 4 בייט ≈ ‏150GB, אז עושים quantization ‏(int8 ← ~40GB) או embedding רק לתת-קבוצה של רבי-המכר." } },
     { q: { en: "The cluster goes red: one primary shard is unassigned. What do you check and what do users see?",
            he: "ה-cluster נהיה red: ‏primary shard אחד לא משויך. מה בודקים ומה המשתמשים רואים?" },
       a: { en: "Users get partial results (queries succeed with _shards.failed > 0 unless allow_partial_search_results=false) and writes to that shard fail. Check GET _cluster/allocation/explain: usually a node died with no replica in another AZ, disk watermark (90% high) blocked allocation, or allocation awareness has nowhere valid to place it. Recover by freeing disk/adding nodes; worst case rebuild from the compacted Kafka topic. Prevent with ≥1 replica across AZs and disk alerts at 75%.",
@@ -293,7 +293,7 @@ window.INFRA.designs.push({
 <li><strong>Failover cost</strong>: if a shard (1/130 of the keyspace) goes cold, its 40K ops/s become DB reads — 90% hit ratio becomes 0% for that slice. The DB must absorb ~40K extra QPS for seconds, or you need request coalescing.</li>
 </ul>`,
     he: `<ul>
-<li><strong>זיכרון</strong>: ‏10TB של מידע × ~1.3 בשביל overhead לכל מפתח ו-fragmentation ≈ ‏13TB. ‏Nodes עם ~100GB שמישים (ל-r7g.4xlarge יש 128GB; משאירים מרווח ל-fork/COW ול-buffers) → <strong>~130 primaries</strong>. עם replica אחת לכל אחד → <strong>~260 nodes</strong>.</li>
+<li><strong>זיכרון</strong>: ‏10TB של מידע × ~1.3 בשביל overhead לכל מפתח ו-fragmentation ≈ ‏13TB. ‏Nodes עם ~100GB שמישים (ל-r7g.4xlarge יש 128GB; משאירים מרווח ל-fork/COW ול-buffers) ← <strong>~130 primaries</strong>. עם replica אחת לכל אחד ← <strong>~260 nodes</strong>.</li>
 <li><strong>Throughput</strong>: ‏5M ops/s ÷ 130 primaries ≈ <strong>40K ops/s ל-shard</strong> — בנוח; ליבה אחת של Redis עושה ~100K+ פעולות פשוטות בשנייה, ‏I/O threads של Redis 7 או Memcached (multi-threaded) עושים הרבה יותר. כאן הזיכרון, לא ה-CPU, קובע את מספר ה-nodes.</li>
 <li><strong>רשת</strong>: ‏5M ops/s × ~1.2KB ≈ <strong>6GB/s</strong> בסך הכל ≈ ‏46MB/s ל-node — בסדר על NIC של 10-25Gbps, אבל value חם אחד של 1MB שנקרא 10K פעמים בשנייה זה 10GB/s על node אחד. ‏Values גדולים הם הסכנה האמיתית.</li>
 <li><strong>מפתחות</strong>: ‏10TB ÷ 1KB ≈ <strong>10 מיליארד מפתחות</strong> — ~77M לכל shard.</li>
@@ -381,7 +381,7 @@ Control plane (etcd / Raft-backed, or gossip in Redis Cluster):
 <tr><th></th><th>Smart client ‏(Lettuce, ‏redis-py cluster, ‏ketama)</th><th>Proxy ‏(twemproxy, ‏Envoy, ‏mcrouter, ‏AWS ElastiCache Serverless)</th></tr>
 <tr><td>Latency</td><td>hop אחד — הכי נמוך</td><td>‏hop נוסף (~0.1-0.3ms); ‏proxy כ-sidecar שומר את זה מקומי</td></tr>
 <tr><td>Upgrades</td><td>כל שירות צריך לעדכן את הספרייה; 10 שפות = 10 מימושים עם באגים שונים</td><td>רכיב אחד לשדרג; האפליקציות מדברות פרוטוקול פשוט</td></tr>
-<tr><td>חיבורים</td><td>כל pod × כל shard → ‏5,000 pods × 130 shards = ‏650K חיבורים</td><td>ה-proxy עושה multiplexing; ה-shards רואים מעט חיבורים</td></tr>
+<tr><td>חיבורים</td><td>כל pod × כל shard ← ‏5,000 pods × 130 shards = ‏650K חיבורים</td><td>ה-proxy עושה multiplexing; ה-shards רואים מעט חיבורים</td></tr>
 <tr><td>Features</td><td>מוגבל למה שהספרייה יודעת</td><td>מקום מרכזי לחוקי routing, ‏shadow traffic, ‏replication ל-cluster אחר (mcrouter), ‏metrics</td></tr>
 </table>
 <p>Meta מריצים Memcached מאחורי <strong>mcrouter</strong> בדיוק מהסיבות האלה. ברירת מחדל טובה ב-scale: ‏proxy כ-sidecar או ברמת ה-node, ו-smart client רק לשירותים קריטיים ל-latency.</p>`
@@ -438,7 +438,7 @@ Control plane (etcd / Raft-backed, or gossip in Redis Cluster):
     { q: { en: "How do you keep the cache consistent with the database on writes?",
            he: "איך שומרים על ה-cache עקבי מול ה-database בזמן כתיבות?" },
       a: { en: "Cache-aside with delete-on-write: update the DB, then DEL the key (not SET — two concurrent writers can SET in the wrong order). A race still exists (a reader loads the old value just before the DEL lands and writes it back), so keep TTLs bounded and, for stricter needs, invalidate from CDC (Debezium on the DB WAL → consumer issues DELs, optionally a second delayed delete). Meta's memcache paper uses leases to stop stale sets.",
-           he: "Cache-aside עם מחיקה בכתיבה: מעדכנים את ה-DB ואז עושים DEL למפתח (לא SET — שני כותבים במקביל יכולים לעשות SET בסדר הפוך). עדיין יש race (קורא טוען את הערך הישן רגע לפני שה-DEL נוחת וכותב אותו בחזרה), אז שומרים על TTLs מוגבלים, ולדרישות מחמירות יותר עושים invalidation מ-CDC ‏(Debezium על ה-WAL של ה-DB → consumer ששולח DELs, אופציונלית עם מחיקה שנייה מושהית). המאמר של Meta על memcache משתמש ב-leases כדי לעצור sets ישנים." } },
+           he: "Cache-aside עם מחיקה בכתיבה: מעדכנים את ה-DB ואז עושים DEL למפתח (לא SET — שני כותבים במקביל יכולים לעשות SET בסדר הפוך). עדיין יש race (קורא טוען את הערך הישן רגע לפני שה-DEL נוחת וכותב אותו בחזרה), אז שומרים על TTLs מוגבלים, ולדרישות מחמירות יותר עושים invalidation מ-CDC ‏(Debezium על ה-WAL של ה-DB ← consumer ששולח DELs, אופציונלית עם מחיקה שנייה מושהית). המאמר של Meta על memcache משתמש ב-leases כדי לעצור sets ישנים." } },
     { q: { en: "You need to grow from 130 to 200 shards with live traffic. Walk me through it.",
            he: "צריך לגדול מ-130 ל-200 shards עם תעבורה חיה. תעביר אותי בתהליך." },
       a: { en: "Add the new empty nodes (with replicas), then migrate slots a few at a time: mark slot IMPORTING on the target and MIGRATING on the source, MIGRATE keys in batches; during migration a missing key on the source returns -ASK so the client tries the target once; when done, update the slot map with a new epoch so clients get MOVED. Throttle to protect latency, avoid big keys (they block MIGRATE), and do it off-peak. Memory per node drops gradually — no flush, no cold cache.",
@@ -446,7 +446,7 @@ Control plane (etcd / Raft-backed, or gossip in Redis Cluster):
     { q: { en: "Hit ratio dropped from 95% to 70% overnight but nothing was deployed. What do you look at?",
            he: "ה-hit ratio ירד בלילה מ-95% ל-70% ולא היה שום deploy. על מה אתה מסתכל?" },
       a: { en: "evicted_keys rising (data grew past maxmemory → working set no longer fits; scale out or shorten TTLs), a new batch job scanning keys with LRU policy, a key-naming change in a client (new version prefix = 100% cold), mass expiry from identical TTLs, a failover that brought up a cold replica after a full resync failed, or a traffic shift (new country, a bot crawling the long tail). Check INFO stats per shard: keyspace_hits/misses, evicted_keys, expired_keys, used_memory vs maxmemory.",
-           he: "evicted_keys עולה (המידע גדל מעבר ל-maxmemory → ה-working set כבר לא נכנס; עושים scale out או מקצרים TTLs), ‏batch job חדש שסורק מפתחות עם מדיניות LRU, שינוי שמות מפתחות בלקוח (prefix של גרסה חדשה = 100% קר), פקיעה המונית בגלל TTLs זהים, ‏failover שהעלה replica קר אחרי ש-full resync נכשל, או שינוי בתעבורה (מדינה חדשה, בוט שסורק את ה-long tail). בודקים INFO stats לכל shard: ‏keyspace_hits/misses, ‏evicted_keys, ‏expired_keys, ‏used_memory מול maxmemory." } },
+           he: "evicted_keys עולה (המידע גדל מעבר ל-maxmemory ← ה-working set כבר לא נכנס; עושים scale out או מקצרים TTLs), ‏batch job חדש שסורק מפתחות עם מדיניות LRU, שינוי שמות מפתחות בלקוח (prefix של גרסה חדשה = 100% קר), פקיעה המונית בגלל TTLs זהים, ‏failover שהעלה replica קר אחרי ש-full resync נכשל, או שינוי בתעבורה (מדינה חדשה, בוט שסורק את ה-long tail). בודקים INFO stats לכל shard: ‏keyspace_hits/misses, ‏evicted_keys, ‏expired_keys, ‏used_memory מול maxmemory." } },
     { q: { en: "Would you run this on Kubernetes?",
            he: "היית מריץ את זה על Kubernetes?" },
       a: { en: "Possible with a StatefulSet + operator, but be careful: pod rescheduling changes IPs (clients must use the cluster's announced hostnames), memory limits must leave headroom above maxmemory or the OOM killer takes the primary, anti-affinity must spread primaries/replicas across nodes and AZs, and node drains must trigger a controlled failover first. Many teams use managed ElastiCache/MemoryDB or dedicated VMs for large clusters and K8s for small per-team caches.",
@@ -510,10 +510,10 @@ window.INFRA.designs.push({
 </ul>`,
     he: `<ul>
 <li><strong>Secrets</strong>: ‏3,000 שירותים × ~30 secrets × 3 סביבות ≈ ‏270K secrets × 10 גרסאות × ~2KB מוצפן ≈ <strong>~5GB</strong>. האחסון זעיר; זו בעיה של latency, ‏availability ואבטחה, לא בעיית מידע.</li>
-<li><strong>קריאות</strong>: ‏50K pods, כל אחד מושך ~10 secrets בעלייה וקורא מחדש כל 5 דקות → ‏50K × 10 ÷ 300 שניות ≈ <strong>1.7K קריאות בשנייה</strong> במצב יציב; ‏rollout המוני (10K pods ב-2 דקות) מוסיף ~800 בשנייה; עם retries ו-sidecars מתכננים ל-<strong>20K קריאות בשנייה</strong> ב-peak.</li>
-<li><strong>Credentials דינמיים ל-DB</strong>: ‏TTL של שעה, ‏30K workloads עם leases → ‏30K יצירות וביטולים בשעה ≈ <strong>~17 פעולות משתמש DB בשנייה</strong> מול ה-databases — ה-databases, לא ה-secrets manager, הופכים לצוואר הבקבוק (CREATE ROLE לוקח locks).</li>
-<li><strong>Leases</strong>: ~100K leases פעילים, כל אחד רשומה קטנה עם זמן פקיעה → ‏heap של פקיעות בזיכרון ועוד רשומות שנשמרות; סערות ביטול אחרי פקיעה המונית חייבות rate limit.</li>
-<li><strong>Audit</strong>: ‏20K בקשות בשנייה × ~1KB של JSON = ‏20MB/s ≈ <strong>1.7TB ביום</strong>, ושמירה ל-7 שנים בחלק ממשטרי ה-compliance → מזרימים ל-object storage עם object lock ‏(WORM), ~500TB בשנה לפני דחיסה (~פי 10 פחות דחוס).</li>
+<li><strong>קריאות</strong>: ‏50K pods, כל אחד מושך ~10 secrets בעלייה וקורא מחדש כל 5 דקות ← ‏50K × 10 ÷ 300 שניות ≈ <strong>1.7K קריאות בשנייה</strong> במצב יציב; ‏rollout המוני (10K pods ב-2 דקות) מוסיף ~800 בשנייה; עם retries ו-sidecars מתכננים ל-<strong>20K קריאות בשנייה</strong> ב-peak.</li>
+<li><strong>Credentials דינמיים ל-DB</strong>: ‏TTL של שעה, ‏30K workloads עם leases ← ‏30K יצירות וביטולים בשעה ≈ <strong>~17 פעולות משתמש DB בשנייה</strong> מול ה-databases — ה-databases, לא ה-secrets manager, הופכים לצוואר הבקבוק (CREATE ROLE לוקח locks).</li>
+<li><strong>Leases</strong>: ~100K leases פעילים, כל אחד רשומה קטנה עם זמן פקיעה ← ‏heap של פקיעות בזיכרון ועוד רשומות שנשמרות; סערות ביטול אחרי פקיעה המונית חייבות rate limit.</li>
+<li><strong>Audit</strong>: ‏20K בקשות בשנייה × ~1KB של JSON = ‏20MB/s ≈ <strong>1.7TB ביום</strong>, ושמירה ל-7 שנים בחלק ממשטרי ה-compliance ← מזרימים ל-object storage עם object lock ‏(WORM), ~500TB בשנה לפני דחיסה (~פי 10 פחות דחוס).</li>
 <li><strong>קריאות KMS</strong>: ‏envelope encryption אומר שפונים ל-KMS רק ב-unseal וב-rotation של מפתחות, לא בכל בקשה — כמה קריאות ביום במקום 20K בשנייה (ה-quotas של KMS הם בדרך כלל 5-50K בקשות בשנייה לחשבון, ועולים $0.03 ל-10K).</li>
 </ul>`
   },
@@ -644,7 +644,7 @@ GRANT SELECT ON ALL TABLES IN SCHEMA orders TO "v-k8s-orders-ro-aB3x";</pre>
 <pre>CREATE ROLE "v-k8s-orders-ro-aB3x" WITH LOGIN PASSWORD '...' VALID UNTIL '2026-11-14 13:00:00';
 GRANT SELECT ON ALL TABLES IN SCHEMA orders TO "v-k8s-orders-ro-aB3x";</pre>
 <ul>
-<li>כל credential ייחודי ל-workload → ה-logs של ה-DB עצמו מראים בדיוק איזה pod הריץ שאילתה.</li>
+<li>כל credential ייחודי ל-workload ← ה-logs של ה-DB עצמו מראים בדיוק איזה pod הריץ שאילתה.</li>
 <li><strong>Lease</strong> ‏(TTL של שעה, ‏max TTL של 24 שעות) נשמר; ‏expiry manager ‏(min-heap של זמני פקיעה, נבנה מחדש מה-storage כשה-leader מתחלף) מריץ את ה-SQL של הביטול בזמן הפקיעה. ה-agent sidecar מחדש ב-~2/3 מה-TTL.</li>
 <li><strong>תגובה לאירוע</strong>: <code>revoke-prefix database/creds/orders</code> הורג כל credential של ה-role הזה תוך שניות — לעומת rotation של סיסמה משותפת על פני 200 deploys.</li>
 <li><strong>Pitfalls</strong>: ‏connection pools שמחזיקים sessions אחרי הביטול (ה-SQL של הביטול חייב גם לסגור sessions), ‏churn של roles ו-catalog bloat בצד ה-DB, וסערת ביטולים אם ה-secrets manager היה למטה ואלפי leases פגו בבת אחת — מבטלים עם rate limit ותור retry.</li>
@@ -665,7 +665,7 @@ GRANT SELECT ON ALL TABLES IN SCHEMA orders TO "v-k8s-orders-ro-aB3x";</pre>
         he: `<ul>
 <li><strong>HA בתוך region</strong>: ‏Raft cluster של 5 nodes על 3 AZs (שורד 2 כשלים). ‏node <strong>active</strong> אחד מטפל בכתיבות; ה-standbys מעבירים אליו. <strong>Performance standbys</strong> משרתים קריאות מקומית מהעותק ה-Raft שלהם, כך שהקריאות עושות scale אופקי.</li>
 <li><strong>בין regions</strong>: ‏Raft על פני regions היה מוסיף 60-150ms לכל כתיבה. במקום זה, ה-cluster הראשי מזרים את ה-log שלו אסינכרונית ל-<strong>performance replicas</strong> ב-regions אחרים (משרתים קריאות ו-tokens/leases מקומיים; מעבירים כתיבות ל-primary) ול-<strong>DR replica</strong> (שאפשר לקדם). כתיבות נדירות; קריאות מקומיות.</li>
-<li><strong>לתכנן למצב שה-secrets manager למטה</strong>: ‏pods שרצים לא אמורים להיות תלויים בו בכל בקשה. ה-agent שומר secrets ב-cache על tmpfs וממשיך להגיש את הערכים האחרונים; ל-credentials של DB נשארו שעות של TTL. ‏Pods חדשים לא עולים → זה ה-blast radius האמיתי. יש צוותים ששומרים bootstrap bundle מוצפן לשירותי tier-0.</li>
+<li><strong>לתכנן למצב שה-secrets manager למטה</strong>: ‏pods שרצים לא אמורים להיות תלויים בו בכל בקשה. ה-agent שומר secrets ב-cache על tmpfs וממשיך להגיש את הערכים האחרונים; ל-credentials של DB נשארו שעות של TTL. ‏Pods חדשים לא עולים ← זה ה-blast radius האמיתי. יש צוותים ששומרים bootstrap bundle מוצפן לשירותי tier-0.</li>
 <li><strong>Audit ב-fail-closed</strong>: אם כל ה-audit devices נכשלים, הבקשות נדחות — לכן מריצים לפחות 2 audit devices ‏(קובץ מקומי + socket) ומתריעים על backpressure ב-audit לפני שזה הופך ל-outage.</li>
 <li><strong>גיבויים</strong>: ‏Raft snapshots כל שעה ל-bucket בחשבון אחר — עדיין מוצפנים ע"י ה-barrier; שחזור דורש את מפתח ה-KMS, אז <strong>תגבה גם את הגישה למפתח ה-KMS</strong> ‏(multi-region key, ‏recovery מתועד).</li>
 </ul>`
@@ -694,7 +694,7 @@ GRANT SELECT ON ALL TABLES IN SCHEMA orders TO "v-k8s-orders-ro-aB3x";</pre>
     { q: { en: "How do you make the audit log tamper-evident, given that the secrets manager's admins could edit it?",
            he: "איך הופכים את ה-audit log לכזה שזיוף בו יתגלה, כשה-admins של ה-secrets manager יכולים לערוך אותו?" },
       a: { en: "Ship it off-box immediately (socket → Kafka) to storage owned by a different team/account, with S3 Object Lock in compliance mode (nobody, not even root, can delete before retention ends). Hash-chain records (each includes the hash of the previous) or periodically sign batch digests so gaps and edits are detectable. HMAC sensitive fields so the log is useful without leaking secrets, and alert when the audit stream stops.",
-           he: "שולחים אותו מחוץ למכונה מיד (socket → Kafka) לאחסון שבבעלות צוות או חשבון אחר, עם S3 Object Lock במצב compliance (אף אחד, אפילו root, לא יכול למחוק לפני תום ה-retention). עושים hash chain לרשומות (כל אחת כוללת את ה-hash של הקודמת) או חותמים מדי פעם על digest של batch, כך שחורים ועריכות יתגלו. עושים HMAC לשדות רגישים כדי שה-log יהיה שימושי בלי לדלוף secrets, ומתריעים כשזרם ה-audit נעצר." } },
+           he: "שולחים אותו מחוץ למכונה מיד (socket ← Kafka) לאחסון שבבעלות צוות או חשבון אחר, עם S3 Object Lock במצב compliance (אף אחד, אפילו root, לא יכול למחוק לפני תום ה-retention). עושים hash chain לרשומות (כל אחת כוללת את ה-hash של הקודמת) או חותמים מדי פעם על digest של batch, כך שחורים ועריכות יתגלו. עושים HMAC לשדות רגישים כדי שה-log יהיה שימושי בלי לדלוף secrets, ומתריעים כשזרם ה-audit נעצר." } },
     { q: { en: "The KMS key used for auto-unseal is accidentally scheduled for deletion. What's the impact?",
            he: "מפתח ה-KMS של ה-auto-unseal תוזמן בטעות למחיקה. מה ההשפעה?" },
       a: { en: "Running nodes keep working (keys are in memory), but any restart or new node can't unseal, and snapshots become undecryptable once the key is gone — effectively total data loss. AWS enforces a 7-30 day waiting period: alert on ScheduleKeyDeletion via CloudTrail, cancel it, restrict kms:ScheduleKeyDeletion to break-glass roles, and keep recovery keys (or a migrated Shamir seal) documented so you can re-key to a new KMS key.",
@@ -757,12 +757,12 @@ window.INFRA.designs.push({
 <li><strong>Self-hosted option</strong>: an 8×H100 node serving a 70B model with vLLM sustains roughly 2-4K output tokens/s at good batch sizes; 30 calls/s × ~200 output tokens peak ≈ 6K tok/s → 2-3 nodes + redundancy (~$25-35/hour each on-demand) — only cheaper than APIs at steady high utilization.</li>
 </ul>`,
     he: `<ul>
-<li><strong>תעבורה</strong>: ‏8K DAU × 15 הודעות = ‏120K הודעות ביום. על פני יום עבודה של 10 שעות ≈ ‏3.3 הודעות בשנייה בממוצע, <strong>~10 הודעות בשנייה ב-peak</strong>. כל הודעה יכולה להפעיל 1-4 קריאות LLM ‏(rewrite לשאילתה, תשובה, לולאת tools) → <strong>~30 קריאות LLM בשנייה ב-peak</strong>.</li>
+<li><strong>תעבורה</strong>: ‏8K DAU × 15 הודעות = ‏120K הודעות ביום. על פני יום עבודה של 10 שעות ≈ ‏3.3 הודעות בשנייה בממוצע, <strong>~10 הודעות בשנייה ב-peak</strong>. כל הודעה יכולה להפעיל 1-4 קריאות LLM ‏(rewrite לשאילתה, תשובה, לולאת tools) ← <strong>~30 קריאות LLM בשנייה ב-peak</strong>.</li>
 <li><strong>Tokens</strong>: תשובת RAG ≈ ‏6K input ‏(system prompt של 1K + היסטוריה 1K + 8 chunks × 500) + 500 output. ‏120K הודעות × 2 קריאות בממוצע × 6.5K ≈ <strong>1.5B tokens ביום</strong>, ~95% מזה input.</li>
-<li><strong>עלות</strong>: במחיר להמחשה של מודל ביניים, $3 ל-1M input ו-$15 ל-1M output: ‏input ‏1.4B × $3 = ‏$4.2K, ‏output ‏0.1B × $15 = ‏$1.5K → <strong>~$5.7K ביום ≈ $125K בחודש</strong>. ‏Prompt caching ל-prefix הקבוע (לרוב זול ב-90% ל-tokens שב-cache) ו-routing של שאלות קלות למודל קטן יכולים לחתוך 40-60%.</li>
-<li><strong>Corpus</strong>: ‏5M מסמכים × ~10 chunks = <strong>50M chunks</strong>. ‏Embeddings של 1,024 ממדים × 4 בייט = ‏4KB → ‏200GB גולמי; ‏quantization ל-int8 → ~50GB, ועוד overhead של גרף HNSW. נכנס ב-vector store מחולק ל-shards ‏(OpenSearch k-NN, ‏pgvector על כמה nodes גדולים, או vector DB מנוהל).</li>
-<li><strong>Ingestion</strong>: ~200K שינויי מסמכים ביום → ‏2M חישובי embedding מחדש ל-chunks ביום; עם embedding model מנוהל ב-~$0.02 ל-1M tokens, ‏1B tokens ≈ ‏$20 ביום. ה-backfill הראשוני של 50M chunks לוקח שעות עם batching.</li>
-<li><strong>אופציית self-hosted</strong>: ‏node של 8×H100 שמגיש מודל 70B עם vLLM מחזיק בערך 2-4K output tokens בשנייה עם batch sizes טובים; 30 קריאות בשנייה × ~200 output tokens ב-peak ≈ ‏6K tokens בשנייה → ‏2-3 nodes ועוד redundancy ‏(~$25-35 לשעה כל אחד ב-on-demand) — זול יותר מ-APIs רק בניצולת גבוהה ויציבה.</li>
+<li><strong>עלות</strong>: במחיר להמחשה של מודל ביניים, $3 ל-1M input ו-$15 ל-1M output: ‏input ‏1.4B × $3 = ‏$4.2K, ‏output ‏0.1B × $15 = ‏$1.5K ← <strong>~$5.7K ביום ≈ $125K בחודש</strong>. ‏Prompt caching ל-prefix הקבוע (לרוב זול ב-90% ל-tokens שב-cache) ו-routing של שאלות קלות למודל קטן יכולים לחתוך 40-60%.</li>
+<li><strong>Corpus</strong>: ‏5M מסמכים × ~10 chunks = <strong>50M chunks</strong>. ‏Embeddings של 1,024 ממדים × 4 בייט = ‏4KB ← ‏200GB גולמי; ‏quantization ל-int8 ← ~50GB, ועוד overhead של גרף HNSW. נכנס ב-vector store מחולק ל-shards ‏(OpenSearch k-NN, ‏pgvector על כמה nodes גדולים, או vector DB מנוהל).</li>
+<li><strong>Ingestion</strong>: ~200K שינויי מסמכים ביום ← ‏2M חישובי embedding מחדש ל-chunks ביום; עם embedding model מנוהל ב-~$0.02 ל-1M tokens, ‏1B tokens ≈ ‏$20 ביום. ה-backfill הראשוני של 50M chunks לוקח שעות עם batching.</li>
+<li><strong>אופציית self-hosted</strong>: ‏node של 8×H100 שמגיש מודל 70B עם vLLM מחזיק בערך 2-4K output tokens בשנייה עם batch sizes טובים; 30 קריאות בשנייה × ~200 output tokens ב-peak ≈ ‏6K tokens בשנייה ← ‏2-3 nodes ועוד redundancy ‏(~$25-35 לשעה כל אחד ב-on-demand) — זול יותר מ-APIs רק בניצולת גבוהה ויציבה.</li>
 </ul>`
   },
   api: `Chat (Server-Sent Events):
@@ -860,9 +860,9 @@ Traces: OpenTelemetry spans (retrieve, rerank, llm, tool) -> trace store, prompt
         he: `<p>כל קריאת LLM עוברת דרך <strong>gateway</strong> פנימי אחד (LiteLLM, ‏Envoy AI Gateway, ‏Portkey, או פיתוח פנימי) עם API תואם OpenAI. צוותים מבקשים <em>tier</em> ‏(<code>tier:fast</code>, ‏<code>tier:smart</code>), לא מודל של ספק מסוים.</p>
 <ul>
 <li><strong>Routing ו-failover</strong>: לכל tier יש primary ו-fallbacks על פני ספקים ו-regions. ב-429 או 5xx, או כש-TTFT מעל 5 שניות, עושים retry לבא בתור — אבל רק לפני שה-token הראשון נשלח למשתמש. עושים circuit break לספק כשה-error rate עובר סף.</li>
-<li><strong>תקציבים</strong>: מודדים tokens משדה ה-usage של הספק, מתמחרים, ואוכפים תקציבים לכל צוות ומשתמש (counters ב-Redis, כמו rate limiter, רק בדולרים). ‏Soft limit → הורדה ל-tier זול יותר; ‏hard limit → ‏402 עם הודעה ברורה. ‏Header של עלות מקסימלית לבקשה מגן מלולאות agent שבורחות; ול-agents יש גם הגבלת max steps.</li>
+<li><strong>תקציבים</strong>: מודדים tokens משדה ה-usage של הספק, מתמחרים, ואוכפים תקציבים לכל צוות ומשתמש (counters ב-Redis, כמו rate limiter, רק בדולרים). ‏Soft limit ← הורדה ל-tier זול יותר; ‏hard limit ← ‏402 עם הודעה ברורה. ‏Header של עלות מקסימלית לבקשה מגן מלולאות agent שבורחות; ול-agents יש גם הגבלת max steps.</li>
 <li><strong>Caching</strong>: <em>prompt caching</em> אצל הספק (קודם ה-prefix היציב: ‏system prompt, הגדרות tools, ורק אז התוכן הדינמי) חותך עלות input ו-TTFT; ‏cache של תשובות בהתאמה מדויקת עוזר לשאלות FAQ שחוזרות, אבל לעולם לא בין משתמשים עם הרשאות שונות.</li>
-<li><strong>Observability</strong>: ‏trace אחד לכל הודעה (retrieve → rerank → LLM → tools) עם tokens, עלות, latency ומודל לכל span; ‏dashboards של עלות לכל צוות, ‏TTFT ב-p95 ו-error rate לכל ספק.</li>
+<li><strong>Observability</strong>: ‏trace אחד לכל הודעה (retrieve ← rerank ← LLM ← tools) עם tokens, עלות, latency ומודל לכל span; ‏dashboards של עלות לכל צוות, ‏TTFT ב-p95 ו-error rate לכל ספק.</li>
 <li><strong>GPU מול API</strong>: ‏APIs מנצחים באיכות, אפס תפעול ועומס קופצני; מודלים open-weight ב-self-hosted על GPUs ‏(vLLM, ‏continuous batching, ‏KV cache) מנצחים כשיש data residency מחמיר, נפח יציב וגבוה מאוד, או מודלים קטנים אחרי fine-tuning ‏(classification, ‏query rewrite). הרבה פלטפורמות עושות את שניהם מאחורי אותו gateway.</li>
 </ul>`
       }
@@ -922,7 +922,7 @@ Traces: OpenTelemetry spans (retrieve, rerank, llm, tool) -> trace store, prompt
     { q: { en: "Your primary LLM provider has a 2-hour outage during a company all-hands. What happens?",
            he: "לספק ה-LLM הראשי יש outage של שעתיים בזמן all-hands של החברה. מה קורה?" },
       a: { en: "The gateway's circuit breaker trips on error rate within seconds and routes tier:smart to the fallback provider/region; prompts must be portable (avoid vendor-only features or keep per-provider prompt variants tested in evals). Capacity on the fallback may be lower → shed load by routing low-priority traffic (summaries, batch jobs) to the small/self-hosted tier and showing a degraded-mode banner. Requests already streaming fail and the UI offers retry.",
-           he: "ה-circuit breaker של ה-gateway קופץ על ה-error rate תוך שניות ומפנה את tier:smart לספק או ל-region של ה-fallback; ה-prompts חייבים להיות ניידים (להימנע מ-features ייחודיים לספק, או להחזיק גרסאות prompt לכל ספק שנבדקות ב-evals). הקיבולת ב-fallback יכולה להיות נמוכה יותר → עושים load shedding ע\"י הפניית תעבורה בעדיפות נמוכה (סיכומים, ‏batch jobs) ל-tier הקטן או ה-self-hosted, ומציגים באנר של degraded mode. בקשות שכבר באמצע streaming נכשלות וה-UI מציע retry." } },
+           he: "ה-circuit breaker של ה-gateway קופץ על ה-error rate תוך שניות ומפנה את tier:smart לספק או ל-region של ה-fallback; ה-prompts חייבים להיות ניידים (להימנע מ-features ייחודיים לספק, או להחזיק גרסאות prompt לכל ספק שנבדקות ב-evals). הקיבולת ב-fallback יכולה להיות נמוכה יותר ← עושים load shedding ע\"י הפניית תעבורה בעדיפות נמוכה (סיכומים, ‏batch jobs) ל-tier הקטן או ה-self-hosted, ומציגים באנר של degraded mode. בקשות שכבר באמצע streaming נכשלות וה-UI מציע retry." } },
     { q: { en: "Monthly spend jumped from $120K to $300K. How do you find out why?",
            he: "ההוצאה החודשית קפצה מ-$120K ל-$300K. איך מגלים למה?" },
       a: { en: "Usage is metered per request with team, user, assistant, model and token counts, so slice it: usually one team's agent looping (many steps per message), a new assistant that stuffs huge contexts, a prompt change that broke the stable prefix (cache hit rate dropped from 70% to 5%), or a batch integration calling the gateway like an API. Fix with per-team hard budgets, max steps, cache-hit-rate alerts, and a cost-per-message SLO on dashboards.",
@@ -934,7 +934,7 @@ Traces: OpenTelemetry spans (retrieve, rerank, llm, tool) -> trace store, prompt
     { q: { en: "How do you stream tokens to the browser through your load balancers and API gateway reliably?",
            he: "איך עושים streaming של tokens לדפדפן דרך ה-load balancers וה-API gateway בצורה אמינה?" },
       a: { en: "Use SSE over HTTP/1.1 or HTTP/2 with response buffering disabled at every hop (e.g. X-Accel-Buffering: no for NGINX, proxy_buffering off), idle timeouts above the longest generation (ALB default 60 s → raise to 300 s), periodic heartbeat comments to keep connections alive, and compression off for the stream. Persist the message server-side as it streams so a dropped connection can resume via message_id instead of regenerating (and paying) again.",
-           he: "משתמשים ב-SSE על HTTP/1.1 או HTTP/2 עם response buffering כבוי בכל hop (למשל X-Accel-Buffering: no ל-NGINX, ‏proxy_buffering off), ‏idle timeouts ארוכים מה-generation הכי ארוך (ברירת המחדל של ALB היא 60 שניות → מעלים ל-300), הודעות heartbeat תקופתיות כדי לשמור על החיבור, ו-compression כבוי ל-stream. שומרים את ההודעה בצד השרת תוך כדי ה-streaming, כך שחיבור שנפל יכול להמשיך לפי message_id במקום לייצר (ולשלם) מחדש." } }
+           he: "משתמשים ב-SSE על HTTP/1.1 או HTTP/2 עם response buffering כבוי בכל hop (למשל X-Accel-Buffering: no ל-NGINX, ‏proxy_buffering off), ‏idle timeouts ארוכים מה-generation הכי ארוך (ברירת המחדל של ALB היא 60 שניות ← מעלים ל-300), הודעות heartbeat תקופתיות כדי לשמור על החיבור, ו-compression כבוי ל-stream. שומרים את ההודעה בצד השרת תוך כדי ה-streaming, כך שחיבור שנפל יכול להמשיך לפי message_id במקום לייצר (ולשלם) מחדש." } }
   ],
   related: ["ai-rag-deep", "ai-llmops", "ai-llm-serving", "ai-mcp-servers", "ai-security-practice", "db-vector"]
 });
@@ -992,12 +992,12 @@ window.INFRA.designs.push({
 <li><strong>LFS</strong>: stored as objects in S3-compatible storage, deduplicated by SHA-256; can easily be larger than all git data (10+ PB), served via CDN with signed URLs.</li>
 </ul>`,
     he: `<ul>
-<li><strong>אחסון</strong>: ‏100M repos, התפלגות עם זנב כבד. ממוצע ~20MB (חציון 1MB, הזנב שולט) → <strong>~2PB</strong> של packfiles. ‏Forks חולקים objects דרך alternates ו-fork networks, אחרת זה היה פי כמה. × 3 replicas → <strong>~6PB</strong> על NVMe/SSD מקומיים בשרתי קבצים.</li>
-<li><strong>שרתי קבצים</strong>: ~40TB שמישים לשרת → ‏6PB ÷ 40TB ≈ <strong>~150 שרתי אחסון</strong> (יותר בשביל IOPS ומרווח, נגיד 250-300), מאורגנים ב-replica groups.</li>
+<li><strong>אחסון</strong>: ‏100M repos, התפלגות עם זנב כבד. ממוצע ~20MB (חציון 1MB, הזנב שולט) ← <strong>~2PB</strong> של packfiles. ‏Forks חולקים objects דרך alternates ו-fork networks, אחרת זה היה פי כמה. × 3 replicas ← <strong>~6PB</strong> על NVMe/SSD מקומיים בשרתי קבצים.</li>
+<li><strong>שרתי קבצים</strong>: ~40TB שמישים לשרת ← ‏6PB ÷ 40TB ≈ <strong>~150 שרתי אחסון</strong> (יותר בשביל IOPS ומרווח, נגיד 250-300), מאורגנים ב-replica groups.</li>
 <li><strong>קריאות git</strong>: ‏50K פעולות fetch/clone בשנייה ב-peak. רובן fetches אינקרמנטליים קטנים (KBs עד MBs), אבל clone מלא של repo של 1GB עולה CPU לבניית ה-pack ‏(<code>git pack-objects</code> עם delta compression). ‏Pack cache (שימוש חוזר באותו pack לבקשות זהות) ו-bitmaps הופכים clones חוזרים בעיקר ל-I/O.</li>
-<li><strong>Egress</strong>: אם 5% מה-fetches הם clones מלאים של 50MB בממוצע → ‏2.5K × 50MB = <strong>125GB/s</strong> ב-peak ב-edge. רוחב הפס, לא האחסון, הוא החלק היקר; לכן caching ב-CI ו-shallow clones חשובים.</li>
-<li><strong>Pushes</strong>: ‏2K בשנייה × 3 replicas, כל אחד pack קטן ועדכון ref → ‏6K כתיבות replica בשנייה, שמתפזרות בקלות על מאות שרתים; החלק הקשה הוא התיאום לכל repo, לא ה-throughput.</li>
-<li><strong>Webhooks</strong>: כל push מתפצל בממוצע ל-~3 hooks → <strong>6K מסירות בשנייה</strong>, ל-endpoints חיצוניים עם p99 של שניות → צריך workers אסינכרוניים ו-retries.</li>
+<li><strong>Egress</strong>: אם 5% מה-fetches הם clones מלאים של 50MB בממוצע ← ‏2.5K × 50MB = <strong>125GB/s</strong> ב-peak ב-edge. רוחב הפס, לא האחסון, הוא החלק היקר; לכן caching ב-CI ו-shallow clones חשובים.</li>
+<li><strong>Pushes</strong>: ‏2K בשנייה × 3 replicas, כל אחד pack קטן ועדכון ref ← ‏6K כתיבות replica בשנייה, שמתפזרות בקלות על מאות שרתים; החלק הקשה הוא התיאום לכל repo, לא ה-throughput.</li>
+<li><strong>Webhooks</strong>: כל push מתפצל בממוצע ל-~3 hooks ← <strong>6K מסירות בשנייה</strong>, ל-endpoints חיצוניים עם p99 של שניות ← צריך workers אסינכרוניים ו-retries.</li>
 <li><strong>LFS</strong>: נשמר כ-objects ב-storage תואם S3, עם dedup לפי SHA-256; יכול בקלות להיות גדול יותר מכל מידע ה-git ‏(10+PB), ומוגש דרך CDN עם signed URLs.</li>
 </ul>`
   },
@@ -1081,7 +1081,7 @@ Search: code index shards (trigram / Zoekt-style), docs = (repo_id, path, blob_s
 </ul>`,
         he: `<p>Git repos לא מתאימים באופן טבעי ל-blob store: ‏git צריך גישה אקראית מהירה להרבה objects קטנים ועדכוני ref אטומיים, וה-binary של git מצפה ל-filesystem בתקן POSIX. התשובה של GitHub ‏(<strong>DGit, ואחר כך Spokes</strong>) היא: שומרים bare repos רגילים על SSDs מקומיים, ועושים replication <strong>ברמת אפליקציית ה-git</strong>, לא ברמת הדיסק (בלי DRBD, בלי NFS).</p>
 <ul>
-<li>כל repo (בעצם כל <strong>fork network</strong>, כך ש-forks חולקים objects) יושב על <strong>3 שרתי קבצים</strong> ב-racks או AZs שונים. טבלת routing ממפה repo → replicas.</li>
+<li>כל repo (בעצם כל <strong>fork network</strong>, כך ש-forks חולקים objects) יושב על <strong>3 שרתי קבצים</strong> ב-racks או AZs שונים. טבלת routing ממפה repo ← replicas.</li>
 <li><strong>קריאות</strong> הולכות ל-replica תקין אחד כלשהו — הקריאות עושות scale עם ה-replicas, ושרת מת פשוט יוצא מבחירת ה-routing.</li>
 <li><strong>כתיבות</strong>: ה-coordinator מזרים את ה-pack הנכנס לכל 3 ה-replicas, ואז מבצע <strong>three-phase ref update</strong>: ‏(1) כל replica בודק שערכי ה-ref הישנים תואמים ונועל, (2) commit כשרוב (2 מתוך 3) מסכימים, (3) שחרור הנעילה. ‏Replica שלא מסכים מסומן כלא תקין ומתוקן מהאחרים.</li>
 <li><strong>Checksums</strong>: כל replica מחזיק checksum על כל ה-refs; השוואת checksums היא דרך זולה לזהות פיצול. ‏Job רקע של <strong>repair</strong> מסנכרן מחדש replicas פגומים, ו-job של <strong>evacuation</strong> יוצר מחדש את העותק השלישי במקום אחר כששרת מת — בלי שבן אדם יצטרך לקום ב-3 בלילה.</li>
@@ -1105,7 +1105,7 @@ Search: code index shards (trigram / Zoekt-style), docs = (repo_id, path, blob_s
 <li>Push path: <strong>pre-receive hooks</strong> enforce branch protection, file size limits (100 MB → use LFS) and secret scanning before refs update.</li>
 </ul>`,
         he: `<ol>
-<li><strong>Frontends</strong> מסיימים SSH ‏(שרת SSH ייעודי שמאפשר רק <code>git-upload-pack</code> ו-<code>git-receive-pack</code>, עם lookup של key → משתמש) או HTTPS ‏(token או basic auth), בודקים הרשאות ומנתבים ל-replica.</li>
+<li><strong>Frontends</strong> מסיימים SSH ‏(שרת SSH ייעודי שמאפשר רק <code>git-upload-pack</code> ו-<code>git-receive-pack</code>, עם lookup של key ← משתמש) או HTTPS ‏(token או basic auth), בודקים הרשאות ומנתבים ל-replica.</li>
 <li><strong>Negotiation</strong> ‏(protocol v2): הלקוח שולח את ה-refs שהוא <em>רוצה</em> ואת ה-commits ש<em>יש</em> לו; השרת עובר על הגרף כדי למצוא מה חסר. ‏Reachability bitmaps הופכים את "מה הלקוח הזה צריך?" למהיר ב-repos גדולים.</li>
 <li><strong>יצירת pack</strong>: ‏<code>pack-objects</code> בונה packfile, ומשתמש מחדש ב-deltas שכבר בדיסק כשאפשר. זה כבד ב-CPU ל-clones מלאים.</li>
 </ol>
@@ -1114,7 +1114,7 @@ Search: code index shards (trigram / Zoekt-style), docs = (repo_id, path, blob_s
 <li><strong>Pack cache</strong>: בקשות זהות (אותם wants, בלי haves) מקבלות את אותם bytes — מחשבים פעם אחת ומזרימים לכולם.</li>
 <li><strong>Bundle URIs או packfile URIs</strong>: מגישים bundle מוכן מראש של רוב ההיסטוריה מ-CDN, ואז מושכים רק את הזנב משרתי ה-git.</li>
 <li>מעודדים <strong>shallow ו-partial clones</strong> ב-CI ‏(<code>--depth=1</code>, ‏<code>--filter=blob:none</code>), ו-concurrency limits לכל repo כדי ש-monorepo אחד לא ירעיב שרת קבצים שלם.</li>
-<li>מסלול ה-push: ‏<strong>pre-receive hooks</strong> אוכפים branch protection, הגבלת גודל קבצים (100MB → משתמשים ב-LFS) ו-secret scanning לפני שה-refs מתעדכנים.</li>
+<li>מסלול ה-push: ‏<strong>pre-receive hooks</strong> אוכפים branch protection, הגבלת גודל קבצים (100MB ← משתמשים ב-LFS) ו-secret scanning לפני שה-refs מתעדכנים.</li>
 </ul>`
       }
     },
@@ -1149,7 +1149,7 @@ Search: code index shards (trigram / Zoekt-style), docs = (repo_id, path, blob_s
 </ul>`,
         he: `<p>אחרי שעדכון ה-ref עובר commit, שלב <code>post-receive</code> מפרסם אירוע אחד (<code>repo_id, ref, before, after, pusher</code>) ל-<strong>Kafka</strong>, עם <code>repo_id</code> כמפתח (סדר לכל repo). כל השאר צורכים אסינכרונית — ‏webhook endpoint איטי לעולם לא יכול להאט את ה-<code>git push</code>.</p>
 <ul>
-<li><strong>Webhook workers</strong>: מחפשים את ה-hooks הרשומים, בונים את ה-payload, חותמים עם <code>HMAC-SHA256</code> ‏(<code>X-Hub-Signature-256</code>), ושולחים POST עם timeout של 10 שניות. כשלונות נכנסים ללוח retries עם exponential backoff; כל ניסיון נרשם ב-<code>hook_deliveries</code> כדי שמשתמשים יוכלו לראות ולשלוח מחדש. המסירות הן <strong>at-least-once</strong> → הצרכנים עושים dedup לפי <code>X-Delivery-ID</code>.</li>
+<li><strong>Webhook workers</strong>: מחפשים את ה-hooks הרשומים, בונים את ה-payload, חותמים עם <code>HMAC-SHA256</code> ‏(<code>X-Hub-Signature-256</code>), ושולחים POST עם timeout של 10 שניות. כשלונות נכנסים ללוח retries עם exponential backoff; כל ניסיון נרשם ב-<code>hook_deliveries</code> כדי שמשתמשים יוכלו לראות ולשלוח מחדש. המסירות הן <strong>at-least-once</strong> ← הצרכנים עושים dedup לפי <code>X-Delivery-ID</code>.</li>
 <li><strong>בידוד</strong>: ‏concurrency limits ו-circuit breakers לכל endpoint — ‏Jenkins מת של לקוח אחד עם timeouts של 30 שניות לא יכול לצרוך את כל ה-workers ‏(bulkheads לכל tenant ובריאות לכל endpoint).</li>
 <li><strong>SSRF</strong>: כתובות ה-webhook בשליטת המשתמש; עושים resolve וחוסמים טווחים פרטיים ו-link-local ‏(169.254.169.254), ושולחים מ-egress IPs ייעודיים שלקוחות יכולים להכניס ל-allowlist.</li>
 <li><strong>CI</strong>: ה-CI המובנה נרשם לאותו stream, קורא את קבצי ה-workflow ב-SHA של <code>after</code>, מכניס jobs לתור, ומדווח בחזרה דרך ה-Checks API על <code>head_sha</code> — מה שמזין את ה-checks החובה ב-PR.</li>

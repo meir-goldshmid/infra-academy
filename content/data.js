@@ -95,9 +95,9 @@ INFRA.lessons.push({
 </ol>
 <blockquote>💡 Real world: Discord moved messages from MongoDB to Cassandra (and later ScyllaDB) because they had trillions of append-heavy messages read by channel+time — a textbook wide-column pattern. Their user/guild metadata? Still relational-friendly data.</blockquote>`,
         he: `<ol>
-<li><strong>מה ה-access patterns?</strong> אני יודע כל query מראש (→ KV/wide-column בסדר) או שהפרודקט ישאל שאלות חדשות כל שבוע (→ SQL)?</li>
-<li><strong>כמה consistency צריך?</strong> כסף, מלאי, הזמנות → ACID transactions. מוני לייקים וצפיות → eventual מספיק.</li>
-<li><strong>מה הצורה והגודל?</strong> קשרים בכל מקום → רלציוני או graph. מיליון כתיבות בשנייה של אירועים append-only → Cassandra או TSDB.</li>
+<li><strong>מה ה-access patterns?</strong> אני יודע כל query מראש (← KV/wide-column בסדר) או שהפרודקט ישאל שאלות חדשות כל שבוע (← SQL)?</li>
+<li><strong>כמה consistency צריך?</strong> כסף, מלאי, הזמנות ← ACID transactions. מוני לייקים וצפיות ← eventual מספיק.</li>
+<li><strong>מה הצורה והגודל?</strong> קשרים בכל מקום ← רלציוני או graph. מיליון כתיבות בשנייה של אירועים append-only ← Cassandra או TSDB.</li>
 <li><strong>מי יתפעל את זה?</strong> Postgres מנוהל שהצוות מבין עדיף על cluster של Cassandra self-hosted שאף אחד לא יודע לדבג בשלוש לפנות בוקר.</li>
 </ol>
 <blockquote>💡 מהשטח: Discord העבירו הודעות מ-MongoDB ל-Cassandra (ואחר כך ל-ScyllaDB) כי היו להם טריליוני הודעות append-heavy שנקראות לפי ערוץ+זמן — pattern קלאסי של wide-column. ה-metadata של משתמשים ושרתים? עדיין data שמתאים לרלציוני.</blockquote>`
@@ -324,7 +324,7 @@ Execution Time: 812.6 ms</pre>
       q: { en: "A query got slow overnight with no code change. What do you check?", he: "query נהיה איטי בין לילה בלי שינוי קוד. מה בודקים?" },
       a: {
         en: "EXPLAIN ANALYZE to see if the plan changed (e.g. index scan → seq scan), stale statistics (run ANALYZE), data growth crossing a planner threshold, table/index bloat (vacuum), lock contention (pg_stat_activity / pg_locks), and resource saturation — CPU, IOPS, a cold cache after a restart or failover.",
-        he: "EXPLAIN ANALYZE כדי לראות אם ה-plan השתנה (למשל index scan → seq scan), סטטיסטיקות ישנות (להריץ ANALYZE), גידול ב-data שעבר סף של ה-planner, bloat בטבלה או ב-index (vacuum), תחרות על locks (pg_stat_activity / pg_locks), ורוויה של משאבים — CPU, IOPS, cache קר אחרי restart או failover."
+        he: "EXPLAIN ANALYZE כדי לראות אם ה-plan השתנה (למשל index scan ← seq scan), סטטיסטיקות ישנות (להריץ ANALYZE), גידול ב-data שעבר סף של ה-planner, bloat בטבלה או ב-index (vacuum), תחרות על locks (pg_stat_activity / pg_locks), ורוויה של משאבים — CPU, IOPS, cache קר אחרי restart או failover."
       }
     },
     {
@@ -423,7 +423,7 @@ COMMIT;   -- or ROLLBACK;</pre>
       body: {
         en: `<ul><li><strong>Dirty read</strong> — T1 reads T2's <em>uncommitted</em> change; T2 rolls back; T1 acted on data that never existed.</li><li><strong>Non-repeatable read</strong> — T1 reads row X = 100, T2 commits X = 50, T1 reads X again and gets 50. Same row, different answer.</li><li><strong>Phantom read</strong> — T1 runs <code>SELECT count(*) WHERE status='open'</code> → 10; T2 inserts a new open row; T1 re-runs → 11. New rows "appear".</li><li><strong>Lost update</strong> — both read balance 100, both write 100 + 10. Final: 110, not 120. The classic read-modify-write bug.</li><li><strong>Write skew</strong> — two doctors each check "at least 2 on call?", both see yes, both go off call → zero on call. Each wrote a different row, so no row conflict detected.</li></ul>
 <p>Lost updates are the one developers hit most. Fix with an atomic update (<code>SET balance = balance + 10</code>), <code>SELECT ... FOR UPDATE</code>, or optimistic locking (<code>WHERE version = 7</code>).</p>`,
-        he: `<ul><li><strong>Dirty read</strong> — T1 קורא שינוי <em>שלא עשה commit</em> של T2; T2 עושה rollback; T1 פעל על data שמעולם לא היה קיים.</li><li><strong>Non-repeatable read</strong> — T1 קורא שורה X = 100, T2 עושה commit ל-X = 50, T1 קורא שוב ומקבל 50. אותה שורה, תשובה אחרת.</li><li><strong>Phantom read</strong> — T1 מריץ <code>SELECT count(*) WHERE status='open'</code> → 10; T2 מכניס שורה פתוחה חדשה; T1 מריץ שוב → 11. שורות חדשות "מופיעות".</li><li><strong>Lost update</strong> — שניהם קוראים balance של 100, שניהם כותבים 100 + 10. התוצאה: 110 ולא 120. באג read-modify-write קלאסי.</li><li><strong>Write skew</strong> — שני רופאים בודקים "יש לפחות 2 בתורנות?", שניהם רואים שכן, שניהם יוצאים מהתורנות → אפס בתורנות. כל אחד כתב שורה אחרת, אז לא זוהה קונפליקט.</li></ul>
+        he: `<ul><li><strong>Dirty read</strong> — T1 קורא שינוי <em>שלא עשה commit</em> של T2; T2 עושה rollback; T1 פעל על data שמעולם לא היה קיים.</li><li><strong>Non-repeatable read</strong> — T1 קורא שורה X = 100, T2 עושה commit ל-X = 50, T1 קורא שוב ומקבל 50. אותה שורה, תשובה אחרת.</li><li><strong>Phantom read</strong> — T1 מריץ <code>SELECT count(*) WHERE status='open'</code> ← 10; T2 מכניס שורה פתוחה חדשה; T1 מריץ שוב ← 11. שורות חדשות "מופיעות".</li><li><strong>Lost update</strong> — שניהם קוראים balance של 100, שניהם כותבים 100 + 10. התוצאה: 110 ולא 120. באג read-modify-write קלאסי.</li><li><strong>Write skew</strong> — שני רופאים בודקים "יש לפחות 2 בתורנות?", שניהם רואים שכן, שניהם יוצאים מהתורנות ← אפס בתורנות. כל אחד כתב שורה אחרת, אז לא זוהה קונפליקט.</li></ul>
 <p>Lost update זו האנומליה שמפתחים נתקלים בה הכי הרבה. פותרים עם update אטומי (<code>SET balance = balance + 10</code>), <code>SELECT ... FOR UPDATE</code>, או optimistic locking (<code>WHERE version = 7</code>).</p>`
       }
     },
@@ -494,7 +494,7 @@ COMMIT;   -- or ROLLBACK;</pre>
     he: "האנומליות לפי חומרה: \"Dirty, Non-repeat, Phantom\" = \"DNP: Do Not Peek\" — אל תציץ. כל isolation level מוריד עוד הצצה אחת, משמאל לימין."
   },
   pitfalls: [
-    { en: "Read-modify-write in application code (read balance, add in Python, write back) under Read Committed → lost updates. Use atomic SQL or FOR UPDATE.", he: "Read-modify-write בקוד האפליקציה (קוראים balance, מחברים ב-Python, כותבים חזרה) תחת Read Committed → lost updates. משתמשים ב-SQL אטומי או FOR UPDATE." },
+    { en: "Read-modify-write in application code (read balance, add in Python, write back) under Read Committed → lost updates. Use atomic SQL or FOR UPDATE.", he: "Read-modify-write בקוד האפליקציה (קוראים balance, מחברים ב-Python, כותבים חזרה) תחת Read Committed ← lost updates. משתמשים ב-SQL אטומי או FOR UPDATE." },
     { en: "Calling an HTTP API inside a DB transaction: the API takes 30 s, your row locks are held for 30 s, and everything queues behind them.", he: "לקרוא ל-HTTP API בתוך טרנזקציה: ה-API לוקח 30 שניות, ה-row locks מוחזקים 30 שניות, והכול נערם מאחוריהם." },
     { en: "Switching to SERIALIZABLE without adding retry logic — users now see random 40001 errors.", he: "לעבור ל-SERIALIZABLE בלי להוסיף retry — עכשיו המשתמשים רואים שגיאות 40001 אקראיות." },
     { en: "Assuming the same isolation level name means the same behavior across Postgres and MySQL. It doesn't — read the docs for your engine.", he: "להניח שאותו שם של isolation level אומר אותה התנהגות ב-Postgres וב-MySQL. זה לא — קרא את התיעוד של המנוע שלך." }
@@ -517,7 +517,7 @@ COMMIT;   -- or ROLLBACK;</pre>
   ],
   quiz: [
     {
-      q: { en: "Two requests each run: SELECT stock → 1; UPDATE SET stock = 0; both succeed and two units are sold. Which anomaly?", he: "שתי בקשות מריצות: SELECT stock → 1; UPDATE SET stock = 0; שתיהן מצליחות ונמכרו שתי יחידות. איזו אנומליה?" },
+      q: { en: "Two requests each run: SELECT stock → 1; UPDATE SET stock = 0; both succeed and two units are sold. Which anomaly?", he: "שתי בקשות מריצות: SELECT stock ← 1; UPDATE SET stock = 0; שתיהן מצליחות ונמכרו שתי יחידות. איזו אנומליה?" },
       options: [
         { en: "Dirty read", he: "Dirty read" },
         { en: "Lost update", he: "Lost update" },
@@ -614,7 +614,7 @@ INFRA.lessons.push({
 <p>Fixes for <strong>read-your-writes consistency</strong>:</p>
 <ul><li>Route a user's reads to the primary for N seconds after they write (sticky-to-primary).</li><li>Track the write's log position (Postgres LSN / MySQL GTID) and only read from a replica that has replayed past it.</li><li>Read the critical stuff (balances, permissions) from the primary always.</li></ul>
 <p>Monitor lag: Postgres <code>SELECT now() - pg_last_xact_replay_timestamp();</code> on the replica, or <code>pg_stat_replication.replay_lag</code> on the primary; MySQL <code>SHOW REPLICA STATUS</code> → <code>Seconds_Behind_Source</code>. Alert at a threshold your product can tolerate (e.g. &gt; 30 s).</p>`,
-        he: `<p>עם replicas אסינכרוניים, ה-lag בדרך כלל מילישניות — אבל תחת batch update גדול, query ארוך על ה-replica או דיסק איטי, הוא יכול לגדול לשניות או דקות. הבאג הקלאסי: משתמש מעדכן פרופיל (כתיבה → primary), הדף נטען מחדש (קריאה → replica), והשם הישן מופיע. "השמירה נכשלה?" — והנה טיקט לתמיכה.</p>
+        he: `<p>עם replicas אסינכרוניים, ה-lag בדרך כלל מילישניות — אבל תחת batch update גדול, query ארוך על ה-replica או דיסק איטי, הוא יכול לגדול לשניות או דקות. הבאג הקלאסי: משתמש מעדכן פרופיל (כתיבה ← primary), הדף נטען מחדש (קריאה ← replica), והשם הישן מופיע. "השמירה נכשלה?" — והנה טיקט לתמיכה.</p>
 <p>פתרונות ל-<strong>read-your-writes consistency</strong>:</p>
 <ul><li>מנתבים את הקריאות של משתמש ל-primary למשך N שניות אחרי שכתב (sticky-to-primary).</li><li>שומרים את מיקום הכתיבה ב-log (LSN ב-Postgres / GTID ב-MySQL) וקוראים רק מ-replica שכבר עבר אותו.</li><li>דברים קריטיים (יתרות, הרשאות) תמיד קוראים מה-primary.</li></ul>
 <p>מנטרים lag: ב-Postgres <code>SELECT now() - pg_last_xact_replay_timestamp();</code> על ה-replica, או <code>pg_stat_replication.replay_lag</code> על ה-primary; ב-MySQL <code>SHOW REPLICA STATUS</code> → <code>Seconds_Behind_Source</code>. מתריעים בסף שהמוצר יכול לסבול (למשל &gt; 30 שניות).</p>`
@@ -627,7 +627,7 @@ INFRA.lessons.push({
 <p>The hard part is <strong>"is it really dead?"</strong> A network partition makes a healthy primary <em>look</em> dead. If you promote a replica while the old primary still accepts writes, you get <strong>split brain</strong>: two primaries, diverging data, and a painful manual merge.</p>
 <p>Defenses: a <strong>consensus/quorum</strong> for leader election (majority of 3 or 5 votes, so only one side of a partition can win), <strong>fencing</strong> (STONITH — "shoot the other node in the head": cut its power, revoke its storage, or have it demote itself when it loses its lease), and an odd number of voters.</p>
 <blockquote>⚠️ Production tip: Practice failover in a game day. The first time you run it should not be during a real outage at 3 AM — and measure how long apps take to reconnect, not just how long promotion takes.</blockquote>`,
-        he: `<p><strong>Failover</strong> = מזהים שה-primary מת → בוחרים את ה-replica הכי מעודכן → עושים לו promote → מפנים את הלקוחות (DNS, VIP, proxy) → עושים fencing ל-primary הישן. כלים: Patroni (Postgres, עם etcd/Consul לבחירת leader), Orchestrator / MySQL Group Replication, או ה-failover המנוהל של הענן (RDS Multi-AZ: בדרך כלל 60-120 שניות).</p>
+        he: `<p><strong>Failover</strong> = מזהים שה-primary מת ← בוחרים את ה-replica הכי מעודכן ← עושים לו promote ← מפנים את הלקוחות (DNS, VIP, proxy) ← עושים fencing ל-primary הישן. כלים: Patroni (Postgres, עם etcd/Consul לבחירת leader), Orchestrator / MySQL Group Replication, או ה-failover המנוהל של הענן (RDS Multi-AZ: בדרך כלל 60-120 שניות).</p>
 <p>החלק הקשה הוא <strong>"הוא באמת מת?"</strong>. network partition גורם ל-primary בריא <em>להיראות</em> מת. אם עושים promote ל-replica בזמן שה-primary הישן עדיין מקבל כתיבות, מקבלים <strong>split brain</strong>: שני primaries, data שמתפצל, ו-merge ידני כואב.</p>
 <p>הגנות: <strong>consensus/quorum</strong> לבחירת leader (רוב של 3 או 5 קולות, כך שרק צד אחד של ה-partition יכול לנצח), <strong>fencing</strong> (STONITH — "Shoot The Other Node In The Head": מנתקים לו חשמל, שוללים גישה ל-storage, או שהוא עושה לעצמו demote כשה-lease פג), ומספר אי-זוגי של מצביעים.</p>
 <blockquote>⚠️ טיפ לפרודקשן: תתרגל failover ב-game day. הפעם הראשונה שאתה מריץ את זה לא צריכה להיות בתקלה אמיתית בשלוש לפנות בוקר — ותמדוד כמה זמן לוקח לאפליקציות להתחבר מחדש, לא רק כמה זמן לוקח ה-promote.</blockquote>`
@@ -799,7 +799,7 @@ CREATE TABLE events_2025_06 PARTITION OF events
 <p><strong>Directory/lookup sharding</strong>: a mapping table says "tenant 42 → shard 7". Maximum flexibility (move one tenant at a time), at the cost of an extra lookup and a critical metadata service. Vitess and many in-house SaaS setups use variants of this.</p>`,
         he: `<p><strong>Range sharding</strong>: shard 1 = keys A-F, shard 2 = G-M, ... range scans יעילים (<code>WHERE id BETWEEN ...</code> פוגע ב-shard אחד או שניים) ופיצול של טווח חם הוא טבעי. אבל keys רציפים (timestamps, auto-increment) שולחים את כל הכתיבות החדשות ל-shard האחרון. בשימוש ב-HBase, Bigtable, CockroachDB, MongoDB ranged sharding.</p>
 <p><strong>Hash sharding</strong>: <code>shard = hash(key) % N</code>. מפזר כתיבות באופן אחיד גם ל-keys רציפים, אבל range queries חייבים לפנות לכל ה-shards. וה-<code>% N</code> הנאיבי מגיע עם תכונה מגעילה: משנים N מ-4 ל-5 ובערך <strong>80% מה-keys זזים</strong>. בשימוש ב-Cassandra (עם consistent hashing), DynamoDB, Redis Cluster (16,384 hash slots).</p>
-<p><strong>Directory/lookup sharding</strong>: טבלת מיפוי אומרת "tenant 42 → shard 7". גמישות מקסימלית (מזיזים tenant אחד בכל פעם), במחיר של lookup נוסף ושירות metadata קריטי. Vitess והרבה מערכות SaaS פנימיות משתמשים בגרסאות של זה.</p>`
+<p><strong>Directory/lookup sharding</strong>: טבלת מיפוי אומרת "tenant 42 ← shard 7". גמישות מקסימלית (מזיזים tenant אחד בכל פעם), במחיר של lookup נוסף ושירות metadata קריטי. Vitess והרבה מערכות SaaS פנימיות משתמשים בגרסאות של זה.</p>`
       }
     },
     {
@@ -847,8 +847,8 @@ CREATE TABLE events_2025_06 PARTITION OF events
     he: "Shard key טוב = \"CEL\": Cardinality גבוה, Even — פיזור אחיד, Locality של queries. ו: \"עושים shard אחרון, פעם אחת, ולפי מי ששואל.\""
   },
   pitfalls: [
-    { en: "Sharding by timestamp or auto-increment with range sharding → every write hits the newest shard.", he: "Sharding לפי timestamp או auto-increment עם range sharding → כל כתיבה פוגעת ב-shard החדש ביותר." },
-    { en: "Picking a shard key most queries don't include → nearly every request becomes a scatter-gather across all shards.", he: "לבחור shard key שרוב ה-queries לא כוללים → כמעט כל בקשה הופכת ל-scatter-gather על כל ה-shards." },
+    { en: "Sharding by timestamp or auto-increment with range sharding → every write hits the newest shard.", he: "Sharding לפי timestamp או auto-increment עם range sharding ← כל כתיבה פוגעת ב-shard החדש ביותר." },
+    { en: "Picking a shard key most queries don't include → nearly every request becomes a scatter-gather across all shards.", he: "לבחור shard key שרוב ה-queries לא כוללים ← כמעט כל בקשה הופכת ל-scatter-gather על כל ה-shards." },
     { en: "Using hash % N and then needing to add shards: a near-total data reshuffle.", he: "להשתמש ב-hash % N ואז להצטרך להוסיף shards: ערבוב כמעט מוחלט של כל ה-data." },
     { en: "Sharding prematurely at 50 GB because 'we'll need it eventually' — paying complexity tax for years before it pays off.", he: "לעשות sharding מוקדם מדי ב-50 GB כי \"בסוף נצטרך\" — משלמים מס מורכבות שנים לפני שזה מחזיר את עצמו." }
   ],
@@ -857,7 +857,7 @@ CREATE TABLE events_2025_06 PARTITION OF events
       q: { en: "How would you shard a multi-tenant SaaS database, and what about one huge tenant?", he: "איך היית עושה sharding ל-DB של SaaS מרובה tenants, ומה עם tenant ענק אחד?" },
       a: {
         en: "Shard by tenant_id via a directory (tenant → shard map) so most queries are single-shard and tenants can be moved individually. Put whales on dedicated shards, or sub-shard them by a second key (tenant_id, user_id). Use global IDs (UUIDv7/Snowflake), and keep cross-tenant analytics in a warehouse fed by CDC.",
-        he: "Sharding לפי tenant_id דרך directory (מיפוי tenant → shard) כך שרוב ה-queries הם על shard יחיד ואפשר להזיז tenants אחד-אחד. לווייתנים מקבלים shards ייעודיים, או sub-sharding לפי key שני (tenant_id, user_id). IDs גלובליים (UUIDv7/Snowflake), ואנליטיקס בין tenants ב-warehouse שמוזן מ-CDC."
+        he: "Sharding לפי tenant_id דרך directory (מיפוי tenant ← shard) כך שרוב ה-queries הם על shard יחיד ואפשר להזיז tenants אחד-אחד. לווייתנים מקבלים shards ייעודיים, או sub-sharding לפי key שני (tenant_id, user_id). IDs גלובליים (UUIDv7/Snowflake), ואנליטיקס בין tenants ב-warehouse שמוזן מ-CDC."
       }
     },
     {
@@ -959,7 +959,7 @@ INFRA.lessons.push({
 <tr><td>Postgres primary + async replicas</td><td>Reads on primary: consistent; on replicas: EL</td></tr>
 </table>
 <blockquote>💡 Real world: Many systems are <em>tunable per request</em>. DynamoDB lets you pass <code>ConsistentRead=true</code> (2x the read cost); Cassandra lets you choose <code>CONSISTENCY QUORUM</code> vs <code>ONE</code> per query.</blockquote>`,
-        he: `<p>Partitions הם נדירים. מה עם 99.99% מהזמן האחר? <strong>PACELC</strong>: <em>אם Partition → בוחרים Availability או Consistency; Else (אחרת) → בוחרים Latency או Consistency.</em></p>
+        he: `<p>Partitions הם נדירים. מה עם 99.99% מהזמן האחר? <strong>PACELC</strong>: <em>אם Partition ← בוחרים Availability או Consistency; Else (אחרת) ← בוחרים Latency או Consistency.</em></p>
 <p>גם ברשת תקינה, strong consistency אומר תיאום בין replicas לפני שעונים — מחכים ל-quorum או ל-leader ב-AZ/region אחר. זה עולה מילישניות לכל פעולה (בין regions: 50-150 ms). Eventual consistency עונה מה-replica הקרוב מיד.</p>
 <table>
 <tr><th>מערכת</th><th>PACELC</th></tr>
@@ -996,7 +996,7 @@ INFRA.lessons.push({
 <blockquote>⚠️ Production tip: R+W&gt;N is about <em>overlap</em>, not magic. Clock-based last-write-wins can still drop a concurrent write. If two writers race on the same key, you need conditional writes (Cassandra LWT / DynamoDB ConditionExpression) or a single writer.</blockquote>`,
         he: `<p>במערכות בלי leader (Cassandra, stores בסגנון Dynamo, Riak), כל key נשמר על <strong>N</strong> replicas. כתיבה מצליחה כש-<strong>W</strong> replicas מאשרים; קריאה פונה ל-<strong>R</strong> replicas ולוקחת את הגרסה החדשה ביותר.</p>
 <p>אם <strong>R + W &gt; N</strong>, כל קבוצת קריאה חופפת לכל קבוצת כתיבה לפחות ב-replica אחד — אז קריאה תמיד רואה את הכתיבה האחרונה שאושרה (בהנחה שאין טריקים של sloppy quorum ושיישוב הקונפליקטים נכון).</p>
-<ul><li>N=3, W=2, R=2 → 4 &gt; 3 ✅ ה-QUORUM/QUORUM הקלאסי. שורד node אחד למטה גם בקריאה וגם בכתיבה.</li><li>N=3, W=1, R=1 → 2 ≤ 3 ❌ הכי מהיר, עלול לקרוא data ישן.</li><li>N=3, W=3, R=1 → קריאות מהירות, אבל node אחד שנופל חוסם את כל הכתיבות.</li></ul>
+<ul><li>N=3, W=2, R=2 ← 4 &gt; 3 ✅ ה-QUORUM/QUORUM הקלאסי. שורד node אחד למטה גם בקריאה וגם בכתיבה.</li><li>N=3, W=1, R=1 ← 2 ≤ 3 ❌ הכי מהיר, עלול לקרוא data ישן.</li><li>N=3, W=3, R=1 ← קריאות מהירות, אבל node אחד שנופל חוסם את כל הכתיבות.</li></ul>
 <p>ב-Cassandra: <code>CONSISTENCY LOCAL_QUORUM;</code> שומר את ה-quorum בתוך ה-DC המקומי, וחוסך latency בין regions בכל בקשה.</p>
 <blockquote>⚠️ טיפ לפרודקשן: R+W&gt;N עוסק ב<em>חפיפה</em>, לא בקסם. last-write-wins מבוסס שעון עדיין יכול להפיל כתיבה מקבילה. אם שני כותבים מתחרים על אותו key, צריך conditional writes (LWT ב-Cassandra / ConditionExpression ב-DynamoDB) או כותב יחיד.</blockquote>`
       }

@@ -569,7 +569,7 @@ git push origin release/2.3 v2.3.1</pre>
         { en: "chore: bump deps", he: "chore: bump deps" }
       ],
       answer: 2,
-      explain: { en: "The ! after the type/scope (or a BREAKING CHANGE: footer) marks a breaking change → MAJOR. feat → MINOR, fix → PATCH, chore → no release.", he: "ה-! אחרי ה-type/scope (או footer של BREAKING CHANGE:) מסמן שינוי שובר → MAJOR. feat → MINOR, fix → PATCH, chore → בלי release." }
+      explain: { en: "The ! after the type/scope (or a BREAKING CHANGE: footer) marks a breaking change → MAJOR. feat → MINOR, fix → PATCH, chore → no release.", he: "ה-! אחרי ה-type/scope (או footer של BREAKING CHANGE:) מסמן שינוי שובר ← MAJOR. feat ← MINOR, fix ← PATCH, chore ← בלי release." }
     },
     {
       q: { en: "What does 'build once, promote many' require at promotion time?", he: "מה 'build once, promote many' דורש בזמן ה-promotion?" },

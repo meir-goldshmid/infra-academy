@@ -35,7 +35,7 @@ if pid == 0:  exec("/bin/ls")      # child becomes ls
 else:         waitpid(pid)         # parent waits and reaps</code></pre>
 <div class="dev">ה-<code>BGSAVE</code> של Redis עובד בדיוק ככה: <code>fork()</code>, והילד כותב את ה-snapshot בזמן שההורה ממשיך לשרת. בזכות copy-on-write הזיכרון גדל רק בדפים שההורה משנה בזמן השמירה. לכן Redis עם הרבה כתיבות יכול לצרוך לרגע עד פי 2 RAM.</div>` },
         { type: 'input', q: 'תוכנית מריצה fork(); fork(); fork(); ואז printf("hi\\n"). בהנחה שכל fork מצליח, כמה שורות "hi" יודפסו?', answer: ['8'], placeholder: 'מספר',
-          explain: 'כל fork מכפיל את מספר התהליכים: 1 → 2 → 4 → 8. כל השמונה מגיעים ל-printf. עם n פעמים fork ברצף מקבלים 2ⁿ תהליכים. ככה בדיוק "fork bomb" ממיס מכונה (ובגלל זה קיים pids.max ב-cgroups).' },
+          explain: 'כל fork מכפיל את מספר התהליכים: 1 ← 2 ← 4 ← 8. כל השמונה מגיעים ל-printf. עם n פעמים fork ברצף מקבלים 2ⁿ תהליכים. ככה בדיוק "fork bomb" ממיס מכונה (ובגלל זה קיים pids.max ב-cgroups).' },
         { type: 'order', q: 'סדר מה קורה כשאתה מקליד ls ב-bash',
           items: ['bash קורא ל-fork() ומקבל תהליך ילד', 'הילד קורא ל-exec("/bin/ls")', 'ls רץ, מדפיס ויוצא', 'ה-wait() של bash אוסף את הילד ומציג שוב prompt'],
           explain: 'fork, exec, exit, wait. ה-shell עושה fork קודם כדי שה-exec יחליף את הילד ולא את ה-shell עצמו. בגלל זה exec ls מחליף את ה-shell שלך והסשן נסגר.' },
@@ -136,7 +136,7 @@ throttled_usec 98000000</code></pre>` },
 <p>כשה-PTE לא present (או שהגישה לא מורשית), ה-CPU מעלה <b>page fault</b> וה-kernel לוקח פיקוד:</p>
 <ul><li><b>Minor fault:</b> הדאטה כבר ב-RAM, ה-kernel רק ממפה אותו. נגיעה ראשונה בדף חדש של <code>malloc</code>, copy-on-write אחרי <code>fork()</code>, קובץ שכבר יושב ב-page cache. מיקרו-שניות.</li>
 <li><b>Major fault:</b> צריך לקרוא את הדאטה מהדיסק (swap, או <code>mmap</code> של קובץ שלא ב-cache). מילישניות על דיסק.</li>
-<li><b>גישה לא חוקית:</b> אין מיפוי בכלל, או כתיבה לזיכרון read-only → <code>SIGSEGV</code>.</li></ul>
+<li><b>גישה לא חוקית:</b> אין מיפוי בכלל, או כתיבה לזיכרון read-only ← <code>SIGSEGV</code>.</li></ul>
 <p><b>Thrashing</b>: כשסך ה-working set של כל התהליכים גדול מה-RAM, המערכת מבלה את הזמן בהעברת דפים אל ה-swap וממנו. ה-CPU נראה פנוי (<code>iowait</code> גבוה), ‏<code>si</code>/<code>so</code> ב-<code>vmstat</code> גבוהים, והכול זוחל.</p>
 <div class="dev">היסטורית Kubernetes דרש swap כבוי, אז לחץ זיכרון נגמר אחרת: כשקונטיינר עובר את ה-<code>limits.memory</code> שלו, ה-OOM killer של ה-cgroup שולח <code>SIGKILL</code> וה-Pod מציג <code>OOMKilled</code>. ה-exit code הוא 128 + מספר ה-signal.</div>` },
         { type: 'mcq', q: 'תהליך קורא קובץ גדול דרך mmap בפעם הראשונה, והדאטה לא ב-page cache. איזה סוג fault קורה?',
@@ -270,19 +270,19 @@ Thread 2: lock(B) ... lock(A)    # holds B, waits for A</code></pre>
 <ol><li><b>Mutual exclusion:</b> משאב יכול להיות מוחזק רק על ידי thread אחד.</li>
 <li><b>Hold and wait:</b> thread מחזיק משאב אחד בזמן שהוא מחכה לאחר.</li>
 <li><b>No preemption:</b> אי אפשר לקחת משאבים בכוח. רק המחזיק משחרר.</li>
-<li><b>Circular wait:</b> מעגל של "מחכה ל-": ‏T1 → T2 → ... → T1.</li></ol>
+<li><b>Circular wait:</b> מעגל של "מחכה ל-": ‏T1 ← T2 ← ... ← T1.</li></ol>
 <p>תשבור <b>אחד מהם</b>, ו-deadlock הופך לבלתי אפשרי.</p>` },
         { type: 'mcq', q: 'מה מהבאים הוא לא אחד מארבעת תנאי Coffman ל-deadlock?',
           choices: ['Mutual exclusion', 'Hold and wait', 'No preemption', 'Circular wait', 'Starvation'], answer: 4,
           explain: 'Starvation היא בעיה אחרת: thread מחכה בלי סוף בזמן שאחרים ממשיכים להתקדם. ב-deadlock אף אחד במעגל לא מתקדם.' },
         { type: 'learn', title: 'גרף הקצאת משאבים', html: `
 <p>מציירים threads כעיגולים ומשאבים כריבועים:</p>
-<ul><li><b>Request edge</b> ‏T → R: ‏T מחכה ל-R.</li>
-<li><b>Assignment edge</b> ‏R → T: ‏R מוחזק על ידי T.</li></ul>
-<p>T1 → B → T2 → A → T1 הוא מעגל, ולכן זה deadlock.</p>
+<ul><li><b>Request edge</b> ‏T ← R: ‏T מחכה ל-R.</li>
+<li><b>Assignment edge</b> ‏R ← T: ‏R מוחזק על ידי T.</li></ul>
+<p>T1 ← B ← T2 ← A ← T1 הוא מעגל, ולכן זה deadlock.</p>
 <ul><li>אם לכל משאב יש <b>מופע אחד</b>, מעגל אומר deadlock. נקודה.</li>
 <li>אם למשאבים יש <b>כמה מופעים</b> (נגיד 3 חיבורים ב-pool), מעגל הוא תנאי <i>הכרחי אבל לא מספיק</i>: thread מחוץ למעגל יכול לשחרר מופע ולשבור אותו.</li></ul>
-<div class="dev">Databases בונים בדיוק את הגרף הזה (ה-"wait-for graph": טרנזקציה → טרנזקציה) כדי לזהות deadlocks. ל-runtime של Go יש גרסה הרבה יותר פשוטה: אם <i>כל</i> ה-goroutines חסומים, הוא עושה panic עם <code>fatal error: all goroutines are asleep - deadlock!</code></div>` },
+<div class="dev">Databases בונים בדיוק את הגרף הזה (ה-"wait-for graph": טרנזקציה ← טרנזקציה) כדי לזהות deadlocks. ל-runtime של Go יש גרסה הרבה יותר פשוטה: אם <i>כל</i> ה-goroutines חסומים, הוא עושה panic עם <code>fatal error: all goroutines are asleep - deadlock!</code></div>` },
         { type: 'tf', q: 'בגרף הקצאת משאבים שבו לכל משאב יש בדיוק מופע אחד, מעגל אומר שיש deadlock.', answer: true,
           explain: 'עם מופע יחיד, כל המתנה במעגל יכולה להתמלא רק על ידי ה-thread הבא במעגל, והוא בעצמו מחכה. אף אחד לא יכול לשחרר לעולם.' },
         { type: 'learn', title: 'למנוע, להימנע, או לזהות', html: `
@@ -303,7 +303,7 @@ HINT:   See server log for query details.</code></pre>
           explain: '12 − (5 + 2 + 2) = 3. הצרכים שנשארו: P1 צריך 5, ‏P2 צריך 2, ‏P3 צריך 7.' },
         { type: 'order', q: 'אותו מצב (3 פנויות; צרכים: P1=5, P2=2, P3=7). סדר את התהליכים ב-safe sequence',
           items: ['P2', 'P1', 'P3'],
-          explain: 'רק P2 נכנס ב-3. הוא מסיים ומחזיר את ה-4 שלו → 5 פנויות. עכשיו P1 (צריך 5) יכול לסיים ומחזיר 10 → 10 פנויות. ואז P3 (צריך 7) מסיים. קיים safe sequence, אז המצב בטוח.' },
+          explain: 'רק P2 נכנס ב-3. הוא מסיים ומחזיר את ה-4 שלו ← 5 פנויות. עכשיו P1 (צריך 5) יכול לסיים ומחזיר 10 ← 10 פנויות. ואז P3 (צריך 7) מסיים. קיים safe sequence, אז המצב בטוח.' },
         { type: 'mcq', q: 'Postgres כותב ללוג "deadlock detected" בין שתי טרנזקציות. מה בעצם קרה?',
           choices: ['שתי הטרנזקציות בוטלו וה-database עשה restart', 'Postgres ביטל טרנזקציה אחת (הקורבן) כדי שהשנייה תמשיך; האפליקציה צריכה לעשות retry לזו שנכשלה', 'Postgres מחכה לנצח עד שאדמין יתערב', 'הדאטה עכשיו מושחת'], answer: 1,
           explain: 'זיהוי והתאוששות: Postgres מוצא את המעגל ב-wait-for graph, בוחר קורבן, מגלגל אותו אחורה עם שגיאה 40P01, והשורד ממשיך. שום דבר לא מושחת, אבל ה-client צריך לוגיקת retry.' }

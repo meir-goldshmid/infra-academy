@@ -16,7 +16,7 @@ window.INFRA.lessons.push({
   title: { en: "The Kubernetes Troubleshooting Playbook", he: "ה-Playbook לתחקור תקלות ב-Kubernetes" },
   tldr: {
     en: "Debug by layer: pod → service → ingress → node → cluster. At every layer: describe, events, logs --previous, -o yaml — then match the symptom to the table.",
-    he: "מתחקרים לפי שכבות: pod → service → ingress → node → cluster. בכל שכבה: describe, events, logs --previous, -o yaml – ואז מתאימים את הסימפטום לטבלה."
+    he: "מתחקרים לפי שכבות: pod ← service ← ingress ← node ← cluster. בכל שכבה: describe, events, logs --previous, -o yaml – ואז מתאימים את הסימפטום לטבלה."
   },
   analogy: {
     en: "An ER doctor doesn't start with an MRI. Triage first: is the patient breathing (pod running?), is blood flowing (traffic reaching it?), is the hospital itself on fire (node / cluster)? Each layer has a few vital signs you check in the same order every time. The status column in <code>kubectl get pods</code> is the patient's chart — <code>CrashLoopBackOff</code>, <code>Pending</code>, <code>OOMKilled</code> each point to a short list of diagnoses, and you have a standard test for each.",
@@ -312,7 +312,7 @@ $ kubectl api-resources --verbs=list --namespaced -o name | xargs -n1 kubectl ge
   interview: [
     { q: { en: "A user reports the site returns 503. Walk me through your first five minutes.", he: "משתמש מדווח שהאתר מחזיר 503. תעבור איתי על חמש הדקות הראשונות שלך." },
       a: { en: "503 from the ingress controller usually means no ready upstream. I check the controller logs to confirm which backend, then <code>kubectl get endpointslices -l kubernetes.io/service-name=X</code>. If empty, I compare the Service selector with pod labels and check pod readiness (<code>describe pod</code> → probe failures). If pods aren't running at all, I go down to the pod layer: events, <code>logs --previous</code>. I also check what changed recently (deploy history, Argo CD) because most incidents follow a change.",
-           he: "503 מה-ingress controller בדרך כלל אומר שאין upstream מוכן. בודק לוגים של ה-controller כדי לאמת לאיזה backend, ואז <code>kubectl get endpointslices -l kubernetes.io/service-name=X</code>. אם ריק – משווה את ה-selector של ה-Service ל-labels של ה-pods ובודק readiness (<code>describe pod</code> → כשלונות probe). אם ה-pods בכלל לא רצים, יורד לשכבת ה-pod: events, <code>logs --previous</code>. במקביל בודק מה השתנה לאחרונה (היסטוריית deploy, Argo CD), כי רוב האינסידנטים באים אחרי שינוי." } },
+           he: "503 מה-ingress controller בדרך כלל אומר שאין upstream מוכן. בודק לוגים של ה-controller כדי לאמת לאיזה backend, ואז <code>kubectl get endpointslices -l kubernetes.io/service-name=X</code>. אם ריק – משווה את ה-selector של ה-Service ל-labels של ה-pods ובודק readiness (<code>describe pod</code> ← כשלונות probe). אם ה-pods בכלל לא רצים, יורד לשכבת ה-pod: events, <code>logs --previous</code>. במקביל בודק מה השתנה לאחרונה (היסטוריית deploy, Argo CD), כי רוב האינסידנטים באים אחרי שינוי." } },
     { q: { en: "How do you debug a distroless container that has no shell?", he: "איך מתחקרים קונטיינר distroless שאין בו shell?" },
       a: { en: "<code>kubectl debug -it pod/x --image=nicolaka/netshoot --target=app</code> adds an ephemeral container sharing the pod's network and process namespace, so I can curl localhost, inspect <code>/proc/1/root</code>, and run tcpdump. If the pod crashes too fast, <code>--copy-to</code> with an overridden command creates a debuggable copy. For node-level issues, <code>kubectl debug node/X</code> with <code>chroot /host</code>.",
            he: "<code>kubectl debug -it pod/x --image=nicolaka/netshoot --target=app</code> מוסיף ephemeral container שחולק את ה-network וה-process namespace של ה-pod, כך שאפשר לעשות curl ל-localhost, להסתכל ב-<code>/proc/1/root</code> ולהריץ tcpdump. אם ה-pod קורס מהר מדי – <code>--copy-to</code> עם command אחר יוצר עותק שאפשר לתחקר. לבעיות ברמת ה-node – <code>kubectl debug node/X</code> עם <code>chroot /host</code>." } },
@@ -371,7 +371,7 @@ window.INFRA.lessons.push({
   title: { en: "Ingress, Gateway API, cert-manager & external-dns", he: "Ingress, Gateway API, cert-manager ו-external-dns" },
   tldr: {
     en: "Traffic edge = router (ingress-nginx → Gateway API) + certificates (cert-manager) + DNS records (external-dns). All three are controllers; debug them by reading their status objects and logs.",
-    he: "הקצה של התעבורה = נתב (ingress-nginx → Gateway API) + תעודות (cert-manager) + רשומות DNS (external-dns). שלושתם controllers; מתחקרים אותם דרך אובייקטי ה-status והלוגים שלהם."
+    he: "הקצה של התעבורה = נתב (ingress-nginx ← Gateway API) + תעודות (cert-manager) + רשומות DNS (external-dns). שלושתם controllers; מתחקרים אותם דרך אובייקטי ה-status והלוגים שלהם."
   },
   analogy: {
     en: "Think of a hotel. external-dns puts the hotel's address on Google Maps, cert-manager keeps the official license framed in the lobby (and renews it before it expires), and the ingress controller is the reception desk that reads your booking and sends you to the right room (Service). The Gateway API splits reception into roles: the owner builds the lobby (GatewayClass/Gateway) and each department manages its own room list (HTTPRoute).",
@@ -617,7 +617,7 @@ spec:
       }
     },
     {
-      h: { en: "Debugging cert-manager: Certificate → CertificateRequest → Order → Challenge", he: "תחקור cert-manager: Certificate → CertificateRequest → Order → Challenge" },
+      h: { en: "Debugging cert-manager: Certificate → CertificateRequest → Order → Challenge", he: "תחקור cert-manager: Certificate ← CertificateRequest ← Order ← Challenge" },
       body: {
         en: `<p>When a cert is not <code>READY</code>, follow the chain of objects cert-manager creates — the error is always on the <em>deepest</em> one:</p>
 <pre>$ kubectl get certificate,certificaterequest,order,challenge -n shop
@@ -744,7 +744,7 @@ level=info msg="2 record(s) were successfully updated" zoneName=example.com.</pr
   ],
   mnemonic: {
     en: "<strong>Name → Lock → Door</strong>: external-dns gives the <em>name</em>, cert-manager the <em>lock</em> (TLS), the ingress/gateway is the <em>door</em>. Status codes: <strong>3 = nobody home, 2 = rude answer, 4 = waited too long</strong>.",
-    he: "<strong>שם → מנעול → דלת</strong>: external-dns נותן את ה<em>שם</em>, cert-manager את ה<em>מנעול</em> (TLS), ה-ingress/gateway הוא ה<em>דלת</em>. קודי סטטוס: <strong>503 = אין אף אחד בבית, 502 = ענו בגסות, 504 = חיכיתי יותר מדי</strong>."
+    he: "<strong>שם ← מנעול ← דלת</strong>: external-dns נותן את ה<em>שם</em>, cert-manager את ה<em>מנעול</em> (TLS), ה-ingress/gateway הוא ה<em>דלת</em>. קודי סטטוס: <strong>503 = אין אף אחד בבית, 502 = ענו בגסות, 504 = חיכיתי יותר מדי</strong>."
   },
   pitfalls: [
     { en: "Using the Let's Encrypt production server while iterating on config. A loop of failed issuance hits rate limits and blocks real certs for days — use staging until the chain works.",
@@ -759,7 +759,7 @@ level=info msg="2 record(s) were successfully updated" zoneName=example.com.</pr
   interview: [
     { q: { en: "Why is Gateway API replacing Ingress? What does it give you that annotations didn't?", he: "למה Gateway API מחליף את Ingress? מה הוא נותן שה-annotations לא נתנו?" },
       a: { en: "Ingress only standardized host/path → service; everything else (timeouts, header matching, canary weights, TLS passthrough, gRPC) was vendor annotations, non-portable and unvalidated. Gateway API has typed, portable fields for those, supports TCP/UDP/gRPC routes, and separates roles: the platform team owns GatewayClass/Gateway (ports, certs, which namespaces may attach) while app teams own HTTPRoutes in their namespaces. Status conditions on each route make debugging explicit.",
-           he: "Ingress תקנן רק host/path → service; כל השאר (timeouts, התאמה לפי headers, משקלי canary, TLS passthrough, gRPC) היה annotations של ספקים – לא נייד ובלי ולידציה. ב-Gateway API יש לזה שדות מוגדרים וניידים, תמיכה ב-routes של TCP/UDP/gRPC, והפרדת תפקידים: צוות הפלטפורמה מחזיק GatewayClass/Gateway (פורטים, תעודות, אילו namespaces מורשים) וצוותי האפליקציה מחזיקים HTTPRoutes ב-namespaces שלהם. ה-status conditions על כל route הופכים את התחקור למפורש." } },
+           he: "Ingress תקנן רק host/path ← service; כל השאר (timeouts, התאמה לפי headers, משקלי canary, TLS passthrough, gRPC) היה annotations של ספקים – לא נייד ובלי ולידציה. ב-Gateway API יש לזה שדות מוגדרים וניידים, תמיכה ב-routes של TCP/UDP/gRPC, והפרדת תפקידים: צוות הפלטפורמה מחזיק GatewayClass/Gateway (פורטים, תעודות, אילו namespaces מורשים) וצוותי האפליקציה מחזיקים HTTPRoutes ב-namespaces שלהם. ה-status conditions על כל route הופכים את התחקור למפורש." } },
     { q: { en: "When would you pick DNS-01 over HTTP-01?", he: "מתי תבחר ב-DNS-01 על פני HTTP-01?" },
       a: { en: "For wildcard certificates (HTTP-01 can't issue them), for private/internal clusters not reachable on port 80 from the internet, and when many ingress replicas or CDNs make HTTP-01 routing unreliable. The cost is giving cert-manager write access to DNS, which I scope to specific zones and grant through workload identity rather than static keys.",
            he: "לתעודות wildcard (HTTP-01 לא יכול להנפיק אותן), ל-clusters פרטיים/פנימיים שלא נגישים מהאינטרנט בפורט 80, וכשהרבה replicas של ingress או CDN הופכים את הניתוב של HTTP-01 ללא אמין. המחיר: נותנים ל-cert-manager הרשאת כתיבה ל-DNS, ואני מגביל אותה ל-zones ספציפיים ונותן אותה דרך workload identity ולא מפתחות סטטיים." } },
@@ -972,7 +972,7 @@ NAME     CLUSTER   PARTITIONS   READY
 orders   main      12           (Terminating for 3d)
 $ kubectl get kafkatopic orders -n events -o jsonpath='{.metadata.finalizers}'
 ["strimzi.io/topic-operator"]</pre>
-<blockquote>⚠️ טיפ לפרודקשן: הסדר הנכון להסרת operator: מוחקים את ה-CRs שלו → מחכים שייעלמו (המשאבים החיצוניים נוקו) → מסירים את ה-operator → מוחקים את ה-CRDs אחרונים. אם חייבים להסיר finalizer ידנית – קודם מנקים את המשאב החיצוני שהוא שמר עליו, אחרת דולפים כסף (volumes, LBs, nodes יתומים).</blockquote>`
+<blockquote>⚠️ טיפ לפרודקשן: הסדר הנכון להסרת operator: מוחקים את ה-CRs שלו ← מחכים שייעלמו (המשאבים החיצוניים נוקו) ← מסירים את ה-operator ← מוחקים את ה-CRDs אחרונים. אם חייבים להסיר finalizer ידנית – קודם מנקים את המשאב החיצוני שהוא שמר עליו, אחרת דולפים כסף (volumes, LBs, nodes יתומים).</blockquote>`
       }
     },
     {
@@ -1000,14 +1000,14 @@ spec:
     retentionPolicy: "30d"</pre>
 <p>Those 14 lines replace a DBA's checklist: three pods across zones, streaming replication, a <code>-rw</code> Service that always points at the primary, and automated failover.</p>
 <blockquote>💡 Real world: an operator is code running with broad RBAC in your cluster. Before adopting one, check: release cadence, CRD upgrade story (Helm does <em>not</em> upgrade CRDs in <code>crds/</code>), what happens if the operator is down for an hour (workloads should keep running), and whether its capability level matches what you'd trust it with.</blockquote>`,
-        he: `<p><strong>Operator</strong> = CRDs + controller שמקודד את ה-runbook של מפעיל אנושי (התקנה, שדרוג, failover, גיבוי) כקוד. ה-<strong>capability levels</strong> של Operator Framework הם סולם בשלות שימושי: 1 Basic install → 2 Seamless upgrades → 3 Full lifecycle (גיבוי/שחזור, failover) → 4 Deep insights (מטריקות, התראות) → 5 Auto-pilot (auto-scaling, auto-tuning, self-healing).</p>
+        he: `<p><strong>Operator</strong> = CRDs + controller שמקודד את ה-runbook של מפעיל אנושי (התקנה, שדרוג, failover, גיבוי) כקוד. ה-<strong>capability levels</strong> של Operator Framework הם סולם בשלות שימושי: 1 Basic install ← 2 Seamless upgrades ← 3 Full lifecycle (גיבוי/שחזור, failover) ← 4 Deep insights (מטריקות, התראות) ← 5 Auto-pilot (auto-scaling, auto-tuning, self-healing).</p>
 <table>
 <tr><th>Operator</th><th>מה אתה כותב</th><th>מה הוא מנהל</th></tr>
 <tr><td>Prometheus Operator</td><td><code>ServiceMonitor</code>, <code>PodMonitor</code>, <code>PrometheusRule</code></td><td>StatefulSets של Prometheus/Alertmanager, scrape config, טעינת rules</td></tr>
 <tr><td>CloudNativePG</td><td><code>Cluster</code> (postgresql.cnpg.io/v1), <code>ScheduledBackup</code></td><td>Primary + replicas, failover אוטומטי, ארכוב WAL ל-S3, PITR</td></tr>
 <tr><td>Strimzi</td><td><code>Kafka</code>, <code>KafkaNodePool</code>, <code>KafkaTopic</code>, <code>KafkaUser</code></td><td>Clusters של Kafka ב-KRaft, rolling restarts, תעודות, topics ו-ACLs</td></tr>
 <tr><td>cert-manager</td><td><code>Certificate</code>, <code>ClusterIssuer</code></td><td>הנפקה, חידוש, Secrets של TLS</td></tr>
-<tr><td>Karpenter</td><td><code>NodePool</code>, <code>EC2NodeClass</code></td><td><code>NodeClaim</code>s → instances אמיתיים ב-EC2, consolidation, החלפה ב-drift</td></tr>
+<tr><td>Karpenter</td><td><code>NodePool</code>, <code>EC2NodeClass</code></td><td><code>NodeClaim</code>s ← instances אמיתיים ב-EC2, consolidation, החלפה ב-drift</td></tr>
 </table>
 <pre>apiVersion: postgresql.cnpg.io/v1
 kind: Cluster
@@ -1755,7 +1755,7 @@ prometheus:
     remoteWrite:
     - url: https://mimir.example.com/api/v1/push      # long-term storage (Mimir/Thanos/AMP/managed)
     resources: { requests: { cpu: "1", memory: 6Gi }, limits: { memory: 8Gi } }</pre>
-<p>אפליקציות חושפות <code>/metrics</code>, ומוסיפים <code>ServiceMonitor</code> ליד ה-Service שלהן; ה-operator הופך אותו ל-scrape config. אם target חסר, בודקים לפי הסדר: ה-selector של ה-ServiceMonitor תואם ל-labels של ה-Service? ה-<em>שם</em> של הפורט תואם? Prometheus בכלל בוחר את ה-ServiceMonitor (<code>kubectl get prometheus -n monitoring -o yaml | grep -A3 serviceMonitorSelector</code>)? ולבסוף ב-UI של Prometheus → Status → Targets רואים את שגיאת ה-scrape.</p>
+<p>אפליקציות חושפות <code>/metrics</code>, ומוסיפים <code>ServiceMonitor</code> ליד ה-Service שלהן; ה-operator הופך אותו ל-scrape config. אם target חסר, בודקים לפי הסדר: ה-selector של ה-ServiceMonitor תואם ל-labels של ה-Service? ה-<em>שם</em> של הפורט תואם? Prometheus בכלל בוחר את ה-ServiceMonitor (<code>kubectl get prometheus -n monitoring -o yaml | grep -A3 serviceMonitorSelector</code>)? ולבסוף ב-UI של Prometheus ← Status ← Targets רואים את שגיאת ה-scrape.</p>
 <blockquote>⚠️ טיפ לפרודקשן: הזיכרון של Prometheus גדל לפי מספר ה-<strong>active series</strong>, לא לפי התעבורה. Label אחד עם user IDs או URLs מלאים יכול להוסיף מיליוני series ולגרום ל-OOMKill של Prometheus. עוקבים אחרי <code>prometheus_tsdb_head_series</code> ומשתמשים ב-<code>topk(10, count by (__name__) ({__name__=~".+"}))</code> כדי למצוא את האשם.</blockquote>`
       }
     },
@@ -1825,7 +1825,7 @@ prometheus:
       }
     },
     {
-      h: { en: "Logs: Fluent Bit → Loki or Elastic", he: "לוגים: Fluent Bit → Loki או Elastic" },
+      h: { en: "Logs: Fluent Bit → Loki or Elastic", he: "לוגים: Fluent Bit ← Loki או Elastic" },
       body: {
         en: `<p>Containers write to stdout/stderr; the runtime stores it under <code>/var/log/pods/…</code> (symlinked from <code>/var/log/containers/*.log</code>) and the kubelet rotates it (<code>containerLogMaxSize</code> 10Mi × <code>containerLogMaxFiles</code> 5 by default). A DaemonSet agent tails those files, enriches each line with pod metadata and ships it:</p>
 <pre>[INPUT]
@@ -2020,7 +2020,7 @@ window.INFRA.lessons.push({
   title: { en: "Day-2 Kubernetes: Upgrades, PDBs, Backups & DR", he: "Kubernetes ביום 2: שדרוגים, PDBs, גיבויים ו-DR" },
   tldr: {
     en: "Kubernetes ships ~3 minors a year and each is supported for ~14 months, so upgrading is a routine: check deprecated APIs → control plane (one minor at a time) → add-ons → nodes via surge or blue/green pools, with PDBs that allow drains, and Velero/etcd backups you've actually restored.",
-    he: "Kubernetes מוציא בערך 3 גרסאות minor בשנה, וכל אחת נתמכת כ-14 חודשים, אז שדרוג הוא שגרה: בודקים APIs שהוצאו משימוש → control plane (minor אחד בכל פעם) → add-ons → nodes עם surge או blue/green pools, עם PDBs שמאפשרים drain, וגיבויי Velero/etcd שבאמת שוחזרו פעם."
+    he: "Kubernetes מוציא בערך 3 גרסאות minor בשנה, וכל אחת נתמכת כ-14 חודשים, אז שדרוג הוא שגרה: בודקים APIs שהוצאו משימוש ← control plane (minor אחד בכל פעם) ← add-ons ← nodes עם surge או blue/green pools, עם PDBs שמאפשרים drain, וגיבויי Velero/etcd שבאמת שוחזרו פעם."
   },
   analogy: {
     en: "Renovating a hotel while it stays open. You can't close every floor at once: first you upgrade the front office (control plane), then the building systems — elevators, plumbing (add-ons), then floor by floor, moving guests to fresh rooms before you gut the old ones (cordon & drain). The rule that some suites must always stay open (PDB) protects VIP guests — but if it says \"all suites always open\", the renovation stops forever. And before you start, you photograph everything and check you can actually rebuild from the photos (backups + restore drills).",
@@ -2082,7 +2082,7 @@ aws eks update-nodegroup-version --cluster-name prod --nodegroup-name general   
 <tr><td>kubelet, kube-proxy</td><td>עד 3 minors <em>ישנים</em> יותר, אף פעם לא חדש יותר</td></tr>
 <tr><td>kubectl</td><td>±1 minor</td></tr>
 </table>
-<p>לכן: <strong>control plane קודם</strong> (nodes יכולים לפגר, אף פעם לא להקדים), <strong>minor אחד בכל פעם</strong> (1.33 → 1.34 → 1.35, בלי דילוגים), אחר כך <strong>add-ons</strong> לגרסאות שתואמות ל-minor החדש, ואז <strong>nodes</strong>.</p>
+<p>לכן: <strong>control plane קודם</strong> (nodes יכולים לפגר, אף פעם לא להקדים), <strong>minor אחד בכל פעם</strong> (1.33 ← 1.34 ← 1.35, בלי דילוגים), אחר כך <strong>add-ons</strong> לגרסאות שתואמות ל-minor החדש, ואז <strong>nodes</strong>.</p>
 <pre># 0. pre-flight: deprecated APIs, add-on compatibility matrix, PDB sanity, fresh backup
 # 1. control plane (EKS example)
 aws eks update-cluster-version --name prod --kubernetes-version 1.34
@@ -2150,7 +2150,7 @@ error when evicting pods/"payments-api-6f8d9c7b5-k2x9p" -n "payments" (will retr
 Cannot evict pod as it would violate the pod's disruption budget.</pre>
 <p>Fixes: use <code>maxUnavailable: 1</code> (or a percentage) instead of <code>minAvailable</code> = replicas; scale up temporarily so a disruption is allowed; fix the <em>unhealthy</em> pods that eat the budget, and set <code>unhealthyPodEvictionPolicy: AlwaysAllow</code> so already-broken pods can always be evicted. Single-replica apps with a PDB simply can't be drained without downtime — that's the real finding.</p>
 <blockquote>⚠️ Production tip: never "solve" a hanging drain with <code>--disable-eviction</code> or force-deleting pods during an upgrade. That bypasses PDBs — exactly the protection that keeps a 3-node quorum (etcd, Kafka, ZooKeeper, Postgres) from losing two members at once.</blockquote>`,
-        he: `<p>כל שדרוג node הוא: <strong>cordon</strong> (בלי pods חדשים) → <strong>drain</strong> (evict ל-pods דרך ה-Eviction API, שמכבד PDBs) → החלפה. אסטרטגיות:</p>
+        he: `<p>כל שדרוג node הוא: <strong>cordon</strong> (בלי pods חדשים) ← <strong>drain</strong> (evict ל-pods דרך ה-Eviction API, שמכבד PDBs) ← החלפה. אסטרטגיות:</p>
 <ul>
 <li><strong>Surge / rolling</strong> – מוסיפים N nodes חדשים, עושים drain ל-N ישנים, וחוזר חלילה (<code>maxSurge</code>/<code>maxUnavailable</code> ב-AKS/EKS/GKE). זול והדרגתי.</li>
 <li><strong>Blue/green node pools</strong> – יוצרים pool חדש שלם, עושים cordon לישן, drain הדרגתי, ומשאירים את ה-pool הישן ל-rollback מהיר בתקופת soak. ב-GKE זה נתמך מובנה; במקומות אחרים יוצרים node group/NodePool שני.</li>
@@ -2274,7 +2274,7 @@ etcdutl snapshot restore /backup/etcd-2026-11-12.db --data-dir /var/lib/etcd-res
   ],
   mnemonic: {
     en: "<strong>\"Check, Brain, Organs, Body\"</strong>: Check APIs & backups → Brain (control plane) → Organs (add-ons) → Body (nodes). One minor per surgery, and the PDB is the anesthetist who can stop the operation.",
-    he: "<strong>\"בדיקה, מוח, איברים, גוף\"</strong>: בודקים APIs וגיבויים → מוח (control plane) → איברים (add-ons) → גוף (nodes). minor אחד בכל ניתוח, וה-PDB הוא המרדים שיכול לעצור את הניתוח."
+    he: "<strong>\"בדיקה, מוח, איברים, גוף\"</strong>: בודקים APIs וגיבויים ← מוח (control plane) ← איברים (add-ons) ← גוף (nodes). minor אחד בכל ניתוח, וה-PDB הוא המרדים שיכול לעצור את הניתוח."
   },
   pitfalls: [
     { en: "PDB with <code>minAvailable</code> equal to replicas (or <code>maxUnavailable: 0</code>). Drains never finish; the upgrade stalls at 2am with half the nodes on each version.",
@@ -2292,7 +2292,7 @@ etcdutl snapshot restore /backup/etcd-2026-11-12.db --data-dir /var/lib/etcd-res
            he: "Pre-flight: קוראים release notes, סורקים APIs שהוסרו (pluto/kubent, המטריקה של deprecated APIs, upgrade insights של EKS), בודקים תאימות add-ons, מוודאים ש-PDBs מאפשרים disruptions, לוקחים גיבוי Velero. עושים חזרה ב-staging. ואז משדרגים control plane, אחר כך add-ons (VPC CNI, CoreDNS, kube-proxy, EBS CSI, ואז אלה שמנוהלים ב-Helm), ואז nodes – managed node groups עם surge או node group חדש, או drift של Karpenter ע״י החלפת ה-AMI. לאורך כל הדרך עוקבים אחרי התראות ו-SLOs, ומשאירים את ה-node pool הישן לזמן קצר בשביל rollback." } },
     { q: { en: "A drain has been hanging for 20 minutes during a node upgrade. What do you check?", he: "Drain תקוע כבר 20 דקות באמצע שדרוג nodes. מה בודקים?" },
       a: { en: "The drain output names the pod and says it would violate a PDB. <code>kubectl get pdb -A</code> → ALLOWED DISRUPTIONS 0. Then why: minAvailable equals replicas, maxUnavailable 0, or some replicas are unhealthy/Pending elsewhere so the budget is already consumed. Fix the cause — scale up, heal the unhealthy pods, change the PDB to maxUnavailable 1 with the owning team, set unhealthyPodEvictionPolicy AlwaysAllow. I wouldn't force-delete; that defeats the protection for quorum-based systems.",
-           he: "הפלט של ה-drain מציין את ה-pod ואומר שזה יפר PDB. <code>kubectl get pdb -A</code> → ALLOWED DISRUPTIONS 0. ואז למה: minAvailable שווה ל-replicas, maxUnavailable 0, או שחלק מה-replicas לא בריאים/Pending במקום אחר אז התקציב כבר נוצל. מתקנים את הסיבה – scale up, מבריאים את ה-pods הלא בריאים, משנים את ה-PDB ל-maxUnavailable 1 יחד עם הצוות הבעלים, מגדירים unhealthyPodEvictionPolicy AlwaysAllow. לא הייתי עושה force delete; זה מבטל את ההגנה למערכות שמבוססות quorum." } },
+           he: "הפלט של ה-drain מציין את ה-pod ואומר שזה יפר PDB. <code>kubectl get pdb -A</code> ← ALLOWED DISRUPTIONS 0. ואז למה: minAvailable שווה ל-replicas, maxUnavailable 0, או שחלק מה-replicas לא בריאים/Pending במקום אחר אז התקציב כבר נוצל. מתקנים את הסיבה – scale up, מבריאים את ה-pods הלא בריאים, משנים את ה-PDB ל-maxUnavailable 1 יחד עם הצוות הבעלים, מגדירים unhealthyPodEvictionPolicy AlwaysAllow. לא הייתי עושה force delete; זה מבטל את ההגנה למערכות שמבוססות quorum." } },
     { q: { en: "How do you design backup and DR for workloads on Kubernetes?", he: "איך מתכננים גיבוי ו-DR ל-workloads על Kubernetes?" },
       a: { en: "Separate the layers: desired state from Git (GitOps can rebuild a cluster), cluster objects not in Git plus volumes via Velero to object storage in another region, and databases with native, application-consistent backups (WAL archiving/PITR). Define RPO/RTO per service, automate cluster creation (Terraform), and run regular restore drills into a fresh cluster to measure the real RTO and find gaps like missing CRDs or region-specific StorageClasses.",
            he: "מפרידים שכבות: ה-desired state מ-Git (GitOps יכול לבנות cluster מחדש), אובייקטי cluster שלא ב-Git יחד עם volumes דרך Velero ל-object storage ב-region אחר, ו-databases עם גיבויים native ו-application-consistent (ארכוב WAL/PITR). מגדירים RPO/RTO לכל שירות, הופכים יצירת cluster לאוטומטית (Terraform), ומריצים תרגולי שחזור קבועים ל-cluster חדש כדי למדוד את ה-RTO האמיתי ולמצוא חורים כמו CRDs חסרים או StorageClasses שתלויים ב-region." } }

@@ -191,7 +191,7 @@ HAVING COUNT(*) &gt; 10 OR COUNT(DISTINCT country) &gt; 2;
 
 -- Sliding version (catches bursts that straddle a boundary): 5 min windows every 1 min
 -- FROM TABLE(HOP(TABLE payments, DESCRIPTOR(ts), INTERVAL '1' MINUTES, INTERVAL '5' MINUTES))</pre>
-<p>חישוב גודל ה-state: ~3M כרטיסים פעילים ב-5 דקות × (count + sum + קבוצה קטנה של מדינות ≈ 100 bytes) ≈ 300 MB לחלון. Tumbling מחזיק בחיים 1-2 חלונות (הנוכחי ומי שמחכה ל-watermark): מספיק heap. גרסת ה-HOP מחזיקה 5 חלונות חופפים: ~1.5 GB, עדיין בסדר, אבל session window של 24 שעות לכל כרטיס זה הרבה GB → RocksDB.</p>
+<p>חישוב גודל ה-state: ~3M כרטיסים פעילים ב-5 דקות × (count + sum + קבוצה קטנה של מדינות ≈ 100 bytes) ≈ 300 MB לחלון. Tumbling מחזיק בחיים 1-2 חלונות (הנוכחי ומי שמחכה ל-watermark): מספיק heap. גרסת ה-HOP מחזיקה 5 חלונות חופפים: ~1.5 GB, עדיין בסדר, אבל session window של 24 שעות לכל כרטיס זה הרבה GB ← RocksDB.</p>
 <p>תקציב latency: 30 שניות של out-of-orderness ועוד אורך החלון. התפרצות ב-10:00:10 תדווח בערך ב-10:05:30 עם tumbling, ובמקרה הטוב ב-10:01:30 עם hop. אם הביזנס צריך "לחסום תוך 2 שניות", חלונות הם הכלי הלא נכון: משתמשים ב-keyed process function עם state ו-timers לכל event (או rule engine בזמן ה-authorization), ומשאירים את החלונות לדיווח.</p>
 <blockquote>💡 מהשטח: ההחלטה מה לעשות עם late data היא החלטה עסקית. בהונאות, תשלום שמגיע באיחור של 10 דקות עדיין מעניין — מנתבים late events ל-side output topic ש-job שני מנקד, במקום לזרוק אותם בשקט.</blockquote>`
       }
@@ -381,7 +381,7 @@ value.converter.schema.registry.url=http://schema-registry:8081</pre>
 <pre>INSERT INTO debezium_signal (id, type, data) VALUES (
   gen_random_uuid()::text, 'execute-snapshot',
   '{"data-collections": ["public.invoices"], "type": "incremental"}');</pre>
-<p><strong>שינויי סכמה</strong>: ב-Postgres ה-pgoutput שולח relation message עם העמודות החדשות, Debezium מעדכן את הסכמה של ה-event, ועם Avro נרשמת גרסה חדשה ב-Schema Registry. שינויים שמוסיפים (עמודה חדשה nullable) עוברים חלק. <strong>מחיקה או שינוי שם של עמודה, או שינוי טיפוס, זה breaking change לכל צרכן</strong> — מעבירים את זה דרך אותם כללי compatibility כמו כל API ציבורי (expand → migrate → contract). שים לב: logical decoding של Postgres <em>לא</em> שולח events של DDL; ה-binlog של MySQL כן, ו-Debezium שומר אותם ב-schema history topic.</p>
+<p><strong>שינויי סכמה</strong>: ב-Postgres ה-pgoutput שולח relation message עם העמודות החדשות, Debezium מעדכן את הסכמה של ה-event, ועם Avro נרשמת גרסה חדשה ב-Schema Registry. שינויים שמוסיפים (עמודה חדשה nullable) עוברים חלק. <strong>מחיקה או שינוי שם של עמודה, או שינוי טיפוס, זה breaking change לכל צרכן</strong> — מעבירים את זה דרך אותם כללי compatibility כמו כל API ציבורי (expand ← migrate ← contract). שים לב: logical decoding של Postgres <em>לא</em> שולח events של DDL; ה-binlog של MySQL כן, ו-Debezium שומר אותם ב-schema history topic.</p>
 <blockquote>💡 מהשטח: אף פעם אל תגיד "זה רק rename לעמודה". rename אחד למעלה שבר 14 מודלים של dbt למטה בחברה אחת; התיקון היה contract על ה-CDC topic ובדיקת CI שמריצה את המיגרציה מול ה-compatibility של Schema Registry (ראה את השיעור על data contracts).</blockquote>`
       }
     },
@@ -517,7 +517,7 @@ INFRA.lessons.push({
   title: { en: "Lakehouse Table Formats: Iceberg, Delta, Hudi", he: "Table formats ל-Lakehouse: Iceberg, Delta ו-Hudi" },
   tldr: {
     en: "A folder of Parquet files is not a table: there are no atomic commits, no safe concurrent writers and no cheap way to find the right files. Table formats add a metadata layer (snapshots → manifests → data files) and a catalog pointer, giving S3 ACID commits, time travel, schema and partition evolution — and they need regular compaction.",
-    he: "תיקייה של קבצי Parquet היא לא טבלה: אין commits אטומיים, אין כותבים מקבילים בטוחים, ואין דרך זולה למצוא את הקבצים הנכונים. Table formats מוסיפים שכבת metadata (snapshots → manifests → data files) ומצביע ב-catalog, ונותנים ל-S3 commits עם ACID, time travel, schema evolution ו-partition evolution — והם צריכים compaction קבוע."
+    he: "תיקייה של קבצי Parquet היא לא טבלה: אין commits אטומיים, אין כותבים מקבילים בטוחים, ואין דרך זולה למצוא את הקבצים הנכונים. Table formats מוסיפים שכבת metadata (snapshots ← manifests ← data files) ומצביע ב-catalog, ונותנים ל-S3 commits עם ACID, time travel, schema evolution ו-partition evolution — והם צריכים compaction קבוע."
   },
   analogy: {
     en: "A warehouse full of boxes (Parquet files) with no inventory system: to find red shirts you open every box, and if two workers restock at the same time, shelves end up half-updated. Iceberg is the inventory ledger at the door: each page (snapshot) lists exactly which boxes make up the stock right now, with notes on what's in each box. Restocking means writing a new page and swapping the bookmark in one move. Want last Tuesday's stock? Read last Tuesday's page.",
@@ -594,7 +594,7 @@ ALTER TABLE lake.db.events REPLACE PARTITION FIELD days(event_ts) WITH hours(eve
                          |  path, partition, record count, per-column min/max/nulls
                          v
            data files (Parquet)  +  delete files (position / equality / deletion vectors)</pre>
-<p><strong>Commit</strong>: כותבים data files חדשים → כותבים manifests חדשים → כותבים manifest list חדש → כותבים <code>metadata.json</code> חדש → מבקשים מה-catalog להחליף את המצביע באופן אטומי <em>אם הוא עדיין מצביע על הגרסה שממנה התחלתי</em> (optimistic concurrency). אם כותב אחר ניצח, מנסים שוב מעל הגרסה החדשה. קוראים תמיד רואים snapshot שלם אחד.</p>
+<p><strong>Commit</strong>: כותבים data files חדשים ← כותבים manifests חדשים ← כותבים manifest list חדש ← כותבים <code>metadata.json</code> חדש ← מבקשים מה-catalog להחליף את המצביע באופן אטומי <em>אם הוא עדיין מצביע על הגרסה שממנה התחלתי</em> (optimistic concurrency). אם כותב אחר ניצח, מנסים שוב מעל הגרסה החדשה. קוראים תמיד רואים snapshot שלם אחד.</p>
 <p>ה-planning של שאילתה קורא את ה-manifest list וה-manifests (כמה קבצים בודדים), ועושה pruning לפי טווחי partitions ו-min/max של עמודות — בלי שום S3 LIST.</p>
 <pre>-- Spark SQL
 CREATE TABLE lake.db.events (
@@ -729,7 +729,7 @@ SELECT type, count(*) FROM iceberg_scan('s3://lake/events/metadata/00042-a1b2.me
 <table>
 <tr><th>מנוע</th><th>תפקיד טיפוסי</th></tr>
 <tr><td>Spark</td><td>ETL כבד, upserts עם MERGE INTO, פרוצדורות תחזוקה</td></tr>
-<tr><td>Flink / Kafka Connect</td><td>Ingestion בסטרימינג (CDC → upserts ל-Iceberg)</td></tr>
+<tr><td>Flink / Kafka Connect</td><td>Ingestion בסטרימינג (CDC ← upserts ל-Iceberg)</td></tr>
 <tr><td>Trino / Starburst</td><td>SQL אינטראקטיבי על ה-lake ועל דאטהבייסים אחרים</td></tr>
 <tr><td>Athena</td><td>SQL בלי שרתים ב-AWS, משלמים $5 לכל TB שנסרק</td></tr>
 <tr><td>Snowflake, BigQuery, Redshift</td><td>מנועי warehouse שקוראים וכותבים טבלאות Iceberg חיצוניות</td></tr>
@@ -1044,7 +1044,7 @@ jobs:
           datacontract lint contracts/orders-paid.yaml
           datacontract breaking contracts/orders-paid.yaml origin/main:contracts/orders-paid.yaml</pre>
 <p>ב-Protobuf, <code>buf breaking --against '.git#branch=main'</code> עושה אותו דבר. רושמים סכמות מה-CI (ה-pipeline הוא הזהות היחידה שמורשית לכתוב), אף פעם לא מהאפליקציות.</p>
-<p><strong>כשבאמת חייבים לשבור</strong>: יוצרים topic חדש עם major version (<code>orders.order-paid.v2</code>), מפרסמים לשניהם (או מגשרים v1 → v2 עם stream job קטן), מעבירים צרכנים אחד-אחד לפי רשימת הצרכנים ב-contract, מחכים שה-lag של ה-consumer groups על v1 יגיע לאפס ויישאר בלי פעילות, ואז קובעים תאריך sunset ומוחקים את v1. אותו קצב של expand → migrate → contract כמו במיגרציה של דאטהבייס.</p>
+<p><strong>כשבאמת חייבים לשבור</strong>: יוצרים topic חדש עם major version (<code>orders.order-paid.v2</code>), מפרסמים לשניהם (או מגשרים v1 ← v2 עם stream job קטן), מעבירים צרכנים אחד-אחד לפי רשימת הצרכנים ב-contract, מחכים שה-lag של ה-consumer groups על v1 יגיע לאפס ויישאר בלי פעילות, ואז קובעים תאריך sunset ומוחקים את v1. אותו קצב של expand ← migrate ← contract כמו במיגרציה של דאטהבייס.</p>
 <blockquote>⚠️ טיפ לפרודקשן: אף פעם אל "תתקן" סכמה גרועה על ידי מחיקת גרסת ה-subject ב-registry. הודעות שכבר ב-Kafka עדיין נושאות את ה-schema ID הזה; צרכנים שינסו להביא אותו מאוחר יותר ייכשלו ב-deserialization. רק soft-delete, ורק כשאין נתונים שמפנים אליו.</blockquote>`
       }
     }

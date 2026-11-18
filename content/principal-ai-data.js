@@ -14,7 +14,7 @@ INFRA.lessons.push({
   title: { en: "AI Systems Design: RAG, Evals, Guardrails, Cost & Latency", he: "תכנון מערכות AI: RAG, Evals, Guardrails, עלות ו-latency" },
   tldr: {
     en: "Treat the LLM as an unreliable, expensive, slow dependency: climb the ladder (prompt → RAG → fine-tune → agent) only as far as you must, prove quality with evals, fence it with guardrails, and budget tokens like you budget latency.",
-    he: "מתייחסים ל-LLM כמו ל-dependency לא אמין, יקר ואיטי: עולים בסולם (prompt → RAG → fine-tune → agent) רק כמה שחייבים, מוכיחים איכות עם evals, מגדרים עם guardrails, ומתקצבים tokens כמו שמתקצבים latency."
+    he: "מתייחסים ל-LLM כמו ל-dependency לא אמין, יקר ואיטי: עולים בסולם (prompt ← RAG ← fine-tune ← agent) רק כמה שחייבים, מוכיחים איכות עם evals, מגדרים עם guardrails, ומתקצבים tokens כמו שמתקצבים latency."
   },
   analogy: {
     en: "An LLM is a brilliant new hire with no memory of your company and a habit of confidently making things up. Prompting is giving clear instructions. RAG is handing them the right folder before each question. Fine-tuning is sending them to a month-long course. An agent is giving them your credit card and the keys to the office: only after they've proven themselves, with spending limits and someone checking their work. Evals are their performance review, done every week, not once.",

@@ -45,7 +45,7 @@ INFRA.lessons.push({
 <tr><td>Distributed SQL / NewSQL</td><td>Spanner, CockroachDB, YugabyteDB, TiDB</td><td>טבלאות SQL עם sharding אוטומטי + שכפול Raft/Paxos</td><td>ACID גלובלי, כתיבות מעבר לשרת אחד, multi-region</td><td>אפליקציות קטנות (מס latency ועלות); אנליטיקה כבדה</td></tr>
 <tr><td>Key-value</td><td>Redis, DynamoDB, Memcached, etcd</td><td>key → blob</td><td>Sessions, caches, מונים, עגלות, feature flags, locks</td><td>queries אד-הוק ("כל המשתמשים בחיפה")</td></tr>
 <tr><td>Document</td><td>MongoDB, Couchbase, Firestore, Cosmos DB</td><td>מסמכי JSON מקוננים</td><td>Aggregates שנקראים ונכתבים כיחידה: קטלוג מוצרים, CMS, פרופיל משתמש</td><td>יחסי many-to-many, טרנזקציות בין מסמכים בכל מקום</td></tr>
-<tr><td>Wide-column</td><td>Cassandra, ScyllaDB, Bigtable, HBase</td><td>partition key → שורות ממוינות של עמודות</td><td>throughput כתיבה עצום, גישה ידועה לפי key: הודעות, IoT, timelines</td><td>דפוסי query לא ידועים, joins, טרנזקציות חזקות בין שורות</td></tr>
+<tr><td>Wide-column</td><td>Cassandra, ScyllaDB, Bigtable, HBase</td><td>partition key ← שורות ממוינות של עמודות</td><td>throughput כתיבה עצום, גישה ידועה לפי key: הודעות, IoT, timelines</td><td>דפוסי query לא ידועים, joins, טרנזקציות חזקות בין שורות</td></tr>
 <tr><td>Graph</td><td>Neo4j, Neptune, Memgraph</td><td>Nodes + edges עם properties</td><td>מעברים בכמה קפיצות: טבעות הונאה, המלצות, גרף הרשאות IAM</td><td>CRUD פשוט; אגרגציות המוניות</td></tr>
 <tr><td>Time-series</td><td>Prometheus, TimescaleDB, InfluxDB, VictoriaMetrics</td><td>(series, timestamp) → value</td><td>Metrics, חיישנים, downsampling, retention</td><td>דאטה per-user עם cardinality גבוה (ה-labels מתפוצצים)</td></tr>
 <tr><td>Search</td><td>Elasticsearch, OpenSearch, Solr, Meilisearch</td><td>Inverted index של מסמכים</td><td>Full-text, חיפוש fuzzy, facets, חיפוש בלוגים</td><td>מקור אמת; עדכונים טרנזקציוניים</td></tr>
@@ -179,14 +179,14 @@ Amplification: B-tree pays on writes, LSM pays on reads + compaction (space amp 
 <blockquote>⚠️ Production tip: Every extra database is another thing to back up, patch, secure, monitor, upgrade and be on-call for. A principal's default answer is "can Postgres do it well enough for the next 2 years?" — extensions like pgvector, TimescaleDB, PostGIS, pg_partman and full-text search often say yes.</blockquote>`,
         he: `<p>עוברים על השאלות מלמעלה למטה. ה"כן" הראשון הוא בדרך כלל התשובה; "לא" עד הסוף אומר <strong>Postgres</strong>.</p>
 <ol>
-<li><strong>זה כסף או invariant שאסור שיישבר</strong> (יתרה ≥ 0, מושב ייחודי)? → relational עם טרנזקציות (או distributed SQL אם primary אחד לא עומד בכתיבות).</li>
-<li><strong>זה cache, session, מונה או lock עם TTL?</strong> → Redis / Memcached (ולקבל שזה יכול להיעלם).</li>
-<li><strong>צריך full-text, fuzzy, facets?</strong> → search index, שמוזן ממקור האמת דרך CDC.</li>
+<li><strong>זה כסף או invariant שאסור שיישבר</strong> (יתרה ≥ 0, מושב ייחודי)? ← relational עם טרנזקציות (או distributed SQL אם primary אחד לא עומד בכתיבות).</li>
+<li><strong>זה cache, session, מונה או lock עם TTL?</strong> ← Redis / Memcached (ולקבל שזה יכול להיעלם).</li>
+<li><strong>צריך full-text, fuzzy, facets?</strong> ← search index, שמוזן ממקור האמת דרך CDC.</li>
 <li><strong>זה metrics/מדידות עם timestamp, retention ו-downsampling?</strong> → time-series DB.</li>
-<li><strong>זה אנליטיקה על 100M+ שורות</strong> (דשבורדים, "group by day")? → warehouse עמודתי (ClickHouse/BigQuery/Snowflake), אף פעם לא ה-primary של ה-OLTP.</li>
-<li><strong>יותר מ-50k כתיבות בשנייה עם access pattern ידוע לפי key</strong> (צ'אט, IoT, feeds)? → wide-column או DynamoDB.</li>
-<li><strong>ה-queries עוברים 3+ קפיצות של יחסים?</strong> → graph DB (או recursive CTEs אם זה מדי פעם).</li>
-<li><strong>"תמצא משמעות דומה"?</strong> → vector index; מתחילים עם pgvector עד ~10–50M וקטורים.</li>
+<li><strong>זה אנליטיקה על 100M+ שורות</strong> (דשבורדים, "group by day")? ← warehouse עמודתי (ClickHouse/BigQuery/Snowflake), אף פעם לא ה-primary של ה-OLTP.</li>
+<li><strong>יותר מ-50k כתיבות בשנייה עם access pattern ידוע לפי key</strong> (צ'אט, IoT, feeds)? ← wide-column או DynamoDB.</li>
+<li><strong>ה-queries עוברים 3+ קפיצות של יחסים?</strong> ← graph DB (או recursive CTEs אם זה מדי פעם).</li>
+<li><strong>"תמצא משמעות דומה"?</strong> ← vector index; מתחילים עם pgvector עד ~10–50M וקטורים.</li>
 <li><strong>קבצים גדולים, ארכיוני לוגים, datasets ל-ML?</strong> → object storage + Parquet/Iceberg.</li>
 </ol>
 <p><strong>Polyglot persistence</strong> = כל עבודה מקבלת את ה-store הנכון, עם <em>מקור אמת</em> אחד ועותקים נגזרים:</p>
@@ -379,9 +379,9 @@ max_client_conn = 10000
 default_pool_size = 100</pre>
 <blockquote>⚠️ Production tip: Scaling writes and scaling reads are different problems. Reads: cache + replicas (cheap, almost unlimited). Writes: batch, queue, reduce write amplification (fewer indexes), then partition (expensive, hard to undo). Always ask "is this read-bound or write-bound?" before choosing.</blockquote>`,
         he: `<ul>
-<li><strong>שכבת אפליקציה stateless</strong>: בלי session בזיכרון, בלי קבצים מקומיים. Sessions → Redis או JWT cookies חתומים; העלאות → S3. עכשיו כל pod יכול לשרת כל בקשה, ו-autoscaling ו-rolling deploys פשוט עובדים.</li>
-<li><strong>שכבות cache</strong> (הקרוב ביותר למשתמש מנצח): cache בדפדפן (<code>Cache-Control: max-age=60</code>) → CDN edge (סטטי + GETs ב-API שאפשר לשמור) → cache באפליקציה (Redis, LRU בזיכרון) → buffer pool של ה-DB. Hit ratio של 95% מוריד את עומס הקריאות על ה-DB פי 20.</li>
-<li><strong>Read replicas</strong>: עותקים אסינכרוניים של ה-primary לקריאות. lag טיפוסי 10–500 ms → מנתבים מסלולי "read-your-own-writes" ל-primary לכמה שניות אחרי כתיבה.</li>
+<li><strong>שכבת אפליקציה stateless</strong>: בלי session בזיכרון, בלי קבצים מקומיים. Sessions ← Redis או JWT cookies חתומים; העלאות ← S3. עכשיו כל pod יכול לשרת כל בקשה, ו-autoscaling ו-rolling deploys פשוט עובדים.</li>
+<li><strong>שכבות cache</strong> (הקרוב ביותר למשתמש מנצח): cache בדפדפן (<code>Cache-Control: max-age=60</code>) ← CDN edge (סטטי + GETs ב-API שאפשר לשמור) ← cache באפליקציה (Redis, LRU בזיכרון) ← buffer pool של ה-DB. Hit ratio של 95% מוריד את עומס הקריאות על ה-DB פי 20.</li>
+<li><strong>Read replicas</strong>: עותקים אסינכרוניים של ה-primary לקריאות. lag טיפוסי 10–500 ms ← מנתבים מסלולי "read-your-own-writes" ל-primary לכמה שניות אחרי כתיבה.</li>
 <li><strong>Connection pooling</strong>: Postgres מרים process לכל connection (~5–10 MB כל אחד); 500 pods × 20 connections = 10,000 connections = DB מת. PgBouncer ב-transaction mode מרכז אותם ל-~100 connections אמיתיים.</li>
 <li><strong>Async + תורים</strong>: כל מה שהמשתמש לא צריך לחכות לו (מיילים, thumbnails, webhooks, דוחות) הולך לתור. התור סופג שיאים; ה-workers מרוקנים בקצב קבוע. מתכננים לממוצע, לא לשיא.</li>
 <li><strong>חישוב מראש</strong>: materialized views, feeds עם fan-out-on-write, rollups לילי — מחליפים אחסון ורעננות במהירות קריאה.</li>
@@ -412,8 +412,8 @@ default_pool_size = 100</pre>
 <tr><th>אסטרטגיה</th><th>איך</th><th>טוב</th><th>רע</th><th>איפה רואים</th></tr>
 <tr><td>Range</td><td>user_id 1–1M → shard A, 1M–2M → B</td><td>Range scans, קל לפצל</td><td>Hot spots (keys לפי זמן נוחתים כולם על ה-shard האחרון)</td><td>HBase, Bigtable, ranges ב-CockroachDB</td></tr>
 <tr><td>Hash</td><td>shard = hash(key) mod N (או consistent hashing)</td><td>פיזור אחיד</td><td>Range queries מתפזרים; resharding מזיז דאטה (consistent hashing מזיז ~1/N)</td><td>Cassandra, DynamoDB, Redis Cluster</td></tr>
-<tr><td>Directory / lookup</td><td>טבלה שממפה tenant → shard</td><td>אפשר להזיז tenant גדול לכל מקום; גמיש</td><td>ה-lookup ב-critical path — חייב cache ו-HA</td><td>הרבה מוצרי SaaS</td></tr>
-<tr><td>Geo</td><td>משתמשי EU → shard ב-EU</td><td>Latency, data residency (GDPR)</td><td>משתמשים שנוסעים או עוברים; אזורים לא מאוזנים</td><td>SaaS גלובלי, בנקים</td></tr>
+<tr><td>Directory / lookup</td><td>טבלה שממפה tenant ← shard</td><td>אפשר להזיז tenant גדול לכל מקום; גמיש</td><td>ה-lookup ב-critical path — חייב cache ו-HA</td><td>הרבה מוצרי SaaS</td></tr>
+<tr><td>Geo</td><td>משתמשי EU ← shard ב-EU</td><td>Latency, data residency (GDPR)</td><td>משתמשים שנוסעים או עוברים; אזורים לא מאוזנים</td><td>SaaS גלובלי, בנקים</td></tr>
 </table>
 <p>בחירת ה-<strong>shard key</strong> היא ההחלטה שתחיה איתה שנים. keys טובים: cardinality גבוה, פיזור אחיד, מופיעים כמעט בכל query (כך ש-queries פוגעים ב-shard אחד), ומיושרים עם גבולות טרנזקציה (הדאטה של tenant ביחד). <code>tenant_id</code> הוא הבחירה הקלאסית ב-SaaS; שים לב ל-tenants "לווייתנים" שצריכים shard משלהם.</p>
 <blockquote>💡 מהשטח: Notion חילקו Postgres ל-480 shards לוגיים על 32 hosts פיזיים (לפי workspace_id). הרבה יותר shards לוגיים מ-hosts פיזיים מאפשר rebalancing ע"י הזזת shards לוגיים שלמים במקום hash מחדש של שורות.</blockquote>`
@@ -528,7 +528,7 @@ USL:     C(N) = N / (1 + a(N-1) + b*N(N-1))      a = contention, b = coherency</
     },
     {
       q: { en: "What is a cell-based architecture and when is it worth it?", he: "מה זו ארכיטקטורה מבוססת cells ומתי היא שווה את זה?" },
-      a: { en: "The whole stack is replicated into independent cells, each owning a subset of customers, with a thin routing layer mapping customer → cell. It caps blast radius (a bad deploy or noisy tenant affects one cell), gives a tested unit of scale (add a cell instead of growing a giant cluster), and enables per-cell staged rollouts. Worth it when outages are very expensive and you're past single-cluster limits; the cost is the router, cross-cell operations (migrating a customer, global reporting) and N copies to operate.", he: "כל ה-stack משוכפל ל-cells עצמאיים, כל אחד אחראי על תת-קבוצת לקוחות, עם שכבת ניתוב דקה שממפה לקוח → cell. זה מגביל blast radius (deploy רע או tenant רועש פוגע ב-cell אחד), נותן יחידת סקייל בדוקה (מוסיפים cell במקום להגדיל קלאסטר ענק), ומאפשר rollout מדורג לפי cell. שווה כשהשבתות יקרות מאוד ועברת את הגבולות של קלאסטר יחיד; העלות היא ה-router, פעולות בין cells (העברת לקוח, דוחות גלובליים) ו-N עותקים לתפעל." }
+      a: { en: "The whole stack is replicated into independent cells, each owning a subset of customers, with a thin routing layer mapping customer → cell. It caps blast radius (a bad deploy or noisy tenant affects one cell), gives a tested unit of scale (add a cell instead of growing a giant cluster), and enables per-cell staged rollouts. Worth it when outages are very expensive and you're past single-cluster limits; the cost is the router, cross-cell operations (migrating a customer, global reporting) and N copies to operate.", he: "כל ה-stack משוכפל ל-cells עצמאיים, כל אחד אחראי על תת-קבוצת לקוחות, עם שכבת ניתוב דקה שממפה לקוח ← cell. זה מגביל blast radius (deploy רע או tenant רועש פוגע ב-cell אחד), נותן יחידת סקייל בדוקה (מוסיפים cell במקום להגדיל קלאסטר ענק), ומאפשר rollout מדורג לפי cell. שווה כשהשבתות יקרות מאוד ועברת את הגבולות של קלאסטר יחיד; העלות היא ה-router, פעולות בין cells (העברת לקוח, דוחות גלובליים) ו-N עותקים לתפעל." }
     }
   ],
   quiz: [
@@ -634,7 +634,7 @@ INFRA.lessons.push({
 <tr><td>Redis Cluster (async replication)</td><td>A-ish (may lose acked writes)</td><td>L</td><td>PA/EL</td></tr>
 </table>
 <blockquote>⚠️ Production tip: "Strongly consistent across regions" sounds great until the product sees +120 ms on every checkout write. Spanner hides some of it with TrueTime and leader placement; you still pay physics. Ask: does <em>this</em> feature need it?</blockquote>`,
-        he: `<p>Partitions נדירים; latency קבוע. <strong>PACELC</strong>: אם יש <strong>P</strong>artition → בוחרים <strong>A</strong> או <strong>C</strong>; <strong>E</strong>lse (פעולה רגילה) → בוחרים <strong>L</strong>atency או <strong>C</strong>onsistency. Consistency חזק אומר לחכות ל-replicas (round trip של quorum, אולי בין regions: 60–150 ms) בכל כתיבה או קריאה.</p>
+        he: `<p>Partitions נדירים; latency קבוע. <strong>PACELC</strong>: אם יש <strong>P</strong>artition ← בוחרים <strong>A</strong> או <strong>C</strong>; <strong>E</strong>lse (פעולה רגילה) ← בוחרים <strong>L</strong>atency או <strong>C</strong>onsistency. Consistency חזק אומר לחכות ל-replicas (round trip של quorum, אולי בין regions: 60–150 ms) בכל כתיבה או קריאה.</p>
 <table>
 <tr><th>מערכת</th><th>ב-Partition</th><th>אחרת</th><th>סיווג</th></tr>
 <tr><td>Cassandra / ScyllaDB (ברירת מחדל ONE/LOCAL_QUORUM)</td><td>A</td><td>L</td><td>PA/EL</td></tr>
@@ -904,7 +904,7 @@ INFRA.lessons.push({
 <blockquote>⚠️ Production tip: A 30-second stop-the-world GC pause on a "leader" is indistinguishable from death. When it wakes up it still believes it's the leader — that's exactly why you need fencing (below), not just timeouts.</blockquote>`,
         he: `<p>הקלאסטר צריך להסכים "מי בפנים". אי אפשר אף פעם להיות <em>בטוחים</em> ש-node מת — node איטי, GC pause ונפילת רשת נראים זהים מבחוץ. אז גלאים מתפשרים בין מהירות לאזעקות שווא.</p>
 <ul>
-<li><strong>Heartbeats + timeout</strong>: "אין heartbeat 10 שניות → מת". פשוט. timeout קצר = failover מהיר + קפיצות הלוך-חזור; ארוך = התאוששות איטית. Kubernetes מסמן node כ-NotReady אחרי ~40 שניות של leases חסרים מה-kubelet.</li>
+<li><strong>Heartbeats + timeout</strong>: "אין heartbeat 10 שניות ← מת". פשוט. timeout קצר = failover מהיר + קפיצות הלוך-חזור; ארוך = התאוששות איטית. Kubernetes מסמן node כ-NotReady אחרי ~40 שניות של leases חסרים מה-kubelet.</li>
 <li><strong>Gossip</strong> (פרוטוקול SWIM): כל node עושה ping לכמה peers אקראיים כל שנייה ומפיץ את מה שלמד, כמו מגפה. מתרחב לאלפי nodes עם התפשטות O(log N). Cassandra, Consul/Serf, ה-bus של Redis Cluster, memberlist.</li>
 <li><strong>Phi accrual detector</strong>: במקום timeout של כן/לא, מוציא רמת חשד φ מתוך היסטוריית המרווחים בין heartbeats — מסתגל לרשת עם jitter. Cassandra (<code>phi_convict_threshold: 8</code>), Akka.</li>
 <li><strong>Leases</strong>: node מחזיק lease מוגבל בזמן (למשל 15 שניות) ב-store מסוג CP וחייב לחדש אותו; אם הוא לא מצליח לחדש, הוא חייב להפסיק לפעול כ-leader <em>לפני</em> שה-lease פג.</li>
@@ -990,7 +990,7 @@ else { require('./server'); }                       // all workers share port 30
 # or simply:  pm2 start server.js -i max</pre>`,
         he: `<table>
 <tr><th>מערכת</th><th>יחידת חלוקה</th><th>שכפול</th><th>מי מחליט</th><th>מלכודת</th></tr>
-<tr><td>Redis Cluster</td><td>16,384 hash slots: <code>CRC16(key) mod 16384</code></td><td>אסינכרוני primary → replica לכל טווח slots</td><td>Gossip bus + רוב ה-primaries מצביעים על failover</td><td>פעולות על כמה keys צריכות <code>{hash tags}</code>; כתיבות שאושרו עלולות ללכת לאיבוד ב-failover</td></tr>
+<tr><td>Redis Cluster</td><td>16,384 hash slots: <code>CRC16(key) mod 16384</code></td><td>אסינכרוני primary ← replica לכל טווח slots</td><td>Gossip bus + רוב ה-primaries מצביעים על failover</td><td>פעולות על כמה keys צריכות <code>{hash tags}</code>; כתיבות שאושרו עלולות ללכת לאיבוד ב-failover</td></tr>
 <tr><td>Kafka</td><td>Partitions של topic</td><td>Leader + followers; ISR (in-sync replicas)</td><td>Controller (quorum של KRaft)</td><td><code>acks=all</code> + <code>min.insync.replicas=2</code> עם RF=3, אחרת אפשר לאבד דאטה</td></tr>
 <tr><td>Elasticsearch</td><td>Primary shards (קבוע ביצירת האינדקס)</td><td>Replica shards על nodes אחרים</td><td>Master נבחר (3 nodes שמתאימים ל-master)</td><td>יותר מדי shards קטנים הורגים את ה-heap; מכוונים ל-~10–50 GB ל-shard</td></tr>
 <tr><td>Cassandra</td><td>טווחי tokens על hash ring (vnodes)</td><td>RF לכל keyspace, לכל DC</td><td>Leaderless, gossip</td><td>Partitions רחבים מעל 100 MB כואבים; מריצים repairs</td></tr>
@@ -1095,7 +1095,7 @@ INFRA.glossary.push(
   { term: "Columnar storage", track: "principal", def: { en: "Each column is stored and compressed separately, so analytics read only the columns they need (ClickHouse, BigQuery, Parquet).", he: "כל עמודה נשמרת ונדחסת בנפרד, כך שאנליטיקה קוראת רק את העמודות שהיא צריכה (ClickHouse, BigQuery, Parquet)." }, lesson: "pr-db-landscape" },
   { term: "Polyglot persistence", track: "principal", def: { en: "Using different databases for different jobs, with one source of truth feeding derived stores (search, cache, warehouse) via CDC.", he: "שימוש ב-databases שונים לעבודות שונות, עם מקור אמת אחד שמזין stores נגזרים (חיפוש, cache, warehouse) דרך CDC." }, lesson: "pr-db-landscape" },
   { term: "Scale cube (AKF)", track: "principal", def: { en: "Three axes of scaling: X = clone identical copies, Y = split by function, Z = partition the data.", he: "שלושה צירי סקיילינג: X = שכפול עותקים זהים, Y = פיצול לפי פונקציה, Z = חלוקת הדאטה." }, lesson: "pr-scaling-kinds" },
-  { term: "Amdahl's law", track: "principal", def: { en: "Max speedup from parallelism is limited by the serial fraction: 1 / serial share (10% serial → at most 10×).", he: "ה-speedup המקסימלי ממקביליות מוגבל ע\"י החלק הסדרתי: 1 / החלק הסדרתי (10% סדרתי → לכל היותר פי 10)." }, lesson: "pr-scaling-kinds" },
+  { term: "Amdahl's law", track: "principal", def: { en: "Max speedup from parallelism is limited by the serial fraction: 1 / serial share (10% serial → at most 10×).", he: "ה-speedup המקסימלי ממקביליות מוגבל ע\"י החלק הסדרתי: 1 / החלק הסדרתי (10% סדרתי ← לכל היותר פי 10)." }, lesson: "pr-scaling-kinds" },
   { term: "PACELC", track: "principal", def: { en: "If Partition: Availability vs Consistency; Else: Latency vs Consistency — CAP extended to normal operation.", he: "אם יש Partition: Availability מול Consistency; אחרת: Latency מול Consistency — הרחבה של CAP לפעולה רגילה." }, lesson: "pr-cap-pacelc" },
   { term: "Read-your-writes", track: "principal", def: { en: "Session guarantee that a user always sees their own updates, even when reads go to lagging replicas.", he: "הבטחת session שמשתמש תמיד רואה את העדכונים של עצמו, גם כשקריאות הולכות ל-replicas שמפגרים." }, lesson: "pr-cap-pacelc" },
   { term: "Write skew", track: "principal", def: { en: "Anomaly where two transactions read the same data and write different rows, together breaking an invariant; prevented by serializable isolation.", he: "אנומליה שבה שתי טרנזקציות קוראות את אותו דאטה וכותבות שורות שונות, ויחד שוברות invariant; serializable isolation מונע אותה." }, lesson: "pr-cap-pacelc" },

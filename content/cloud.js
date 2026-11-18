@@ -35,7 +35,7 @@ window.INFRA.lessons.push({
 <tr><td>SaaS</td><td>Your data and users</td><td>The whole product</td><td>Gmail, Slack, Datadog, GitHub</td></tr>
 </table>
 <p>Managed Kubernetes (EKS/AKS/GKE) sits between IaaS and PaaS: the control plane is managed, the nodes and your YAML are yours.</p>`,
-        he: `<p>תדמיין את השכבות: <strong>data → application → runtime → OS → virtualization → servers → storage → network → datacenter פיזי</strong>. כל מודל מזיז את הקו למעלה:</p>
+        he: `<p>תדמיין את השכבות: <strong>data ← application ← runtime ← OS ← virtualization ← servers ← storage ← network ← datacenter פיזי</strong>. כל מודל מזיז את הקו למעלה:</p>
 <table>
 <tr><th>מודל</th><th>מה עליך</th><th>מה על הספק</th><th>דוגמאות</th></tr>
 <tr><td>On-prem</td><td>הכל, כולל המזגן</td><td>כלום</td><td>ה-racks שלך</td></tr>
@@ -84,10 +84,10 @@ window.INFRA.lessons.push({
 <p>The trade-off is always <strong>control vs. operational burden</strong>. Higher abstraction = less control, more lock-in, but far fewer 3 AM pages.</p>`,
         he: `<p>כלל אצבע: <strong>תעלה הכי גבוה ב-stack שהדרישות מאפשרות</strong>. כל שכבה שבבעלותך היא שכבה שאתה עושה לה patch, מנטר, עושה לה scale ומקבל עליה page.</p>
 <ul>
-<li>API סטייטלס ב-HTTP עם תעבורה קופצנית → FaaS או PaaS לקונטיינרים (Cloud Run, App Runner, Azure Container Apps).</li>
-<li>הרבה סרוויסים, צריך networking מותאם, sidecars, operators → Kubernetes מנוהל.</li>
-<li>אפליקציה legacy שצריכה kernel module מסוים או רישיון שקשור ל-MAC address → VM ב-IaaS.</li>
-<li>מייל, CRM, טיקטים → SaaS. אף פעם אל תבנה Jira משלך.</li>
+<li>API סטייטלס ב-HTTP עם תעבורה קופצנית ← FaaS או PaaS לקונטיינרים (Cloud Run, App Runner, Azure Container Apps).</li>
+<li>הרבה סרוויסים, צריך networking מותאם, sidecars, operators ← Kubernetes מנוהל.</li>
+<li>אפליקציה legacy שצריכה kernel module מסוים או רישיון שקשור ל-MAC address ← VM ב-IaaS.</li>
+<li>מייל, CRM, טיקטים ← SaaS. אף פעם אל תבנה Jira משלך.</li>
 </ul>
 <p>הטרייד-אוף תמיד הוא <strong>שליטה מול עומס תפעולי</strong>. אבסטרקציה גבוהה = פחות שליטה, יותר lock-in, אבל הרבה פחות pages ב-3 בלילה.</p>`
       }
@@ -107,7 +107,7 @@ Network/DC [you]     (prov)   (prov)   (prov)   (prov)`,
   ],
   mnemonic: {
     en: "\"I Pay So Fewer pages\": IaaS → PaaS → SaaS/FaaS — the higher you go, the fewer pages you get (and the less control you keep). Security: provider = OF the cloud, you = IN the cloud.",
-    he: "ככל שעולים ב-stack (IaaS → PaaS → FaaS → SaaS) — פחות pages ופחות שליטה. ואבטחה: הספק אחראי \"על הענן\", אתה אחראי \"על מה שבתוך הענן\"."
+    he: "ככל שעולים ב-stack (IaaS ← PaaS ← FaaS ← SaaS) — פחות pages ופחות שליטה. ואבטחה: הספק אחראי \"על הענן\", אתה אחראי \"על מה שבתוך הענן\"."
   },
   pitfalls: [
     { en: "Assuming the provider patches your VMs. On IaaS the guest OS is yours — unpatched EC2 instances are a classic audit finding.", he: "להניח שהספק עושה patch ל-VMs שלך. ב-IaaS ה-OS שלך — EC2 לא מעודכנים זה ממצא קלאסי באודיט." },
@@ -451,7 +451,7 @@ window.INFRA.lessons.push({
 <blockquote>💡 Real world: when switching clouds, people lose the most time on IAM and networking, not compute. A VM is a VM; "why can't my pod reach the database" is where the week goes.</blockquote>`,
         he: `<p>השמות זה הקל; ה-<strong>מודל המנטלי</strong> שונה:</p>
 <ul>
-<li><strong>היררכיית משאבים</strong>: AWS = Organization → OU → Account (ה-account הוא גבול הבידוד הקשיח). Azure = Tenant (Entra ID) → Management Group → Subscription → <em>Resource Group</em>. GCP = Organization → Folder → <em>Project</em>.</li>
+<li><strong>היררכיית משאבים</strong>: AWS = Organization ← OU ← Account (ה-account הוא גבול הבידוד הקשיח). Azure = Tenant (Entra ID) ← Management Group ← Subscription ← <em>Resource Group</em>. GCP = Organization → Folder → <em>Project</em>.</li>
 <li><strong>היקף הרשת</strong>: VPC ב-AWS ו-VNet ב-Azure הם regional; VPC ב-GCP הוא <em>גלובלי</em> עם subnets לפי region — לא צריך peering בין regions.</li>
 <li><strong>זהות</strong>: Azure בנוי על Entra ID (לשעבר Azure AD), אז SSO לבני אדם מובנה; ב-AWS מוסיפים IAM Identity Center; GCP נשען על חשבונות Google/Workspace.</li>
 </ul>
@@ -543,7 +543,7 @@ window.INFRA.lessons.push({
   title: { en: "Cloud Storage: Object, Block, File", he: "אחסון בענן: Object, Block, File" },
   tldr: {
     en: "Object storage is an infinite key→blob warehouse over HTTP, block storage is a virtual hard drive for one VM, file storage is a shared network folder — pick by access pattern, then tier by temperature.",
-    he: "Object storage זה מחסן אינסופי של key→blob מעל HTTP, block storage זה דיסק וירטואלי ל-VM אחד, file storage זו תיקייה משותפת ברשת — בוחרים לפי דפוס הגישה, ואז מחלקים ל-tiers לפי \"טמפרטורה\"."
+    he: "Object storage זה מחסן אינסופי של key←blob מעל HTTP, block storage זה דיסק וירטואלי ל-VM אחד, file storage זו תיקייה משותפת ברשת — בוחרים לפי דפוס הגישה, ואז מחלקים ל-tiers לפי \"טמפרטורה\"."
   },
   analogy: {
     en: "Object storage is a giant coat check: you hand over a whole coat, get a ticket (the key), and get the whole coat back — you can't swap one button. Block storage is your own desk drawer: fast, you can rearrange any item, but it's attached to your desk only. File storage is the office shared cabinet: everyone can open the same folders at once, but you queue at it on busy days.",
@@ -790,7 +790,7 @@ resource "aws_s3_bucket_versioning" "assets" {
 }
 
 output "bucket_arn" { value = aws_s3_bucket.assets.arn }</pre>
-<p>Terraform בונה <strong>גרף תלויות</strong> מתוך ההפניות (<code>aws_s3_bucket.assets.id</code>) ויוצר דברים במקביל כשאפשר. ה-workflow: <code>init</code> (הורדת providers) → <code>plan</code> (מציג diff: <code>+</code> יצירה, <code>~</code> עדכון במקום, <code>-/+</code> החלפה, <code>-</code> מחיקה) → <code>apply</code>.</p>`
+<p>Terraform בונה <strong>גרף תלויות</strong> מתוך ההפניות (<code>aws_s3_bucket.assets.id</code>) ויוצר דברים במקביל כשאפשר. ה-workflow: <code>init</code> (הורדת providers) ← <code>plan</code> (מציג diff: <code>+</code> יצירה, <code>~</code> עדכון במקום, <code>-/+</code> החלפה, <code>-</code> מחיקה) ← <code>apply</code>.</p>`
       }
     },
     {
@@ -856,11 +856,11 @@ output "bucket_arn" { value = aws_s3_bucket.assets.arn }</pre>
 <tr><td>Terraform / OpenTofu</td><td>HCL</td><td>כל ענן (3,000+ providers)</td><td>אתה מנהל (remote backend)</td></tr>
 <tr><td>Pulumi</td><td>TypeScript, Python, Go, C#</td><td>כל ענן</td><td>Pulumi Cloud או self-managed</td></tr>
 <tr><td>CloudFormation</td><td>YAML/JSON</td><td>רק AWS</td><td>מנוהל ע"י AWS (stacks)</td></tr>
-<tr><td>AWS CDK</td><td>TS/Python/Java… → מייצר CloudFormation</td><td>AWS</td><td>CloudFormation</td></tr>
+<tr><td>AWS CDK</td><td>TS/Python/Java… ← מייצר CloudFormation</td><td>AWS</td><td>CloudFormation</td></tr>
 <tr><td>Bicep</td><td>Bicep DSL → ARM JSON</td><td>רק Azure</td><td>Azure עצמו (אין קובץ state)</td></tr>
 <tr><td>Crossplane</td><td>Kubernetes CRDs</td><td>כל ענן</td><td>ה-API של K8s</td></tr>
 </table>
-<p>OpenTofu הוא ה-fork הקוד-פתוח של Terraform שנוצר אחרי שינוי הרישיון של HashiCorp ב-2023 (BSL); הוא תואם ב-CLI. בוחרים לפי הכישורים בצוות והענן: multi-cloud או SaaS providers → Terraform/OpenTofu; חנות Azure-only → Bicep מקסים; מפתחים ששונאים HCL → Pulumi או CDK.</p>
+<p>OpenTofu הוא ה-fork הקוד-פתוח של Terraform שנוצר אחרי שינוי הרישיון של HashiCorp ב-2023 (BSL); הוא תואם ב-CLI. בוחרים לפי הכישורים בצוות והענן: multi-cloud או SaaS providers ← Terraform/OpenTofu; חנות Azure-only ← Bicep מקסים; מפתחים ששונאים HCL ← Pulumi או CDK.</p>
 <blockquote>💡 Real world: לא משנה איזה כלי בחרת, מבחן הבגרות האמיתי של IaC הוא "אפשר לנעול את הקונסול ל-read-only בפרוד?" אם אנשים עדיין צריכים לקלוק, ה-IaC שלך לא גמור.</blockquote>`
       }
     }
@@ -992,7 +992,7 @@ window.INFRA.lessons.push({
 <p>The golden rule: <strong>build once, deploy many</strong>. The Docker image <code>registry/app:3f2a9c1</code> (tagged by git SHA, or better pinned by digest <code>@sha256:…</code>) is the artifact. Staging and prod run the <em>same bytes</em>; only config (env vars, secrets) differs. Never use <code>:latest</code> in prod — you can't tell what's running or roll back to it.</p>
 <p>Speed matters: a 40-minute pipeline means people batch changes and skip running it. Cache dependencies, run tests in parallel, and fail fast (lint before 20 minutes of e2e).</p>
 <blockquote>💡 Real world: Google, Amazon and Meta deploy thousands of times a day. Amazon reported a deploy every ~11.6 seconds back in 2011. The trick isn't heroic engineers — it's small changes + boring automation.</blockquote>`,
-        he: `<p>Pipeline טיפוסי: <strong>checkout → התקנת dependencies (עם cache) → lint/ניתוח סטטי → unit tests → build → סריקת אבטחה (SAST, CVEs ב-dependencies, סריקת image) → push ל-artifact → deploy ל-staging → טסטים integration/e2e → (אישור) → deploy לפרוד (canary → מלא) → smoke tests</strong>.</p>
+        he: `<p>Pipeline טיפוסי: <strong>checkout ← התקנת dependencies (עם cache) ← lint/ניתוח סטטי ← unit tests ← build ← סריקת אבטחה (SAST, CVEs ב-dependencies, סריקת image) ← push ל-artifact ← deploy ל-staging ← טסטים integration/e2e ← (אישור) ← deploy לפרוד (canary ← מלא) ← smoke tests</strong>.</p>
 <p>כלל הזהב: <strong>build once, deploy many</strong>. ה-Docker image <code>registry/app:3f2a9c1</code> (מתויג לפי git SHA, או עדיף נעול לפי digest <code>@sha256:…</code>) הוא ה-artifact. Staging ופרוד מריצים <em>אותם בייטים</em>; רק ה-config (env vars, secrets) שונה. אף פעם לא <code>:latest</code> בפרוד — אי אפשר לדעת מה רץ או לחזור אליו.</p>
 <p>מהירות חשובה: pipeline של 40 דקות גורם לאנשים לאגד שינויים ולדלג עליו. עושים cache ל-dependencies, מריצים טסטים במקביל, ו-fail fast (lint לפני 20 דקות של e2e).</p>
 <blockquote>💡 Real world: גוגל, אמזון ומטא פורסים אלפי פעמים ביום. אמזון דיווחו על deploy כל ~11.6 שניות כבר ב-2011. הסוד הוא לא מהנדסים גיבורים — אלא שינויים קטנים + אוטומציה משעממת.</blockquote>`
@@ -1262,9 +1262,9 @@ window.INFRA.lessons.push({
         he: `<p>פונקציות מצטיינות כדבק בין שירותים מנוהלים:</p>
 <ul>
 <li><strong>HTTP</strong>: API Gateway / Function URL / URL של Cloud Run.</li>
-<li><strong>Storage</strong>: קובץ עלה ל-S3 → יוצרים thumbnail.</li>
-<li><strong>תור/stream</strong>: SQS, Kinesis, Kafka, Pub/Sub, Service Bus → עיבוד batches.</li>
-<li><strong>Schedule</strong>: EventBridge Scheduler / Cloud Scheduler / timer trigger → ניקוי לילי (cron serverless).</li>
+<li><strong>Storage</strong>: קובץ עלה ל-S3 ← יוצרים thumbnail.</li>
+<li><strong>תור/stream</strong>: SQS, Kinesis, Kafka, Pub/Sub, Service Bus ← עיבוד batches.</li>
+<li><strong>Schedule</strong>: EventBridge Scheduler / Cloud Scheduler / timer trigger ← ניקוי לילי (cron serverless).</li>
 <li><strong>שינויים ב-DB</strong>: DynamoDB Streams, Cosmos DB change feed.</li>
 </ul>
 <p>Event-driven אומר <strong>at-least-once delivery</strong> — הפונקציה לפעמים תופעל פעמיים על אותו event. עושים handlers <strong>idempotent</strong> (dedupe לפי event ID, conditional writes) ומגדירים <strong>DLQ / on-failure destination</strong> כדי ש-events רעילים לא ינסו שוב לנצח.</p>
@@ -1280,8 +1280,8 @@ window.INFRA.lessons.push({
 <p>Rule of thumb: serverless is cheaper when average utilization of the equivalent server would be below ~20-30%. Also count the hidden costs: API Gateway, NAT for VPC functions, CloudWatch Logs ingestion ($0.50/GB) — sometimes larger than compute.</p>
 <p>And remember the human side: no patching and no capacity planning are real savings in engineer time.</p>`,
         he: `<p>תמחור Lambda (x86, us-east-1): <strong>$0.20 למיליון בקשות + ~$0.0000167 ל-GB-second</strong>, עם free tier של מיליון בקשות ו-400K GB-s בחודש.</p>
-<p>דוגמה: API שמקבל <strong>מיליון בקשות בחודש</strong>, 200 ms כל אחת ב-512 MB = 100,000 GB-s → ~$1.67 + $0.20 ≈ <strong>$2 בחודש</strong>. t3.small שרץ 24/7 עולה ~$15. Serverless מנצח בגדול.</p>
-<p>עכשיו <strong>100 בקשות בשנייה קבוע</strong> (~260 מיליון בחודש), אותו פרופיל: 26M GB-s → ~$433 + $52 ≈ <strong>$485 בחודש</strong> (ועוד API Gateway ב-~$1 למיליון = עוד $260). שני c7g.large מאחורי LB יטפלו בזה ב-~$150. עומס קבוע הופך את החשבון.</p>
+<p>דוגמה: API שמקבל <strong>מיליון בקשות בחודש</strong>, 200 ms כל אחת ב-512 MB = 100,000 GB-s ← ~$1.67 + $0.20 ≈ <strong>$2 בחודש</strong>. t3.small שרץ 24/7 עולה ~$15. Serverless מנצח בגדול.</p>
+<p>עכשיו <strong>100 בקשות בשנייה קבוע</strong> (~260 מיליון בחודש), אותו פרופיל: 26M GB-s ← ~$433 + $52 ≈ <strong>$485 בחודש</strong> (ועוד API Gateway ב-~$1 למיליון = עוד $260). שני c7g.large מאחורי LB יטפלו בזה ב-~$150. עומס קבוע הופך את החשבון.</p>
 <p>כלל אצבע: serverless זול יותר כשה-utilization הממוצע של השרת המקביל היה מתחת ל-~20-30%. וגם סופרים עלויות נסתרות: API Gateway, NAT לפונקציות בתוך VPC, ingestion ל-CloudWatch Logs ($0.50 ל-GB) — לפעמים יותר מה-compute.</p>
 <p>ואל תשכח את הצד האנושי: בלי patching ובלי תכנון קיבולת זה חיסכון אמיתי בזמן מהנדסים.</p>`
       }
@@ -1423,10 +1423,10 @@ window.INFRA.lessons.push({
         he: `<p>הלוגיקה של AWS, בפשטות:</p>
 <ol>
 <li>מתחילים ב-<strong>implicit deny</strong> — הכל אסור כברירת מחדל.</li>
-<li>כל <strong>Deny מפורש</strong> בכל policy רלוונטי (SCP, permission boundary, identity policy, resource policy, session policy) → <strong>DENIED</strong>. נגמר המשחק, שום Allow לא יכול לעקוף.</li>
+<li>כל <strong>Deny מפורש</strong> בכל policy רלוונטי (SCP, permission boundary, identity policy, resource policy, session policy) ← <strong>DENIED</strong>. נגמר המשחק, שום Allow לא יכול לעקוף.</li>
 <li>SCPs של ה-Organization ו-permission boundaries הם <em>תקרה</em> — גם הם צריכים לאפשר את הפעולה.</li>
-<li>ואז <strong>Allow מפורש</strong> מ-identity policy או resource policy → מותר.</li>
-<li>שום דבר לא התאים → implicit deny.</li>
+<li>ואז <strong>Allow מפורש</strong> מ-identity policy או resource policy ← מותר.</li>
+<li>שום דבר לא התאים ← implicit deny.</li>
 </ol>
 <p>בגלל זה guardrails משתמשים ב-Deny: SCP שאומר "Deny <code>*</code> מחוץ ל-eu-central-1 ו-il-central-1" או "Deny <code>cloudtrail:StopLogging</code>" לא יכול להיעקף ע"י admin ב-account בן.</p>
 <p><strong>Least privilege</strong> בפועל: מתחילים מ-read-only מנוהל, מייצרים policies הדוקים משימוש אמיתי (IAM Access Analyzer policy generation), נמנעים מ-<code>"Action": "*"</code> ו-<code>"Resource": "*"</code>, ובודקים הרשאות לא בשימוש באופן קבוע.</p>
@@ -1506,7 +1506,7 @@ metadata:
 <li><strong>Access keys שדלפו</strong> ל-git: בוטים סורקים את GitHub תוך <em>דקות</em> ומרימים כורי קריפטו. משתמשים ב-OIDC/roles, ומפעילים secret scanning + push protection.</li>
 <li><strong>Roles עם יותר מדי הרשאות</strong>: <code>AdministratorAccess</code> על אפליקציית web הופך כל RCE להשתלטות על כל ה-account.</li>
 <li><strong>פורטי ניהול פתוחים</strong>: SSH/RDP/DB ל-0.0.0.0/0. משתמשים ב-SSM Session Manager / Bastion / IAP במקום.</li>
-<li><strong>SSRF → שירות ה-metadata</strong>: אוכפים IMDSv2.</li>
+<li><strong>SSRF ← שירות ה-metadata</strong>: אוכפים IMDSv2.</li>
 </ul>`
       }
     }
@@ -1575,7 +1575,7 @@ metadata:
       explain: { en: "Workload identity gives each pod its own short-lived, least-privilege credentials. A broad node role is shared by every pod on the node.", he: "Workload identity נותן לכל pod credentials קצרי-מועד עם least privilege משלו. Role רחב של node משותף לכל ה-pods על ה-node." }
     },
     {
-      q: { en: "Which control would have prevented the SSRF → instance-credentials theft pattern (Capital One)?", he: "איזה control היה מונע את דפוס ה-SSRF → גניבת credentials מה-instance (Capital One)?" },
+      q: { en: "Which control would have prevented the SSRF → instance-credentials theft pattern (Capital One)?", he: "איזה control היה מונע את דפוס ה-SSRF ← גניבת credentials מה-instance (Capital One)?" },
       options: [
         { en: "Enforcing IMDSv2 (session tokens required)", he: "אכיפת IMDSv2 (חובת session tokens)" },
         { en: "Bigger instance type", he: "Instance type גדול יותר" },
@@ -1681,7 +1681,7 @@ window.INFRA.lessons.push({
 <li>ב-Kubernetes ה-<strong>requests</strong> קובעים את העלות — pod שמבקש 2 CPU ומשתמש ב-0.2 שומר לעצמו כסף של node. משתמשים בהמלצות של VPA כדי לקבוע requests ריאליים.</li>
 <li>מחליפים דור/ארכיטקטורה: instances של Graviton (ARM) זולים בדרך כלל ב-~20% עם price-performance טוב יותר.</li>
 </ul>
-<p><strong>Autoscaling חוסך כסף רק אם הוא יורד למטה.</strong> HPA ל-pods + Cluster Autoscaler/Karpenter ל-nodes; מוודאים שה-nodes באמת מתרוקנים (PDBs לא חוסמים, אין pods עם local storage שמחזיקים אותם). מתזמנים כיבוי של non-prod בלילות ובסופ"ש: 168 שעות בשבוע → ~50 שעות עבודה = <strong>~70% הנחה</strong> על compute של dev/staging.</p>`
+<p><strong>Autoscaling חוסך כסף רק אם הוא יורד למטה.</strong> HPA ל-pods + Cluster Autoscaler/Karpenter ל-nodes; מוודאים שה-nodes באמת מתרוקנים (PDBs לא חוסמים, אין pods עם local storage שמחזיקים אותם). מתזמנים כיבוי של non-prod בלילות ובסופ"ש: 168 שעות בשבוע ← ~50 שעות עבודה = <strong>~70% הנחה</strong> על compute של dev/staging.</p>`
       }
     },
     {
@@ -1800,7 +1800,7 @@ window.INFRA.lessons.push({
   ["Availability Zone (AZ)", "One or more datacenters with independent power and networking inside a region, ~1-2 ms apart.", "Datacenter אחד או יותר עם חשמל ורשת עצמאיים בתוך region, ~1-2 ms זה מזה.", "cloud-regions-azs"],
   ["Edge Location", "Small PoP close to users running CDN cache, DNS and edge compute.", "PoP קטן קרוב למשתמשים שמריץ CDN cache, DNS ו-edge compute.", "cloud-regions-azs"],
   ["Data Residency", "Requirement that data be stored and processed within a specific country or jurisdiction.", "דרישה שה-data יישמר ויעובד בתוך מדינה או סמכות שיפוטית מסוימת.", "cloud-regions-azs"],
-  ["Object Storage", "Flat key→blob storage over HTTP with near-unlimited scale (S3, Blob, GCS).", "אחסון שטוח של key→blob מעל HTTP עם סקייל כמעט אינסופי (S3, Blob, GCS).", "cloud-storage"],
+  ["Object Storage", "Flat key→blob storage over HTTP with near-unlimited scale (S3, Blob, GCS).", "אחסון שטוח של key←blob מעל HTTP עם סקייל כמעט אינסופי (S3, Blob, GCS).", "cloud-storage"],
   ["Block Storage", "Network-attached virtual disk for a single VM (EBS, Managed Disks, Persistent Disk).", "דיסק וירטואלי שמחובר ברשת ל-VM אחד (EBS, Managed Disks, Persistent Disk).", "cloud-storage"],
   ["Durability", "Probability that stored data is not lost; S3 is designed for 11 nines.", "ההסתברות שה-data השמור לא יאבד; S3 מתוכנן ל-11 תשיעיות.", "cloud-storage"],
   ["Infrastructure as Code (IaC)", "Defining infrastructure in versioned, reviewable code instead of manual console changes.", "הגדרת תשתית בקוד עם גרסאות ו-review במקום שינויים ידניים בקונסול.", "cloud-iac"],

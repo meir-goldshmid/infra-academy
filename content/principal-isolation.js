@@ -138,7 +138,7 @@ def decrypt(rec: dict, tenant: str) -&gt; bytes:
             rec["nonce"], rec["ct"], None)</pre>
 <ul>
 <li><strong>Rotation</strong>: ה-"automatic rotation" של KMS יוצר <em>גרסה</em> חדשה של ה-KEK כל שנה (ב-AWS אפשר להגדיר בין 90 יום ל-7 שנים); גרסאות ישנות נשארות כדי לפענח עטיפות ישנות, ועטיפות חדשות משתמשות בגרסה החדשה. הנתונים לא מוצפנים מחדש — עוטפים מחדש DEKs רק אם צריך להוציא גרסה ישנה משימוש.</li>
-<li><strong>היררכיית מפתחות</strong>: root (HSM) → KEK לכל סביבה/tenant → DEK לכל אובייקט/אצוות שורות. KEK פר-tenant נותן crypto-shredding: מוחקים את ה-KEK של ה-tenant וכל הנתונים שלו בלתי קריאים, כולל גיבויים.</li>
+<li><strong>היררכיית מפתחות</strong>: root (HSM) ← KEK לכל סביבה/tenant ← DEK לכל אובייקט/אצוות שורות. KEK פר-tenant נותן crypto-shredding: מוחקים את ה-KEK של ה-tenant וכל הנתונים שלו בלתי קריאים, כולל גיבויים.</li>
 <li><strong>HSM</strong>: חומרה עמידה לחבלה שבה מפתחות נוצרים ומשמשים אבל אי אפשר לייצא אותם (FIPS 140-3 Level 3). Cloud KMS מגובה HSM; CloudHSM / Azure Dedicated HSM כשצריך חומרה single-tenant או טקס מפתחות משלך.</li>
 <li><strong>Caching</strong>: משתמשים ב-DEK cache (ה-caching CMM של AWS Encryption SDK) עם מגבלות (למשל מקסימום 5 דקות / 10k הודעות) — אחרת ה-quotas של KMS (אלפי בקשות לשנייה ל-region) וה-latency (~5-10 ms) נושכים.</li>
 </ul>`
@@ -248,7 +248,7 @@ cosign verify ghcr.io/acme/api@sha256:4f1c... \\
   TLS 1.3: ECDHE (X25519 / X25519MLKEM768) -> session keys
            cert key only SIGNS the handshake -> forward secrecy`,
   handsOn: [
-    { cmd: "openssl s_client -connect github.com:443 -servername github.com -showcerts </dev/null | grep -E ' s:| i:'", what: { en: "See the real chain: leaf → intermediate → root issuer. Count how many certs the server sends.", he: "רואים את השרשרת האמיתית: leaf → intermediate → root. סופרים כמה תעודות השרת שולח." } },
+    { cmd: "openssl s_client -connect github.com:443 -servername github.com -showcerts </dev/null | grep -E ' s:| i:'", what: { en: "See the real chain: leaf → intermediate → root issuer. Count how many certs the server sends.", he: "רואים את השרשרת האמיתית: leaf ← intermediate ← root. סופרים כמה תעודות השרת שולח." } },
     { cmd: "echo | openssl s_client -connect example.com:443 2>/dev/null | openssl x509 -noout -dates -issuer -ext subjectAltName", what: { en: "Read expiry dates, issuer and SANs of a live certificate — the three things that break in outages.", he: "קוראים תאריכי תפוגה, מנפיק ו-SANs של תעודה חיה — שלושת הדברים שנשברים בתקלות." } },
     { cmd: "curl -sv https://www.cloudflare.com -o /dev/null 2>&1 | grep -iE 'SSL connection|ALPN|subject:|expire'", what: { en: "See the negotiated TLS version and cipher. Then check pq.cloudflareresearch.com in a browser to see if your client used X25519MLKEM768.", he: "רואים את גרסת ה-TLS וה-cipher שנבחרו. אחר כך בודקים ב-pq.cloudflareresearch.com בדפדפן אם הלקוח השתמש ב-X25519MLKEM768." } },
     { cmd: "python3 -c \"import os;from cryptography.hazmat.primitives.ciphers.aead import AESGCM as A;k=A.generate_key(256);n=os.urandom(12);c=A(k).encrypt(n,b'hi',b'ctx');print(A(k).decrypt(n,c,b'ctx'));A(k).decrypt(n,c,b'other')\"", what: { en: "AEAD in action: decrypting with the wrong associated data raises InvalidTag — integrity, not just secrecy.", he: "AEAD בפעולה: פענוח עם associated data שגוי זורק InvalidTag — שלמות, לא רק סודיות." } },
@@ -562,12 +562,12 @@ spec:
 <p><strong>תנועה רוחבית</strong> (lateral movement) היא מה שרשתות שטוחות מאפשרות. Target ‏(2013): התוקפים נכנסו עם ה-credentials של ספק מיזוג אוויר, עברו מפורטל הספקים למערכות הקופות, וגנבו 40 מיליון כרטיסים. NotPetya ‏(2017) התפשט ברשת ה-Windows השטוחה של Maersk תוך דקות. הלקח: מניחים שמכונה אחת <em>תיפרץ</em> ובונים את הקירות כך שזה יישאר מכונה אחת.</p>
 <p><strong>מוכיחים — בידוד שלא בודקים הוא שמועה:</strong></p>
 <table>
-<tr><th>מ → אל</th><th>צפוי</th><th>בדיקה</th></tr>
-<tr><td>pod של checkout → ledger:8080 POST</td><td>מותר</td><td><code>curl -X POST ledger.payments:8080/v1/entries</code></td></tr>
-<tr><td>pod של reports → ledger:8080 POST</td><td>חסום (403/drop)</td><td>אותו curl מ-reports</td></tr>
-<tr><td>כל pod → postgres:5432</td><td>חסום חוץ מ-ledger</td><td><code>nc -zv -w2 pg.data 5432</code></td></tr>
-<tr><td>כל pod → 169.254.169.254</td><td>חסום / timeout</td><td><code>curl -m2 169.254.169.254</code></td></tr>
-<tr><td>כל pod → example.org:443</td><td>חסום (לא ב-allowlist)</td><td><code>curl -m3 https://example.org</code></td></tr>
+<tr><th>מ ← אל</th><th>צפוי</th><th>בדיקה</th></tr>
+<tr><td>pod של checkout ← ledger:8080 POST</td><td>מותר</td><td><code>curl -X POST ledger.payments:8080/v1/entries</code></td></tr>
+<tr><td>pod של reports ← ledger:8080 POST</td><td>חסום (403/drop)</td><td>אותו curl מ-reports</td></tr>
+<tr><td>כל pod ← postgres:5432</td><td>חסום חוץ מ-ledger</td><td><code>nc -zv -w2 pg.data 5432</code></td></tr>
+<tr><td>כל pod ← 169.254.169.254</td><td>חסום / timeout</td><td><code>curl -m2 169.254.169.254</code></td></tr>
+<tr><td>כל pod ← example.org:443</td><td>חסום (לא ב-allowlist)</td><td><code>curl -m3 https://example.org</code></td></tr>
 </table>
 <p>מריצים את <strong>מטריצת הקישוריות</strong> הזו כ-job ב-CI/CD אחרי כל שינוי רשת (וגם כל לילה), עם כלים כמו AWS Reachability Analyzer / Network Access Analyzer, Azure Network Watcher, <code>cilium connectivity test</code>, או Job פשוט שמריץ את הטבלה ונכשל על כל הצלחה לא צפויה.</p>`
       }
@@ -931,7 +931,7 @@ def test_list_never_mixes(tenant_a, tenant_b):
   ],
   mnemonic: {
     en: "\"Token → Context → Every store → Test the attack.\" The tenant comes from the token, never from the URL; and every night, tenant A tries to open tenant B's door.",
-    he: "\"Token → Context → כל store → לבדוק את המתקפה.\" ה-tenant מגיע מה-token, אף פעם לא מה-URL; ובכל לילה tenant A מנסה לפתוח את הדלת של tenant B."
+    he: "\"Token ← Context ← כל store ← לבדוק את המתקפה.\" ה-tenant מגיע מה-token, אף פעם לא מה-URL; ובכל לילה tenant A מנסה לפתוח את הדלת של tenant B."
   },
   pitfalls: [
     { en: "Using session-level SET app.tenant_id with a connection pool. The value sticks to the connection and the next request — from another tenant — inherits it. Use SET LOCAL inside the transaction.", he: "להשתמש ב-SET app.tenant_id ברמת session עם connection pool. הערך נדבק ל-connection והבקשה הבאה — מ-tenant אחר — יורשת אותו. משתמשים ב-SET LOCAL בתוך הטרנזקציה." },

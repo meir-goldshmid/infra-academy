@@ -452,7 +452,7 @@ INFRA.lessons.push({
 <tr><td>4</td><td>+33%</td></tr></table>
 <p>That's why 3 AZs is the sweet spot for most production workloads.</p>`,
         he: `<p>אם אתה צריך <strong>N</strong> instances כדי לעמוד בעומס השיא, תריץ <strong>N+1</strong> כדי שאחד יוכל למות (או להיות באמצע deploy) בלי עומס יתר. מערכות קריטיות רצות עם N+2: אחד בתחזוקה <em>וגם</em> כשל אחד לא צפוי.</p>
-<p>המלכודת היא לשכוח שה-redundancy צריך לשרוד <em>failure domain</em> שלם. דוגמה: בשיא צריך 6 pods. אתה מריץ 6 pods על 3 AZs (2 בכל אחד). AZ אחד נופל → נשארו 4 pods → 150% עומס על השורדים → הם מאטים, נכנסים ל-timeouts, ומתחיל cascade. כדי לשרוד נפילת AZ צריך 9 pods (3 בכל AZ), כלומר כל AZ צריך לספוג את החלק שלו: <code>needed / (AZs − 1) × AZs</code>.</p>
+<p>המלכודת היא לשכוח שה-redundancy צריך לשרוד <em>failure domain</em> שלם. דוגמה: בשיא צריך 6 pods. אתה מריץ 6 pods על 3 AZs (2 בכל אחד). AZ אחד נופל ← נשארו 4 pods ← 150% עומס על השורדים ← הם מאטים, נכנסים ל-timeouts, ומתחיל cascade. כדי לשרוד נפילת AZ צריך 9 pods (3 בכל AZ), כלומר כל AZ צריך לספוג את החלק שלו: <code>needed / (AZs − 1) × AZs</code>.</p>
 <table><tr><th>AZs</th><th>כמה over-provisioning כדי לשרוד נפילת AZ</th></tr>
 <tr><td>2</td><td>+100% (כל AZ נושא הכול)</td></tr>
 <tr><td>3</td><td>+50%</td></tr>
@@ -504,8 +504,8 @@ INFRA.lessons.push({
 <p><strong>Stateless</strong> services are easy: any replica can serve any request, so HA = more replicas + LB. Push state out to a DB/cache/object store. <strong>Stateful</strong> systems (databases, queues, ZooKeeper/etcd) need replication, leader election and quorum — with 3 nodes you tolerate 1 failure, with 5 you tolerate 2 (majority must survive). That's also how you avoid <em>split brain</em>: two nodes both thinking they're primary and accepting conflicting writes.</p>
 <blockquote>⚠️ Production tip: Don't make readiness checks call your downstream dependencies deeply. If the DB blips, every replica fails readiness at once and the LB has zero backends — you turned a partial outage into a total one.</blockquote>`,
         he: `<p>Redundancy לא שווה כלום אם הטראפיק ממשיך ללכת לעותק המת. <strong>Health checks</strong> הופכים את זה לאוטומטי:</p>
-<ul><li><strong>Liveness</strong>: "התהליך חי?" → restart אם לא.</li>
-<li><strong>Readiness</strong>: "הוא יכול להגיש טראפיק עכשיו?" (מחובר ל-DB, cache חם) → מוציאים מה-LB אם לא.</li>
+<ul><li><strong>Liveness</strong>: "התהליך חי?" ← restart אם לא.</li>
+<li><strong>Readiness</strong>: "הוא יכול להגיש טראפיק עכשיו?" (מחובר ל-DB, cache חם) ← מוציאים מה-LB אם לא.</li>
 <li>הגדרות LB טיפוסיות: בדיקה כל 10 שניות, unhealthy אחרי 2-3 כשלונות, healthy אחרי 2-5 הצלחות. זמן זיהוי ≈ interval × threshold, כלומר ~20-30 שניות.</li></ul>
 <p>שירותי <strong>stateless</strong> קלים: כל replica יכול להגיש כל בקשה, אז HA = עוד replicas + LB. תוציא את ה-state החוצה ל-DB/cache/object store. מערכות <strong>stateful</strong> (DBs, queues, ZooKeeper/etcd) צריכות replication, leader election ו-quorum — עם 3 nodes אתה שורד כשל אחד, עם 5 אתה שורד שניים (רוב חייב לשרוד). ככה גם נמנעים מ-<em>split brain</em>: שני nodes שכל אחד חושב שהוא ה-primary ומקבל כתיבות סותרות.</p>
 <blockquote>⚠️ טיפ לפרודקשן: אל תגרום ל-readiness checks לקרוא לעומק לתלויות downstream. אם ה-DB מגמגם, כל ה-replicas נכשלים ב-readiness בבת אחת וה-LB נשאר עם אפס backends — הפכת השבתה חלקית להשבתה מלאה.</blockquote>`
@@ -569,7 +569,7 @@ INFRA.lessons.push({
         { en: "12", he: "12" }
       ],
       answer: 2,
-      explain: { en: "After losing 1 of 3 AZs, the remaining 2 must carry 6 → 3 per AZ → 9 total. 7 (N+1) survives one instance, not one AZ.", he: "אחרי נפילה של 1 מתוך 3 AZs, ה-2 שנשארו צריכים לשאת 6 → 3 בכל AZ → 9 בסך הכול. 7 (N+1) שורד instance אחד, לא AZ." }
+      explain: { en: "After losing 1 of 3 AZs, the remaining 2 must carry 6 → 3 per AZ → 9 total. 7 (N+1) survives one instance, not one AZ.", he: "אחרי נפילה של 1 מתוך 3 AZs, ה-2 שנשארו צריכים לשאת 6 ← 3 בכל AZ ← 9 בסך הכול. 7 (N+1) שורד instance אחד, לא AZ." }
     },
     {
       q: { en: "What is the main hidden risk of active-passive setups?", he: "מה הסיכון החבוי העיקרי ב-active-passive?" },
@@ -618,7 +618,7 @@ INFRA.lessons.push({
   title: { en: "BCDR: RPO, RTO & DR Strategies", he: "BCDR: RPO, RTO ואסטרטגיות DR" },
   tldr: {
     en: "RPO = how much data you can afford to lose, RTO = how long you can afford to be down; pick a DR strategy (backup → pilot light → warm standby → active-active) whose cost matches those numbers, and prove it with drills.",
-    he: "RPO = כמה דאטה מותר לך לאבד, RTO = כמה זמן מותר לך להיות למטה; בוחרים אסטרטגיית DR (backup → pilot light → warm standby → active-active) שהעלות שלה מתאימה למספרים האלה, ומוכיחים אותה בתרגילים."
+    he: "RPO = כמה דאטה מותר לך לאבד, RTO = כמה זמן מותר לך להיות למטה; בוחרים אסטרטגיית DR (backup ← pilot light ← warm standby ← active-active) שהעלות שלה מתאימה למספרים האלה, ומוכיחים אותה בתרגילים."
   },
   analogy: {
     en: "Writing a thesis. RPO is 'when did I last hit save?' — if your laptop dies, everything after that save is gone. RTO is 'how long until I'm typing again?' — borrow a laptop, download from Dropbox, reinstall Word. A USB stick in a drawer is backup & restore; a second laptop already synced and open on the desk is warm standby; two people co-editing in Google Docs is active-active.",
@@ -871,7 +871,7 @@ INFRA.lessons.push({
 <li><strong>Ops / מובילים מקצועיים</strong>: הידיים על המקלדת — חוקרים ומבצעים את ה-mitigations שה-IC מאשר.</li>
 <li><strong>Communications lead</strong>: status page, תמיכה, הנהלה. מגן על הצוות מפינגים של "יש עדכון??".</li>
 <li><strong>Scribe</strong>: רושם עם timestamp כל ממצא וכל פעולה בערוץ האירוע — זהב בשביל ה-postmortem.</li></ul>
-<p>ה-flow: <strong>detect</strong> (התראה/לקוח) → <strong>declare</strong> (sev, פותחים ערוץ #inc-1234 + bridge) → <strong>assess</strong> (מה ההשפעה? מה השתנה לאחרונה?) → <strong>mitigate</strong> → <strong>monitor</strong> (באמת התאושש?) → <strong>resolve</strong> → <strong>postmortem</strong>. ה-IC מריץ לולאות קצרות: "מה אנחנו יודעים? מה מנסים? מי עושה? עדכון הבא בעוד 15 דקות."</p>
+<p>ה-flow: <strong>detect</strong> (התראה/לקוח) ← <strong>declare</strong> (sev, פותחים ערוץ #inc-1234 + bridge) ← <strong>assess</strong> (מה ההשפעה? מה השתנה לאחרונה?) ← <strong>mitigate</strong> → <strong>monitor</strong> (באמת התאושש?) ← <strong>resolve</strong> → <strong>postmortem</strong>. ה-IC מריץ לולאות קצרות: "מה אנחנו יודעים? מה מנסים? מי עושה? עדכון הבא בעוד 15 דקות."</p>
 <blockquote>⚠️ טיפ לפרודקשן: השאלה הראשונה בכל אירוע: "מה השתנה?" deploys, config pushes, הדלקת feature flag, תעודה שפגה, קפיצת טראפיק. רוב האירועים נגרמים משינויים.</blockquote>`
       }
     },
@@ -920,7 +920,7 @@ INFRA.lessons.push({
 <li><strong>5 whys</strong>: ממשיכים לשאול "למה" כדי להגיע מהטריגר לסיבות מערכתיות.</li>
 <li><strong>מה עבד טוב / מה עבד רע / איפה היה לנו מזל</strong>.</li>
 <li><strong>Action items</strong>: לכל אחד owner, עדיפות ותאריך יעד, במעקב ב-backlog האמיתי. עדיף "למנוע/לזהות אוטומטית" על פני "להיות יותר זהירים".</li></ul>
-<blockquote>💡 מהשטח: דוגמה ל-5 whys — ה-Checkout למטה. למה? נגמרו ה-connections ל-DB. למה? הקוד החדש פתח connection לכל בקשה. למה? הגדרות ה-pool לא הוחלו בשירות החדש. למה? לתבנית השירות אין pool דיפולטי. למה? אין ספרייה סטנדרטית לגישה ל-DB. → Action: DB client משותף עם pooling + load test ב-CI.</blockquote>`
+<blockquote>💡 מהשטח: דוגמה ל-5 whys — ה-Checkout למטה. למה? נגמרו ה-connections ל-DB. למה? הקוד החדש פתח connection לכל בקשה. למה? הגדרות ה-pool לא הוחלו בשירות החדש. למה? לתבנית השירות אין pool דיפולטי. למה? אין ספרייה סטנדרטית לגישה ל-DB. ← Action: DB client משותף עם pooling + load test ב-CI.</blockquote>`
       }
     },
     {
@@ -933,11 +933,11 @@ INFRA.lessons.push({
 <tr><td>MTBF – Mean Time Between Failures</td><td>How often you break</td><td>Recovery → next failure</td><td>Testing, canaries, removing root causes</td></tr></table>
 <p>Availability ≈ MTBF / (MTBF + MTTR). Something failing every 30 days (720 h) and taking 1 h to recover ≈ 99.86%. Cut MTTR to 6 minutes and you're at ~99.99% <em>without</em> failing less often. That's why modern reliability work obsesses over fast recovery rather than perfect prevention.</p>
 <p>Caveat: "R" is ambiguous (repair / recover / resolve / respond). Define it in your org, and treat these as trend indicators, not targets to game.</p>`,
-        he: `<table><tr><th>מטריקה</th><th>מה מודדת</th><th>מ → עד</th><th>משפרים עם</th></tr>
-<tr><td>MTTD – Mean Time To Detect</td><td>כמה מהר שמים לב</td><td>תחילת הכשל → ההתראה קופצת</td><td>התראות SLO/burn-rate, synthetic probes</td></tr>
-<tr><td>MTTA – Mean Time To Acknowledge</td><td>כמה מהר בן אדם נכנס לתמונה</td><td>התראה → התורן עושה ack</td><td>Paging שפוי, escalation policies, פחות רעש</td></tr>
-<tr><td>MTTR – Mean Time To Recover/Restore</td><td>כמה מהר השירות חוזר</td><td>תחילת הכשל → התאוששות</td><td>Rollback מהיר, runbooks, feature flags, אוטומציה</td></tr>
-<tr><td>MTBF – Mean Time Between Failures</td><td>כמה פעמים נשברים</td><td>התאוששות → הכשל הבא</td><td>טסטים, canaries, הסרת root causes</td></tr></table>
+        he: `<table><tr><th>מטריקה</th><th>מה מודדת</th><th>מ ← עד</th><th>משפרים עם</th></tr>
+<tr><td>MTTD – Mean Time To Detect</td><td>כמה מהר שמים לב</td><td>תחילת הכשל ← ההתראה קופצת</td><td>התראות SLO/burn-rate, synthetic probes</td></tr>
+<tr><td>MTTA – Mean Time To Acknowledge</td><td>כמה מהר בן אדם נכנס לתמונה</td><td>התראה ← התורן עושה ack</td><td>Paging שפוי, escalation policies, פחות רעש</td></tr>
+<tr><td>MTTR – Mean Time To Recover/Restore</td><td>כמה מהר השירות חוזר</td><td>תחילת הכשל ← התאוששות</td><td>Rollback מהיר, runbooks, feature flags, אוטומציה</td></tr>
+<tr><td>MTBF – Mean Time Between Failures</td><td>כמה פעמים נשברים</td><td>התאוששות ← הכשל הבא</td><td>טסטים, canaries, הסרת root causes</td></tr></table>
 <p>Availability ≈ MTBF / (MTBF + MTTR). משהו שנופל כל 30 יום (720 שעות) ולוקח שעה להתאושש ≈ 99.86%. תוריד את ה-MTTR ל-6 דקות ואתה ב-~99.99% <em>בלי</em> ליפול פחות. בגלל זה עבודת אמינות מודרנית אובססיבית להתאוששות מהירה ולא למניעה מושלמת.</p>
 <p>הסתייגות: ה-"R" דו-משמעי (repair / recover / resolve / respond). תגדיר אותו בארגון, ותתייחס למטריקות האלה כאינדיקטורים למגמה, לא כיעדים שמנסים "לשחק" איתם.</p>`
       }
@@ -1007,7 +1007,7 @@ INFRA.lessons.push({
         { en: "Write longer postmortems", he: "לכתוב פוסטמורטמים ארוכים יותר" }
       ],
       answer: 0,
-      explain: { en: "MTTR 6 min → ~99.99%. MTBF 45 days → ~99.91%. Cutting downtime 10× beats failing 1.5× less often.", he: "MTTR של 6 דקות → ~99.99%. MTBF של 45 יום → ~99.91%. לקצר השבתה פי 10 מנצח ליפול פי 1.5 פחות." }
+      explain: { en: "MTTR 6 min → ~99.99%. MTBF 45 days → ~99.91%. Cutting downtime 10× beats failing 1.5× less often.", he: "MTTR של 6 דקות ← ~99.99%. MTBF של 45 יום ← ~99.91%. לקצר השבתה פי 10 מנצח ליפול פי 1.5 פחות." }
     },
     {
       q: { en: "Which postmortem action item is best?", he: "איזה action item בפוסטמורטם הכי טוב?" },
@@ -1109,7 +1109,7 @@ INFRA.lessons.push({
 <tr><td>Latency</td><td>p99 ב-canary ≤ 1.2 × p99 ב-stable</td></tr>
 <tr><td>Saturation</td><td>CPU / memory לא מטפסים לכיוון ה-limits</td></tr>
 <tr><td>Business</td><td>ה-conversion ב-checkout לא יורד ביותר מ-2%</td></tr></table>
-<p>נכשלים ב-gate כלשהו → rollback אוטומטי. כלים: Argo Rollouts, Flagger, Spinnaker (Kayenta), AWS CodeDeploy, ו-service mesh כמו Istio ל-weighted routing.</p>
+<p>נכשלים ב-gate כלשהו ← rollback אוטומטי. כלים: Argo Rollouts, Flagger, Spinnaker (Kayenta), AWS CodeDeploy, ו-service mesh כמו Istio ל-weighted routing.</p>
 <blockquote>💡 מהשטח: עם 1% מ-1,000 req/s, ה-canary רואה רק 10 req/s. הבדל של 0.5% בשגיאות זה כשל אחד כל 20 שניות — צריך מספיק bake time בשביל ביטחון סטטיסטי. שירותים עם מעט טראפיק צריכים שלבים ארוכים יותר או פרוסה התחלתית גדולה יותר.</blockquote>`
       }
     },
@@ -1169,7 +1169,7 @@ Canary:     LB --99%--> stable(v1)
   ],
   mnemonic: {
     en: "\"Rolling waves, Blue-green switch, Canary sings, Flags hide\" — and for DBs: \"Expand before you Contract.\"",
-    he: "\"Rolling = גלים, Blue-green = מתג, Canary = הכנרית שרה, Flags = מחביאים\" — ול-DB: \"קודם מרחיבים, אחר כך מכווצים\" (Expand → Contract)."
+    he: "\"Rolling = גלים, Blue-green = מתג, Canary = הכנרית שרה, Flags = מחביאים\" — ול-DB: \"קודם מרחיבים, אחר כך מכווצים\" (Expand ← Contract)."
   },
   pitfalls: [
     { en: "Coupling a breaking schema migration with the code deploy — the old version can't run, so rollback is impossible.", he: "לצמד migration שובר של schema ל-deploy של הקוד — הגרסה הישנה לא יכולה לרוץ, אז אי אפשר לעשות rollback." },
@@ -1501,7 +1501,7 @@ INFRA.lessons.push({
         he: `<p>בכל מערכת יציבה: <strong>מספר הפריטים הממוצע במערכת (L) = קצב ההגעה (λ) × הזמן הממוצע במערכת (W)</strong>. בלי הנחות על התפלגויות — זה פשוט עובד, וזה הופך אותה לנוסחה הכי שימושית ב-capacity planning.</p>
 <ul><li><strong>חישוב concurrency</strong>: 2,000 req/s × 0.15 שניות latency = <strong>300 בקשות in flight</strong>. אם כל pod מטפל ב-50 בקשות במקביל, צריך 6 pods — 9 עם headroom לנפילת AZ.</li>
 <li><strong>Connection pool ל-DB</strong>: 500 queries/s × 20ms = בממוצע 10 connections תפוסים. Pool של 100 זה overkill רציני; pool של 5 ייצור תור.</li>
-<li><strong>למה latency הורג אותך</strong>: אם ה-DB מאט מ-20ms ל-200ms באותם 500 q/s, פתאום צריך 100 connections. תלות איטית → pool exhaustion → השבתה.</li>
+<li><strong>למה latency הורג אותך</strong>: אם ה-DB מאט מ-20ms ל-200ms באותם 500 q/s, פתאום צריך 100 connections. תלות איטית ← pool exhaustion ← השבתה.</li>
 <li><strong>Queues</strong>: 1,000 הודעות לשנייה שמגיעות ו-30 שניות עיבוד להודעה אומר 30,000 הודעות in flight — מגדירים consumers בהתאם.</li></ul>
 <pre>L = λ × W
 300 in-flight = 2000 req/s × 0.150 s</pre>`
@@ -1522,7 +1522,7 @@ INFRA.lessons.push({
 <tr><td>JMeter (Apache)</td><td>GUI / XML</td><td>ותיק, המון פרוטוקולים (JDBC, JMS, LDAP), כבד יותר במשאבים</td></tr>
 <tr><td>Locust</td><td>Python</td><td>התנהגות משתמש כ-classes בפייתון, workers מבוזרים, web UI</td></tr>
 <tr><td>Gatling</td><td>Scala/Java/Kotlin</td><td>ביצועים גבוהים, דוחות HTML יפים</td></tr></table>
-<p>סוגי טסטים: <strong>load</strong> (השיא הצפוי), <strong>stress</strong> (מעלים עד שנשבר — מוצאים את ה-knee), <strong>spike</strong> (0 → פי 10 תוך שניות), <strong>soak</strong> (עומס רגיל ל-8-24 שעות — מוצא memory leaks ודיסקים שמתמלאים בלוגים).</p>
+<p>סוגי טסטים: <strong>load</strong> (השיא הצפוי), <strong>stress</strong> (מעלים עד שנשבר — מוצאים את ה-knee), <strong>spike</strong> (0 ← פי 10 תוך שניות), <strong>soak</strong> (עומס רגיל ל-8-24 שעות — מוצא memory leaks ודיסקים שמתמלאים בלוגים).</p>
 <blockquote>⚠️ טיפ לפרודקשן: תעשה load test עם דאטה ותמהיל טראפיק ריאליסטיים. 10,000 בקשות לאותו עמוד מוצר שיושב ב-cache מוכיחות שה-cache עובד, ותו לא. תוודא גם שמחולל העומס עצמו הוא לא צוואר הבקבוק (תסתכל על ה-CPU שלו), ותשתמש ב-open-model arrival rates — כלים שמחכים לתשובה לפני הבקשה הבאה מסתירים בעיות latency ("coordinated omission").</blockquote>`
       }
     },
@@ -1536,7 +1536,7 @@ INFRA.lessons.push({
 <li><strong>Pre-scale</strong> (autoscaling is too slow for a cliff), pre-warm caches and load balancers, raise cloud quotas.</li>
 <li>Change freeze around the event; staffed war room on the day.</li>
 <li>Prepare load-shedding switches: disable recommendations, serve static pages, queue checkouts.</li></ul>`,
-        he: `<p><strong>תחזית אורגנית</strong>: לוקחים 6-12 חודשים של מטריקות שיא (לא ממוצעים!), מתאימים מגמת צמיחה, ומשליכים מתי כל משאב יגיע לניצול היעד שלו. דוגמה: ה-RPS בשיא גדל ב-8% מחודש לחודש; השיא הנוכחי 4,000 RPS, קיבולת שנבדקה 10,000 RPS ב-latency סביר, יעד מקסימלי 60% → 6,000 RPS. 4,000 × 1.08ⁿ = 6,000 → n ≈ 5.3 חודשים. מזמינים חומרה/מעלים quotas/עושים sharding ל-DB <em>לפני</em> חודש 5.</p>
+        he: `<p><strong>תחזית אורגנית</strong>: לוקחים 6-12 חודשים של מטריקות שיא (לא ממוצעים!), מתאימים מגמת צמיחה, ומשליכים מתי כל משאב יגיע לניצול היעד שלו. דוגמה: ה-RPS בשיא גדל ב-8% מחודש לחודש; השיא הנוכחי 4,000 RPS, קיבולת שנבדקה 10,000 RPS ב-latency סביר, יעד מקסימלי 60% ← 6,000 RPS. 4,000 × 1.08ⁿ = 6,000 ← n ≈ 5.3 חודשים. מזמינים חומרה/מעלים quotas/עושים sharding ל-DB <em>לפני</em> חודש 5.</p>
 <p><strong>אירועי שיא לא אורגניים</strong>: Black Friday, השקת מוצר, קמפיין שיווקי, גמר המונדיאל, היום האחרון להגשת דוחות למס הכנסה. מתייחסים אליהם כפרויקטים:</p>
 <ul><li>מקבלים הערכת טראפיק מהביזנס (וכופלים ב-2 — השיווק אופטימי, ויראליות לא).</li>
 <li>Load test למספר הזה + headroom, שבועות לפני.</li>
@@ -1589,7 +1589,7 @@ INFRA.lessons.push({
   interview: [
     {
       q: { en: "Your service handles 3,000 req/s with 200 ms average latency. How many concurrent requests are in flight, and how many instances do you need if each handles 100 concurrently?", he: "השירות שלך מטפל ב-3,000 req/s עם latency ממוצע של 200ms. כמה בקשות in flight במקביל, וכמה instances צריך אם כל אחד מטפל ב-100 במקביל?" },
-      a: { en: "Little's Law: L = 3,000 × 0.2 = 600 in flight → 6 instances at 100% of their concurrency. Targeting ~60-70% utilization → 9-10. To also survive losing one of three AZs at that target, go to 12-15 (4-5 per AZ); 9 (3 per AZ) only survives an AZ loss at full concurrency, with no headroom.", he: "Little's Law: L = 3,000 × 0.2 = 600 in flight → 6 instances ב-100% מה-concurrency שלהם. ביעד של ~60-70% ניצול → 9-10. כדי לשרוד גם נפילה של AZ אחד מתוך שלושה ביעד הזה, הולכים ל-12-15 (4-5 בכל AZ); 9 (3 בכל AZ) שורדים נפילת AZ רק בניצול מלא, בלי headroom." }
+      a: { en: "Little's Law: L = 3,000 × 0.2 = 600 in flight → 6 instances at 100% of their concurrency. Targeting ~60-70% utilization → 9-10. To also survive losing one of three AZs at that target, go to 12-15 (4-5 per AZ); 9 (3 per AZ) only survives an AZ loss at full concurrency, with no headroom.", he: "Little's Law: L = 3,000 × 0.2 = 600 in flight ← 6 instances ב-100% מה-concurrency שלהם. ביעד של ~60-70% ניצול ← 9-10. כדי לשרוד גם נפילה של AZ אחד מתוך שלושה ביעד הזה, הולכים ל-12-15 (4-5 בכל AZ); 9 (3 בכל AZ) שורדים נפילת AZ רק בניצול מלא, בלי headroom." }
     },
     {
       q: { en: "Why does latency increase sharply as utilization approaches 100%?", he: "למה ה-latency עולה בחדות כשהניצול מתקרב ל-100%?" },

@@ -191,7 +191,7 @@ EVAL "if redis.call('get',KEYS[1])==ARGV[1] then return redis.call('del',KEYS[1]
 <pre>SET lock:invoice:77 &lt;random-token&gt; NX PX 30000     # acquire, auto-expire 30 s
 # release ONLY if we still own it (Lua compare-and-delete):
 EVAL "if redis.call('get',KEYS[1])==ARGV[1] then return redis.call('del',KEYS[1]) else return 0 end" 1 lock:invoice:77 &lt;random-token&gt;</pre>
-<p>המלכודת: client לוקח את ה-lock ואז נתקע (GC, עצירת VM) מעבר ל-30 שניות; ה-lock פג, client B לוקח אותו, ו-A מתעורר עדיין בטוח שה-lock אצלו. <strong>Redlock</strong> (לקחת lock על רוב מתוך N=5 masters בלתי תלויים) משפר זמינות, אבל הביקורת של Martin Kleppmann מ-2016 הראתה שהוא עדיין תלוי בהנחות תזמון ולא מונע את התרחיש הזה. התיקון האמיתי הוא <strong>fencing token</strong>: מספר שעולה מונוטונית ומונפק יחד עם ה-lock (למשל <code>INCR</code>), והמשאב המוגן בודק אותו ודוחה token ישן. Lock בשביל <em>יעילות</em> (למנוע עבודה כפולה) → Redis מצוין. Lock בשביל <em>נכונות</em> (אסור לחייב פעמיים) → fencing, או etcd/ZooKeeper, או constraint ב-DB.</p>`
+<p>המלכודת: client לוקח את ה-lock ואז נתקע (GC, עצירת VM) מעבר ל-30 שניות; ה-lock פג, client B לוקח אותו, ו-A מתעורר עדיין בטוח שה-lock אצלו. <strong>Redlock</strong> (לקחת lock על רוב מתוך N=5 masters בלתי תלויים) משפר זמינות, אבל הביקורת של Martin Kleppmann מ-2016 הראתה שהוא עדיין תלוי בהנחות תזמון ולא מונע את התרחיש הזה. התיקון האמיתי הוא <strong>fencing token</strong>: מספר שעולה מונוטונית ומונפק יחד עם ה-lock (למשל <code>INCR</code>), והמשאב המוגן בודק אותו ודוחה token ישן. Lock בשביל <em>יעילות</em> (למנוע עבודה כפולה) ← Redis מצוין. Lock בשביל <em>נכונות</em> (אסור לחייב פעמיים) ← fencing, או etcd/ZooKeeper, או constraint ב-DB.</p>`
       }
     },
     {
@@ -465,7 +465,7 @@ t5  Reader A: SET user:42 v1        ← stale value now cached until TTL</pre>
 <tr><td><code>stale-while-revalidate=30</code></td><td>מגישים stale עד 30 שניות אחרי התפוגה ומרעננים ברקע</td></tr>
 <tr><td><code>stale-if-error=86400</code></td><td>מגישים stale אם ה-origin מחזיר 5xx — חוסן בחינם</td></tr>
 <tr><td><code>immutable</code></td><td>אף פעם לא לעשות revalidate — ל-assets עם fingerprint (<code>app.3f9a1c.js</code>)</td></tr>
-<tr><td><code>ETag</code> + <code>If-None-Match</code></td><td>בקשה מותנית; לא השתנה → <code>304 Not Modified</code>, בלי body</td></tr>
+<tr><td><code>ETag</code> + <code>If-None-Match</code></td><td>בקשה מותנית; לא השתנה ← <code>304 Not Modified</code>, בלי body</td></tr>
 <tr><td><code>Vary: Accept-Encoding</code></td><td>חלק מה-cache key; <code>Vary: Cookie</code> או <code>User-Agent</code> הורסים את ה-hit ratio</td></tr>
 </table>
 <pre>Cache-Control: public, max-age=60, s-maxage=600, stale-while-revalidate=30, stale-if-error=86400</pre>
@@ -526,7 +526,7 @@ t5  Reader A: SET user:42 v1        ← stale value now cached until TTL</pre>
         { en: "Cache for the default 60 seconds", he: "לשמור לברירת המחדל של 60 שניות" }
       ],
       answer: 1,
-      explain: { en: "no-store means don't store. no-cache means store but revalidate (typically a cheap conditional request with ETag → 304).", he: "no-store אומר לא לשמור. no-cache אומר לשמור אבל לעשות revalidate (בדרך כלל בקשה מותנית זולה עם ETag → 304)." }
+      explain: { en: "no-store means don't store. no-cache means store but revalidate (typically a cheap conditional request with ETag → 304).", he: "no-store אומר לא לשמור. no-cache אומר לשמור אבל לעשות revalidate (בדרך כלל בקשה מותנית זולה עם ETag ← 304)." }
     },
     {
       q: { en: "A nightly job scans 5M cold records through the same cache as live traffic, and the hit ratio collapses every morning. Which change helps most?", he: "Job לילי סורק 5M רשומות קרות דרך אותו cache של התעבורה החיה, וה-hit ratio קורס כל בוקר. איזה שינוי יעזור הכי הרבה?" },
@@ -610,7 +610,7 @@ INFRA.lessons.push({
 <tr><td>עלות חבויה</td><td>Page splits, bloat, vacuum</td><td>CPU/IO של compaction, tombstones, stalls</td></tr>
 </table>
 <p><strong>שלוש ההגברות</strong> (אפשר למזער לכל היותר שתיים): <em>write amplification</em> (bytes שנכתבו לדיסק ÷ bytes שהאפליקציה כתבה — leveled compaction יכול להגיע ל-10-30x), <em>read amplification</em> (קריאות דיסק לכל query), <em>space amplification</em> (דיסק בשימוש ÷ דאטה חי — size-tiered compaction יכול לדרוש זמנית ~2x). ב-Cassandra, <code>LeveledCompactionStrategy</code> מעדיף קריאות ומקום; <code>SizeTieredCompactionStrategy</code> מעדיף כתיבות; <code>TimeWindowCompactionStrategy</code> ל-time-series עם TTL.</p>
-<blockquote>💡 איפה תפגוש את זה: "למה ה-read latency ב-Cassandra קופץ?" — יותר מדי SSTables לקריאה (<code>nodetool tablehistograms</code>) או סריקות של tombstones. בראיון: "תתכנן metrics store עם הרבה כתיבות" → LSM; "OLTP עם range queries ו-secondary indexes" → B-tree.</blockquote>`
+<blockquote>💡 איפה תפגוש את זה: "למה ה-read latency ב-Cassandra קופץ?" — יותר מדי SSTables לקריאה (<code>nodetool tablehistograms</code>) או סריקות של tombstones. בראיון: "תתכנן metrics store עם הרבה כתיבות" ← LSM; "OLTP עם range queries ו-secondary indexes" ← B-tree.</blockquote>`
       }
     },
     {
@@ -625,11 +625,11 @@ INFRA.lessons.push({
 <blockquote>💡 Interview angle: "Count unique users per day for 1B events" → HLL. "Find the top 100 IPs in a 10 Gbps stream" → Count-Min Sketch + heap (see the coding problem <em>Top K frequent IPs</em>). "Avoid disk reads for keys that don't exist" → Bloom filter. Always state the error bound and that the answer is approximate.</blockquote>`,
         he: `<p>מחליפים שגיאה זעירה ו<em>חסומה</em> בחיסכון של סדרי גודל בזיכרון.</p>
 <ul>
-<li><strong>Bloom filter</strong> — "האם X בקבוצה?" מערך של m ביטים ו-k פונקציות hash; הכנסה מדליקה k ביטים, בדיקה בודקת אותם. <strong>אין false negatives</strong>, שיעור false positives ≈ <code>(1 - e^(-kn/m))^k</code>. כלל אצבע: ~10 ביטים ל-key עם k≈7 → ~1% FPR; ~14.4 ביטים → 0.1%. אי אפשר למחוק (בשביל זה יש counting Bloom או Cuckoo filter). <em>איפה:</em> לכל SSTable ב-Cassandra/HBase/RocksDB יש אחד, כך שקריאת נקודה מדלגת על קבצים שבטוח לא מכילים את ה-key (<code>bloom_filter_fp_chance</code> ב-Cassandra); הגנה מ-cache penetration; רשימת ה-Safe Browsing הישנה של Chrome; CDNs שלא רוצים לשמור one-hit-wonders.</li>
-<li><strong>HyperLogLog</strong> — "כמה ערכים שונים?" עושים hash לכל פריט ושומרים לכל register את הרצף הארוך ביותר של אפסים מובילים; יותר ערכים שונים → רצפים ארוכים יותר. Redis משתמש ב-16384 registers × 6 ביטים = 12 KB לשגיאת תקן של ~0.81%, לכל cardinality. אפשר למזג: <code>PFMERGE</code> של HLLs יומיים ל-HLL שבועי. <em>איפה:</em> unique visitors, כמות IPs שונים לדקה, <code>approx_count_distinct</code> ב-BigQuery/Spark/Presto.</li>
+<li><strong>Bloom filter</strong> — "האם X בקבוצה?" מערך של m ביטים ו-k פונקציות hash; הכנסה מדליקה k ביטים, בדיקה בודקת אותם. <strong>אין false negatives</strong>, שיעור false positives ≈ <code>(1 - e^(-kn/m))^k</code>. כלל אצבע: ~10 ביטים ל-key עם k≈7 ← ~1% FPR; ~14.4 ביטים ← 0.1%. אי אפשר למחוק (בשביל זה יש counting Bloom או Cuckoo filter). <em>איפה:</em> לכל SSTable ב-Cassandra/HBase/RocksDB יש אחד, כך שקריאת נקודה מדלגת על קבצים שבטוח לא מכילים את ה-key (<code>bloom_filter_fp_chance</code> ב-Cassandra); הגנה מ-cache penetration; רשימת ה-Safe Browsing הישנה של Chrome; CDNs שלא רוצים לשמור one-hit-wonders.</li>
+<li><strong>HyperLogLog</strong> — "כמה ערכים שונים?" עושים hash לכל פריט ושומרים לכל register את הרצף הארוך ביותר של אפסים מובילים; יותר ערכים שונים ← רצפים ארוכים יותר. Redis משתמש ב-16384 registers × 6 ביטים = 12 KB לשגיאת תקן של ~0.81%, לכל cardinality. אפשר למזג: <code>PFMERGE</code> של HLLs יומיים ל-HLL שבועי. <em>איפה:</em> unique visitors, כמות IPs שונים לדקה, <code>approx_count_distinct</code> ב-BigQuery/Spark/Presto.</li>
 <li><strong>Count-Min Sketch</strong> — "כמה פעמים X הופיע?" טבלה של d × w counters; כל פריט מגדיל counter אחד בכל שורה; ההערכה = המינימום בין השורות. <strong>רק מעריך ביתר</strong>; שגיאה ≤ εN עם w = e/ε, ביטחון 1 - δ עם d = ln(1/δ). משלבים עם min-heap בגודל K בשביל <strong>heavy hitters</strong> (top-K IPs, hot keys). <em>איפה:</em> הערכת התדירות של W-TinyLFU ב-Caffeine, טלמטריית רשת, זיהוי abuse.</li>
 </ul>
-<blockquote>💡 בראיון: "לספור משתמשים ייחודיים ליום מתוך 1B events" → HLL. "למצוא את 100 ה-IPs המובילים ב-stream של 10 Gbps" → Count-Min Sketch + heap (ראה את בעיית הקוד <em>Top K frequent IPs</em>). "להימנע מקריאות דיסק ל-keys שלא קיימים" → Bloom filter. תמיד להגיד את חסם השגיאה ושהתשובה מקורבת.</blockquote>`
+<blockquote>💡 בראיון: "לספור משתמשים ייחודיים ליום מתוך 1B events" ← HLL. "למצוא את 100 ה-IPs המובילים ב-stream של 10 Gbps" ← Count-Min Sketch + heap (ראה את בעיית הקוד <em>Top K frequent IPs</em>). "להימנע מקריאות דיסק ל-keys שלא קיימים" ← Bloom filter. תמיד להגיד את חסם השגיאה ושהתשובה מקורבת.</blockquote>`
       }
     },
     {
@@ -654,8 +654,8 @@ INFRA.lessons.push({
 <pre>ip route get 10.1.2.3                   # kernel longest-prefix match in action
 git cat-file -p HEAD^{tree} | head -5    # a Merkle tree node: entries with child hashes</pre>`,
         he: `<ul>
-<li><strong>Merkle tree</strong> — עץ של hashes: העלים הם hash של בלוקי דאטה, ההורים hash של הילדים. שתי replicas משוות root hash; אם שווה, הן זהות; אם לא, יורדים רק לתתי-עצים שונים — מוצאים את הטווח השונה ב-O(log n) השוואות במקום לשלוח את כל הדאטה. <em>איפה:</em> anti-entropy repair ב-Cassandra (<code>nodetool repair</code> בונה Merkle trees לכל token range) ובמערכות בסגנון Dynamo; git (commits → trees → blobs יוצרים Merkle DAG, ובגלל זה hash של commit נועל את כל ה-snapshot); לוגים של Certificate Transparency; checksums של בלוקים ב-ZFS; blockchains.</li>
-<li><strong>Trie / radix tree</strong> — keys חולקים prefixes לאורך המסלול. השימוש הקטלני בתשתית הוא <strong>longest-prefix match</strong>: בהינתן 10.1.2.3, למצוא את ה-route הכי ספציפי מבין 10.0.0.0/8, 10.1.0.0/16, 10.1.2.0/24. ה-FIB של IPv4 ב-Linux משתמש ב-LC-trie; routers משתמשים ב-tries או בחומרת TCAM. Radix trees גם מאנדקסים את ה-page cache של Linux (XArray) ואת ה-streams של Redis (<code>rax</code>). <em>בראיון:</em> "תממש IP allow-list / חיפוש route" → trie בינארי על ביטי הכתובת, O(32) ל-IPv4.</li>
+<li><strong>Merkle tree</strong> — עץ של hashes: העלים הם hash של בלוקי דאטה, ההורים hash של הילדים. שתי replicas משוות root hash; אם שווה, הן זהות; אם לא, יורדים רק לתתי-עצים שונים — מוצאים את הטווח השונה ב-O(log n) השוואות במקום לשלוח את כל הדאטה. <em>איפה:</em> anti-entropy repair ב-Cassandra (<code>nodetool repair</code> בונה Merkle trees לכל token range) ובמערכות בסגנון Dynamo; git (commits ← trees ← blobs יוצרים Merkle DAG, ובגלל זה hash של commit נועל את כל ה-snapshot); לוגים של Certificate Transparency; checksums של בלוקים ב-ZFS; blockchains.</li>
+<li><strong>Trie / radix tree</strong> — keys חולקים prefixes לאורך המסלול. השימוש הקטלני בתשתית הוא <strong>longest-prefix match</strong>: בהינתן 10.1.2.3, למצוא את ה-route הכי ספציפי מבין 10.0.0.0/8, 10.1.0.0/16, 10.1.2.0/24. ה-FIB של IPv4 ב-Linux משתמש ב-LC-trie; routers משתמשים ב-tries או בחומרת TCAM. Radix trees גם מאנדקסים את ה-page cache של Linux (XArray) ואת ה-streams של Redis (<code>rax</code>). <em>בראיון:</em> "תממש IP allow-list / חיפוש route" ← trie בינארי על ביטי הכתובת, O(32) ל-IPv4.</li>
 <li><strong>Heap (priority queue)</strong> — הצצה למינימום/מקסימום ב-O(1), push/pop ב-O(log n). <em>איפה:</em> timers (ה-runtime של Go משתמש ב-heap 4-ארי של timers; ה-delaying work queue של client-go ב-Kubernetes מחזיק heap לפי זמן מוכנות), schedulers שבוחרים את ה-job עם העדיפות הגבוהה, Dijkstra בניתוב (SPF של OSPF), מיזוג K קבצי לוג ממוינים, top-K עם min-heap בגודל K. שים לב: ה-scheduler של Linux משתמש ב-red-black tree, לא ב-heap — הוא צריך גם הסרה מסודרת של tasks שרירותיים.</li>
 </ul>
 <pre>ip route get 10.1.2.3                   # kernel longest-prefix match in action
@@ -680,7 +680,7 @@ git cat-file -p HEAD^{tree} | head -5    # a Merkle tree node: entries with chil
 <table>
 <tr><th>מערכת</th><th>Log</th><th>המבנה שלידו</th></tr>
 <tr><td>Postgres / MySQL</td><td>WAL / redo log — כותבים לשם קודם, fsync, ורק אחר כך משנים pages בעצלות</td><td>Pages של B-tree; replicas מריצים מחדש את ה-WAL/binlog</td></tr>
-<tr><td>Kafka</td><td>ה-log <em>הוא</em> המוצר: קבצי segment לכל partition (ברירת מחדל 1 GB), retention לפי זמן/גודל או compaction לפי key</td><td>Offset index דליל + time index לכל segment → חיפוש בינארי ל-offset</td></tr>
+<tr><td>Kafka</td><td>ה-log <em>הוא</em> המוצר: קבצי segment לכל partition (ברירת מחדל 1 GB), retention לפי זמן/גודל או compaction לפי key</td><td>Offset index דליל + time index לכל segment ← חיפוש בינארי ל-offset</td></tr>
 <tr><td>etcd</td><td>Raft log ב-WAL, משוכפל ל-quorum לפני commit</td><td>bbolt (B+tree) מחזיק את ה-state שהוחל; snapshots + <code>etcdctl defrag</code> שומרים אותו קטן</td></tr>
 <tr><td>Redis</td><td>AOF</td><td>מבנים בזיכרון; AOF rewrite = compaction</td></tr>
 <tr><td>LSM stores</td><td>WAL ל-memtable</td><td>SSTables + compaction</td></tr>
@@ -750,7 +750,7 @@ git cat-file -p HEAD^{tree} | head -5    # a Merkle tree node: entries with chil
         { en: "A Merkle tree", he: "Merkle tree" }
       ],
       answer: 1,
-      explain: { en: "The skip list keeps members ordered by score for O(log n) inserts and range queries; the hash table maps member → score for O(1) ZSCORE. Small sets use a listpack.", he: "ה-skip list שומר את החברים ממוינים לפי score להכנסות ושאילתות טווח ב-O(log n); ה-hash table ממפה member → score בשביל ZSCORE ב-O(1). קבוצות קטנות משתמשות ב-listpack." }
+      explain: { en: "The skip list keeps members ordered by score for O(log n) inserts and range queries; the hash table maps member → score for O(1) ZSCORE. Small sets use a listpack.", he: "ה-skip list שומר את החברים ממוינים לפי score להכנסות ושאילתות טווח ב-O(log n); ה-hash table ממפה member ← score בשביל ZSCORE ב-O(1). קבוצות קטנות משתמשות ב-listpack." }
     },
     {
       q: { en: "You add a 5th node to a cache cluster sharded with hash(key) mod N. Roughly what fraction of keys move?", he: "מוסיפים node חמישי ל-cache cluster שמחולק עם hash(key) mod N. בערך איזה חלק מה-keys זז?" },

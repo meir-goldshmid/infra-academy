@@ -555,7 +555,7 @@ INFRA.lessons.push({
 <pre>${C.await}</pre>
 <p>What to cover for a consumer: happy path; <strong>duplicate delivery</strong> (send the same message twice — the effect must happen once, see idempotency); poison message goes to the DLQ after N attempts; out-of-order events; consumer restart mid-batch (offset commit after processing). Run a real broker in Testcontainers (Kafka, RabbitMQ, LocalStack for SQS) — in-memory brokers skip the rebalance, ack and serialization behavior you actually need to test.</p>
 <blockquote>💡 Real world: give every test its own topic/queue name (suffix with a UUID) so parallel tests don't consume each other's messages — the #1 cause of flaky Kafka tests.</blockquote>`,
-        he: `<p>קוד event-driven שובר את קצב ה-"קריאה → assert": מפרסמים הודעה, וההשפעה קורית <em>אחר כך</em>, ב-thread או בשירות אחר. שתי התשובות הרעות הן <code>sleep(5)</code> (איטי ועדיין flaky) ולא לבדוק בכלל. התשובה הטובה היא <strong>assertions מסוג "eventually"</strong>: polling על תנאי עם timeout.</p>
+        he: `<p>קוד event-driven שובר את קצב ה-"קריאה ← assert": מפרסמים הודעה, וההשפעה קורית <em>אחר כך</em>, ב-thread או בשירות אחר. שתי התשובות הרעות הן <code>sleep(5)</code> (איטי ועדיין flaky) ולא לבדוק בכלל. התשובה הטובה היא <strong>assertions מסוג "eventually"</strong>: polling על תנאי עם timeout.</p>
 <pre>${C.await}</pre>
 <p>מה לכסות ב-consumer: המסלול השמח; <strong>מסירה כפולה</strong> (שולחים את אותה הודעה פעמיים — ההשפעה חייבת לקרות פעם אחת, ראה אידמפוטנטיות); poison message הולכת ל-DLQ אחרי N ניסיונות; events לא לפי הסדר; restart של ה-consumer באמצע batch (commit של ה-offset אחרי העיבוד). מריצים broker אמיתי ב-Testcontainers (Kafka, RabbitMQ, LocalStack ל-SQS) — brokers בזיכרון מדלגים בדיוק על התנהגות ה-rebalance, ה-ack וה-serialization שצריך לבדוק.</p>
 <blockquote>💡 מהשטח: תן לכל בדיקה topic/queue משלה (עם סיומת UUID) כדי שבדיקות מקביליות לא יצרכו הודעות אחת של השנייה — הסיבה מס' 1 לבדיקות Kafka flaky.</blockquote>`
@@ -831,7 +831,7 @@ INFRA.lessons.push({
 <p>Read it like this: throughput hit the target (487/s ≈ 500 with ramps), <code>dropped_iterations=0</code> means k6 had enough VUs to keep the rate, and every threshold passed. Look at the <strong>max</strong> and at p99 over time, not just the summary — a 3.1 s max with a fine p99 is often GC or a cold cache. Exclude the warm-up (JIT, connection pools, caches) or report it separately.</p>
 <blockquote>⚠️ Production tip: always graph latency <em>against</em> throughput while ramping. The curve is flat, then bends sharply at the <strong>knee</strong> — that's your real capacity. Plan to run at ~60–70% of it (queueing theory: latency explodes as utilization approaches 100%).</blockquote>`,
         he: `<pre>${P.k6}</pre>
-<p><strong>מודל פתוח מול סגור.</strong> מודל סגור (N משתמשים וירטואליים בלולאה: בקשה → מחכים לתשובה → הבאה) מאט אוטומטית כשהמערכת מאטה — אז העומס יורד בדיוק כשרצית לראות מה קורה תחתיו. זה <strong>coordinated omission</strong>: התשובות האיטיות מדכאות את הבקשות שהיו מודדות את התור. משתמשים אמיתיים לא מחכים אחד לשני; משתמשים ב-executor של <em>arrival-rate</em> (מודל פתוח) כך ש-500 בקשות לשנייה מגיעות לא משנה מה.</p>
+<p><strong>מודל פתוח מול סגור.</strong> מודל סגור (N משתמשים וירטואליים בלולאה: בקשה ← מחכים לתשובה ← הבאה) מאט אוטומטית כשהמערכת מאטה — אז העומס יורד בדיוק כשרצית לראות מה קורה תחתיו. זה <strong>coordinated omission</strong>: התשובות האיטיות מדכאות את הבקשות שהיו מודדות את התור. משתמשים אמיתיים לא מחכים אחד לשני; משתמשים ב-executor של <em>arrival-rate</em> (מודל פתוח) כך ש-500 בקשות לשנייה מגיעות לא משנה מה.</p>
 <pre>${P.k6out}</pre>
 <p>קוראים את זה כך: ה-throughput הגיע ליעד (487/s ≈ 500 עם ה-ramps), <code>dropped_iterations=0</code> אומר של-k6 היו מספיק VUs לשמור על הקצב, וכל ה-thresholds עברו. מסתכלים על ה-<strong>max</strong> ועל p99 לאורך זמן, לא רק על הסיכום — max של 3.1 שניות עם p99 תקין זה לרוב GC או cache קר. מוציאים את ה-warm-up (JIT, connection pools, caches) או מדווחים עליו בנפרד.</p>
 <blockquote>⚠️ טיפ לפרודקשן: תמיד תצייר latency <em>מול</em> throughput בזמן ה-ramp. העקומה שטוחה ואז מתכופפת בחדות ב-<strong>knee</strong> — זו הקיבולת האמיתית שלך. מתכננים לרוץ ב-~60–70% ממנה (תורת התורים: ה-latency מתפוצץ כשהניצולת מתקרבת ל-100%).</blockquote>`
@@ -887,7 +887,7 @@ INFRA.lessons.push({
   ],
   mnemonic: {
     en: "Question → open load → p99 at target → flame graph → fix one thing → re-run → update sizing.",
-    he: "שאלה → עומס פתוח → p99 ביעד → flame graph → מתקנים דבר אחד → מריצים שוב → מעדכנים sizing."
+    he: "שאלה ← עומס פתוח ← p99 ביעד ← flame graph ← מתקנים דבר אחד ← מריצים שוב ← מעדכנים sizing."
   },
   pitfalls: [
     { en: "Closed-model tools with a fixed number of users: when the system slows, they send less, hiding the latency you were trying to find (coordinated omission).", he: "כלים במודל סגור עם מספר משתמשים קבוע: כשהמערכת מאטה הם שולחים פחות, ומסתירים את ה-latency שחיפשת (coordinated omission)." },

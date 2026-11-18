@@ -18,6 +18,8 @@ Mixed Hebrew/English direction (RTL/LTR) — applies to every lesson, glossary t
 - Write English terms, commands, paths and numbers naturally; `js/bidi.js` wraps every LTR run in Hebrew text in `<bdi dir="ltr">` at render time so ".NET", "C++", "/etc/fstab", "-o wide", "R+W>N", "99.9%" keep their order. Don't add `<bdi>` by hand except to force a long mixed phrase together.
 - Put whole commands, YAML and code in `<code>`/`<pre>` (always LTR), not in running Hebrew text.
 - Don't start or end a Hebrew sentence with a long English phrase when you can rephrase; keep sentence punctuation (. , :) after the English term, outside parentheses.
+- Arrows in Hebrew text point the way Hebrew reads: ← ("דרישות ← ענן", also "SLO ← DR" when the sentence is Hebrew). Keep → only inside `<pre>`/`<code>`/`.formula`, in a tag that holds only English (`<td>kitten→sitting</td>`), and in `en` strings. `tools/validate.js` enforces it; `node tools/bidi-arrows.js --fix` auto-fixes.
+- Before calling Hebrew content done, run the "RTL/BiDi check" in CLAUDE.md (validate, re-read, render in Hebrew).
 
 ## Lesson
 

@@ -150,7 +150,7 @@ aws events test-event-pattern --event file://event.json --event-pattern file://p
 <li><strong>Retries</strong>: מסירות שנכשלו ל-target מקבלות retry עם backoff עד 24 שעות / 185 ניסיונות כברירת מחדל (שניהם ניתנים להגדרה). תצמיד <strong>DLQ (SQS) לכל target</strong>, אחרת events שנכשלו נזרקים בשקט אחרי חלון ה-retry.</li>
 <li><strong>Archive ו-replay</strong>: שומרים את כל ה-events על bus או תת-קבוצה מסוננת (עם retention שאתה בוחר), ואז עושים replay לטווח זמן בחזרה ל-bus — מצוין אחרי תיקון באג ב-consumer. ל-events שעברו replay יש שדה <code>replay-name</code>; תוודא שה-consumers אידמפוטנטיים.</li>
 <li><strong>EventBridge Scheduler</strong>: שירות נפרד ל-schedules חד-פעמיים (<code>at(...)</code>), <code>rate(...)</code> ו-<code>cron(...)</code> עם time zones וחלונות גמישים, שמגיע למיליוני schedules — המחליף המודרני ל-scheduled rules.</li>
-<li><strong>Pipes</strong>: חיבור נקודה-לנקודה source → filter → enrichment אופציונלי (Lambda, Step Functions, API) → target. ה-sources כוללים SQS, Kinesis, DynamoDB Streams, MSK. זה מחליף את ה-"Lambda דבק" שרק קורא מ-queue ומעביר הלאה.</li>
+<li><strong>Pipes</strong>: חיבור נקודה-לנקודה source ← filter ← enrichment אופציונלי (Lambda, Step Functions, API) ← target. ה-sources כוללים SQS, Kinesis, DynamoDB Streams, MSK. זה מחליף את ה-"Lambda דבק" שרק קורא מ-queue ומעביר הלאה.</li>
 <li><strong>Schema registry</strong> יודע לגלות את מבנה ה-events ולייצר code bindings.</li>
 </ul>
 <p>גבולות שכדאי להכיר: 256 KB ל-event; ה-throughput של <code>PutEvents</code> הוא soft quota שתלוי ב-region; ה-latency של המסירה בדרך כלל מתחת לשנייה אבל לא מובטח — אל תשים את EventBridge במסלול סינכרוני קריטי ל-latency.</p>
@@ -187,7 +187,7 @@ gcloud pubsub subscriptions seek billing-sub --time=2026-11-14T08:00:00Z</pre>
 <tr><td>יכולות מפתח</td><td>Peek-lock, sessions (FIFO לכל session), duplicate detection, scheduled messages, transactions, DLQ מובנה, max delivery count (ברירת מחדל 10)</td><td>Filters, תמיכה native ב-CloudEvents 1.0, retries עד 24 שעות (ברירת מחדל 30 ניסיונות), dead-letter ל-Blob storage</td><td>Partitions, consumer groups, Capture ל-Storage/Data Lake, retention של 1-7 ימים (Standard), יותר ב-Premium/Dedicated</td></tr>
 <tr><td>גודל/scale</td><td>הודעות של 256 KB ב-Standard, עד 100 MB ב-Premium</td><td>Events של 1 MB (חיוב ביחידות של 64 KB)</td><td>Throughput unit אחד ≈ 1 MB/s פנימה, 2 MB/s החוצה</td></tr>
 </table>
-<p>קומבינציה קלאסית: Blob Storage פולט <code>BlobCreated</code> → Event Grid → Service Bus queue → worker. Event Grid נותן טווח הגעה; Service Bus נותן עמידות, retries ו-backpressure.</p>
+<p>קומבינציה קלאסית: Blob Storage פולט <code>BlobCreated</code> ← Event Grid ← Service Bus queue ← worker. Event Grid נותן טווח הגעה; Service Bus נותן עמידות, retries ו-backpressure.</p>
 <p><strong>GCP Pub/Sub</strong> הוא שירות אחד שמכסה גם queue וגם topic: topic עם subscription אחד הוא queue; N subscriptions זה fan-out. סוגי subscription: pull, push (HTTPS), BigQuery ו-Cloud Storage (כותבים ישירות, בלי קוד). הכפתורים: ack deadline (ברירת מחדל 10 שניות, מקסימום 600; ה-client libraries מאריכים אוטומטית), <strong>ordering keys</strong> (סדר לפי key, לפי region), <strong>exactly-once delivery</strong> (רק ב-pull subscriptions), <strong>dead-letter topic</strong> עם max delivery attempts בין 5 ל-100, retry policy עם exponential backoff, הודעות עד 10 MB, retention ב-subscription עד 7 ימים, ו-<strong>seek</strong> ל-timestamp או snapshot בשביל replay.</p>
 <pre>gcloud pubsub topics create orders
 gcloud pubsub topics create orders-dlq
@@ -242,7 +242,7 @@ gcloud pubsub subscriptions seek billing-sub --time=2026-11-14T08:00:00Z</pre>
 <table>
 <tr><th>דרישה</th><th>בחירה</th></tr>
 <tr><td>Worker אחד חייב לבצע כל job; לספוג קפיצות; retries + DLQ</td><td>Queue (SQS, Service Bus queue, Pub/Sub pull sub)</td></tr>
-<tr><td>אותה הודעה ל-N שירותים בלתי תלויים</td><td>Topic → queue לכל consumer (SNS→SQS, Service Bus topic, Pub/Sub subs)</td></tr>
+<tr><td>אותה הודעה ל-N שירותים בלתי תלויים</td><td>Topic ← queue לכל consumer (SNS←SQS, Service Bus topic, Pub/Sub subs)</td></tr>
 <tr><td>היסטוריה מסודרת, replay מנקודה, throughput גבוה, הרבה קוראים</td><td>Stream (Kinesis, Event Hubs, Kafka/MSK)</td></tr>
 <tr><td>תגובה ל-events של הענן/SaaS, ניתוב לפי תוכן, בין accounts, נפח נמוך לכל סוג</td><td>Event bus (EventBridge, Event Grid, Eventarc)</td></tr>
 <tr><td>סדר קפדני לכל ישות</td><td>FIFO עם group IDs / sessions / ordering keys / partition key — ולקבל throughput נמוך יותר לכל key</td></tr>
@@ -272,7 +272,7 @@ gcloud pubsub subscriptions seek billing-sub --time=2026-11-14T08:00:00Z</pre>
   interview: [
     {
       q: { en: "SNS+SQS, EventBridge or Kinesis for 'order placed' consumed by 5 services?", he: "SNS+SQS, EventBridge או Kinesis עבור 'order placed' שנצרך ע\"י 5 שירותים?" },
-      a: { en: "If the volume is moderate and consumers need independent retries/backpressure: EventBridge (content routing, archive/replay, cross-account) or SNS→SQS per consumer — in both cases put an SQS queue in front of each consumer for buffering and DLQ. If it's high-volume, needs ordering per order and consumers want to replay history at their own pace: Kinesis/MSK. Deciding factors: volume, replay needs, ordering, routing complexity, cost per event.", he: "אם הנפח בינוני וה-consumers צריכים retries ו-backpressure עצמאיים: EventBridge (ניתוב לפי תוכן, archive/replay, בין accounts) או SNS→SQS לכל consumer — בשני המקרים שמים SQS queue לפני כל consumer בשביל buffering ו-DLQ. אם הנפח גבוה, צריך סדר לכל הזמנה וה-consumers רוצים replay של היסטוריה בקצב שלהם: Kinesis/MSK. השיקולים: נפח, צורך ב-replay, סדר, מורכבות הניתוב, עלות ל-event." }
+      a: { en: "If the volume is moderate and consumers need independent retries/backpressure: EventBridge (content routing, archive/replay, cross-account) or SNS→SQS per consumer — in both cases put an SQS queue in front of each consumer for buffering and DLQ. If it's high-volume, needs ordering per order and consumers want to replay history at their own pace: Kinesis/MSK. Deciding factors: volume, replay needs, ordering, routing complexity, cost per event.", he: "אם הנפח בינוני וה-consumers צריכים retries ו-backpressure עצמאיים: EventBridge (ניתוב לפי תוכן, archive/replay, בין accounts) או SNS←SQS לכל consumer — בשני המקרים שמים SQS queue לפני כל consumer בשביל buffering ו-DLQ. אם הנפח גבוה, צריך סדר לכל הזמנה וה-consumers רוצים replay של היסטוריה בקצב שלהם: Kinesis/MSK. השיקולים: נפח, צורך ב-replay, סדר, מורכבות הניתוב, עלות ל-event." }
     },
     {
       q: { en: "What's the difference between Event Grid and Service Bus?", he: "מה ההבדל בין Event Grid ל-Service Bus?" },
@@ -462,7 +462,7 @@ gcloud storage buckets add-iam-policy-binding gs://invoices \\
         he: `<p>שלושתם פותרים את אותה בעיה — "ה-ServiceAccount הזה רשאי לקרוא את ה-bucket הזה" — בלי keys סטטיים ב-Secrets:</p>
 <table>
 <tr><th></th><th>EKS Pod Identity (או IRSA)</th><th>AKS — Microsoft Entra Workload ID</th><th>GKE — Workload Identity Federation for GKE</th></tr>
-<tr><td>מנגנון</td><td>Add-on של Pod Identity agent + association (cluster, namespace, SA → IAM role). IRSA: OIDC provider + trust policy על ה-role + annotation על ה-SA</td><td>OIDC issuer על ה-cluster + federated identity credential על user-assigned managed identity</td><td>Workload pool של ה-cluster <code>PROJECT_ID.svc.id.goog</code>; נותנים IAM ישירות ל-principal של ה-KSA</td></tr>
+<tr><td>מנגנון</td><td>Add-on של Pod Identity agent + association (cluster, namespace, SA ← IAM role). IRSA: OIDC provider + trust policy על ה-role + annotation על ה-SA</td><td>OIDC issuer על ה-cluster + federated identity credential על user-assigned managed identity</td><td>Workload pool של ה-cluster <code>PROJECT_ID.svc.id.goog</code>; נותנים IAM ישירות ל-principal של ה-KSA</td></tr>
 <tr><td>על ה-Pod</td><td>כלום (Pod Identity) / annotation <code>eks.amazonaws.com/role-arn</code> (IRSA)</td><td>Annotation על ה-SA <code>azure.workload.identity/client-id</code> + label על ה-Pod <code>azure.workload.identity/use: "true"</code></td><td>כלום ב-grant ישיר (התבנית הישנה: annotation על ה-KSA כדי לעשות impersonation ל-GSA)</td></tr>
 </table>
 <pre># EKS Pod Identity
@@ -498,7 +498,7 @@ gcloud storage buckets add-iam-policy-binding gs://invoices \\
         he: `<table>
 <tr><th></th><th>EKS</th><th>AKS</th><th>GKE</th></tr>
 <tr><td>Add-ons מנוהלים</td><td>EKS add-ons: vpc-cni, coredns, kube-proxy, ebs-csi, pod-identity-agent, agents של observability — <em>אתה</em> מעלה את הגרסאות שלהם (Auto Mode עושה את זה בשבילך)</td><td>Extensions ו-add-ons: KEDA, service mesh מבוסס Istio, app routing (NGINX), Key Vault CSI, Flux GitOps</td><td>רוב רכיבי הליבה מנוהלים ומשודרגים עם ה-cluster; Gateway API controller, Config Sync, Backup for GKE</td></tr>
-<tr><td>Logs</td><td>הלוגים של ה-control plane (api, audit, authenticator, controllerManager, scheduler) <strong>כבויים כברירת מחדל</strong> → CloudWatch</td><td>Diagnostic settings → Log Analytics (audit logs עולים כסף אמיתי בנפח)</td><td>Cloud Logging פעיל כברירת מחדל, לוגים של המערכת ושל ה-workloads</td></tr>
+<tr><td>Logs</td><td>הלוגים של ה-control plane (api, audit, authenticator, controllerManager, scheduler) <strong>כבויים כברירת מחדל</strong> → CloudWatch</td><td>Diagnostic settings ← Log Analytics (audit logs עולים כסף אמיתי בנפח)</td><td>Cloud Logging פעיל כברירת מחדל, לוגים של המערכת ושל ה-workloads</td></tr>
 <tr><td>Metrics</td><td>CloudWatch Container Insights, Amazon Managed Prometheus/Grafana</td><td>Azure Monitor managed Prometheus + Managed Grafana, Container Insights</td><td>Cloud Monitoring, Managed Service for Prometheus (פעיל כברירת מחדל ב-clusters חדשים)</td></tr>
 </table>
 <p><strong>מוקשים שנושכים:</strong></p>
@@ -931,7 +931,7 @@ INFRA.lessons.push({
 aws wellarchitected create-milestone --workload-id $WID --milestone-name "2026-Q4 baseline"
 aws wellarchitected get-lens-review --workload-id $WID --lens-alias wellarchitected \\
   --query 'LensReview.RiskCounts'      # {"HIGH": 4, "MEDIUM": 2, "NONE": ..., "UNANSWERED": ...}</pre>`,
-        he: `<p>ה-workload: שירות "orders" של B2B SaaS על AWS — ALB → ECS Fargate → RDS PostgreSQL, SQS ל-jobs אסינכרוניים, ~$38k לחודש, SLO של 99.9%. הממצאים אחרי workshop של חצי יום:</p>
+        he: `<p>ה-workload: שירות "orders" של B2B SaaS על AWS — ALB ← ECS Fargate ← RDS PostgreSQL, SQS ל-jobs אסינכרוניים, ~$38k לחודש, SLO של 99.9%. הממצאים אחרי workshop של חצי יום:</p>
 <table>
 <tr><th>#</th><th>ממצא</th><th>עמוד תווך</th><th>סיכון</th><th>תיקון</th><th>מאמץ</th></tr>
 <tr><td>1</td><td>RDS ב-AZ יחיד; ה-tasks של ECS מקובעים ל-subnet אחד</td><td>Reliability</td><td>HRI</td><td>להפעיל Multi-AZ ב-RDS; לפזר tasks על subnets ב-3 AZs</td><td>S</td></tr>

@@ -60,7 +60,7 @@ disk ≈ retention_s × samples/s × 1.3 B
 <blockquote>💡 Real world: memory, not disk, is what tips Prometheus over. Budget roughly 3-4 KB of RAM per active head series (plus query overhead): 2M series ≈ 8 GB just for the head. That is why a cardinality spike shows up as OOMKilled Prometheus pods.</blockquote>`,
         he: `<ul><li><strong>Head block</strong> — השעתיים-שלוש האחרונות חיות בזיכרון. לכל series פעיל יש chunk בזיכרון; chunk מחזיק עד 120 samples (30 דקות ב-scrape של 15s) ואז נחתך וממופה לדיסק (<code>chunks_head/</code>).</li>
 <li><strong>WAL</strong> — כל sample נכתב קודם ל-<code>wal/</code> ב-segments של 128 MB, כך ש-crash לא מאבד כלום; ב-restart הוא מריץ אותו מחדש (בגלל זה Prometheus גדול לוקח דקות עד שהוא ready).</li>
-<li><strong>בלוקים קבועים</strong> — כל שעתיים ה-head עובר compaction לתיקיית block שלא משתנה: <code>chunks/</code>, <code>index</code> (label → posting list של series IDs, בעצם inverted index) ו-<code>meta.json</code>.</li>
+<li><strong>בלוקים קבועים</strong> — כל שעתיים ה-head עובר compaction לתיקיית block שלא משתנה: <code>chunks/</code>, <code>index</code> (label ← posting list של series IDs, בעצם inverted index) ו-<code>meta.json</code>.</li>
 <li><strong>Compaction</strong> — ברקע ממזג בלוקים של 2h לבלוקים גדולים יותר (עד 10% מה-retention, מקסימום 31 יום). Retention = מוחקים תיקיות block שלמות: O(1), בלי bloat.</li></ul>
 <p><strong>דחיסת Gorilla</strong> (Facebook, 2015): timestamps נשמרים כ-<em>delta-of-delta</em> — ב-scrape קבוע של 15s ה-delta-of-delta הוא 0, ומקודד בביט אחד. ערכים עוברים XOR עם הערך הקודם; gauge שמשתנה לאט חולק את רוב הביטים, אז נכתבים רק המעטים שמשנים. התוצאה: <strong>בערך 1.3 bytes ל-sample</strong> במקום 16.</p>
 <pre>prometheus_tsdb_head_series          1,840,221     # active series (THE number to watch)
@@ -176,7 +176,7 @@ topk(10, count by (__name__) ({__name__=~".+"}))
 # which label is exploding on one metric
 count(count by (path) (http_requests_total))</pre>
 <p>תיקונים: לזרוק/לעשות relabel ב-scrape (<code>metric_relabel_configs</code> עם <code>action: labeldrop</code>), לנרמל נתיבים כבר ב-instrumentation, להגדיר <code>sample_limit</code> לכל scrape job כדי ש-deploy רע אחד לא יפיל את Prometheus, ולשים פירוט עם cardinality גבוה ב-<strong>logs/traces</strong> (עם exemplars שמקשרים ביניהם) במקום ב-labels.</p>
-<p><strong>איך בוחרים</strong>: metrics של infra/k8s → Prometheus + (Thanos | Mimir | VictoriaMetrics). IoT או סדרות זמן עסקיות שצריכות join עם data רלציוני → TimescaleDB. חיישנים/אירועים ב-push עם SQL → InfluxDB 3 או ClickHouse. רוצה managed וזהו → Amazon Managed Prometheus, Grafana Cloud, Azure Monitor managed Prometheus.</p>`
+<p><strong>איך בוחרים</strong>: metrics של infra/k8s ← Prometheus + (Thanos | Mimir | VictoriaMetrics). IoT או סדרות זמן עסקיות שצריכות join עם data רלציוני ← TimescaleDB. חיישנים/אירועים ב-push עם SQL ← InfluxDB 3 או ClickHouse. רוצה managed וזהו ← Amazon Managed Prometheus, Grafana Cloud, Azure Monitor managed Prometheus.</p>`
       }
     }
   ],
@@ -312,7 +312,7 @@ INFRA.lessons.push({
 <ol><li><strong>לעצור את הנזק</strong> — לכבות את ה-job הרע, ה-feature flag או ה-migration. אין טעם לשחזר כשהבאג עדיין כותב.</li>
 <li><strong>למצוא את הרגע הרע המדויק</strong> — מ-logs של האפליקציה, <code>pg_stat_statements</code>, audit log, או מפענוח של ה-binlog/WAL. לכתוב אותו ב-<strong>UTC עם offset מפורש</strong>: <code>2026-11-14 12:31:59+00</code>.</li>
 <li><strong>לבחור target — אף פעם לא את ה-instance של פרודקשן.</strong> משחזרים <em>side-by-side</em> ל-instance או DB חדש. בפרודקשן אולי עדיין יש data טוב שנכתב אחרי האירוע, ושחזור כושל על פרודקשן הופך outage חלקי לאובדן מוחלט.</li>
-<li><strong>לבחור עכשיו אסטרטגיית cutover</strong>: (a) <em>swap</em> — מפנים את האפליקציות ל-instance המשוחזר ומקבלים אובדן של כתיבות מאחרי האירוע או מריצים אותן מחדש; (b) <em>merge</em> — מעתיקים רק את השורות/טבלאות שנפגעו חזרה לפרודקשן. Blast radius קטן (טבלה אחת, כמה שורות) → merge. כל ה-DB פגוע / ransomware → swap.</li>
+<li><strong>לבחור עכשיו אסטרטגיית cutover</strong>: (a) <em>swap</em> — מפנים את האפליקציות ל-instance המשוחזר ומקבלים אובדן של כתיבות מאחרי האירוע או מריצים אותן מחדש; (b) <em>merge</em> — מעתיקים רק את השורות/טבלאות שנפגעו חזרה לפרודקשן. Blast radius קטן (טבלה אחת, כמה שורות) ← merge. כל ה-DB פגוע / ransomware ← swap.</li>
 <li><strong>להפעיל טיימר ולפתוח ערוץ אירוע.</strong> ה-RTO האמיתי הוא מספר שתרצה ב-postmortem.</li></ol>
 <blockquote>⚠️ טיפ לפרודקשן: תעצור גם כל דבר שמוחק backups או WAL — lifecycle rules, <code>pgbackrest expire</code>, purge של binlog (<code>binlog_expire_logs_seconds</code>). ה-segment שתצטרך מחר אולי מתוזמן למחיקה הלילה.</blockquote>`
       }
@@ -641,7 +641,7 @@ SELECT md5(string_agg(id::text || ':' || total::text, ',' ORDER BY id)) FROM ord
         { en: "Fail over to the read replica", he: "לעשות failover ל-read replica" }
       ],
       answer: 2,
-      explain: { en: "Small blast radius → merge. Swapping loses 20 minutes of legitimate writes in every other table; the replica already has the DELETE.", he: "Blast radius קטן → merge. Swap מאבד 20 דקות של כתיבות לגיטימיות בכל שאר הטבלאות; ב-replica כבר יש את ה-DELETE." }
+      explain: { en: "Small blast radius → merge. Swapping loses 20 minutes of legitimate writes in every other table; the replica already has the DELETE.", he: "Blast radius קטן ← merge. Swap מאבד 20 דקות של כתיבות לגיטימיות בכל שאר הטבלאות; ב-replica כבר יש את ה-DELETE." }
     },
     {
       q: { en: "Server TimeZone is UTC. The DELETE ran at 14:32 Israel time (UTC+2). You set recovery_target_time = '2026-11-14 14:31:00'. Result?", he: "ה-TimeZone של השרת הוא UTC. ה-DELETE רץ ב-14:32 שעון ישראל (UTC+2). הגדרת recovery_target_time = '2026-11-14 14:31:00'. מה התוצאה?" },
@@ -741,7 +741,7 @@ sync_binlog = 1</pre>
 <li><strong>Postgres</strong>: rows live in an unordered <em>heap</em>; every index (B-tree by default) points to a tuple location (ctid). MVCC writes a new tuple version on every UPDATE and leaves the old one for VACUUM — that is the source of bloat and of autovacuum load. HOT updates avoid touching indexes when no indexed column changes and the page has free space (tune <code>fillfactor</code>).</li></ul>
 <p>Cost profile: reads are predictable (log N pages), writes are <strong>random I/O</strong> — changing 100 bytes dirties a whole 8/16 KB page, and the first change after a checkpoint also writes the full page image into the WAL. Write amplification of 10-100x per small row update is normal.</p>`,
         he: `<p>B+tree שומר מפתחות ממוינים בדפים שמחוברים כעץ רדוד. עם בערך 300-500 מפתחות לדף, <strong>מיליארד שורות נכנסות ב-3-4 רמות</strong> — הרמות העליונות תמיד בזיכרון, אז lookup זה בערך קריאת דיסק אחת. Insert מוצא את דף העלה ומשנה אותו <em>במקום</em>; דף מלא מתפצל לשניים.</p>
-<ul><li><strong>InnoDB</strong>: הטבלה <em>היא</em> B+tree שמסודר (clustered) לפי ה-primary key; secondary indexes שומרים את ה-PK, אז lookup דרך secondary זה שני מעברים על עצים. PK אקראי (UUIDv4) אומר ש-inserts נוחתים על דפי עלים אקראיים → page splits כל הזמן, דפים חצי ריקים, buffer pool שמתחלף בלי הפסקה. PKs סדרתיים (auto-increment, UUIDv7) מוסיפים לקצה הימני.</li>
+<ul><li><strong>InnoDB</strong>: הטבלה <em>היא</em> B+tree שמסודר (clustered) לפי ה-primary key; secondary indexes שומרים את ה-PK, אז lookup דרך secondary זה שני מעברים על עצים. PK אקראי (UUIDv4) אומר ש-inserts נוחתים על דפי עלים אקראיים ← page splits כל הזמן, דפים חצי ריקים, buffer pool שמתחלף בלי הפסקה. PKs סדרתיים (auto-increment, UUIDv7) מוסיפים לקצה הימני.</li>
 <li><strong>Postgres</strong>: השורות יושבות ב-<em>heap</em> לא ממוין; כל index (B-tree כברירת מחדל) מצביע על מיקום של tuple (ctid). MVCC כותב גרסת tuple חדשה בכל UPDATE ומשאיר את הישנה ל-VACUUM — זה המקור של bloat ושל העומס של autovacuum. HOT updates נמנעים מלגעת ב-indexes כשאף עמודה עם index לא השתנתה ויש מקום פנוי בדף (מכווננים <code>fillfactor</code>).</li></ul>
 <p>פרופיל העלויות: קריאות צפויות (log N דפים), כתיבות הן <strong>random I/O</strong> — שינוי של 100 bytes מלכלך דף שלם של 8/16 KB, והשינוי הראשון אחרי checkpoint כותב גם את תמונת הדף המלאה ל-WAL. Write amplification של פי 10-100 על update של שורה קטנה זה נורמלי.</p>`
       }
@@ -758,10 +758,10 @@ sync_binlog = 1</pre>
 <tr><td><strong>Size-tiered</strong> (Cassandra STCS default)</td><td>merge ~4 similar-size SSTables into one bigger</td><td>low</td><td>high: a big compaction temporarily needs as much free disk as its input (keep ~50% free)</td><td>higher (key may be in many files)</td></tr>
 <tr><td><strong>Time-window</strong> (TWCS)</td><td>one bucket per time window, then never touched</td><td>very low</td><td>low</td><td>low for recent-time queries</td></tr></table>
 <p><strong>The RUM conjecture</strong>: you can optimize two of Read, Update (write) and Memory/space amplification, never all three. B-tree favors reads; leveled LSM favors reads+space at the cost of writes; size-tiered favors writes.</p>`,
-        he: `<ol><li>כתיבה → append ל-commit log (WAL) → הכנסה ל-<strong>memtable</strong> (מבנה ממוין בזיכרון, בדרך כלל skiplist). אישור. בלי שום random I/O.</li>
-<li>Memtable מלא (למשל 64 MB) → מוקפא ונכתב לדיסק כקובץ <strong>SSTable</strong> ממוין שלא משתנה. Updates ו-deletes הם פשוט רשומות חדשות יותר; delete כותב <strong>tombstone</strong>.</li>
+        he: `<ol><li>כתיבה ← append ל-commit log (WAL) ← הכנסה ל-<strong>memtable</strong> (מבנה ממוין בזיכרון, בדרך כלל skiplist). אישור. בלי שום random I/O.</li>
+<li>Memtable מלא (למשל 64 MB) ← מוקפא ונכתב לדיסק כקובץ <strong>SSTable</strong> ממוין שלא משתנה. Updates ו-deletes הם פשוט רשומות חדשות יותר; delete כותב <strong>tombstone</strong>.</li>
 <li><strong>Compaction</strong> ממזג SSTables ברקע (merge-sort), שומר את הגרסה החדשה של כל מפתח, זורק ערכים שנדרסו ו-tombstones שפג תוקפם.</li>
-<li>קריאה → בודקים את ה-memtable, ואז SSTables מהחדש לישן. לכל SSTable יש <strong>bloom filter</strong> (בערך 10 ביטים למפתח נותנים בערך 1% false positives) שעונה "בטוח לא כאן" בלי קריאת דיסק, ועוד sparse index ל"איפה בקובץ".</li></ol>
+<li>קריאה ← בודקים את ה-memtable, ואז SSTables מהחדש לישן. לכל SSTable יש <strong>bloom filter</strong> (בערך 10 ביטים למפתח נותנים בערך 1% false positives) שעונה "בטוח לא כאן" בלי קריאת דיסק, ועוד sparse index ל"איפה בקובץ".</li></ol>
 <table><tr><th>אסטרטגיה</th><th>איך</th><th>Write amp</th><th>Space amp</th><th>Read amp</th></tr>
 <tr><td><strong>Leveled</strong> (ברירת המחדל של RocksDB, LCS ב-Cassandra)</td><td>L0 ואז L1..Ln, כל רמה גדולה פי 10 בערך, טווחי מפתחות לא חופפים בכל רמה</td><td>גבוה (פי 10-30)</td><td>נמוך (בערך 1.1)</td><td>נמוך (בערך קובץ אחד לרמה)</td></tr>
 <tr><td><strong>Size-tiered</strong> (ברירת המחדל STCS ב-Cassandra)</td><td>ממזגים בערך 4 SSTables בגודל דומה לאחד גדול</td><td>נמוך</td><td>גבוה: compaction גדול צריך זמנית מקום פנוי כמו הקלט שלו (משאירים בערך 50% פנוי)</td><td>גבוה יותר (מפתח יכול להיות בהרבה קבצים)</td></tr>
@@ -782,7 +782,7 @@ sync_binlog = 1</pre>
 <tr><td>ScyllaDB</td><td>LSM (C++ Cassandra rewrite)</td><td>shard-per-core, incremental compaction (ICS) to cut space amp</td></tr>
 <tr><td>HBase, Bigtable</td><td>LSM</td><td>the original Bigtable paper design</td></tr></table>`,
         he: `<table><tr><th>מנוע</th><th>מבנה</th><th>הערות</th></tr>
-<tr><td>PostgreSQL</td><td>heap + B-tree indexes</td><td>MVCC בתוך ה-heap → VACUUM; דפים של 8 KB</td></tr>
+<tr><td>PostgreSQL</td><td>heap + B-tree indexes</td><td>MVCC בתוך ה-heap ← VACUUM; דפים של 8 KB</td></tr>
 <tr><td>MySQL InnoDB</td><td>clustered B+tree</td><td>דפים של 16 KB, undo log בשביל MVCC, doublewrite buffer</td></tr>
 <tr><td>SQLite, SQL Server, Oracle</td><td>B-tree</td><td>מנועים קלאסיים שמעדכנים במקום</td></tr>
 <tr><td>MongoDB WiredTiger</td><td>B-tree (LSM אופציונלי, כמעט לא בשימוש)</td><td>document store מעל B-tree</td></tr>
@@ -955,7 +955,7 @@ cpu           -&gt;  [2]</pre>
       "attrs":    { "type": "flattened" }
   } } }</pre>
 <p><strong>Mapping explosion</strong>: with dynamic mapping on, every new JSON key becomes a field in the cluster state. Log lines with user-generated keys (<code>headers.x-custom-123</code>) create thousands of fields; the default limit <code>index.mapping.total_fields.limit</code> = 1000 then rejects documents, and huge cluster state slows the master. Use <code>"dynamic": "strict"</code> (or <code>false</code>) and the <code>flattened</code> type for arbitrary key/value bags. Changing a field's type requires a <strong>reindex</strong> into a new index (behind an alias).</p>`,
-        he: `<p>Index רלציוני ממפה שורה → ערך. <strong>Inverted index</strong> ממפה <strong>term → posting list</strong> (doc IDs, תדירויות, מיקומים):</p>
+        he: `<p>Index רלציוני ממפה שורה ← ערך. <strong>Inverted index</strong> ממפה <strong>term → posting list</strong> (doc IDs, תדירויות, מיקומים):</p>
 <pre>doc1: "Pod stuck in CrashLoopBackOff"
 doc2: "Pod pending: insufficient cpu"
 
@@ -966,7 +966,7 @@ crashloopbackoff -&gt; [1]
 pending       -&gt;  [2]
 insufficient  -&gt;  [2]
 cpu           -&gt;  [2]</pre>
-<p>ה-terms מגיעים מ-<strong>analyzer</strong>: character filters (מורידים HTML) → <strong>tokenizer</strong> (פיצול ל-tokens) → token filters (lowercase, stop words, stemming של "running"→"run", synonyms). אותו analyzer רץ גם על ה-query, אז "PODS" תואם ל-"pod".</p>
+<p>ה-terms מגיעים מ-<strong>analyzer</strong>: character filters (מורידים HTML) ← <strong>tokenizer</strong> (פיצול ל-tokens) ← token filters (lowercase, stop words, stemming של "running"←"run", synonyms). אותו analyzer רץ גם על ה-query, אז "PODS" תואם ל-"pod".</p>
 <p><strong>Mapping</strong> זה ה-schema: שדות <code>text</code> עוברים ניתוח בשביל full-text search; שדות <code>keyword</code> נשמרים כ-term מדויק אחד בשביל filters, aggregations ומיון (מגובים ב-doc values על הדיסק). טועים בזה — והחיפוש או ה-aggregations נשברים.</p>
 <pre>PUT orders
 { "settings": { "number_of_shards": 3, "number_of_replicas": 1, "refresh_interval": "1s" },
@@ -1000,7 +1000,7 @@ PUT logs-reindex/_settings { "index": { "refresh_interval": "1s", "number_of_rep
 POST logs-2026.10/_forcemerge?max_num_segments=1</pre>
 <blockquote>⚠️ Production tip: "I indexed it but GET-search returns nothing" in a test is refresh, not a bug. In tests use <code>?refresh=wait_for</code>; in production don't set <code>refresh=true</code> on every write — it creates a tiny segment per request and merges eat your CPU.</blockquote>`,
         he: `<p>כל shard הוא Lucene index שבנוי מ-<strong>segments</strong> שלא משתנים. מסלול הכתיבה:</p>
-<ol><li>מסמך → indexing buffer בזיכרון + append ל-<strong>translog</strong> (ה-log של העמידות; עושים לו fsync בכל request כברירת מחדל, <code>index.translog.durability: request</code>).</li>
+<ol><li>מסמך ← indexing buffer בזיכרון + append ל-<strong>translog</strong> (ה-log של העמידות; עושים לו fsync בכל request כברירת מחדל, <code>index.translog.durability: request</code>).</li>
 <li><strong>Refresh</strong> (ברירת מחדל כל שנייה) כותב את ה-buffer כ-segment קטן וחדש ל-cache של ה-OS ופותח אותו לחיפוש. בגלל זה ES הוא <em>near-real-time</em>: מסמך שהרגע עשית לו index לא נראה בחיפוש עד שנייה. (Indices שלא חיפשו בהם 30 שניות מדלגים על refreshes מתוזמנים — <code>index.search.idle.after</code>.)</li>
 <li><strong>Flush</strong> = commit של Lucene: fsync ל-segments בדיסק וקיצוץ ה-translog.</li>
 <li><strong>Merges</strong>: הרבה segments קטנים ממוזגים לגדולים יותר ברקע. Deletes ו-updates רק מסמנים מסמכים כמחוקים (update = delete + מסמך חדש); המקום מתפנה בזמן ה-merge.</li></ol>
@@ -1069,9 +1069,9 @@ GET _cat/allocation?v                    # disk per node vs watermarks</pre>
 <li><strong>Watermarks</strong> של דיסק: low ב-85% (לא מקצים shards חדשים ל-node), high ב-90% (מזיזים shards משם), flood stage ב-95% (indices עם shard שם נהיים read-only: <code>index.blocks.read_only_allow_delete</code>; מאז 7.4 משתחרר אוטומטית כשהשימוש יורד מתחת ל-high watermark). מפנים דיסק, מוחקים indices ישנים, מוסיפים nodes.</li>
 <li>Node עשה restart — ה-replicas מתאוששים לבד אחרי <code>index.unassigned.node_left.delayed_timeout</code> (דקה). פשוט עוקבים.</li></ul>
 <p><strong>Red</strong> — סיבות ותיקונים:</p>
-<ul><li>ה-node שמחזיק את העותק היחיד של primary נפל → מחזירים אותו; ה-data חוזר איתו.</li>
-<li>ההקצאה נכשלה אחרי retries (corruption, הגיע ל-max_retries) → מתקנים את הסיבה, ואז <code>POST _cluster/reroute?retry_failed=true</code>.</li>
-<li>כל העותקים באמת אבדו → משחזרים את ה-index מ-snapshot (<code>POST _snapshot/repo/snap/_restore</code>), או כמוצא אחרון <code>allocate_stale_primary</code> / <code>allocate_empty_primary</code> דרך reroute עם <code>accept_data_loss: true</code> — מאבדים data, אז קודם מנסים snapshots.</li></ul>`
+<ul><li>ה-node שמחזיק את העותק היחיד של primary נפל ← מחזירים אותו; ה-data חוזר איתו.</li>
+<li>ההקצאה נכשלה אחרי retries (corruption, הגיע ל-max_retries) ← מתקנים את הסיבה, ואז <code>POST _cluster/reroute?retry_failed=true</code>.</li>
+<li>כל העותקים באמת אבדו ← משחזרים את ה-index מ-snapshot (<code>POST _snapshot/repo/snap/_restore</code>), או כמוצא אחרון <code>allocate_stale_primary</code> / <code>allocate_empty_primary</code> דרך reroute עם <code>accept_data_loss: true</code> — מאבדים data, אז קודם מנסים snapshots.</li></ul>`
       }
     },
     {
@@ -1100,7 +1100,7 @@ GET _cat/allocation?v                    # disk per node vs watermarks</pre>
   "delete": { "min_age": "90d", "actions": { "delete": {} } } } } }</pre>
 <p>Hot nodes: NVMe מהיר, כל הכתיבות. Warm: דיסקים גדולים וזולים, read-only. Cold/frozen: data שמגובה ב-snapshots ב-S3, איטי אבל זול.</p>
 <p><strong>לא DB ראשי</strong>: אין טרנזקציות על כמה מסמכים, הנראות היא near-real-time, שינוי mapping דורש reindex, ו-cluster אדום יכול במקרי קצה לאבד כתיבות שכבר אושרו. מתייחסים אליו כ-<em>projection נגזר שאפשר לבנות מחדש</em>:</p>
-<ul><li><strong>CDC</strong>: Postgres/MySQL → Debezium → Kafka → sink connector / consumer → ES (upserts אידמפוטנטיים לפי primary key, עם הגרסה מהמקור ו-<code>version_type=external</code> כדי שכתיבה שהגיעה באיחור לא תדרוס חדשה).</li>
+<ul><li><strong>CDC</strong>: Postgres/MySQL ← Debezium ← Kafka ← sink connector / consumer ← ES (upserts אידמפוטנטיים לפי primary key, עם הגרסה מהמקור ו-<code>version_type=external</code> כדי שכתיבה שהגיעה באיחור לא תדרוס חדשה).</li>
 <li><strong>Transactional outbox</strong>: כותבים את השורה ואירוע outbox באותה טרנזקציה ב-DB; relay מפרסם אותו ו-indexer מעדכן את ES. אף פעם לא "כותבים ל-DB ואז כותבים ל-ES" בתוך ה-request — הכתיבה השנייה תיכשל מתישהו והשניים יתרחקו.</li>
 <li>תמיד שומרים מסלול של <strong>reindex מלא</strong> (מה-DB ל-index חדש, ואז מעבירים את ה-alias) — זו תוכנית ההתאוששות שלך וגם תוכנית המיגרציה של ה-mappings.</li></ul>`
       }
@@ -1262,7 +1262,7 @@ recovery_target_time = ???`,
             "Offset מפורש של UTC, ארבע שניות לפני ה-DELETE שהיה ב-12:32:04 UTC. ו-'pause' מאפשר לבדוק לפני promote."),
           c("'2026-11-14 14:32:00' (the time on everyone's clock)", "'2026-11-14 14:32:00' (השעה שעל השעון של כולם)", "s2b", -10,
             "No offset → read in the server's TimeZone (UTC). 14:32 UTC is two hours AFTER the DELETE.",
-            "בלי offset → נקרא לפי ה-TimeZone של השרת (UTC). 14:32 UTC זה שעתיים אחרי ה-DELETE.")
+            "בלי offset ← נקרא לפי ה-TimeZone של השרת (UTC). 14:32 UTC זה שעתיים אחרי ה-DELETE.")
         ]
       },
       s2b: {

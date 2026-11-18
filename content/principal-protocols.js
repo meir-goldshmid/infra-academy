@@ -20,7 +20,7 @@ INFRA.lessons.push({
   },
   sections: [
     {
-      h: { en: "HTTP/1.0 → 1.1: keep-alive and head-of-line blocking", he: "HTTP/1.0 → 1.1: keep-alive ו-head-of-line blocking" },
+      h: { en: "HTTP/1.0 → 1.1: keep-alive and head-of-line blocking", he: "HTTP/1.0 ← 1.1: keep-alive ו-head-of-line blocking" },
       body: {
         en: `<p><strong>HTTP/1.0</strong> (1996) opened a new TCP connection per request: 1 RTT for the TCP handshake + 2 RTTs for TLS 1.2 + 1 RTT for the request. On a 100 ms mobile RTT that's ~400 ms before the first byte — for every image.</p>
 <p><strong>HTTP/1.1</strong> (1997, still everywhere) added:</p>
@@ -118,7 +118,7 @@ At 150 ms RTT (mobile, far region): 450 ms vs 300 ms vs 150 ms (vs ~0)</pre>
 <li><strong>TLS 1.3 מובנה</strong> — הצפנה היא חובה, וה-handshake של transport ושל crypto מאוחדים: <strong>1 RTT</strong> לשרת חדש, <strong>0-RTT</strong> לשרת שכבר ביקרת בו (resumption ticket; נתונים נשלחים כבר ב-packet הראשון).</li>
 <li><strong>Connection migration</strong>: connection מזוהה לפי <em>Connection ID</em>, לא לפי ה-4-tuple (src IP, src port, dst IP, dst port). עוברים מ-Wi-Fi ל-5G וההורדות/שיחות הווידאו ממשיכות בלי handshake חדש.</li>
 <li><strong>QPACK</strong> מחליף את HPACK (HPACK הניח מסירה לפי סדר; QPACK מסתדר עם streams שמגיעים לא לפי הסדר).</li>
-<li>אפילו רוב ה-headers של ה-transport מוצפנים → middleboxes לא יכולים "לקבע" אותו, והוא מתפתח ב-user space (בלי לשדרג kernel).</li>
+<li>אפילו רוב ה-headers של ה-transport מוצפנים ← middleboxes לא יכולים "לקבע" אותו, והוא מתפתח ב-user space (בלי לשדרג kernel).</li>
 </ul>
 <pre>Handshake round trips before the first request byte (new connection):
   HTTP/1.1 or 2 + TLS 1.2 : TCP 1 RTT + TLS 2 RTT = 3 RTT
@@ -159,7 +159,7 @@ $ dig +short www.cloudflare.com HTTPS
 <tr><td>Network change</td><td>Reconnect</td><td>Reconnect</td><td>Migrates (Connection ID)</td></tr>
 </table>`,
         he: `<ul>
-<li><strong>ALPN</strong> (Application-Layer Protocol Negotiation): בתוך ה-ClientHello של TLS הלקוח מציין <code>h2, http/1.1</code>; השרת בוחר. בלי round trip נוסף. דפדפנים עושים HTTP/2 רק מעל TLS ("h2"). HTTP/2 בטקסט גלוי ("<strong>h2c</strong>") קיים, אבל משמש רק בין שרתים (למשל gRPC בתוך mesh, Envoy → backend).</li>
+<li><strong>ALPN</strong> (Application-Layer Protocol Negotiation): בתוך ה-ClientHello של TLS הלקוח מציין <code>h2, http/1.1</code>; השרת בוחר. בלי round trip נוסף. דפדפנים עושים HTTP/2 רק מעל TLS ("h2"). HTTP/2 בטקסט גלוי ("<strong>h2c</strong>") קיים, אבל משמש רק בין שרתים (למשל gRPC בתוך mesh, Envoy ← backend).</li>
 <li><strong>Alt-Svc</strong>: HTTP/3 רץ על UDP, אז הלקוח לא יכול לדעת מראש. השרת מפרסם אותו בתשובת HTTP/1.1 או /2: <code>alt-svc: h3=":443"; ma=86400</code>. הדפדפן מנסה QUIC בפעם הבאה ומריץ אותו במרוץ מול TCP ("happy eyeballs"); אם UDP חסום הוא נשאר בשקט על h2.</li>
 <li><strong>רשומת HTTPS ב-DNS</strong> (SVCB/HTTPS RR, type 65): מפרסמים <code>alpn="h3,h2"</code> ב-DNS כך שאפילו ה-connection הראשון יכול להיות HTTP/3.</li>
 </ul>
@@ -322,7 +322,7 @@ INFRA.lessons.push({
   },
   analogy: {
     en: "Email is the postal system: SMTP is the trucks between post offices, MX records are the address of the recipient's post office, and IMAP is the mailbox at home. SPF is the list of post offices allowed to send letters in your name, DKIM is a wax seal only you can stamp, and DMARC is your instruction to the receiving post office: 'if the seal is missing, throw it away'. SMS is a courier who hands the envelope through 3 middlemen (your app → aggregator → carrier → phone) — fast, but every middleman charges, and if you don't register as a known business they stop accepting your envelopes.",
-    he: "מייל זה דואר ישראל: SMTP הן המשאיות בין סניפי הדואר, רשומות MX הן הכתובת של סניף הדואר של הנמען, ו-IMAP הוא תיבת הדואר בבית. SPF זו רשימת הסניפים שמותר להם לשלוח מכתבים בשמך, DKIM זה חותם שעווה שרק אתה יכול להטביע, ו-DMARC זו ההוראה שלך לסניף המקבל: 'אם אין חותם — לזרוק'. SMS זה שליח שמעביר את המעטפה דרך 3 מתווכים (האפליקציה → aggregator → carrier → טלפון) — מהיר, אבל כל מתווך גובה, ואם לא נרשמת כעסק מוכר הם מפסיקים לקבל את המעטפות שלך."
+    he: "מייל זה דואר ישראל: SMTP הן המשאיות בין סניפי הדואר, רשומות MX הן הכתובת של סניף הדואר של הנמען, ו-IMAP הוא תיבת הדואר בבית. SPF זו רשימת הסניפים שמותר להם לשלוח מכתבים בשמך, DKIM זה חותם שעווה שרק אתה יכול להטביע, ו-DMARC זו ההוראה שלך לסניף המקבל: 'אם אין חותם — לזרוק'. SMS זה שליח שמעביר את המעטפה דרך 3 מתווכים (האפליקציה ← aggregator ← carrier ← טלפון) — מהיר, אבל כל מתווך גובה, ואם לא נרשמת כעסק מוכר הם מפסיקים לקבל את המעטפות שלך."
   },
   sections: [
     {
@@ -362,11 +362,11 @@ C: QUIT</pre>
         he: `<p><strong>SMTP</strong> (Simple Mail Transfer Protocol) דוחף מייל בין שרתים. <strong>IMAP</strong> (פורט 993 עם TLS) ו-<strong>POP3</strong> (995) מאפשרים ללקוחות <em>לקרוא</em> אותו. IMAP משאיר את הדואר בשרת ומסנכרן תיקיות בין מכשירים; POP3 מוריד ו(בדרך כלל) מוחק — legacy.</p>
 <table>
 <tr><th>פורט</th><th>שימוש</th></tr>
-<tr><td>25</td><td>Relay בין שרתים (MTA → MTA). חסום ליציאה ברוב העננים (AWS, GCP, Azure) כדי לעצור spam.</td></tr>
-<tr><td>587</td><td>Submission: האפליקציה/הלקוח → ספק המייל שלך, עם STARTTLS + AUTH. <strong>להשתמש בזה.</strong></td></tr>
+<tr><td>25</td><td>Relay בין שרתים (MTA ← MTA). חסום ליציאה ברוב העננים (AWS, GCP, Azure) כדי לעצור spam.</td></tr>
+<tr><td>587</td><td>Submission: האפליקציה/הלקוח ← ספק המייל שלך, עם STARTTLS + AUTH. <strong>להשתמש בזה.</strong></td></tr>
 <tr><td>465</td><td>Submission מעל TLS מובלע (SMTPS) — חזר לתקן ב-RFC 8314, גם בסדר.</td></tr>
 </table>
-<p>מסלול המסירה: אפליקציה → (587) ספק (SES/SendGrid) → חיפוש DNS של רשומת ה-<strong>MX</strong> של הנמען → (25) ה-MTA של הנמען (Gmail) → סינון spam → inbox. הצד המקבל בודק SPF, DKIM, DMARC, מוניטין ה-IP והתוכן.</p>
+<p>מסלול המסירה: אפליקציה ← (587) ספק (SES/SendGrid) ← חיפוש DNS של רשומת ה-<strong>MX</strong> של הנמען ← (25) ה-MTA של הנמען (Gmail) ← סינון spam ← inbox. הצד המקבל בודק SPF, DKIM, DMARC, מוניטין ה-IP והתוכן.</p>
 <pre>$ dig +short MX gmail.com
 5 gmail-smtp-in.l.google.com.
 10 alt1.gmail-smtp-in.l.google.com.
@@ -446,10 +446,10 @@ Authentication-Results: mx.google.com;
 </table>
 <blockquote>💡 Real world: <strong>Don't run your own outbound mail server.</strong> Cloud IPs start with bad reputation, port 25 is blocked, you'd have to manage PTR records, blocklists (Spamhaus), FBLs, warmup and bounce parsing. A provider is ~$100/month for a million emails — cheaper than one engineer-day per month. Your job is the integration: webhooks for <code>delivered/bounced/complained/opened</code> events into your own DB.</blockquote>`,
         he: `<ul>
-<li><strong>מוניטין</strong> נמדד לכל IP שולח <em>וגם</em> לכל דומיין. IP ייעודי חדש? <strong>מחממים אותו</strong>: למשל 200 ביום → מכפילים כל יום-יומיים לאורך 4–6 שבועות, ומתחילים מהמשתמשים הכי מעורבים. נפח נמוך (&lt; ~100K בחודש)? משתמשים ב-pool המשותף של הספק.</li>
+<li><strong>מוניטין</strong> נמדד לכל IP שולח <em>וגם</em> לכל דומיין. IP ייעודי חדש? <strong>מחממים אותו</strong>: למשל 200 ביום ← מכפילים כל יום-יומיים לאורך 4–6 שבועות, ומתחילים מהמשתמשים הכי מעורבים. נפח נמוך (&lt; ~100K בחודש)? משתמשים ב-pool המשותף של הספק.</li>
 <li><strong>להפריד זרמים</strong>: transactional (קבלות, איפוס סיסמה, OTP) מול marketing (ניוזלטרים) על subdomains/IPs שונים (<code>mail.shop.com</code> מול <code>news.shop.com</code>). קמפיין גרוע לא יכול לשלוח איפוסי סיסמה ל-spam.</li>
-<li><strong>Bounces</strong>: <em>hard</em> (5xx: משתמש לא קיים, דומיין לא קיים) → suppress מיד ולתמיד. <em>Soft</em> (4xx: תיבה מלאה, greylisting, rate-limited) → retry עם backoff, ו-suppress אחרי N ימים.</li>
-<li><strong>תלונות</strong> ("סמן כ-spam") מגיעות דרך feedback loops (FBL) → suppress. מחזיקים <strong>suppression list</strong> שנבדקת לפני כל שליחה.</li>
+<li><strong>Bounces</strong>: <em>hard</em> (5xx: משתמש לא קיים, דומיין לא קיים) ← suppress מיד ולתמיד. <em>Soft</em> (4xx: תיבה מלאה, greylisting, rate-limited) ← retry עם backoff, ו-suppress אחרי N ימים.</li>
+<li><strong>תלונות</strong> ("סמן כ-spam") מגיעות דרך feedback loops (FBL) ← suppress. מחזיקים <strong>suppression list</strong> שנבדקת לפני כל שליחה.</li>
 <li><strong>מעורבות והיגיינה</strong>: double opt-in, להוריד משתמשים שלא פתחו 6–12 חודשים, אף פעם לא לקנות רשימות, לכלול <code>List-Unsubscribe</code>.</li>
 </ul>
 <table>
@@ -475,7 +475,7 @@ Authentication-Results: mx.google.com;
 <li><strong>Beyond SMS</strong>: WhatsApp Business API (template messages, per-conversation pricing, huge in Israel/LatAm/India), RCS (rich SMS on Android, iOS 18+).</li>
 </ul>
 <blockquote>⚠️ Production tip: SMS has <strong>no delivery guarantee and no ordering guarantee</strong>, and the DLR may lie. Never make a critical flow depend on SMS alone — give a fallback (voice call OTP, email, authenticator app) and a "resend" with cooldown.</blockquote>`,
-        he: `<p>הזרימה: האפליקציה → REST API של ספק (<strong>Twilio, Vonage, AWS SNS/End User Messaging, Infobip, MessageBird</strong>) → aggregator → <strong>SMPP</strong> (Short Message Peer-to-Peer, פרוטוקול ה-TCP שה-carriers מדברים) → SMSC של ה-carrier → מכשיר. אישורי מסירה (DLRs) חוזרים באותה דרך ומגיעים ל-webhook שלך — אבל הרבה carriers שולחים אותם באיחור, שגויים, או בכלל לא.</p>
+        he: `<p>הזרימה: האפליקציה ← REST API של ספק (<strong>Twilio, Vonage, AWS SNS/End User Messaging, Infobip, MessageBird</strong>) → aggregator → <strong>SMPP</strong> (Short Message Peer-to-Peer, פרוטוקול ה-TCP שה-carriers מדברים) ← SMSC של ה-carrier ← מכשיר. אישורי מסירה (DLRs) חוזרים באותה דרך ומגיעים ל-webhook שלך — אבל הרבה carriers שולחים אותם באיחור, שגויים, או בכלל לא.</p>
 <ul>
 <li><strong>סוגי שולח</strong>: long code (מספר רגיל), <strong>short code</strong> (5–6 ספרות, throughput גבוה, יקר, ארה"ב/קנדה), toll-free, <strong>alphanumeric sender ID</strong> ("MyShop", חד-כיווני, מותר בישראל/אירופה, לא בארה"ב).</li>
 <li><strong>רישום</strong>: בארה"ב, תעבורת application-to-person על long codes דורשת רישום <strong>A2P 10DLC</strong> של brand + campaign; תעבורה לא רשומה מסוננת או נחסמת. להרבה מדינות (DLT בהודו וכו') יש רישום templates משלהן.</li>
@@ -522,7 +522,7 @@ Authentication-Results: mx.google.com;
 <li><strong>אידמפוטנטיות</strong>: ה-producers עושים retry; המפתח = <code>orderId + "shipped" + channel</code>. עושים dedupe לפני השליחה — "חויבת" פעמיים זה טיקט לתמיכה; OTP שנשלח 5 פעמים זה חשבונית.</li>
 <li><strong>נתיבי עדיפות</strong>: תור OTP/אבטחה נפרד מ-marketing, כך שקמפיין ל-2M משתמשים אף פעם לא מעכב קוד התחברות.</li>
 <li><strong>Retries</strong>: exponential backoff + jitter על 5xx/timeouts; אף פעם לא retry על שגיאות 4xx של validation; DLQ אחרי N ניסיונות.</li>
-<li><strong>Fallback</strong>: push לא נמסר תוך X דקות → SMS; SMS נכשל → מייל. מכבדים את העדפות הערוץ של המשתמש ואת ההסכמה החוקית (GDPR, חוק הספאם בישראל, TCPA בארה"ב).</li>
+<li><strong>Fallback</strong>: push לא נמסר תוך X דקות ← SMS; SMS נכשל ← מייל. מכבדים את העדפות הערוץ של המשתמש ואת ההסכמה החוקית (GDPR, חוק הספאם בישראל, TCPA בארה"ב).</li>
 <li><strong>Failover בין ספקים</strong>: שני ספקי SMS/מייל מאחורי interface עם circuit breaker — לספקים יש תקלות של כמה שעות.</li>
 <li><strong>Observability</strong>: לכל ערוץ/ספק/מדינה: קצב שליחה, אחוז מסירה, אחוז bounce/תלונות, latency מ-enqueue עד delivered, ועלות ליום.</li>
 </ul>`
@@ -588,7 +588,7 @@ app --587/TLS--> provider (SES)               app --HTTPS--> Twilio        app -
         { en: "4", he: "4" },
         { en: "Hebrew can't be sent by SMS", he: "אי אפשר לשלוח עברית ב-SMS" }
       ], answer: 1,
-      explain: { en: "Non-GSM-7 characters switch the whole message to UCS-2: 70 chars single, 67 per segment concatenated → 100 chars = 2 segments.", he: "תווים שאינם GSM-7 מעבירים את כל ההודעה ל-UCS-2: 70 תווים להודעה בודדת, 67 ל-segment משורשר → 100 תווים = 2 segments." } },
+      explain: { en: "Non-GSM-7 characters switch the whole message to UCS-2: 70 chars single, 67 per segment concatenated → 100 chars = 2 segments.", he: "תווים שאינם GSM-7 מעבירים את כל ההודעה ל-UCS-2: 70 תווים להודעה בודדת, 67 ל-segment משורשר ← 100 תווים = 2 segments." } },
     { q: { en: "Best defense against SMS pumping fraud on an OTP endpoint?", he: "ההגנה הכי טובה מפני SMS pumping על endpoint של OTP?" },
       options: [
         { en: "Longer OTP codes", he: "קודי OTP ארוכים יותר" },
@@ -611,7 +611,7 @@ INFRA.lessons.push({
   title: { en: "Real-Time Protocols: Polling, SSE, WebSockets, WebRTC, gRPC, MQTT, AMQP", he: "פרוטוקולי real-time: Polling, SSE, WebSockets, WebRTC, gRPC, MQTT, AMQP" },
   tldr: {
     en: "Pick by direction and audience: server→browser only = SSE; two-way browser chat = WebSockets; audio/video peer-to-peer = WebRTC; service-to-service = gRPC; millions of flaky IoT devices = MQTT; backend work routing = AMQP. And size by connections, not requests.",
-    he: "בוחרים לפי כיוון וקהל: רק שרת→דפדפן = SSE; צ'אט דו-כיווני בדפדפן = WebSockets; אודיו/וידאו peer-to-peer = WebRTC; service-to-service = gRPC; מיליוני מכשירי IoT לא יציבים = MQTT; ניתוב עבודה ב-backend = AMQP. ועושים sizing לפי connections, לא לפי בקשות."
+    he: "בוחרים לפי כיוון וקהל: רק שרת←דפדפן = SSE; צ'אט דו-כיווני בדפדפן = WebSockets; אודיו/וידאו peer-to-peer = WebRTC; service-to-service = gRPC; מיליוני מכשירי IoT לא יציבים = MQTT; ניתוב עבודה ב-backend = AMQP. ועושים sizing לפי connections, לא לפי בקשות."
   },
   analogy: {
     en: "Short polling is a kid in the back seat asking 'are we there yet?' every 5 seconds. Long polling is asking once and the parent only answers when you arrive. SSE is the car radio: the station talks, you listen. WebSockets is a phone call: both sides talk any time on an open line. WebRTC is two walkie-talkies talking directly, with a switchboard (signaling) only to introduce them. MQTT is a mail-room with labeled pigeonholes (topics) built for devices with bad reception — it even holds your 'last will' letter to deliver if you vanish.",
@@ -647,7 +647,7 @@ data: {"orderId":"o-81","status":"SHIPPED"}</pre>
         he: `<ul>
 <li><strong>Short polling</strong>: <code>GET /updates?since=123</code> כל N שניות. פשוט לגמרי, ידידותי ל-cache/CDN, עובד בכל מקום. המחיר: latency של עד N שניות ותשובות שרובן ריקות. 1M לקוחות כל 5 שניות = <strong>200K בקשות בשנייה</strong> של "אין חדש". מתאים לדשבורדים שמתרעננים כל 30–60 שניות.</li>
 <li><strong>Long polling</strong>: השרת מחזיק את הבקשה פתוחה עד שיש נתונים או שעוברות ~30 שניות, ואז הלקוח מיד שולח בקשה חדשה. כמעט real-time מעל HTTP רגיל; כל בקשה מוחזקת תופסת connection (זול עם שרתים אסינכרוניים, קטלני עם thread לכל בקשה).</li>
-<li><strong>Server-Sent Events (SSE)</strong>: תשובת HTTP ארוכה אחת עם <code>Content-Type: text/event-stream</code>; השרת כותב events כשורות. מובנה בדפדפנים (<code>EventSource</code>) עם <strong>reconnect אוטומטי</strong> והמשך דרך <code>Last-Event-ID</code>. חד-כיווני: שרת → לקוח (לקוח → שרת עם POSTs רגילים). עובר דרך רוב ה-proxies; מעל HTTP/2 הרבה streams של SSE חולקים connection אחד (ב-HTTP/1.1 דפדפנים מגבילים ל-6 לדומיין).</li>
+<li><strong>Server-Sent Events (SSE)</strong>: תשובת HTTP ארוכה אחת עם <code>Content-Type: text/event-stream</code>; השרת כותב events כשורות. מובנה בדפדפנים (<code>EventSource</code>) עם <strong>reconnect אוטומטי</strong> והמשך דרך <code>Last-Event-ID</code>. חד-כיווני: שרת ← לקוח (לקוח ← שרת עם POSTs רגילים). עובר דרך רוב ה-proxies; מעל HTTP/2 הרבה streams של SSE חולקים connection אחד (ב-HTTP/1.1 דפדפנים מגבילים ל-6 לדומיין).</li>
 </ul>
 <pre>GET /orders/81/stream HTTP/1.1
 Accept: text/event-stream
@@ -711,7 +711,7 @@ Sec-WebSocket-Accept: s3pPLMBiTxaQ9kYGzzhZRbK+xOo=</pre>
 <ul>
 <li>משתמש A מחובר ל-pod 3, משתמש B ל-pod 7. הודעה מ-A ל-B צריכה <strong>pub/sub backplane</strong> (Redis Pub/Sub, NATS, Kafka) — או registry של connections <code>userId → gatewayPod</code>.</li>
 <li>מפרידים <strong>connection gateways</strong> (מחזיקים sockets, טיפשים, scale לפי מספר connections) מ-<strong>שירותים עסקיים</strong> (stateless, scale לפי CPU).</li>
-<li>Load balancers: idle timeouts (ברירת המחדל ב-AWS ALB היא 60 שניות) הורגים sockets שקטים → שולחים <strong>heartbeats</strong> (ping כל 20–30 שניות). Sticky sessions חשובים רק ל-transports של fallback (Socket.IO polling).</li>
+<li>Load balancers: idle timeouts (ברירת המחדל ב-AWS ALB היא 60 שניות) הורגים sockets שקטים ← שולחים <strong>heartbeats</strong> (ping כל 20–30 שניות). Sticky sessions חשובים רק ל-transports של fallback (Socket.IO polling).</li>
 <li><strong>Deploys</strong> מפילים כל connection ב-pod: עושים drain בהדרגה, והלקוחות חייבים <strong>להתחבר מחדש עם exponential backoff + jitter</strong> ולהמשיך ממספר רצף — אחרת deploy הופך לסופת reconnects (thundering herd).</li>
 <li>אימות בהתחברות (token בהודעה הראשונה או ticket קצר-מועד; דפדפנים לא יכולים לשים headers מותאמים ב-WebSocket), בדיקה מחדש כשה-token פג, ו-rate limit להודעות לכל connection.</li>
 </ul>
@@ -765,8 +765,8 @@ amqp:   publish(exchange="orders", routing_key="order.created.il", body=...)
         he: `<table>
 <tr><th>פרוטוקול</th><th>כיוון</th><th>Transport</th><th>דפדפן</th><th>דרך proxies</th><th>להשתמש בו ל-</th></tr>
 <tr><td>Short polling</td><td>הלקוח מושך</td><td>HTTP</td><td>כן</td><td>מושלם</td><td>דשבורדים שמשתנים לאט, סטטוס job כל 30 שניות</td></tr>
-<tr><td>Long polling</td><td>שרת→לקוח (מדומה)</td><td>HTTP</td><td>כן</td><td>טוב</td><td>fallback ישן, התראות פשוטות</td></tr>
-<tr><td>SSE</td><td>שרת→לקוח</td><td>HTTP/1.1, HTTP/2</td><td>כן (EventSource)</td><td>טוב (לכבות buffering)</td><td>הזרמת tokens של LLM, תוצאות חיות, feeds, progress bars</td></tr>
+<tr><td>Long polling</td><td>שרת←לקוח (מדומה)</td><td>HTTP</td><td>כן</td><td>טוב</td><td>fallback ישן, התראות פשוטות</td></tr>
+<tr><td>SSE</td><td>שרת←לקוח</td><td>HTTP/1.1, HTTP/2</td><td>כן (EventSource)</td><td>טוב (לכבות buffering)</td><td>הזרמת tokens של LLM, תוצאות חיות, feeds, progress bars</td></tr>
 <tr><td>WebSocket</td><td>דו-כיווני</td><td>TCP (HTTP upgrade)</td><td>כן</td><td>ברוב המקרים (wss)</td><td>צ'אט, עריכה משותפת, multiplayer, ממשקי מסחר</td></tr>
 <tr><td>WebRTC</td><td>peer-to-peer</td><td>UDP (+TURN relay)</td><td>כן</td><td>דרך TURN/443</td><td>שיחות וידאו/קול, שיתוף מסך, נתונים P2P</td></tr>
 <tr><td>gRPC</td><td>unary + streams</td><td>HTTP/2</td><td>דרך gRPC-Web</td><td>צריך LB שמבין h2</td><td>Service-to-service, APIs פנימיים עם streaming</td></tr>
@@ -800,9 +800,9 @@ ss -tn state established '( sport = :443 )' | wc -l</pre>
 <blockquote>💡 Real world: WhatsApp famously ran ~2 million TCP connections on a single FreeBSD + Erlang server (2012). The bottleneck is almost never CPU — it's memory per connection, fds, and how gracefully you survive a mass reconnect.</blockquote>`,
         he: `<p>מערכות request/response עושות sizing לפי <strong>בקשות בשנייה</strong>; מערכות real-time עושות sizing לפי <strong>connections במקביל</strong> ו-<strong>הודעות fan-out בשנייה</strong>.</p>
 <ul>
-<li><strong>זיכרון ל-connection</strong>: buffers של TCP ב-kernel (~4–16KB במנוחה, יותר תחת עומס) + state של TLS (~10–40KB ב-OpenSSL; פחות עם ספריות מכווננות) + האובייקטים של האפליקציה לכל connection. מספרים גסים: gateways ב-Go/Node/Elixir מחזיקים <strong>~20–100KB ל-WebSocket במנוחה</strong>. 1M connections ≈ 20–100GB RAM → מפזרים למשל על 20 pods × 50K connections.</li>
-<li><strong>File descriptors</strong>: כל socket הוא fd. ברירת המחדל של <code>ulimit -n</code> היא לרוב 1024 → מעלים ל-~1,000,000 (<code>LimitNOFILE=</code> ב-systemd, מגבלות ה-container runtime) וגם <code>fs.file-max</code>.</li>
-<li><strong>Ephemeral ports</strong>: proxy/LB שמתחבר ל-IP:port אחד של backend מוגבל ל-~28K–64K source ports (<code>net.ipv4.ip_local_port_range</code>) → משתמשים בכמה IPs של backend או ביותר IPs ל-proxy.</li>
+<li><strong>זיכרון ל-connection</strong>: buffers של TCP ב-kernel (~4–16KB במנוחה, יותר תחת עומס) + state של TLS (~10–40KB ב-OpenSSL; פחות עם ספריות מכווננות) + האובייקטים של האפליקציה לכל connection. מספרים גסים: gateways ב-Go/Node/Elixir מחזיקים <strong>~20–100KB ל-WebSocket במנוחה</strong>. 1M connections ≈ 20–100GB RAM ← מפזרים למשל על 20 pods × 50K connections.</li>
+<li><strong>File descriptors</strong>: כל socket הוא fd. ברירת המחדל של <code>ulimit -n</code> היא לרוב 1024 ← מעלים ל-~1,000,000 (<code>LimitNOFILE=</code> ב-systemd, מגבלות ה-container runtime) וגם <code>fs.file-max</code>.</li>
+<li><strong>Ephemeral ports</strong>: proxy/LB שמתחבר ל-IP:port אחד של backend מוגבל ל-~28K–64K source ports (<code>net.ipv4.ip_local_port_range</code>) ← משתמשים בכמה IPs של backend או ביותר IPs ל-proxy.</li>
 <li><strong>Threads</strong>: thread לכל connection (Java servlet קלאסי, Python סינכרוני) מת סביב 10K (בעיית C10k). משתמשים בשרתים עם event loop/async (Node, Go, Netty, Elixir/BEAM, asyncio, Envoy).</li>
 <li><strong>חישובי fan-out</strong>: חדר צ'אט של 10K חברים × 5 הודעות בשנייה = 50K מסירות בשנייה מחדר אחד. ערוצים פופולריים צריכים טיפול מיוחד (batching, דגימה של events כמו "מקליד...").</li>
 <li><strong>סופות reconnect</strong>: אם gateway עם 50K לקוחות נופל, 50K reconnects פוגעים באחרים תוך שניות — backoff עם jitter בלקוחות, rate limit לקצב connections בשרתים, וקיבולת רזרבית (N+1).</li>
@@ -851,9 +851,9 @@ WebRTC:  A <--signaling (WS)--> server <--signaling--> B
   ],
   interview: [
     { q: { en: "Design the transport for a ChatGPT-like UI that streams tokens. WebSocket or SSE?", he: "תכנן את ה-transport לממשק דמוי ChatGPT שמזרים tokens. WebSocket או SSE?" },
-      a: { en: "SSE. The flow is request → one-way stream of tokens → done; the client sends a new prompt with a normal POST. SSE is plain HTTP so it reuses auth, rate limiting, gateways, logging and HTTP/2 multiplexing; EventSource-style reconnect is built in. Disable proxy buffering, send heartbeats, set long-enough idle timeouts, and support cancellation by closing the stream (propagate to stop generation, saving GPU). WebSockets only if you need true bidirectional real-time, e.g. voice or collaborative editing.", he: "SSE. הזרימה היא בקשה → stream חד-כיווני של tokens → סוף; הלקוח שולח prompt חדש ב-POST רגיל. SSE הוא HTTP רגיל, אז הוא משתמש שוב באימות, rate limiting, gateways, לוגים ו-multiplexing של HTTP/2; reconnect בסגנון EventSource מובנה. מכבים buffering ב-proxy, שולחים heartbeats, מגדירים idle timeouts ארוכים מספיק, ותומכים בביטול ע\"י סגירת ה-stream (ומעבירים את זה הלאה כדי לעצור את הג'נרציה ולחסוך GPU). WebSockets רק אם צריך real-time דו-כיווני אמיתי, למשל קול או עריכה משותפת." } },
+      a: { en: "SSE. The flow is request → one-way stream of tokens → done; the client sends a new prompt with a normal POST. SSE is plain HTTP so it reuses auth, rate limiting, gateways, logging and HTTP/2 multiplexing; EventSource-style reconnect is built in. Disable proxy buffering, send heartbeats, set long-enough idle timeouts, and support cancellation by closing the stream (propagate to stop generation, saving GPU). WebSockets only if you need true bidirectional real-time, e.g. voice or collaborative editing.", he: "SSE. הזרימה היא בקשה ← stream חד-כיווני של tokens ← סוף; הלקוח שולח prompt חדש ב-POST רגיל. SSE הוא HTTP רגיל, אז הוא משתמש שוב באימות, rate limiting, gateways, לוגים ו-multiplexing של HTTP/2; reconnect בסגנון EventSource מובנה. מכבים buffering ב-proxy, שולחים heartbeats, מגדירים idle timeouts ארוכים מספיק, ותומכים בביטול ע\"י סגירת ה-stream (ומעבירים את זה הלאה כדי לעצור את הג'נרציה ולחסוך GPU). WebSockets רק אם צריך real-time דו-כיווני אמיתי, למשל קול או עריכה משותפת." } },
     { q: { en: "How would you scale a WebSocket chat service to 5M concurrent users?", he: "איך היית עושה scale לשירות צ'אט ב-WebSocket ל-5M משתמשים במקביל?" },
-      a: { en: "Separate stateless chat services from connection gateways. Size gateways by connections: at ~50 KB each, 5M ≈ 250 GB RAM → e.g. 100 gateway pods × 50k, plus N+1 headroom for failover reconnects. Tune fds (ulimit ~1M) and LB idle timeouts, heartbeat every 25 s. Route messages via a pub/sub backplane (Redis Cluster / NATS / Kafka) keyed by room, plus a presence/registry service. Persist messages in a DB (e.g. Cassandra) with per-room sequence numbers so reconnecting clients resume from the last seq. Clients reconnect with jittered exponential backoff; deploys drain gateways gradually. Monitor connections per pod, fan-out latency p99, reconnect rate.", he: "מפרידים שירותי צ'אט stateless מ-connection gateways. Sizing של ה-gateways לפי connections: ב-~50KB לכל אחד, 5M ≈ 250GB RAM → למשל 100 pods של gateway × 50K, ועוד מרווח N+1 ל-reconnects בזמן failover. מכווננים fds (ulimit ~1M) ו-idle timeouts של ה-LB, heartbeat כל 25 שניות. מנתבים הודעות דרך pub/sub backplane (Redis Cluster / NATS / Kafka) לפי חדר, ועוד שירות presence/registry. שומרים הודעות ב-DB (למשל Cassandra) עם מספרי רצף לכל חדר כדי שלקוחות שמתחברים מחדש ימשיכו מה-seq האחרון. לקוחות מתחברים מחדש עם exponential backoff עם jitter; deploys עושים drain ל-gateways בהדרגה. מנטרים connections ל-pod, p99 של latency ב-fan-out, וקצב reconnects." } },
+      a: { en: "Separate stateless chat services from connection gateways. Size gateways by connections: at ~50 KB each, 5M ≈ 250 GB RAM → e.g. 100 gateway pods × 50k, plus N+1 headroom for failover reconnects. Tune fds (ulimit ~1M) and LB idle timeouts, heartbeat every 25 s. Route messages via a pub/sub backplane (Redis Cluster / NATS / Kafka) keyed by room, plus a presence/registry service. Persist messages in a DB (e.g. Cassandra) with per-room sequence numbers so reconnecting clients resume from the last seq. Clients reconnect with jittered exponential backoff; deploys drain gateways gradually. Monitor connections per pod, fan-out latency p99, reconnect rate.", he: "מפרידים שירותי צ'אט stateless מ-connection gateways. Sizing של ה-gateways לפי connections: ב-~50KB לכל אחד, 5M ≈ 250GB RAM ← למשל 100 pods של gateway × 50K, ועוד מרווח N+1 ל-reconnects בזמן failover. מכווננים fds (ulimit ~1M) ו-idle timeouts של ה-LB, heartbeat כל 25 שניות. מנתבים הודעות דרך pub/sub backplane (Redis Cluster / NATS / Kafka) לפי חדר, ועוד שירות presence/registry. שומרים הודעות ב-DB (למשל Cassandra) עם מספרי רצף לכל חדר כדי שלקוחות שמתחברים מחדש ימשיכו מה-seq האחרון. לקוחות מתחברים מחדש עם exponential backoff עם jitter; deploys עושים drain ל-gateways בהדרגה. מנטרים connections ל-pod, p99 של latency ב-fan-out, וקצב reconnects." } },
     { q: { en: "When would you choose MQTT over WebSockets or HTTP for devices?", he: "מתי תבחר MQTT על פני WebSockets או HTTP למכשירים?" },
       a: { en: "For constrained or intermittently connected devices: MQTT has a tiny header, keeps one persistent connection, supports QoS levels (0/1/2), retained last-known values, persistent sessions that queue messages while offline, and Last Will to signal a dead device — and a broker handles topic-based fan-out to millions of devices. HTTP polling wastes battery and bandwidth; raw WebSockets would force you to reinvent QoS, topics and offline queues.", he: "למכשירים מוגבלים או כאלה שמתחברים לסירוגין: ל-MQTT יש header זעיר, connection קבוע אחד, רמות QoS (0/1/2), ערכים אחרונים retained, persistent sessions ששומרות הודעות בזמן offline, ו-Last Will שמסמן מכשיר שמת — ו-broker מטפל ב-fan-out לפי topics למיליוני מכשירים. Polling ב-HTTP מבזבז סוללה ורוחב פס; WebSockets גולמיים יכריחו אותך להמציא מחדש QoS, topics ותורי offline." } }
   ],
@@ -865,7 +865,7 @@ WebRTC:  A <--signaling (WS)--> server <--signaling--> B
         { en: "AMQP from the browser", he: "AMQP מהדפדפן" },
         { en: "Short polling every 100 ms", he: "Short polling כל 100ms" }
       ], answer: 1,
-      explain: { en: "SSE is one-way server→client over plain HTTP with automatic reconnect — no need for a stateful bidirectional channel.", he: "SSE הוא חד-כיווני שרת→לקוח מעל HTTP רגיל עם reconnect אוטומטי — אין צורך בערוץ דו-כיווני עם state." } },
+      explain: { en: "SSE is one-way server→client over plain HTTP with automatic reconnect — no need for a stateful bidirectional channel.", he: "SSE הוא חד-כיווני שרת←לקוח מעל HTTP רגיל עם reconnect אוטומטי — אין צורך בערוץ דו-כיווני עם state." } },
     { q: { en: "In WebRTC, what is TURN used for?", he: "ב-WebRTC, למה משמש TURN?" },
       options: [
         { en: "Encrypting the media", he: "להצפין את המדיה" },
@@ -902,7 +902,7 @@ INFRA.glossary.push(
   { term: "SPF / DKIM / DMARC", track: "principal", def: { en: "Email authentication trio: SPF lists allowed sending IPs, DKIM cryptographically signs messages, DMARC enforces alignment with the visible From: and sets a failure policy.", he: "שלישיית אימות המייל: SPF מונה IPs מורשים לשליחה, DKIM חותם קריפטוגרפית על הודעות, DMARC אוכף alignment מול ה-From: הגלוי וקובע מדיניות כשל." }, lesson: "pr-email-sms" },
   { term: "SMPP", track: "principal", def: { en: "Short Message Peer-to-Peer: the TCP protocol aggregators and carriers use to exchange SMS and delivery receipts.", he: "Short Message Peer-to-Peer: פרוטוקול ה-TCP שבו aggregators ו-carriers מחליפים SMS ואישורי מסירה." }, lesson: "pr-email-sms" },
   { term: "SMS pumping", track: "principal", def: { en: "Fraud where bots trigger OTP/SMS sends to premium numbers so attackers earn a share of the termination fees; defended by rate limits and country allowlists.", he: "הונאה שבה בוטים מפעילים שליחות OTP/SMS למספרי פרימיום כדי שהתוקפים ירוויחו נתח מעמלות הסיום; מתגוננים עם rate limits ו-allowlist של מדינות." }, lesson: "pr-email-sms" },
-  { term: "SSE", track: "principal", def: { en: "Server-Sent Events: a one-way server→client stream over a long HTTP response (text/event-stream) with automatic browser reconnect; used for LLM token streaming.", he: "Server-Sent Events: stream חד-כיווני שרת→לקוח מעל תשובת HTTP ארוכה (text/event-stream) עם reconnect אוטומטי בדפדפן; משמש להזרמת tokens של LLM." }, lesson: "pr-realtime-protocols" },
+  { term: "SSE", track: "principal", def: { en: "Server-Sent Events: a one-way server→client stream over a long HTTP response (text/event-stream) with automatic browser reconnect; used for LLM token streaming.", he: "Server-Sent Events: stream חד-כיווני שרת←לקוח מעל תשובת HTTP ארוכה (text/event-stream) עם reconnect אוטומטי בדפדפן; משמש להזרמת tokens של LLM." }, lesson: "pr-realtime-protocols" },
   { term: "WebSocket", track: "principal", def: { en: "Full-duplex message channel created by upgrading an HTTP/1.1 connection (101 Switching Protocols); stateful, needs heartbeats and a pub/sub backplane to scale.", he: "ערוץ הודעות full-duplex שנוצר ע\"י upgrade ל-connection של HTTP/1.1 (101 Switching Protocols); עם state, צריך heartbeats ו-pub/sub backplane כדי לעשות scale." }, lesson: "pr-realtime-protocols" },
   { term: "MQTT", track: "principal", def: { en: "Lightweight broker-based pub/sub protocol for IoT with hierarchical topics, QoS 0/1/2, retained messages and Last Will.", he: "פרוטוקול pub/sub קליל מבוסס broker ל-IoT, עם topics היררכיים, QoS 0/1/2, הודעות retained ו-Last Will." }, lesson: "pr-realtime-protocols" }
 );

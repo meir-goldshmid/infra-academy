@@ -10,7 +10,9 @@
   const LATIN_START = /^[A-Za-z0-9]/;
   // An LTR run: optional leading neutrals glued to a word (only after start/space/bracket, so the Hebrew "ב-" prefix stays outside),
   // then words joined by spaces / code punctuation, then optional trailing glued symbols (C++, C#, 50%, /var/log/).
-  const RUN = /(?:(?<=^|[\s(\[{"'״׳])[./~$@#\-+*<>=:]+)?[A-Za-z0-9][A-Za-z0-9_]*(?:[\s\-./:@#+=%&*'’,<>~|\\!?]+[A-Za-z0-9][A-Za-z0-9_]*)*(?:[+#%/*]+|\(\))?/g;
+  // → joins English terms ("kitten → sitting" stays one LTR run). Content rule (tools/bidi-arrows.js): in text that
+  // contains Hebrew, sequence arrows are ← and are NOT joiners, so "SLO ← DR" lays out right-to-left with the sentence.
+  const RUN = /(?:(?<=^|[\s(\[{"'״׳])[./~$@#\-+*<>=:]+)?[A-Za-z0-9][A-Za-z0-9_]*(?:[\s\-./:@#+=%&*'’,<>~|\\!?→⇒⟶]+[A-Za-z0-9][A-Za-z0-9_]*)*(?:[+#%/*]+|\(\))?/g;
   const SKIP = new Set(["PRE", "CODE", "BDI", "SCRIPT", "STYLE", "TEXTAREA", "INPUT", "SELECT", "OPTION", "SVG", "KBD", "SAMP", "MATH"]);
 
   const rtl = () => document.documentElement.dir === "rtl";

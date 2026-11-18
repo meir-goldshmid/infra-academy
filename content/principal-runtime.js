@@ -11,7 +11,7 @@ INFRA.lessons.push({
   title: { en: "Concurrency vs Parallelism vs Multiprocessing (and Async)", he: "Concurrency מול Parallelism מול Multiprocessing (וגם Async)" },
   tldr: {
     en: "Concurrency is dealing with many things at once (structure); parallelism is doing many things at once (execution); multiprocessing is many isolated processes — and distribution is many machines. Pick by workload: IO-bound → async/threads, CPU-bound → processes/cores.",
-    he: "Concurrency זה להתמודד עם הרבה דברים בבת אחת (מבנה); parallelism זה לבצע הרבה דברים בבת אחת (ביצוע); multiprocessing זה הרבה processes מבודדים — ו-distribution זה הרבה מכונות. בוחרים לפי ה-workload: IO-bound → async/threads, CPU-bound → processes/ליבות."
+    he: "Concurrency זה להתמודד עם הרבה דברים בבת אחת (מבנה); parallelism זה לבצע הרבה דברים בבת אחת (ביצוע); multiprocessing זה הרבה processes מבודדים — ו-distribution זה הרבה מכונות. בוחרים לפי ה-workload: IO-bound ← async/threads, CPU-bound ← processes/ליבות."
   },
   analogy: {
     en: "One chef with four pots, stirring one while another boils — that's concurrency (one pair of hands, many tasks in progress). Four chefs in one kitchen sharing the same fridge and knives — that's multithreaded parallelism (fast, but they bump into each other and fight over the one sharp knife: race conditions and locks). Four separate kitchens, each with its own fridge, passing plates through a window — that's multiprocessing (isolated, safer, but talking costs more). A franchise of kitchens in different cities — that's distributed parallelism. Async is the chef who never stands staring at the oven: he sets a timer and goes chopping until it rings.",
@@ -79,7 +79,7 @@ for i := 0; i &lt; 100_000; i++ {
 try (var ex = Executors.newVirtualThreadPerTaskExecutor()) {
     IntStream.range(0, 100_000).forEach(i -&gt; ex.submit(() -&gt; { Thread.sleep(1000); return i; }));
 }</pre>
-<blockquote>⚠️ טיפ לפרודקשן: context switches לא בחינם. <code>vmstat 1</code> → עמודת <code>cs</code>. מכונה שעושה 200k+ context switches בשנייה עם הרבה CPU ב-<code>sy</code> בדרך כלל מריצה הרבה יותר מדי threads ביחס לליבות.</blockquote>`
+<blockquote>⚠️ טיפ לפרודקשן: context switches לא בחינם. <code>vmstat 1</code> ← עמודת <code>cs</code>. מכונה שעושה 200k+ context switches בשנייה עם הרבה CPU ב-<code>sy</code> בדרך כלל מריצה הרבה יותר מדי threads ביחס לליבות.</blockquote>`
       }
     },
     {
@@ -138,7 +138,7 @@ Runnable inc = () -&gt; { for (int i = 0; i &lt; 1_000_000; i++) count++; };
 <li><strong>Livelock</strong> (both keep politely retrying), <strong>starvation</strong> (one thread never gets the lock), <strong>priority inversion</strong> (Mars Pathfinder, 1997).</li>
 </ul>
 <blockquote>⚠️ Production tip: The best lock is no lock. Prefer immutability, message passing ("Don't communicate by sharing memory; share memory by communicating" — Go channels, actors in Akka/Erlang), or confinement (one owner thread). Run tests with race detectors: <code>go test -race</code>, ThreadSanitizer, Java's jcstress.</blockquote>`,
-        he: `<p><strong>Race condition</strong>: התוצאה תלויה בתזמון. <code>count++</code> זה בעצם קריאה → חיבור → כתיבה; שני threads יכולים שניהם לקרוא 41 ושניהם לכתוב 42.</p>
+        he: `<p><strong>Race condition</strong>: התוצאה תלויה בתזמון. <code>count++</code> זה בעצם קריאה ← חיבור ← כתיבה; שני threads יכולים שניהם לקרוא 41 ושניהם לכתוב 42.</p>
 <pre>// Java: lost updates
 int count = 0;                      // shared
 Runnable inc = () -&gt; { for (int i = 0; i &lt; 1_000_000; i++) count++; };
@@ -177,7 +177,7 @@ threads = 8 * 0.8 * (1 + 90/10) = 64
 
 CPU-bound (wait ~ 0):  threads ≈ N_cpu (+1)</pre>
 <p>ואז בודקים את ה-<em>downstream</em>: 64 threads × 20 pods = 1,280 שאילתות DB במקביל — וה-Postgres שלך עם <code>max_connections=200</code> לא מסכים. גודלי pools הם תקציב <strong>של כל המערכת</strong> (Little's Law: concurrency = throughput × latency).</p>
-<p><strong>חוק Amdahl</strong>: אם חלק <em>p</em> מהעבודה ניתן למקבול, ההאצה המקסימלית על N ליבות היא <code>1 / ((1 - p) + p/N)</code>. עם p = 0.95, ‏16 ליבות → פי 9.1, ואינסוף ליבות → רק פי 20. ה-5% הסדרתיים (lock גלובלי, writer יחיד ל-DB, coordinator) תוקעים אותך. <strong>חוק Gustafson</strong> הוא הצד האופטימי: עם יותר ליבות בדרך כלל מעבדים בעיות <em>גדולות יותר</em>, לא את אותה בעיה מהר יותר.</p>
+<p><strong>חוק Amdahl</strong>: אם חלק <em>p</em> מהעבודה ניתן למקבול, ההאצה המקסימלית על N ליבות היא <code>1 / ((1 - p) + p/N)</code>. עם p = 0.95, ‏16 ליבות ← פי 9.1, ואינסוף ליבות ← רק פי 20. ה-5% הסדרתיים (lock גלובלי, writer יחיד ל-DB, coordinator) תוקעים אותך. <strong>חוק Gustafson</strong> הוא הצד האופטימי: עם יותר ליבות בדרך כלל מעבדים בעיות <em>גדולות יותר</em>, לא את אותה בעיה מהר יותר.</p>
 <blockquote>💡 מהשטח: "הכפלנו את ה-pods וה-throughput לא זז" — Amdahl קלאסי. מחפשים את החלק הסדרתי: partition חם אחד ב-Kafka, row lock על counter, Redis עם thread יחיד שמריץ <code>KEYS *</code> איטי, mutex סביב cache משותף. סקיילינג הוא ציד אחרי החלק הסדרתי.</blockquote>`
       }
     }
@@ -205,7 +205,7 @@ async (1 thread, waits overlap):                core2: [CCCCCCC]
   pitfalls: [
     { en: "Adding threads to a CPU-bound Python service and expecting speedup — the GIL serializes it. Use processes (or a free-threaded build, or move the hot loop to NumPy/Rust).", he: "להוסיף threads לשירות Python שהוא CPU-bound ולצפות להאצה — ה-GIL הופך אותו לסדרתי. להשתמש ב-processes (או build free-threaded, או להעביר את הלולאה החמה ל-NumPy/Rust)." },
     { en: "Sizing a pool per pod without multiplying by replicas — 30 pods × 50 connections = 1,500 connections to a DB that allows 300.", he: "לקבוע pool לכל pod בלי להכפיל במספר ה-replicas — ‏30 pods × ‏50 connections = 1,500 connections ל-DB שמאפשר 300." },
-    { en: "Taking two locks in different orders in different code paths (transfer A→B locks A then B, transfer B→A locks B then A) — a deadlock waiting for traffic.", he: "לקחת שני locks בסדר שונה בנתיבי קוד שונים (העברה A→B נועלת A ואז B, והעברה B→A נועלת B ואז A) — deadlock שמחכה לטראפיק." },
+    { en: "Taking two locks in different orders in different code paths (transfer A→B locks A then B, transfer B→A locks B then A) — a deadlock waiting for traffic.", he: "לקחת שני locks בסדר שונה בנתיבי קוד שונים (העברה A←B נועלת A ואז B, והעברה B←A נועלת B ואז A) — deadlock שמחכה לטראפיק." },
     { en: "Thinking async makes CPU work faster. Async overlaps waiting; it does nothing for computation.", he: "לחשוב ש-async מאיץ עבודת CPU. Async חופף המתנות; הוא לא עושה כלום לחישוב." }
   ],
   interview: [
@@ -342,7 +342,7 @@ console.log('2 sync');
 // 6 immediate     &lt;-  from the main module; inside an IO callback, immediate always wins)</pre>
 <p>כללים לזכור: <strong>קוד סינכרוני רץ עד הסוף</strong> (שום דבר לא קוטע אותו). אחר כך <strong>כל</strong> ה-microtasks מתרוקנים — כולל microtasks שנוספו ע"י microtasks. רק אז ה-macrotask הבא (timer, IO, immediate).</p>
 <p>ההשלכה: <code>Promise.resolve().then(loop)</code> רקורסיבי או <code>process.nextTick(loop)</code> <em>מרעיבים את ה-loop</em> — IO ו-timers אף פעם לא רצים, למרות שכל צעד "אסינכרוני". <code>setImmediate(loop)</code> מוותר כמו שצריך.</p>
-<blockquote>💡 מהשטח: ה-loop בדפדפן הוא אותו רעיון: task אחד (click handler, timer) → ריקון microtasks → אולי render (~כל 16.7 ms ב-60 fps, עם <code>requestAnimationFrame</code> ממש לפני הציור). handler של 200 ms = ‏12 frames שנפלו = דף מקרטע; Chrome מסמן אותו כ-"long task" וזה פוגע ב-INP (Interaction to Next Paint).</blockquote>`
+<blockquote>💡 מהשטח: ה-loop בדפדפן הוא אותו רעיון: task אחד (click handler, timer) ← ריקון microtasks ← אולי render (~כל 16.7 ms ב-60 fps, עם <code>requestAnimationFrame</code> ממש לפני הציור). handler של 200 ms = ‏12 frames שנפלו = דף מקרטע; Chrome מסמן אותו כ-"long task" וזה פוגע ב-INP (Interaction to Next Paint).</blockquote>`
       }
     },
     {
@@ -413,7 +413,7 @@ async def main():
     # blocking code you can't rewrite? push it to a thread:
     await asyncio.to_thread(time.sleep, 1)
 asyncio.run(main(), debug=True)   # debug mode logs callbacks slower than 100 ms</pre>
-<p>הכלל האוניברסלי ל<em>כל</em> event loop (Node, asyncio, Netty, Vert.x, tokio, Redis, מודולים של nginx): <strong>לעולם לא לחסום את ה-thread של ה-loop</strong>. IO → APIs אסינכרוניים; CPU → worker pool; ספרייה לא מוכרת → להניח שהיא חוסמת עד שיוכח אחרת.</p>
+<p>הכלל האוניברסלי ל<em>כל</em> event loop (Node, asyncio, Netty, Vert.x, tokio, Redis, מודולים של nginx): <strong>לעולם לא לחסום את ה-thread של ה-loop</strong>. IO ← APIs אסינכרוניים; CPU ← worker pool; ספרייה לא מוכרת ← להניח שהיא חוסמת עד שיוכח אחרת.</p>
 <blockquote>⚠️ טיפ לפרודקשן: FastAPI מריץ endpoints של <code>async def</code> על ה-loop ו-endpoints של <code>def</code> רגיל ב-thread pool. לכתוב <code>async def</code> ואז לקרוא בפנים ל-driver סינכרוני של DB זה באג הביצועים מספר 1 ב-FastAPI — זה הופך את כל ה-worker לסדרתי.</blockquote>`
       }
     }
@@ -587,7 +587,7 @@ public async Task&lt;string&gt; Get() =&gt; await GetAsync(); // ✅</pre>`,
 <li><strong>async בתוך forEach</strong>: <code>items.forEach(async i =&gt; await save(i))</code> לא מחכה לכלום. להשתמש ב-<code>for (const i of items) await save(i)</code> (סדרתי) או <code>await Promise.all(items.map(save))</code> (מקבילי, אבל ראה מגבלות למטה).</li>
 <li><strong>Rejections לא מטופלים</strong>: מאז Node 15 הם <em>מפילים את ה-process</em> כברירת מחדל. לכל promise צריך בעלים שעושה לו await או catch.</li>
 <li><strong>חסימה בתוך async</strong>: <code>time.sleep</code>, ‏drivers סינכרוניים ל-DB, ‏<code>fs.readFileSync</code>, ‏CPU כבד — הפונקציה "אסינכרונית" אבל ה-loop קפוא (ראה את השיעור על ה-event loop).</li>
-<li><strong>Deadlock של sync-over-async (C#)</strong>: לקרוא ל-<code>.Result</code> או <code>.Wait()</code> על Task בקונטקסט עם SynchronizationContext (‏ASP.NET הקלאסי, ה-UI thread של WinForms/WPF). ה-thread נחסם ומחכה ל-task; ההמשך של ה-task צריך את אותו thread בדיוק → deadlock. התיקון: "async all the way down"; בספריות להשתמש ב-<code>ConfigureAwait(false)</code>. ב-ASP.NET Core אין context, אבל <code>.Result</code> עדיין גורם ל-<strong>thread-pool starvation</strong> תחת עומס.</li>
+<li><strong>Deadlock של sync-over-async (C#)</strong>: לקרוא ל-<code>.Result</code> או <code>.Wait()</code> על Task בקונטקסט עם SynchronizationContext (‏ASP.NET הקלאסי, ה-UI thread של WinForms/WPF). ה-thread נחסם ומחכה ל-task; ההמשך של ה-task צריך את אותו thread בדיוק ← deadlock. התיקון: "async all the way down"; בספריות להשתמש ב-<code>ConfigureAwait(false)</code>. ב-ASP.NET Core אין context, אבל <code>.Result</code> עדיין גורם ל-<strong>thread-pool starvation</strong> תחת עומס.</li>
 </ul>
 <pre>// C# — deadlocks on a UI thread / classic ASP.NET
 public string Get() =&gt; GetAsync().Result;            // ❌
@@ -778,7 +778,7 @@ INFRA.lessons.push({
 <blockquote>💡 Real world: GC cost has three dials you trade: <strong>throughput</strong> (% CPU spent in app vs GC), <strong>latency</strong> (pause length), <strong>footprint</strong> (heap headroom). Pick two. Batch jobs want throughput (Parallel GC); APIs want latency (G1/ZGC); small containers want footprint (Serial, lower GOGC).</blockquote>`,
         he: `<ul>
 <li><strong>Roots</strong>: ה-stacks של ה-threads, רגיסטרים, משתנים סטטיים/גלובליים. כל מה שנגיש מה-roots חי; כל השאר זבל — גם אם יש מעגלים.</li>
-<li><strong>Mark-sweep</strong>: מסמנים אובייקטים נגישים, ואז מטאטאים (משחררים) את מי שלא סומן. משאיר חורים → פרגמנטציה.</li>
+<li><strong>Mark-sweep</strong>: מסמנים אובייקטים נגישים, ואז מטאטאים (משחררים) את מי שלא סומן. משאיר חורים ← פרגמנטציה.</li>
 <li><strong>Mark-compact</strong>: אחרי הסימון, מזיזים את האובייקטים החיים צמוד. אין פרגמנטציה, הקצאה הופכת להזזת pointer, אבל הזזת אובייקטים אומרת לעדכן כל הפניה.</li>
 <li><strong>Copying</strong>: מעתיקים אובייקטים חיים מ-"from-space" ל-"to-space". העלות פרופורציונלית לאובייקטים <em>החיים</em>, לא לזבל — מושלם כשכמעט הכול מת.</li>
 <li><strong>ההשערה הדורית</strong>: רוב האובייקטים מתים צעירים (‏DTOs של בקשה, strings, רשימות זמניות). לכן: <em>דור צעיר</em> קטן שנאסף לעתים קרובות עם copying (‏minor GC, ~1-10 ms), מי ששורד מקודם ל-<em>דור הוותיק</em>, שנאסף לעתים רחוקות (‏major/full GC). ‏<em>Write barrier</em> עוקב אחרי pointers מוותיק לצעיר כדי ש-minor GC לא יסרוק את כל הדור הוותיק.</li>
@@ -908,7 +908,7 @@ container limit 2Gi: [ heap 1.5G (MaxRAMPercentage=75) | metaspace | stacks | of
   ],
   mnemonic: {
     en: "Roots → reach → keep; the rest is sweep. Young die fast, old live long. Heap at 75%, or the kernel ends the song.",
-    he: "Roots → נגיש → נשאר; כל השאר לפח. צעירים מתים מהר, ותיקים חיים הרבה. Heap על 75%, אחרת ה-kernel הורג בלי לשאול."
+    he: "Roots ← נגיש ← נשאר; כל השאר לפח. צעירים מתים מהר, ותיקים חיים הרבה. Heap על 75%, אחרת ה-kernel הורג בלי לשאול."
   },
   pitfalls: [
     { en: "Setting -Xmx (or --max-old-space-size) equal to the container memory limit — native memory pushes you over and the pod is OOMKilled silently.", he: "לקבוע -Xmx (או --max-old-space-size) שווה למגבלת הזיכרון של הקונטיינר — הזיכרון ה-native דוחף מעבר וה-pod עובר OOMKill בשקט." },
@@ -920,7 +920,7 @@ container limit 2Gi: [ heap 1.5G (MaxRAMPercentage=75) | metaspace | stacks | of
     { q: { en: "Explain generational garbage collection and why it works.", he: "תסביר garbage collection דורי ולמה הוא עובד." },
       a: { en: "Based on the weak generational hypothesis — most objects die young. The heap is split into a small young generation, collected frequently by copying only the few survivors (cheap, since cost is proportional to live objects), and an old generation collected rarely with mark-compact. Survivors of a few minor GCs are promoted. A write barrier/card table records old-to-young references so minor GCs don't scan the old gen. Result: high throughput and short frequent pauses; the expensive full GC is rare.", he: "מבוסס על ההשערה הדורית — רוב האובייקטים מתים צעירים. ה-heap מחולק לדור צעיר קטן שנאסף לעתים קרובות ע\"י העתקה של השורדים המעטים בלבד (זול, כי העלות פרופורציונלית לאובייקטים חיים), ולדור ותיק שנאסף לעתים רחוקות עם mark-compact. מי ששורד כמה minor GCs מקודם. ‏Write barrier/card table רושם הפניות מוותיק לצעיר כדי ש-minor GC לא יסרוק את הדור הוותיק. התוצאה: throughput גבוה ועצירות קצרות ותכופות; ה-full GC היקר נדיר." } },
     { q: { en: "A Java pod restarts every ~6 hours with exit code 137. How do you investigate?", he: "pod של Java עושה restart כל ~6 שעות עם exit code 137. איך אתה חוקר?" },
-      a: { en: "137 = SIGKILL, almost always the cgroup OOM killer, not a Java OOM. Compare -Xmx/MaxRAMPercentage with the container limit and account for non-heap (metaspace, threads × stack, direct buffers, Netty off-heap) via Native Memory Tracking (-XX:NativeMemoryTracking=summary, jcmd VM.native_memory). Check whether heap-after-GC trends up (a real leak → heap dumps diffed in MAT) or whether off-heap grows. Fix: heap at ~75% of the limit, cap direct memory, fix the leak, and add alerts on container working set and live heap.", he: "137 = ‏SIGKILL, כמעט תמיד ה-OOM killer של ה-cgroup, לא OOM של Java. משווים את -Xmx/MaxRAMPercentage למגבלת הקונטיינר ומחשבים את מה שמחוץ ל-heap (‏metaspace, ‏threads × stack, ‏direct buffers, ‏off-heap של Netty) עם Native Memory Tracking (‏-XX:NativeMemoryTracking=summary, ‏jcmd VM.native_memory). בודקים אם ה-heap אחרי GC עולה (‏leak אמיתי → heap dumps ו-diff ב-MAT) או שה-off-heap גדל. תיקון: heap על ~75% מהמגבלה, להגביל direct memory, לתקן את ה-leak, ולהוסיף התראות על working set של הקונטיינר ועל ה-heap החי." } },
+      a: { en: "137 = SIGKILL, almost always the cgroup OOM killer, not a Java OOM. Compare -Xmx/MaxRAMPercentage with the container limit and account for non-heap (metaspace, threads × stack, direct buffers, Netty off-heap) via Native Memory Tracking (-XX:NativeMemoryTracking=summary, jcmd VM.native_memory). Check whether heap-after-GC trends up (a real leak → heap dumps diffed in MAT) or whether off-heap grows. Fix: heap at ~75% of the limit, cap direct memory, fix the leak, and add alerts on container working set and live heap.", he: "137 = ‏SIGKILL, כמעט תמיד ה-OOM killer של ה-cgroup, לא OOM של Java. משווים את -Xmx/MaxRAMPercentage למגבלת הקונטיינר ומחשבים את מה שמחוץ ל-heap (‏metaspace, ‏threads × stack, ‏direct buffers, ‏off-heap של Netty) עם Native Memory Tracking (‏-XX:NativeMemoryTracking=summary, ‏jcmd VM.native_memory). בודקים אם ה-heap אחרי GC עולה (‏leak אמיתי ← heap dumps ו-diff ב-MAT) או שה-off-heap גדל. תיקון: heap על ~75% מהמגבלה, להגביל direct memory, לתקן את ה-leak, ולהוסיף התראות על working set של הקונטיינר ועל ה-heap החי." } },
     { q: { en: "When would you choose ZGC over G1, or Go's GOMEMLIMIT?", he: "מתי תבחר ZGC על פני G1, או GOMEMLIMIT ב-Go?" },
       a: { en: "ZGC when tail latency matters and heaps are large (tens of GB): pauses stay sub-millisecond regardless of heap size, at the cost of some throughput and memory overhead. G1 is the balanced default. In Go, GOMEMLIMIT lets the GC run lazily (high GOGC or GOGC=off) while staying under the container limit — fewer GC cycles normally, more aggressive collection only near the limit.", he: "ZGC כש-tail latency חשוב וה-heaps גדולים (עשרות GB): העצירות נשארות מתחת למילישנייה בלי קשר לגודל ה-heap, במחיר של קצת throughput ותקורת זיכרון. G1 הוא ברירת המחדל המאוזנת. ב-Go, ‏GOMEMLIMIT מאפשר ל-GC לרוץ בעצלות (‏GOGC גבוה או GOGC=off) ועדיין להישאר מתחת למגבלת הקונטיינר — פחות מחזורי GC בדרך כלל, ואיסוף אגרסיבי רק ליד המגבלה." } }
   ],

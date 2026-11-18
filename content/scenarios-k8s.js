@@ -315,7 +315,7 @@ $ helm show values oci://ghcr.io/acme/charts/api --version 3.0.0 | grep -n -B1 -
       },
       s5: {
         text: t("The HPA is alive: <code>cpu: 185%/70%</code>, scaling 3 → 8 → 16 replicas. p99 is falling. Now: how do you make sure a chart upgrade can't silently blind the HPA again?",
-                "ה-HPA חי: <code>cpu: 185%/70%</code>, גדל 3 → 8 → 16 replicas. ה-p99 יורד. עכשיו: איך מוודאים ששדרוג chart לא יעוור שוב את ה-HPA בשקט?"),
+                "ה-HPA חי: <code>cpu: 185%/70%</code>, גדל 3 ← 8 ← 16 replicas. ה-p99 יורד. עכשיו: איך מוודאים ששדרוג chart לא יעוור שוב את ה-HPA בשקט?"),
         data: `$ kubectl get hpa api -n api -w
 NAME   REFERENCE        TARGETS         MINPODS   MAXPODS   REPLICAS   AGE
 api    Deployment/api   cpu: 185%/70%   3         30        3          41d
@@ -446,7 +446,7 @@ $ kubectl get svc web -n shop -o jsonpath='{.spec.ports}'
       },
       s3b: {
         text: t("The network team runs a quick test: <code>curl 10.0.3.41:8080</code> → refused, <code>curl 10.0.3.41:3000</code> → 200 OK. 'Your app is on 3000.'",
-                "צוות הרשת מריץ בדיקה מהירה: <code>curl 10.0.3.41:8080</code> → refused, <code>curl 10.0.3.41:3000</code> → 200 OK. 'האפליקציה שלך על 3000.'"),
+                "צוות הרשת מריץ בדיקה מהירה: <code>curl 10.0.3.41:8080</code> → refused, <code>curl 10.0.3.41:3000</code> ← 200 OK. 'האפליקציה שלך על 3000.'"),
         choices: [
           c("Diff the v2.4.0 chart changes", "לעשות diff לשינויים ב-chart של v2.4.0", "s4", 5,
             "Lesson learned the slow way: test the port yourself with netshoot.",
@@ -529,7 +529,7 @@ pod spec: no preStop hook, terminationGracePeriodSeconds: 30`,
       },
       win: {
         text: t("Resolved. Root cause: the app moved to port 3000; the probe used the named port and passed, but the Service hard-coded <code>targetPort: 8080</code>, so NGINX got <em>connection refused</em> → 502. Remember the codes: 503 = no ready endpoints, 502 = endpoint answered badly, 504 = too slow.",
-                "נפתר. סיבת שורש: האפליקציה עברה לפורט 3000; ה-probe השתמש ב-named port ועבר, אבל ה-Service קיבע <code>targetPort: 8080</code>, אז NGINX קיבל <em>connection refused</em> → 502. זכור את הקודים: 503 = אין endpoints מוכנים, 502 = ה-endpoint ענה לא טוב, 504 = איטי מדי."),
+                "נפתר. סיבת שורש: האפליקציה עברה לפורט 3000; ה-probe השתמש ב-named port ועבר, אבל ה-Service קיבע <code>targetPort: 8080</code>, אז NGINX קיבל <em>connection refused</em> ← 502. זכור את הקודים: 503 = אין endpoints מוכנים, 502 = ה-endpoint ענה לא טוב, 504 = איטי מדי."),
         end: "win"
       },
       lose: {

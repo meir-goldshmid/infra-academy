@@ -18,7 +18,7 @@ INFRA.lessons.push({
   },
   analogy: {
     en: "Ordering a pizza by phone in a new city. First you look in your own fridge (browser cache). No luck — you ask a friend for the pizzeria's number (DNS), who asks the city directory if they don't know. You dial, they pick up and confirm who they are (TCP + TLS). A franchise branch near you already has ready-made slices (CDN cache hit); for a custom pie the branch calls the central kitchen (origin), where a host seats your order (load balancer), the right station takes it (ingress → service), the cook grabs pre-chopped toppings (Redis) or goes to the walk-in fridge (Postgres). The delivery arrives in a box you still have to open, slice and plate (browser parse + render) before you can eat (LCP).",
-    he: "להזמין פיצה בטלפון בעיר חדשה. קודם מסתכלים במקרר (browser cache). אין — שואלים חבר מה המספר של הפיצרייה (DNS), ואם הוא לא יודע הוא שואל את מודיעין העירייה. מחייגים, עונים ומזדהים (TCP + TLS). סניף של הרשת ליד הבית כבר מחזיק משולשים מוכנים (CDN cache hit); לפיצה מיוחדת הסניף מתקשר למטבח המרכזי (origin), שם מארחת מכוונת את ההזמנה (Load Balancer), העמדה הנכונה לוקחת אותה (ingress → service), והטבח לוקח תוספות חתוכות מראש (Redis) או הולך למקרר הגדול (Postgres). המשלוח מגיע בקופסה שעוד צריך לפתוח, לחתוך ולהגיש (parse + render בדפדפן) לפני שאפשר לאכול (LCP)."
+    he: "להזמין פיצה בטלפון בעיר חדשה. קודם מסתכלים במקרר (browser cache). אין — שואלים חבר מה המספר של הפיצרייה (DNS), ואם הוא לא יודע הוא שואל את מודיעין העירייה. מחייגים, עונים ומזדהים (TCP + TLS). סניף של הרשת ליד הבית כבר מחזיק משולשים מוכנים (CDN cache hit); לפיצה מיוחדת הסניף מתקשר למטבח המרכזי (origin), שם מארחת מכוונת את ההזמנה (Load Balancer), העמדה הנכונה לוקחת אותה (ingress ← service), והטבח לוקח תוספות חתוכות מראש (Redis) או הולך למקרר הגדול (Postgres). המשלוח מגיע בקופסה שעוד צריך לפתוח, לחתוך ולהגיש (parse + render בדפדפן) לפני שאפשר לאכול (LCP)."
   },
   sections: [
     {
@@ -121,7 +121,7 @@ Cache-Control: private, no-store                    # /account</pre>
 <li><strong>RUM</strong> (ניטור משתמשים אמיתיים): Core Web Vitals — LCP &lt; 2.5 s, INP &lt; 200 ms, CLS &lt; 0.1 ב-p75 — ועוד DNS/connect/TTFB מה-Navigation Timing API.</li>
 <li><strong>Synthetic checks</strong> מכמה אזורים כל דקה: תופסים בעיות DNS ותעודות לפני המשתמשים.</li>
 <li><strong>לוגים של ה-CDN</strong>: cache hit ratio, status codes ב-edge, latency של ה-origin.</li>
-<li><strong>Traces</strong>: ה-ingress מזריק <code>traceparent</code>; כל service מעביר אותו הלאה, כך ש-trace אחד מראה LB → service → Redis → Postgres.</li>
+<li><strong>Traces</strong>: ה-ingress מזריק <code>traceparent</code>; כל service מעביר אותו הלאה, כך ש-trace אחד מראה LB ← service ← Redis ← Postgres.</li>
 </ul>
 <pre>performance.getEntriesByType("navigation")[0]
 // domainLookupEnd - domainLookupStart  -&gt; DNS
@@ -146,7 +146,7 @@ Cache-Control: private, no-store                    # /account</pre>
         detail: { en: `<p>UDP/53 (or DoH/DoT) to the ISP's or a public resolver (1.1.1.1, 8.8.8.8). On a cache hit it answers immediately — most popular names are hot.</p>`, he: `<p>UDP/53 (או DoH/DoT) ל-resolver של ספק האינטרנט או ציבורי (1.1.1.1, 8.8.8.8). ב-cache hit הוא עונה מיד — רוב השמות הפופולריים חמים.</p>` },
         fail: { en: `Resolver outage or packet loss: 5 s timeouts per retry. Detect with synthetic DNS checks; mitigate with multiple resolvers.`, he: `תקלה ב-resolver או packet loss: timeout של 5 s לכל ניסיון. מזהים עם synthetic DNS checks; מקטינים עם כמה resolvers.` } },
       { from: 2, to: 3, ms: 45,
-        label: { en: "Recursive walk: root → .example → authoritative", he: "הליכה רקורסיבית: root → .example → authoritative" },
+        label: { en: "Recursive walk: root → .example → authoritative", he: "הליכה רקורסיבית: root ← .example ← authoritative" },
         detail: { en: `<p>On a miss the resolver asks a root server for the TLD's name servers, the TLD for the domain's authoritative servers, and the authoritative server for the record. It typically returns a <code>CNAME</code> to the CDN and anycast <code>A/AAAA</code> records.</p>
 <pre>$ dig +trace shop.example
 shop.example. 300 IN CNAME shop.cdn.net.
@@ -157,7 +157,7 @@ shop.cdn.net.  60 IN A     104.18.20.5</pre>` },
         fail: { en: `Expired domain, wrong NS delegation or a DNS provider outage = total outage with "server not found". Mitigate: auto-renew + registrar lock, secondary DNS provider, sane TTLs.`, he: `דומיין שפג, delegation שגוי של NS או תקלה אצל ספק ה-DNS = השבתה מלאה עם "server not found". מקטינים: חידוש אוטומטי + registrar lock, ספק DNS משני, TTLs שפויים.` } },
       { from: 0, to: 4, ms: 10,
         label: { en: "TCP handshake to the nearest PoP", he: "TCP handshake ל-PoP הקרוב" },
-        detail: { en: `<p>Anycast routes the SYN to the closest edge PoP. SYN → SYN-ACK → ACK costs one RTT (~10 ms locally). Browsers race IPv6 and IPv4 ("Happy Eyeballs").</p>`, he: `<p>Anycast מנתב את ה-SYN ל-PoP הקרוב. SYN → SYN-ACK → ACK עולה RTT אחד (~10 ms מקומית). דפדפנים מריצים IPv6 ו-IPv4 במקביל ("Happy Eyeballs").</p>` },
+        detail: { en: `<p>Anycast routes the SYN to the closest edge PoP. SYN → SYN-ACK → ACK costs one RTT (~10 ms locally). Browsers race IPv6 and IPv4 ("Happy Eyeballs").</p>`, he: `<p>Anycast מנתב את ה-SYN ל-PoP הקרוב. SYN ← SYN-ACK ← ACK עולה RTT אחד (~10 ms מקומית). דפדפנים מריצים IPv6 ו-IPv4 במקביל ("Happy Eyeballs").</p>` },
         fail: { en: `Corporate firewall drops UDP/443, so QUIC fails and the browser falls back to TCP — slower but works. A broken IPv6 path adds ~250 ms until fallback.`, he: `Firewall ארגוני חוסם UDP/443, אז QUIC נכשל והדפדפן חוזר ל-TCP — איטי יותר אבל עובד. נתיב IPv6 שבור מוסיף ~250 ms עד ה-fallback.` } },
       { from: 0, to: 4, ms: 10,
         label: { en: "TLS 1.3 handshake (or QUIC)", he: "TLS 1.3 handshake (או QUIC)" },
@@ -172,27 +172,27 @@ cache-control: public, max-age=31536000, immutable</pre>`, he: `<p>הבקשה ה
 <pre>cf-cache-status: HIT
 age: 1832
 cache-control: public, max-age=31536000, immutable</pre>` },
-        fail: { en: `A deploy purges the whole cache → a "thundering herd" on the origin. Mitigate: content-hashed assets (no purge needed), origin shield, request coalescing.`, he: `deploy שמנקה את כל ה-cache → "thundering herd" על ה-origin. מקטינים: נכסים עם hash בשם (לא צריך purge), origin shield, request coalescing.` } },
+        fail: { en: `A deploy purges the whole cache → a "thundering herd" on the origin. Mitigate: content-hashed assets (no purge needed), origin shield, request coalescing.`, he: `deploy שמנקה את כל ה-cache ← "thundering herd" על ה-origin. מקטינים: נכסים עם hash בשם (לא צריך purge), origin shield, request coalescing.` } },
       { from: 4, to: 5, ms: 2,
         label: { en: "WAF and bot rules", he: "חוקי WAF ובוטים" },
         detail: { en: `<p>Managed rules (OWASP CRS: SQLi, XSS, path traversal), bot scoring, geo rules and per-IP rate limits run at the edge before anything touches your servers.</p>`, he: `<p>חוקים מנוהלים (OWASP CRS: SQLi, XSS, path traversal), ניקוד בוטים, חוקי geo ו-rate limits לפי IP רצים ב-edge לפני שמשהו נוגע בשרתים שלך.</p>` },
         fail: { en: `False positive blocks a legit checkout (403 from the edge, nothing in app logs). Roll out new rules in "log/count" mode first and watch edge 403 rates per rule.`, he: `False positive חוסם checkout לגיטימי (403 מה-edge, כלום בלוגים של האפליקציה). מכניסים חוקים חדשים קודם במצב "log/count" ומסתכלים על שיעור ה-403 ב-edge לפי חוק.` } },
       { from: 5, to: 6, ms: 55,
-        label: { en: "Edge → origin load balancer", he: "Edge → ה-Load Balancer של ה-origin" },
-        detail: { en: `<p>The edge reuses a warm keep-alive TLS connection to the origin (via an origin shield PoP), so it pays only the edge-origin RTT (~55 ms TLV → FRA). The LB picks a healthy target (round-robin / least-outstanding-requests) based on health checks.</p>`, he: `<p>ה-edge משתמש מחדש בחיבור TLS חם (keep-alive) ל-origin (דרך PoP של origin shield), אז הוא משלם רק את ה-RTT בין edge ל-origin (~55 ms TLV → FRA). ה-LB בוחר target בריא (round-robin / least-outstanding-requests) לפי health checks.</p>` },
-        fail: { en: `All targets unhealthy → LB returns 502/503; edge serves 5xx or <code>stale-if-error</code> content. Alert on LB 5xx and healthy-host count.`, he: `כל ה-targets לא בריאים → ה-LB מחזיר 502/503; ה-edge מגיש 5xx או תוכן <code>stale-if-error</code>. מתריעים על 5xx ב-LB ועל מספר ה-hosts הבריאים.` } },
+        label: { en: "Edge → origin load balancer", he: "Edge ← ה-Load Balancer של ה-origin" },
+        detail: { en: `<p>The edge reuses a warm keep-alive TLS connection to the origin (via an origin shield PoP), so it pays only the edge-origin RTT (~55 ms TLV → FRA). The LB picks a healthy target (round-robin / least-outstanding-requests) based on health checks.</p>`, he: `<p>ה-edge משתמש מחדש בחיבור TLS חם (keep-alive) ל-origin (דרך PoP של origin shield), אז הוא משלם רק את ה-RTT בין edge ל-origin (~55 ms TLV ← FRA). ה-LB בוחר target בריא (round-robin / least-outstanding-requests) לפי health checks.</p>` },
+        fail: { en: `All targets unhealthy → LB returns 502/503; edge serves 5xx or <code>stale-if-error</code> content. Alert on LB 5xx and healthy-host count.`, he: `כל ה-targets לא בריאים ← ה-LB מחזיר 502/503; ה-edge מגיש 5xx או תוכן <code>stale-if-error</code>. מתריעים על 5xx ב-LB ועל מספר ה-hosts הבריאים.` } },
       { from: 6, to: 7, ms: 1,
         label: { en: "Ingress routes by host and path", he: "Ingress מנתב לפי host ו-path" },
         detail: { en: `<p>NGINX / Envoy matches <code>Host</code> and path to a Kubernetes Service, adds <code>X-Request-ID</code> and a W3C <code>traceparent</code>, enforces body-size limits and timeouts, and load-balances across ready Pods.</p>`, he: `<p>NGINX / Envoy מתאים <code>Host</code> ו-path ל-Service ב-Kubernetes, מוסיף <code>X-Request-ID</code> ו-<code>traceparent</code> של W3C, אוכף גבולות גודל body ו-timeouts, ומאזן בין Pods מוכנים.</p>` },
-        fail: { en: `No ready endpoints (bad readiness probe, crashloop) → 503. Detect with ingress 5xx by upstream and <code>kubectl get endpoints</code>.`, he: `אין endpoints מוכנים (readiness probe שגוי, crashloop) → 503. מזהים עם 5xx ב-ingress לפי upstream ועם <code>kubectl get endpoints</code>.` } },
+        fail: { en: `No ready endpoints (bad readiness probe, crashloop) → 503. Detect with ingress 5xx by upstream and <code>kubectl get endpoints</code>.`, he: `אין endpoints מוכנים (readiness probe שגוי, crashloop) ← 503. מזהים עם 5xx ב-ingress לפי upstream ועם <code>kubectl get endpoints</code>.` } },
       { from: 7, to: 8, ms: 2,
         label: { en: "Service handler: auth, budget, logic", he: "ה-handler: auth, תקציב זמן, לוגיקה" },
         detail: { en: `<p>Middleware validates the session cookie, sets a request deadline (e.g. 800 ms total, so each downstream call gets a timeout from the remaining budget), then runs the handler.</p>`, he: `<p>Middleware מאמת את ה-session cookie, קובע deadline לבקשה (למשל 800 ms בסך הכול, כך שכל קריאה downstream מקבלת timeout מהתקציב שנשאר), ואז מריץ את ה-handler.</p>` },
-        fail: { en: `Thread pool / event loop saturated → latency climbs for every route. Watch saturation (in-flight requests, event loop lag), not just CPU.`, he: `Thread pool / event loop רווי → latency עולה בכל ה-routes. מסתכלים על saturation (בקשות בטיפול, event loop lag), לא רק על CPU.` } },
+        fail: { en: `Thread pool / event loop saturated → latency climbs for every route. Watch saturation (in-flight requests, event loop lag), not just CPU.`, he: `Thread pool / event loop רווי ← latency עולה בכל ה-routes. מסתכלים על saturation (בקשות בטיפול, event loop lag), לא רק על CPU.` } },
       { from: 8, to: 9, ms: 1,
         label: { en: "Cache-aside read from Redis", he: "קריאת cache-aside מ-Redis" },
         detail: { en: `<p><code>GET product:42</code> — on a hit (~0.5 ms) we skip the database entirely. Hit ratio for hot catalog data is usually 90%+.</p>`, he: `<p><code>GET product:42</code> — ב-hit (~0.5 ms) מדלגים לגמרי על ה-database. ה-hit ratio לנתוני קטלוג חמים הוא בדרך כלל 90%+.</p>` },
-        fail: { en: `Redis down → every request falls through to Postgres (cache stampede). Use short timeouts, treat the cache as optional, and protect the DB with a concurrency limit.`, he: `Redis נופל → כל בקשה עוברת ל-Postgres (cache stampede). timeouts קצרים, להתייחס ל-cache כאופציונלי, ולהגן על ה-DB עם הגבלת concurrency.` } },
+        fail: { en: `Redis down → every request falls through to Postgres (cache stampede). Use short timeouts, treat the cache as optional, and protect the DB with a concurrency limit.`, he: `Redis נופל ← כל בקשה עוברת ל-Postgres (cache stampede). timeouts קצרים, להתייחס ל-cache כאופציונלי, ולהגן על ה-DB עם הגבלת concurrency.` } },
       { from: 8, to: 10, ms: 6,
         label: { en: "Query Postgres on a miss", he: "Query ל-Postgres ב-miss" },
         detail: { en: `<p>Through a connection pool (PgBouncer), an indexed lookup takes 1–5 ms. The service writes the result back to Redis with a TTL.</p>
@@ -200,10 +200,10 @@ cache-control: public, max-age=31536000, immutable</pre>` },
  WHERE id = 42;   -- Index Scan, 0.08 ms</pre>`, he: `<p>דרך connection pool (PgBouncer), lookup עם אינדקס לוקח 1–5 ms. ה-service כותב את התוצאה חזרה ל-Redis עם TTL.</p>
 <pre>SELECT id, name, price_cents FROM products
  WHERE id = 42;   -- Index Scan, 0.08 ms</pre>` },
-        fail: { en: `Pool exhausted or a missing index → p99 explodes. Watch pool wait time and slow-query logs (<code>pg_stat_statements</code>).`, he: `Pool שנגמר או אינדקס חסר → p99 מתפוצץ. מסתכלים על זמן המתנה ל-pool ועל slow-query logs (<code>pg_stat_statements</code>).` } },
+        fail: { en: `Pool exhausted or a missing index → p99 explodes. Watch pool wait time and slow-query logs (<code>pg_stat_statements</code>).`, he: `Pool שנגמר או אינדקס חסר ← p99 מתפוצץ. מסתכלים על זמן המתנה ל-pool ועל slow-query logs (<code>pg_stat_statements</code>).` } },
       { from: 8, to: 0, ms: 60,
         label: { en: "Response travels back (compressed)", he: "התגובה חוזרת (דחוסה)" },
-        detail: { en: `<p>HTML is rendered, Brotli-compressed (~70–80% smaller), and sent back through ingress → LB → edge → browser with <code>Cache-Control</code> and security headers. The edge may store it per its rules. This is where TTFB is measured.</p>`, he: `<p>ה-HTML נוצר, נדחס ב-Brotli (~70–80% קטן יותר), ונשלח חזרה דרך ingress → LB → edge → דפדפן עם <code>Cache-Control</code> ו-security headers. ה-edge יכול לשמור אותו לפי החוקים שלו. כאן נמדד ה-TTFB.</p>` },
+        detail: { en: `<p>HTML is rendered, Brotli-compressed (~70–80% smaller), and sent back through ingress → LB → edge → browser with <code>Cache-Control</code> and security headers. The edge may store it per its rules. This is where TTFB is measured.</p>`, he: `<p>ה-HTML נוצר, נדחס ב-Brotli (~70–80% קטן יותר), ונשלח חזרה דרך ingress ← LB ← edge ← דפדפן עם <code>Cache-Control</code> ו-security headers. ה-edge יכול לשמור אותו לפי החוקים שלו. כאן נמדד ה-TTFB.</p>` },
         fail: { en: `A missing <code>Vary</code> or <code>private</code> header lets the edge cache a personalized page for everyone. Test caching headers in CI.`, he: `header של <code>Vary</code> או <code>private</code> שחסר נותן ל-edge לשמור עמוד אישי לכולם. בודקים caching headers ב-CI.` } },
       { from: 0, to: 4, ms: 60,
         label: { en: "Parse HTML, fetch critical CSS/JS from the edge", he: "Parse ל-HTML ו-fetch ל-CSS/JS קריטיים מה-edge" },
@@ -211,8 +211,8 @@ cache-control: public, max-age=31536000, immutable</pre>` },
         fail: { en: `A 2 MB JS bundle on a mid-range phone = seconds of main-thread work. Set a performance budget in CI (e.g. 170 KB JS gzipped).`, he: `bundle של 2 MB JS בטלפון בינוני = שניות של עבודה על ה-main thread. קובעים performance budget ב-CI (למשל 170 KB JS ב-gzip).` } },
       { from: 0, to: 0, ms: 120,
         label: { en: "Render: layout, paint, LCP", he: "Render: layout, paint, LCP" },
-        detail: { en: `<p>DOM + CSSOM → render tree → layout → paint → composite. The Largest Contentful Paint (hero image or headline) is what the user feels as "loaded". RUM reports it at p75.</p>`, he: `<p>DOM + CSSOM → render tree → layout → paint → composite. ה-Largest Contentful Paint (תמונה ראשית או כותרת) הוא מה שהמשתמש מרגיש כ"נטען". ה-RUM מדווח אותו ב-p75.</p>` },
-        fail: { en: `Hero image lazy-loaded or a web font blocking text → LCP over 4 s. Fix: <code>fetchpriority="high"</code> on the hero, <code>font-display: swap</code>.`, he: `תמונה ראשית עם lazy-load או web font שחוסם טקסט → LCP מעל 4 s. תיקון: <code>fetchpriority="high"</code> לתמונה הראשית, <code>font-display: swap</code>.` } }
+        detail: { en: `<p>DOM + CSSOM → render tree → layout → paint → composite. The Largest Contentful Paint (hero image or headline) is what the user feels as "loaded". RUM reports it at p75.</p>`, he: `<p>DOM + CSSOM ← render tree ← layout ← paint ← composite. ה-Largest Contentful Paint (תמונה ראשית או כותרת) הוא מה שהמשתמש מרגיש כ"נטען". ה-RUM מדווח אותו ב-p75.</p>` },
+        fail: { en: `Hero image lazy-loaded or a web font blocking text → LCP over 4 s. Fix: <code>fetchpriority="high"</code> on the hero, <code>font-display: swap</code>.`, he: `תמונה ראשית עם lazy-load או web font שחוסם טקסט ← LCP מעל 4 s. תיקון: <code>fetchpriority="high"</code> לתמונה הראשית, <code>font-display: swap</code>.` } }
     ]
   },
   diagram: `Browser   Resolver   AuthDNS   CDN edge+WAF    LB/Ingress   Service   Redis  Postgres
@@ -369,7 +369,7 @@ INFRA.lessons.push({
 <li><strong>Security signals</strong>: failed logins per account/IP, impossible travel, refresh-token reuse, MFA fatigue (many push prompts).</li>
 </ul>`,
         he: `<ul>
-<li><strong>Login funnel</strong>: authorize → credential → MFA → callback → session; נפילה בשלב אחד מצביעה על הקפיצה השבורה.</li>
+<li><strong>Login funnel</strong>: authorize ← credential ← MFA ← callback ← session; נפילה בשלב אחד מצביעה על הקפיצה השבורה.</li>
 <li><strong>Latency ושגיאות של ה-IdP</strong> ב-<code>/authorize</code>, ב-<code>/token</code> וב-fetch של JWKS.</li>
 <li><strong>כשלי אימות token</strong> לפי סיבה (פג תוקף, חתימה שגויה, audience שגוי) — קפיצה אחרי key rotation אומרת JWKS cache מעופש.</li>
 <li><strong>סיגנלים של אבטחה</strong>: logins כושלים לפי חשבון/IP, impossible travel, שימוש חוזר ב-refresh token, MFA fatigue (הרבה push prompts).</li>
@@ -383,11 +383,11 @@ INFRA.lessons.push({
       { from: 0, to: 1, ms: 30,
         label: { en: "User clicks Log in", he: "המשתמש לוחץ Log in" },
         detail: { en: `<p>The BFF generates <code>state</code>, <code>nonce</code> and a random 43–128 char <code>code_verifier</code>, stores them in a short-lived pre-auth session, and answers <code>302</code> to the IdP's <code>/authorize</code> with <code>code_challenge=S256(verifier)</code>.</p>`, he: `<p>ה-BFF מייצר <code>state</code>, <code>nonce</code> ו-<code>code_verifier</code> אקראי באורך 43–128 תווים, שומר אותם ב-session קצר לפני האימות, ועונה <code>302</code> ל-<code>/authorize</code> של ה-IdP עם <code>code_challenge=S256(verifier)</code>.</p>` },
-        fail: { en: `Pre-auth state stored in a cookie without <code>SameSite=Lax</code> gets dropped on the cross-site redirect back → "state mismatch" errors for some browsers.`, he: `state לפני אימות שנשמר ב-cookie בלי <code>SameSite=Lax</code> נזרק ב-redirect חוצה-אתרים בחזרה → שגיאות "state mismatch" בחלק מהדפדפנים.` } },
+        fail: { en: `Pre-auth state stored in a cookie without <code>SameSite=Lax</code> gets dropped on the cross-site redirect back → "state mismatch" errors for some browsers.`, he: `state לפני אימות שנשמר ב-cookie בלי <code>SameSite=Lax</code> נזרק ב-redirect חוצה-אתרים בחזרה ← שגיאות "state mismatch" בחלק מהדפדפנים.` } },
       { from: 0, to: 2, ms: 60,
         label: { en: "GET /authorize at the IdP", he: "GET /authorize ב-IdP" },
         detail: { en: `<p>The IdP checks <code>client_id</code>, the exact <code>redirect_uri</code>, allowed scopes and PKCE. If the user already has an IdP session (SSO), it may skip straight to issuing a code.</p>`, he: `<p>ה-IdP בודק <code>client_id</code>, את ה-<code>redirect_uri</code> המדויק, scopes מותרים ו-PKCE. אם כבר יש למשתמש session ב-IdP (SSO), הוא יכול לדלג ישר להנפקת code.</p>` },
-        fail: { en: `Redirect URI not registered (new preview domain) → IdP error page. Keep redirect URIs in IaC per environment.`, he: `redirect URI לא רשום (דומיין preview חדש) → עמוד שגיאה של ה-IdP. מנהלים redirect URIs ב-IaC לכל סביבה.` } },
+        fail: { en: `Redirect URI not registered (new preview domain) → IdP error page. Keep redirect URIs in IaC per environment.`, he: `redirect URI לא רשום (דומיין preview חדש) ← עמוד שגיאה של ה-IdP. מנהלים redirect URIs ב-IaC לכל סביבה.` } },
       { from: 2, to: 0, ms: 3000,
         label: { en: "User enters identifier (human time)", he: "המשתמש מקליד מזהה (זמן אנושי)" },
         detail: { en: `<p>Home-realm discovery: by email domain the IdP may federate to the customer's own IdP (SAML/OIDC enterprise SSO). Rate limits and bot checks protect this page.</p>`, he: `<p>Home-realm discovery: לפי דומיין המייל ה-IdP יכול להפנות ל-IdP של הלקוח (SSO ארגוני ב-SAML/OIDC). rate limits ובדיקות בוטים מגינים על העמוד הזה.</p>` },
@@ -395,7 +395,7 @@ INFRA.lessons.push({
       { from: 0, to: 3, ms: 2500,
         label: { en: "Passkey: WebAuthn assertion", he: "Passkey: WebAuthn assertion" },
         detail: { en: `<p><code>navigator.credentials.get()</code> with the IdP's challenge. The authenticator (phone, laptop TPM, security key) verifies the user (biometric/PIN) and signs the challenge plus the origin with a private key that never leaves the device.</p>`, he: `<p><code>navigator.credentials.get()</code> עם ה-challenge של ה-IdP. ה-authenticator (טלפון, TPM של לפטופ, security key) מאמת את המשתמש (ביומטרי/PIN) וחותם על ה-challenge ועל ה-origin עם private key שלא יוצא מהמכשיר.</p>` },
-        fail: { en: `User lost the device → account recovery is the weakest link. Require multiple registered passkeys and a strong, audited recovery path.`, he: `המשתמש איבד את המכשיר → שחזור חשבון הוא החוליה החלשה. דורשים כמה passkeys רשומים ומסלול שחזור חזק ומתועד.` } },
+        fail: { en: `User lost the device → account recovery is the weakest link. Require multiple registered passkeys and a strong, audited recovery path.`, he: `המשתמש איבד את המכשיר ← שחזור חשבון הוא החוליה החלשה. דורשים כמה passkeys רשומים ומסלול שחזור חזק ומתועד.` } },
       { from: 0, to: 2, ms: 80,
         label: { en: "IdP verifies the signature and risk", he: "ה-IdP מאמת חתימה וסיכון" },
         detail: { en: `<p>The IdP checks the signature with the stored public key, the origin, the sign counter and user-verification flag, then runs risk checks (new device, geo, velocity) and creates its own SSO session.</p>`, he: `<p>ה-IdP בודק את החתימה עם ה-public key השמור, את ה-origin, את ה-sign counter ואת דגל ה-user verification, מריץ בדיקות סיכון (מכשיר חדש, מיקום, קצב) ויוצר session SSO משלו.</p>` },
@@ -405,11 +405,11 @@ INFRA.lessons.push({
         detail: { en: `<pre>302 Location: https://shop.example/callback
   ?code=SplxlOBeZQQYbYS6WxSbIA&amp;state=8f2c...</pre><p>The code is single-use and valid for ~60 seconds.</p>`, he: `<pre>302 Location: https://shop.example/callback
   ?code=SplxlOBeZQQYbYS6WxSbIA&amp;state=8f2c...</pre><p>ה-code חד-פעמי ותקף ל-~60 שניות.</p>` },
-        fail: { en: `The callback page loads third-party analytics → the code leaks via <code>Referer</code>. Use <code>Referrer-Policy: no-referrer</code> on the callback and redirect away immediately.`, he: `עמוד ה-callback טוען analytics של צד שלישי → ה-code דולף דרך <code>Referer</code>. משתמשים ב-<code>Referrer-Policy: no-referrer</code> ב-callback ועושים redirect מיד.` } },
+        fail: { en: `The callback page loads third-party analytics → the code leaks via <code>Referer</code>. Use <code>Referrer-Policy: no-referrer</code> on the callback and redirect away immediately.`, he: `עמוד ה-callback טוען analytics של צד שלישי ← ה-code דולף דרך <code>Referer</code>. משתמשים ב-<code>Referrer-Policy: no-referrer</code> ב-callback ועושים redirect מיד.` } },
       { from: 0, to: 1, ms: 20,
         label: { en: "Callback: verify state", he: "Callback: אימות state" },
-        detail: { en: `<p>The BFF compares <code>state</code> with the one it stored. Mismatch → reject (possible login CSRF).</p>`, he: `<p>ה-BFF משווה את ה-<code>state</code> לזה שהוא שמר. אי-התאמה → דחייה (אולי login CSRF).</p>` },
-        fail: { en: `Users double-click Login and open two tabs → the second state overwrites the first. Store states keyed per flow, not one per browser.`, he: `משתמשים לוחצים פעמיים על Login ופותחים שתי לשוניות → ה-state השני דורס את הראשון. שומרים state לפי flow, לא אחד לכל דפדפן.` } },
+        detail: { en: `<p>The BFF compares <code>state</code> with the one it stored. Mismatch → reject (possible login CSRF).</p>`, he: `<p>ה-BFF משווה את ה-<code>state</code> לזה שהוא שמר. אי-התאמה ← דחייה (אולי login CSRF).</p>` },
+        fail: { en: `Users double-click Login and open two tabs → the second state overwrites the first. Store states keyed per flow, not one per browser.`, he: `משתמשים לוחצים פעמיים על Login ופותחים שתי לשוניות ← ה-state השני דורס את הראשון. שומרים state לפי flow, לא אחד לכל דפדפן.` } },
       { from: 1, to: 2, ms: 80,
         label: { en: "Back channel: exchange code for tokens", he: "ערוץ אחורי: החלפת code ב-tokens" },
         detail: { en: `<pre>POST /token
@@ -421,11 +421,11 @@ grant_type=authorization_code&amp;code=Splx...
 &amp;redirect_uri=https://shop.example/callback
 &amp;code_verifier=dBjftJeZ4CVP...
 &amp;client_assertion=eyJ... (private_key_jwt)</pre><p>תשובה: <code>id_token</code>, <code>access_token</code> (10 דק'), <code>refresh_token</code>.</p>` },
-        fail: { en: `Client secret leaked in a repo → anyone can redeem codes as your app. Prefer <code>private_key_jwt</code> or mTLS client auth and rotate.`, he: `client secret שדלף ל-repo → כל אחד יכול לממש codes בשם האפליקציה. עדיף <code>private_key_jwt</code> או mTLS ל-client auth, ולעשות rotation.` } },
+        fail: { en: `Client secret leaked in a repo → anyone can redeem codes as your app. Prefer <code>private_key_jwt</code> or mTLS client auth and rotate.`, he: `client secret שדלף ל-repo ← כל אחד יכול לממש codes בשם האפליקציה. עדיף <code>private_key_jwt</code> או mTLS ל-client auth, ולעשות rotation.` } },
       { from: 1, to: 2, ms: 2,
         label: { en: "Validate the ID token (JWKS)", he: "אימות ה-ID token (JWKS)" },
         detail: { en: `<p>Fetch the IdP's JWKS (cached), pick the key by <code>kid</code>, verify the RS256/ES256 signature, then check <code>iss</code>, <code>aud</code> = your client_id, <code>exp</code>/<code>iat</code> with small clock skew, and <code>nonce</code>. Reject <code>alg: none</code>.</p>`, he: `<p>מביאים את ה-JWKS של ה-IdP (מ-cache), בוחרים מפתח לפי <code>kid</code>, מאמתים חתימת RS256/ES256, ואז בודקים <code>iss</code>, <code>aud</code> = ה-client_id שלך, <code>exp</code>/<code>iat</code> עם סטיית שעון קטנה, ו-<code>nonce</code>. דוחים <code>alg: none</code>.</p>` },
-        fail: { en: `IdP rotates keys and your JWKS cache doesn't refresh on an unknown <code>kid</code> → every login fails. Refetch JWKS on unknown kid (rate-limited).`, he: `ה-IdP מחליף מפתחות וה-JWKS cache שלך לא מתרענן על <code>kid</code> לא מוכר → כל login נכשל. מביאים JWKS מחדש על kid לא מוכר (עם rate limit).` } },
+        fail: { en: `IdP rotates keys and your JWKS cache doesn't refresh on an unknown <code>kid</code> → every login fails. Refetch JWKS on unknown kid (rate-limited).`, he: `ה-IdP מחליף מפתחות וה-JWKS cache שלך לא מתרענן על <code>kid</code> לא מוכר ← כל login נכשל. מביאים JWKS מחדש על kid לא מוכר (עם rate limit).` } },
       { from: 1, to: 4, ms: 3,
         label: { en: "Create the session, set the cookie", he: "יצירת session והגדרת cookie" },
         detail: { en: `<p>Tokens go into the server-side session store (encrypted at rest). The browser gets only an opaque, rotated session ID:</p>
@@ -433,19 +433,19 @@ grant_type=authorization_code&amp;code=Splx...
   HttpOnly; SameSite=Lax; Max-Age=43200</pre>`, he: `<p>ה-tokens נשמרים ב-session store בצד השרת (מוצפנים at rest). הדפדפן מקבל רק session ID אטום וחדש:</p>
 <pre>Set-Cookie: __Host-sid=7c1e...; Path=/; Secure;
   HttpOnly; SameSite=Lax; Max-Age=43200</pre>` },
-        fail: { en: `Session store (Redis) down → everyone is logged out. Make it replicated, and alert on session-store errors separately from app errors.`, he: `ה-session store (Redis) נופל → כולם מנותקים. עושים אותו משוכפל, ומתריעים על שגיאות session store בנפרד משגיאות האפליקציה.` } },
+        fail: { en: `Session store (Redis) down → everyone is logged out. Make it replicated, and alert on session-store errors separately from app errors.`, he: `ה-session store (Redis) נופל ← כולם מנותקים. עושים אותו משוכפל, ומתריעים על שגיאות session store בנפרד משגיאות האפליקציה.` } },
       { from: 1, to: 5, ms: 6,
         label: { en: "Call the API with the access token", he: "קריאה ל-API עם ה-access token" },
         detail: { en: `<p>The BFF adds <code>Authorization: Bearer &lt;access_token&gt;</code>. The API validates the JWT locally (JWKS cache), checks <code>aud</code> and scopes, then does object-level authorization ("does order 991 belong to this sub/tenant?").</p>`, he: `<p>ה-BFF מוסיף <code>Authorization: Bearer &lt;access_token&gt;</code>. ה-API מאמת את ה-JWT מקומית (JWKS cache), בודק <code>aud</code> ו-scopes, ואז עושה authorization ברמת האובייקט ("האם הזמנה 991 שייכת ל-sub/tenant הזה?").</p>` },
-        fail: { en: `API checks only "valid token" and not ownership → IDOR / broken access control (OWASP A01). Test with a second user's IDs.`, he: `ה-API בודק רק "token תקין" ולא בעלות → IDOR / broken access control (OWASP A01). בודקים עם IDs של משתמש אחר.` } },
+        fail: { en: `API checks only "valid token" and not ownership → IDOR / broken access control (OWASP A01). Test with a second user's IDs.`, he: `ה-API בודק רק "token תקין" ולא בעלות ← IDOR / broken access control (OWASP A01). בודקים עם IDs של משתמש אחר.` } },
       { from: 1, to: 2, ms: 80,
         label: { en: "Refresh before expiry (rotation)", he: "רענון לפני פקיעה (rotation)" },
         detail: { en: `<p>When the access token is within ~1 minute of expiry, the BFF uses the refresh token. The IdP returns a new access token <em>and</em> a new refresh token; the old refresh token is now invalid.</p>`, he: `<p>כשה-access token קרוב לפקיעה (~דקה), ה-BFF משתמש ב-refresh token. ה-IdP מחזיר access token חדש <em>וגם</em> refresh token חדש; הישן כבר לא תקף.</p>` },
-        fail: { en: `Two concurrent requests refresh at once → one uses an already-rotated token → reuse detection logs the user out. Serialize refresh per session (lock or single-flight).`, he: `שתי בקשות במקביל מרעננות יחד → אחת משתמשת ב-token שכבר הוחלף → reuse detection מנתק את המשתמש. עושים refresh אחד לכל session (lock או single-flight).` } },
+        fail: { en: `Two concurrent requests refresh at once → one uses an already-rotated token → reuse detection logs the user out. Serialize refresh per session (lock or single-flight).`, he: `שתי בקשות במקביל מרעננות יחד ← אחת משתמשת ב-token שכבר הוחלף ← reuse detection מנתק את המשתמש. עושים refresh אחד לכל session (lock או single-flight).` } },
       { from: 0, to: 1, ms: 60,
         label: { en: "Logout: local + IdP + revoke", he: "Logout: מקומי + IdP + revoke" },
         detail: { en: `<p>Delete the server session, revoke the refresh token (RFC 7009), clear the cookie, then redirect to the IdP's <code>end_session_endpoint</code> so the SSO session ends too. Back-channel logout lets the IdP notify other apps.</p>`, he: `<p>מוחקים את ה-session בשרת, מבטלים את ה-refresh token (RFC 7009), מנקים את ה-cookie, ואז redirect ל-<code>end_session_endpoint</code> של ה-IdP כדי שגם ה-SSO session ייגמר. Back-channel logout מאפשר ל-IdP להודיע לאפליקציות אחרות.</p>` },
-        fail: { en: `Only the cookie is cleared → the refresh token stays valid for days and the user is silently logged back in via SSO. Always revoke server-side.`, he: `מנקים רק את ה-cookie → ה-refresh token נשאר תקף ימים והמשתמש מתחבר מחדש בשקט דרך SSO. תמיד עושים revoke בצד השרת.` } }
+        fail: { en: `Only the cookie is cleared → the refresh token stays valid for days and the user is silently logged back in via SSO. Always revoke server-side.`, he: `מנקים רק את ה-cookie ← ה-refresh token נשאר תקף ימים והמשתמש מתחבר מחדש בשקט דרך SSO. תמיד עושים revoke בצד השרת.` } }
     ]
   },
   diagram: `Browser          BFF               IdP              Authenticator
@@ -612,7 +612,7 @@ Idempotency-Key: 4c1e9b2a-...-7f
 { "cartId": "c-77" }</pre><p>The key is generated once when the checkout page loads, so a double-click or a network retry sends the same key.</p>`, he: `<pre>POST /v1/checkout
 Idempotency-Key: 4c1e9b2a-...-7f
 { "cartId": "c-77" }</pre><p>המפתח נוצר פעם אחת כשעמוד ה-checkout נטען, כך שלחיצה כפולה או retry ברשת שולחים את אותו מפתח.</p>` },
-        fail: { en: `Key generated per click instead of per checkout → two orders, two charges. Generate it with the page/cart, not the button.`, he: `מפתח שנוצר בכל לחיצה במקום בכל checkout → שתי הזמנות, שני חיובים. יוצרים אותו עם העמוד/העגלה, לא עם הכפתור.` } },
+        fail: { en: `Key generated per click instead of per checkout → two orders, two charges. Generate it with the page/cart, not the button.`, he: `מפתח שנוצר בכל לחיצה במקום בכל checkout ← שתי הזמנות, שני חיובים. יוצרים אותו עם העמוד/העגלה, לא עם הכפתור.` } },
       { from: 1, to: 2, ms: 3,
         label: { en: "Gateway: auth, rate limit, route", he: "Gateway: auth, rate limit, ניתוב" },
         detail: { en: `<p>Validates the session/JWT, applies per-user rate limits (checkout is a favorite of card-testing bots), and forwards with <code>traceparent</code>.</p>`, he: `<p>מאמת session/JWT, מפעיל rate limits לכל משתמש (checkout הוא יעד אהוב על בוטים של card testing), ומעביר עם <code>traceparent</code>.</p>` },
@@ -624,7 +624,7 @@ VALUES ($1, $2, 'IN_PROGRESS')
 ON CONFLICT (key) DO NOTHING;</pre><p>If the row already exists: return the stored response (completed) or <code>409</code> (still in progress).</p>`, he: `<pre>INSERT INTO idempotency_keys(key, user_id, status)
 VALUES ($1, $2, 'IN_PROGRESS')
 ON CONFLICT (key) DO NOTHING;</pre><p>אם השורה כבר קיימת: מחזירים את התשובה השמורה (הושלם) או <code>409</code> (עדיין בעבודה).</p>` },
-        fail: { en: `Key not scoped to the user → one user can replay another's response. Scope keys by user/tenant and expire them (e.g. 24 h).`, he: `מפתח שלא מוגבל למשתמש → משתמש אחד יכול לקבל תשובה של אחר. מגבילים מפתחות לפי משתמש/tenant ומפקיעים אותם (למשל 24 שעות).` } },
+        fail: { en: `Key not scoped to the user → one user can replay another's response. Scope keys by user/tenant and expire them (e.g. 24 h).`, he: `מפתח שלא מוגבל למשתמש ← משתמש אחד יכול לקבל תשובה של אחר. מגבילים מפתחות לפי משתמש/tenant ומפקיעים אותם (למשל 24 שעות).` } },
       { from: 2, to: 3, ms: 10,
         label: { en: "Reserve inventory (15-minute hold)", he: "שמירת מלאי (החזקה ל-15 דקות)" },
         detail: { en: `<pre>UPDATE stock SET reserved = reserved + 2
@@ -640,7 +640,7 @@ ON CONFLICT (key) DO NOTHING;</pre><p>אם השורה כבר קיימת: מחז�
       { from: 2, to: 4, ms: 5,
         label: { en: "Ask the payment service for an intent", he: "בקשת intent משירות התשלומים" },
         detail: { en: `<p>The payment service owns all PSP interaction. It records a <code>payments</code> row (amount, currency, order_id) before calling out.</p>`, he: `<p>שירות התשלומים אחראי על כל התקשורת עם ה-PSP. הוא רושם שורת <code>payments</code> (סכום, מטבע, order_id) לפני הקריאה החוצה.</p>` },
-        fail: { en: `Payment service down → checkout fails fast with a friendly retry message; the reservation expires on its own.`, he: `שירות התשלומים למטה → ה-checkout נכשל מהר עם הודעת retry ידידותית; השמירה פגה מעצמה.` } },
+        fail: { en: `Payment service down → checkout fails fast with a friendly retry message; the reservation expires on its own.`, he: `שירות התשלומים למטה ← ה-checkout נכשל מהר עם הודעת retry ידידותית; השמירה פגה מעצמה.` } },
       { from: 4, to: 5, ms: 350,
         label: { en: "Create PaymentIntent at the PSP", he: "יצירת PaymentIntent ב-PSP" },
         detail: { en: `<pre>POST /v1/payment_intents
@@ -654,21 +654,21 @@ amount=129000&amp;currency=ils
       { from: 0, to: 5, ms: 400,
         label: { en: "Browser confirms the card with the PSP SDK", he: "הדפדפן מאשר את הכרטיס עם ה-SDK של ה-PSP" },
         detail: { en: `<p>Card details go from the PSP's iframe straight to the PSP — your servers never see the PAN, which keeps you in the smallest PCI scope.</p>`, he: `<p>פרטי הכרטיס עוברים מה-iframe של ה-PSP ישר ל-PSP — השרתים שלך לא רואים את מספר הכרטיס, וזה משאיר אותך ב-PCI scope הכי קטן.</p>` },
-        fail: { en: `Ad blockers or CSP rules block the PSP script → silent checkout failure. Monitor client-side errors and allowlist the PSP domains in CSP.`, he: `Ad blockers או חוקי CSP חוסמים את הסקריפט של ה-PSP → כשל checkout שקט. מנטרים שגיאות client-side ומאשרים את דומייני ה-PSP ב-CSP.` } },
+        fail: { en: `Ad blockers or CSP rules block the PSP script → silent checkout failure. Monitor client-side errors and allowlist the PSP domains in CSP.`, he: `Ad blockers או חוקי CSP חוסמים את הסקריפט של ה-PSP ← כשל checkout שקט. מנטרים שגיאות client-side ומאשרים את דומייני ה-PSP ב-CSP.` } },
       { from: 5, to: 6, ms: 8000,
         label: { en: "3DS challenge at the issuer (human time)", he: "3DS challenge אצל המנפיק (זמן אנושי)" },
         detail: { en: `<p>The issuer's ACS decides frictionless (risk-based, ~1 s) or challenge (bank app approval / OTP). Successful 3DS shifts fraud liability to the issuer.</p>`, he: `<p>ה-ACS של המנפיק מחליט frictionless (לפי סיכון, ~1 s) או challenge (אישור באפליקציית הבנק / OTP). 3DS מוצלח מעביר את האחריות להונאה למנפיק.</p>` },
-        fail: { en: `Users abandon the challenge or close the tab → order stays pending. The reservation expiry plus PSP webhooks resolve it; track 3DS abandonment rate.`, he: `משתמשים נוטשים את ה-challenge או סוגרים את הלשונית → ההזמנה נשארת pending. פקיעת השמירה ו-webhooks של ה-PSP פותרים את זה; עוקבים אחרי שיעור נטישה ב-3DS.` } },
+        fail: { en: `Users abandon the challenge or close the tab → order stays pending. The reservation expiry plus PSP webhooks resolve it; track 3DS abandonment rate.`, he: `משתמשים נוטשים את ה-challenge או סוגרים את הלשונית ← ההזמנה נשארת pending. פקיעת השמירה ו-webhooks של ה-PSP פותרים את זה; עוקבים אחרי שיעור נטישה ב-3DS.` } },
       { from: 6, to: 5, ms: 900,
         label: { en: "Authorization through the card network", he: "Authorization דרך רשת הכרטיסים" },
-        detail: { en: `<p>PSP → acquirer → card network → issuer: funds checked and held. The PSP marks the intent <code>succeeded</code> (or <code>requires_capture</code> if you capture later).</p>`, he: `<p>PSP → acquirer → רשת הכרטיסים → מנפיק: בדיקה והחזקה של הכסף. ה-PSP מסמן את ה-intent כ-<code>succeeded</code> (או <code>requires_capture</code> אם עושים capture אחר כך).</p>` },
+        detail: { en: `<p>PSP → acquirer → card network → issuer: funds checked and held. The PSP marks the intent <code>succeeded</code> (or <code>requires_capture</code> if you capture later).</p>`, he: `<p>PSP ← acquirer ← רשת הכרטיסים ← מנפיק: בדיקה והחזקה של הכסף. ה-PSP מסמן את ה-intent כ-<code>succeeded</code> (או <code>requires_capture</code> אם עושים capture אחר כך).</p>` },
         fail: { en: `Decline (insufficient funds, fraud). Show a clear retry path; don't retry automatically on hard declines.`, he: `סירוב (אין כסף, חשד הונאה). מציגים מסלול retry ברור; לא עושים retry אוטומטי על hard declines.` } },
       { from: 5, to: 4, ms: 300,
         label: { en: "Signed webhook: payment_intent.succeeded", he: "Webhook חתום: payment_intent.succeeded" },
         detail: { en: `<pre>Stripe-Signature: t=1731490000,v1=5257a8...
 expected = HMAC_SHA256(secret, t + "." + body)</pre><p>Verify the signature and timestamp, dedupe on <code>event.id</code>, store the event, answer <code>200</code> within seconds and process asynchronously.</p>`, he: `<pre>Stripe-Signature: t=1731490000,v1=5257a8...
 expected = HMAC_SHA256(secret, t + "." + body)</pre><p>מאמתים חתימה ו-timestamp, עושים dedupe לפי <code>event.id</code>, שומרים את ה-event, עונים <code>200</code> תוך שניות ומעבדים אסינכרונית.</p>` },
-        fail: { en: `Slow handler → PSP times out and retries → duplicates; unverified webhooks → attackers mark orders paid. Verify, persist, ack, then process.`, he: `handler איטי → ה-PSP מקבל timeout ושולח שוב → כפילויות; webhooks לא מאומתים → תוקפים מסמנים הזמנות כשולמו. מאמתים, שומרים, מאשרים, ואז מעבדים.` } },
+        fail: { en: `Slow handler → PSP times out and retries → duplicates; unverified webhooks → attackers mark orders paid. Verify, persist, ack, then process.`, he: `handler איטי ← ה-PSP מקבל timeout ושולח שוב ← כפילויות; webhooks לא מאומתים ← תוקפים מסמנים הזמנות כשולמו. מאמתים, שומרים, מאשרים, ואז מעבדים.` } },
       { from: 4, to: 2, ms: 20,
         label: { en: "Order moves to PAID (guarded transition)", he: "ההזמנה עוברת ל-PAID (מעבר מוגן)" },
         detail: { en: `<pre>UPDATE orders SET status = 'PAID'
@@ -676,15 +676,15 @@ expected = HMAC_SHA256(secret, t + "." + body)</pre><p>מאמתים חתימה �
 -- + INSERT INTO outbox (... 'OrderPaid' ...)</pre>`, he: `<pre>UPDATE orders SET status = 'PAID'
  WHERE id = 'o-81' AND status = 'PENDING_PAYMENT';
 -- + INSERT INTO outbox (... 'OrderPaid' ...)</pre>` },
-        fail: { en: `Payment succeeded after the order was already cancelled (reservation expired) → 0 rows updated. Trigger an automatic refund and alert.`, he: `התשלום הצליח אחרי שההזמנה כבר בוטלה (השמירה פגה) → 0 שורות עודכנו. מפעילים refund אוטומטי ומתריעים.` } },
+        fail: { en: `Payment succeeded after the order was already cancelled (reservation expired) → 0 rows updated. Trigger an automatic refund and alert.`, he: `התשלום הצליח אחרי שההזמנה כבר בוטלה (השמירה פגה) ← 0 שורות עודכנו. מפעילים refund אוטומטי ומתריעים.` } },
       { from: 7, to: 8, ms: 50,
         label: { en: "Outbox relay publishes OrderPaid", he: "ה-outbox relay מפרסם OrderPaid" },
         detail: { en: `<p>Debezium (CDC) or a poller reads unsent outbox rows and publishes to the <code>orders</code> topic keyed by <code>order_id</code>, which keeps all events of one order in order.</p>`, he: `<p>Debezium (CDC) או poller קורא שורות outbox שלא נשלחו ומפרסם ל-topic בשם <code>orders</code> לפי מפתח <code>order_id</code>, וכך כל ה-events של הזמנה אחת שומרים על סדר.</p>` },
-        fail: { en: `Relay down → events delayed, not lost. Alert on the age of the oldest unsent outbox row.`, he: `ה-relay למטה → events מתעכבים, לא הולכים לאיבוד. מתריעים על גיל השורה הוותיקה ביותר שלא נשלחה ב-outbox.` } },
+        fail: { en: `Relay down → events delayed, not lost. Alert on the age of the oldest unsent outbox row.`, he: `ה-relay למטה ← events מתעכבים, לא הולכים לאיבוד. מתריעים על גיל השורה הוותיקה ביותר שלא נשלחה ב-outbox.` } },
       { from: 8, to: 9, ms: 600,
         label: { en: "Notification: email + SMS (idempotent)", he: "התראה: מייל + SMS (אידמפוטנטי)" },
         detail: { en: `<p>The consumer records <code>event_id</code> in an inbox table in the same transaction as "notification queued", then calls the email/SMS provider with its own idempotency key.</p>`, he: `<p>ה-consumer רושם <code>event_id</code> בטבלת inbox באותה טרנזקציה של "התראה בתור", ואז קורא לספק המייל/SMS עם idempotency key משלו.</p>` },
-        fail: { en: `At-least-once delivery without dedupe → customer gets 3 confirmation emails. The inbox table makes it effectively-once.`, he: `At-least-once בלי dedupe → הלקוח מקבל 3 מיילים של אישור. טבלת ה-inbox הופכת את זה ל-effectively-once.` } },
+        fail: { en: `At-least-once delivery without dedupe → customer gets 3 confirmation emails. The inbox table makes it effectively-once.`, he: `At-least-once בלי dedupe ← הלקוח מקבל 3 מיילים של אישור. טבלת ה-inbox הופכת את זה ל-effectively-once.` } },
       { from: 8, to: 10, ms: 100,
         label: { en: "Fulfillment converts the hold into a pick", he: "Fulfillment הופך את ההחזקה ללקט" },
         detail: { en: `<p>Fulfillment consumes <code>OrderPaid</code>, converts the reservation into an allocation and creates a pick/pack task; on shipment it may trigger the capture if you authorize-then-capture.</p>`, he: `<p>Fulfillment צורך <code>OrderPaid</code>, הופך את השמירה להקצאה ויוצר משימת ליקוט/אריזה; במשלוח הוא יכול להפעיל capture אם עובדים ב-authorize-then-capture.</p>` },
@@ -692,7 +692,7 @@ expected = HMAC_SHA256(secret, t + "." + body)</pre><p>מאמתים חתימה �
       { from: 0, to: 1, ms: 80,
         label: { en: "Browser shows confirmation", he: "הדפדפן מציג אישור" },
         detail: { en: `<p>After the 3DS redirect the page polls <code>GET /orders/o-81</code> (or listens via SSE) until the status is <code>PAID</code>. The page never decides payment success by itself.</p>`, he: `<p>אחרי ה-redirect של 3DS העמוד עושה polling ל-<code>GET /orders/o-81</code> (או מאזין ב-SSE) עד שהסטטוס <code>PAID</code>. העמוד אף פעם לא מחליט בעצמו שהתשלום הצליח.</p>` },
-        fail: { en: `Webhook delayed → user sees "processing" for a minute. Show an honest pending state and email them when it resolves.`, he: `ה-webhook מתעכב → המשתמש רואה "בעיבוד" דקה. מציגים מצב pending כן ושולחים מייל כשזה נפתר.` } },
+        fail: { en: `Webhook delayed → user sees "processing" for a minute. Show an honest pending state and email them when it resolves.`, he: `ה-webhook מתעכב ← המשתמש רואה "בעיבוד" דקה. מציגים מצב pending כן ושולחים מייל כשזה נפתר.` } },
       { from: 2, to: 3, ms: 10,
         label: { en: "Compensation path: payment failed or expired", he: "מסלול compensation: התשלום נכשל או פג" },
         detail: { en: `<p>On <code>payment_failed</code> or when the 15-minute hold expires: release the reservation, cancel the PaymentIntent, set the order <code>CANCELLED</code>, publish <code>OrderCancelled</code>. If money was captured anyway, refund it.</p>`, he: `<p>ב-<code>payment_failed</code> או כשההחזקה של 15 הדקות פגה: משחררים את השמירה, מבטלים את ה-PaymentIntent, מעבירים את ההזמנה ל-<code>CANCELLED</code>, ומפרסמים <code>OrderCancelled</code>. אם בכל זאת נלקח כסף — refund.</p>` },
@@ -726,7 +726,7 @@ expected = HMAC_SHA256(secret, t + "." + body)</pre><p>מאמתים חתימה �
   ],
   interview: [
     { q: { en: "The PSP charged the customer but our order shows CANCELLED. How did that happen and how do you prevent it?", he: "ה-PSP חייב את הלקוח אבל אצלנו ההזמנה CANCELLED. איך זה קרה ואיך מונעים?" },
-      a: { en: "A race between the reservation expiry sweeper and a slow 3DS/webhook: the sweeper cancelled the order at minute 15, then the payment succeeded at minute 16. The guarded transition (PENDING_PAYMENT → PAID) correctly refused, so the system must react: on 'payment succeeded for a non-pending order', automatically refund (or re-reserve if stock allows) and notify. Prevention: cancel the PaymentIntent at the PSP as part of the expiry compensation so it can't succeed later, make the hold longer than the PSP's 3DS timeout, and run daily reconciliation to catch the rest.", he: "מרוץ בין ה-sweeper של פקיעת השמירה לבין 3DS/webhook איטי: ה-sweeper ביטל את ההזמנה בדקה 15, והתשלום הצליח בדקה 16. המעבר המוגן (PENDING_PAYMENT → PAID) סירב כמו שצריך, אז המערכת חייבת להגיב: על 'תשלום הצליח להזמנה שלא ב-pending' — refund אוטומטי (או שמירה מחדש אם יש מלאי) והודעה. מניעה: לבטל את ה-PaymentIntent ב-PSP כחלק מ-compensation של הפקיעה כדי שלא יוכל להצליח אחר כך, לקבוע החזקה ארוכה מה-timeout של 3DS ב-PSP, ו-reconciliation יומי שתופס את השאר." } },
+      a: { en: "A race between the reservation expiry sweeper and a slow 3DS/webhook: the sweeper cancelled the order at minute 15, then the payment succeeded at minute 16. The guarded transition (PENDING_PAYMENT → PAID) correctly refused, so the system must react: on 'payment succeeded for a non-pending order', automatically refund (or re-reserve if stock allows) and notify. Prevention: cancel the PaymentIntent at the PSP as part of the expiry compensation so it can't succeed later, make the hold longer than the PSP's 3DS timeout, and run daily reconciliation to catch the rest.", he: "מרוץ בין ה-sweeper של פקיעת השמירה לבין 3DS/webhook איטי: ה-sweeper ביטל את ההזמנה בדקה 15, והתשלום הצליח בדקה 16. המעבר המוגן (PENDING_PAYMENT ← PAID) סירב כמו שצריך, אז המערכת חייבת להגיב: על 'תשלום הצליח להזמנה שלא ב-pending' — refund אוטומטי (או שמירה מחדש אם יש מלאי) והודעה. מניעה: לבטל את ה-PaymentIntent ב-PSP כחלק מ-compensation של הפקיעה כדי שלא יוכל להצליח אחר כך, לקבוע החזקה ארוכה מה-timeout של 3DS ב-PSP, ו-reconciliation יומי שתופס את השאר." } },
     { q: { en: "Choreography or orchestration for this checkout saga?", he: "Choreography או orchestration ל-saga של ה-checkout הזה?" },
       a: { en: "For money I'd orchestrate: an order workflow (a state machine in the order service, or Temporal/Step Functions) owns the sequence, timeouts and compensations, so the flow is explicit, testable and observable in one place. Downstream reactions that don't affect the outcome — emails, analytics, loyalty points — stay choreographed via events, because they can fail independently without changing the order's state.", he: "לכסף הייתי עושה orchestration: workflow של ההזמנה (state machine בשירות ההזמנות, או Temporal/Step Functions) אחראי על הרצף, ה-timeouts וה-compensations, כך שה-flow מפורש, בדיק וניתן לצפייה במקום אחד. תגובות downstream שלא משפיעות על התוצאה — מיילים, analytics, נקודות מועדון — נשארות choreography דרך events, כי הן יכולות להיכשל באופן עצמאי בלי לשנות את מצב ההזמנה." } }
   ],
@@ -760,7 +760,7 @@ INFRA.lessons.push({
   title: { en: "Large File Upload End to End: Presigned URLs, Scanning, Processing, Delivery", he: "העלאת קובץ גדול מקצה לקצה: Presigned URLs, סריקה, עיבוד ומסירה" },
   tldr: {
     en: "Never stream big files through your API servers: hand the browser short-lived presigned multipart URLs, let it upload straight to object storage, then react to the storage event with a queue-driven pipeline (scan → validate → process → publish) and serve the result through a CDN with signed URLs.",
-    he: "אף פעם לא מעבירים קבצים גדולים דרך שרתי ה-API: נותנים לדפדפן presigned multipart URLs קצרי-מועד, נותנים לו להעלות ישר ל-object storage, ואז מגיבים ל-event של ה-storage עם pipeline מבוסס תור (סריקה → אימות → עיבוד → פרסום) ומגישים את התוצאה דרך CDN עם signed URLs."
+    he: "אף פעם לא מעבירים קבצים גדולים דרך שרתי ה-API: נותנים לדפדפן presigned multipart URLs קצרי-מועד, נותנים לו להעלות ישר ל-object storage, ואז מגיבים ל-event של ה-storage עם pipeline מבוסס תור (סריקה ← אימות ← עיבוד ← פרסום) ומגישים את התוצאה דרך CDN עם signed URLs."
   },
   analogy: {
     en: "Shipping a piano to a concert hall. You don't carry it through the box office (your API); the box office gives you a one-day loading-dock pass (presigned URL). Movers bring it in pieces (multipart) straight to the loading dock (S3). The dock rings a bell (event) and the inspector checks it's really a piano and not a crate of fireworks (malware scan + magic bytes). Only then do the technicians tune it (processing), list it in the program (metadata DB), and give ticket holders timed passes to hear it (signed CDN URLs).",
@@ -843,7 +843,7 @@ INFRA.lessons.push({
 <li>Cost: storage by class, egress through the CDN, transcode minutes.</li>
 </ul>`,
         he: `<ul>
-<li>Funnel של העלאה: התחיל → הושלם → נסרק → מוכן; שיעור השלמה לפי client וגודל קובץ.</li>
+<li>Funnel של העלאה: התחיל ← הושלם ← נסרק ← מוכן; שיעור השלמה לפי client וגודל קובץ.</li>
 <li>שיעור retry של חלקים ו-throughput של העלאה (מזהה בעיות רשת אזוריות).</li>
 <li>תור: <code>ApproximateAgeOfOldestMessage</code> לכל שלב (סריקה, עיבוד) — זה ה-"זמן עד מוכן" שהמשתמש מרגיש.</li>
 <li>תוצאות סריקה: מספר נגועים, שגיאות scanner (scanner ששגה חייב להיכשל סגור, אף פעם לא לסמן נקי).</li>
@@ -862,23 +862,23 @@ INFRA.lessons.push({
   "contentType": "video/mp4" }</pre><p>The API checks auth, quota and allowed types/size, creates an upload row <code>PENDING</code>, calls <code>CreateMultipartUpload</code> and returns presigned URLs for each part (15-minute expiry).</p>`, he: `<pre>POST /v1/uploads
 { "filename": "demo.mp4", "size": 1073741824,
   "contentType": "video/mp4" }</pre><p>ה-API בודק auth, quota וסוגים/גדלים מותרים, יוצר שורת upload ב-<code>PENDING</code>, קורא ל-<code>CreateMultipartUpload</code> ומחזיר presigned URLs לכל חלק (תוקף 15 דקות).</p>` },
-        fail: { en: `Presigning with long expiry (7 days) or a wildcard key → leaked URLs become an open drop box. Short expiry, exact key, content-length limits.`, he: `Presign עם תוקף ארוך (7 ימים) או מפתח עם wildcard → URLs שדלפו הופכים לתיבת שלשלאות פתוחה. תוקף קצר, מפתח מדויק, הגבלת content-length.` } },
+        fail: { en: `Presigning with long expiry (7 days) or a wildcard key → leaked URLs become an open drop box. Short expiry, exact key, content-length limits.`, he: `Presign עם תוקף ארוך (7 ימים) או מפתח עם wildcard ← URLs שדלפו הופכים לתיבת שלשלאות פתוחה. תוקף קצר, מפתח מדויק, הגבלת content-length.` } },
       { from: 0, to: 2, ms: 80000,
         label: { en: "Upload parts in parallel", he: "העלאת חלקים במקביל" },
         detail: { en: `<p>The browser PUTs 128 parts of 8 MiB, 4 at a time, each returning an <code>ETag</code>. A failed part is retried with backoff; progress is persisted locally so a reload can resume.</p>`, he: `<p>הדפדפן שולח PUT ל-128 חלקים של 8 MiB, 4 בכל פעם, וכל אחד מחזיר <code>ETag</code>. חלק שנכשל נשלח שוב עם backoff; ההתקדמות נשמרת מקומית כך שרענון יכול להמשיך.</p>` },
-        fail: { en: `Missing CORS rule on the bucket → the browser blocks every PUT (preflight fails). Configure CORS for your origin and expose the <code>ETag</code> header.`, he: `חסר חוק CORS על ה-bucket → הדפדפן חוסם כל PUT (ה-preflight נכשל). מגדירים CORS ל-origin שלך וחושפים את ה-header של <code>ETag</code>.` } },
+        fail: { en: `Missing CORS rule on the bucket → the browser blocks every PUT (preflight fails). Configure CORS for your origin and expose the <code>ETag</code> header.`, he: `חסר חוק CORS על ה-bucket ← הדפדפן חוסם כל PUT (ה-preflight נכשל). מגדירים CORS ל-origin שלך וחושפים את ה-header של <code>ETag</code>.` } },
       { from: 0, to: 1, ms: 300,
         label: { en: "Complete the multipart upload", he: "השלמת ה-multipart upload" },
         detail: { en: `<p>The browser sends the part list with ETags; the API calls <code>CompleteMultipartUpload</code> with a full-object SHA-256 checksum, and marks the upload <code>UPLOADED</code>.</p>`, he: `<p>הדפדפן שולח את רשימת החלקים עם ה-ETags; ה-API קורא ל-<code>CompleteMultipartUpload</code> עם checksum מסוג SHA-256 לכל האובייקט, ומסמן את ההעלאה <code>UPLOADED</code>.</p>` },
-        fail: { en: `User closes the tab before "complete" → parts stay hidden and billed. Lifecycle rule aborts them after 7 days.`, he: `המשתמש סוגר את הלשונית לפני "complete" → החלקים נשארים מוסתרים ומחויבים. Lifecycle rule עושה להם abort אחרי 7 ימים.` } },
+        fail: { en: `User closes the tab before "complete" → parts stay hidden and billed. Lifecycle rule aborts them after 7 days.`, he: `המשתמש סוגר את הלשונית לפני "complete" ← החלקים נשארים מוסתרים ומחויבים. Lifecycle rule עושה להם abort אחרי 7 ימים.` } },
       { from: 2, to: 3, ms: 500,
-        label: { en: "ObjectCreated event → queue", he: "Event של ObjectCreated → תור" },
+        label: { en: "ObjectCreated event → queue", he: "Event של ObjectCreated ← תור" },
         detail: { en: `<p>S3 emits <code>s3:ObjectCreated:CompleteMultipartUpload</code> to SQS (or EventBridge). Delivery is at-least-once, so duplicates are possible.</p>`, he: `<p>S3 שולח <code>s3:ObjectCreated:CompleteMultipartUpload</code> ל-SQS (או EventBridge). המסירה at-least-once, אז כפילויות אפשריות.</p>` },
-        fail: { en: `Event notifications misconfigured after an IaC change → uploads complete but nothing happens. Alert when uploads are "UPLOADED" for more than 10 minutes.`, he: `ה-event notifications הוגדרו לא נכון אחרי שינוי IaC → העלאות מסתיימות ושום דבר לא קורה. מתריעים כשהעלאות ב-"UPLOADED" יותר מ-10 דקות.` } },
+        fail: { en: `Event notifications misconfigured after an IaC change → uploads complete but nothing happens. Alert when uploads are "UPLOADED" for more than 10 minutes.`, he: `ה-event notifications הוגדרו לא נכון אחרי שינוי IaC ← העלאות מסתיימות ושום דבר לא קורה. מתריעים כשהעלאות ב-"UPLOADED" יותר מ-10 דקות.` } },
       { from: 3, to: 4, ms: 4000,
         label: { en: "Malware scan", he: "סריקת malware" },
         detail: { en: `<p>The scanner long-polls the queue, streams the object (ClamAV, a vendor engine or the cloud's malware protection), with a visibility timeout longer than the scan.</p>`, he: `<p>ה-scanner עושה long-poll לתור, מזרים את האובייקט (ClamAV, מנוע של ספק או ה-malware protection של הענן), עם visibility timeout ארוך מזמן הסריקה.</p>` },
-        fail: { en: `Scanner crashes or times out → must <em>not</em> mark clean (fail closed). Retry, then DLQ and alert.`, he: `ה-scanner קורס או מקבל timeout → אסור לסמן נקי (fail closed). retry, ואז DLQ והתראה.` } },
+        fail: { en: `Scanner crashes or times out → must <em>not</em> mark clean (fail closed). Retry, then DLQ and alert.`, he: `ה-scanner קורס או מקבל timeout ← אסור לסמן נקי (fail closed). retry, ואז DLQ והתראה.` } },
       { from: 4, to: 4, ms: 200,
         label: { en: "Validate real type, size, dimensions", he: "אימות סוג אמיתי, גודל וממדים" },
         detail: { en: `<pre>$ file --mime-type demo.mp4
@@ -888,27 +888,27 @@ $ head -c 12 demo.mp4 | xxd
 demo.mp4: video/mp4
 $ head -c 12 demo.mp4 | xxd
 00000000: 0000 0020 6674 7970 6973 6f6d  ... ftypisom</pre><p>בודקים magic bytes מול הסוג הנטען, אוכפים משך/פיקסלים מקסימליים, ומנקים EXIF GPS מתמונות.</p>` },
-        fail: { en: `An "image.png" that is really an SVG with script → stored XSS when served inline. Reject mismatches, serve user content from a separate domain.`, he: `"image.png" שהוא בעצם SVG עם script → stored XSS כשמגישים inline. דוחים אי-התאמות ומגישים תוכן משתמשים מדומיין נפרד.` } },
+        fail: { en: `An "image.png" that is really an SVG with script → stored XSS when served inline. Reject mismatches, serve user content from a separate domain.`, he: `"image.png" שהוא בעצם SVG עם script ← stored XSS כשמגישים inline. דוחים אי-התאמות ומגישים תוכן משתמשים מדומיין נפרד.` } },
       { from: 4, to: 2, ms: 100,
         label: { en: "Tag clean / quarantine infected", he: "תיוג clean / העברת נגועים ל-quarantine" },
         detail: { en: `<p>Clean objects get tag <code>scan=clean</code> (the bucket policy only allows reads of tagged objects). Infected ones move to a locked quarantine bucket and the upload becomes <code>REJECTED</code>.</p>`, he: `<p>אובייקטים נקיים מקבלים תג <code>scan=clean</code> (ה-bucket policy מתיר קריאה רק לאובייקטים מתויגים). נגועים עוברים ל-bucket quarantine נעול וההעלאה הופכת ל-<code>REJECTED</code>.</p>` },
-        fail: { en: `Reads allowed before tagging → a race lets someone download malware in the first seconds. Enforce "deny unless clean" in policy, not in app code.`, he: `קריאה מותרת לפני התיוג → מרוץ מאפשר להוריד malware בשניות הראשונות. אוכפים "deny unless clean" ב-policy, לא בקוד האפליקציה.` } },
+        fail: { en: `Reads allowed before tagging → a race lets someone download malware in the first seconds. Enforce "deny unless clean" in policy, not in app code.`, he: `קריאה מותרת לפני התיוג ← מרוץ מאפשר להוריד malware בשניות הראשונות. אוכפים "deny unless clean" ב-policy, לא בקוד האפליקציה.` } },
       { from: 4, to: 6, ms: 10,
         label: { en: "Record status, enqueue processing", he: "רישום סטטוס ושליחה לעיבוד" },
         detail: { en: `<p><code>UPDATE uploads SET status='SCANNED' WHERE id=$1 AND status='UPLOADED'</code>, then send a processing job keyed by object version.</p>`, he: `<p><code>UPDATE uploads SET status='SCANNED' WHERE id=$1 AND status='UPLOADED'</code>, ואז שולחים job עיבוד לפי גרסת האובייקט.</p>` },
-        fail: { en: `Duplicate event processed twice → guarded update returns 0 rows → skip. Without the guard you'd transcode twice and pay twice.`, he: `Event כפול שעובד פעמיים → ה-update המוגן מחזיר 0 שורות → מדלגים. בלי השמירה הזו היית עושה transcode פעמיים ומשלם פעמיים.` } },
+        fail: { en: `Duplicate event processed twice → guarded update returns 0 rows → skip. Without the guard you'd transcode twice and pay twice.`, he: `Event כפול שעובד פעמיים ← ה-update המוגן מחזיר 0 שורות ← מדלגים. בלי השמירה הזו היית עושה transcode פעמיים ומשלם פעמיים.` } },
       { from: 3, to: 5, ms: 45000,
         label: { en: "Process: thumbnails, transcode", he: "עיבוד: thumbnails ו-transcode" },
         detail: { en: `<p>The media worker (sandboxed, no internet) creates a poster frame and HLS renditions (1080p/720p/480p) with ffmpeg or a managed transcoder. Long jobs extend their visibility timeout with heartbeats.</p>`, he: `<p>ה-media worker (מבודד, בלי אינטרנט) יוצר poster frame ו-renditions של HLS (1080p/720p/480p) עם ffmpeg או transcoder מנוהל. jobs ארוכים מאריכים את ה-visibility timeout עם heartbeats.</p>` },
-        fail: { en: `Spot node reclaimed mid-transcode → message reappears after the timeout and restarts. Make output writes idempotent; consider chunked transcoding for long videos.`, he: `Spot node נלקח באמצע transcode → ההודעה חוזרת אחרי ה-timeout ומתחילה מחדש. עושים כתיבות פלט אידמפוטנטיות; שוקלים transcode בחתיכות לסרטונים ארוכים.` } },
+        fail: { en: `Spot node reclaimed mid-transcode → message reappears after the timeout and restarts. Make output writes idempotent; consider chunked transcoding for long videos.`, he: `Spot node נלקח באמצע transcode ← ההודעה חוזרת אחרי ה-timeout ומתחילה מחדש. עושים כתיבות פלט אידמפוטנטיות; שוקלים transcode בחתיכות לסרטונים ארוכים.` } },
       { from: 5, to: 2, ms: 2500,
         label: { en: "Write renditions to storage", he: "כתיבת ה-renditions ל-storage" },
         detail: { en: `<p>Outputs go to <code>tenant-7/uploads/9f3c/v1/hls/...</code>, a deterministic path per source version, so a retry overwrites instead of duplicating.</p>`, he: `<p>הפלטים נכתבים ל-<code>tenant-7/uploads/9f3c/v1/hls/...</code>, path דטרמיניסטי לכל גרסת מקור, כך ש-retry דורס במקום לשכפל.</p>` },
-        fail: { en: `Random output names per attempt → orphaned files and surprise storage bills. Deterministic keys per input version.`, he: `שמות פלט אקראיים בכל ניסיון → קבצים יתומים וחשבונות storage מפתיעים. מפתחות דטרמיניסטיים לכל גרסת קלט.` } },
+        fail: { en: `Random output names per attempt → orphaned files and surprise storage bills. Deterministic keys per input version.`, he: `שמות פלט אקראיים בכל ניסיון ← קבצים יתומים וחשבונות storage מפתיעים. מפתחות דטרמיניסטיים לכל גרסת קלט.` } },
       { from: 5, to: 6, ms: 10,
         label: { en: "Metadata: READY", he: "Metadata: READY" },
         detail: { en: `<p>Store renditions, duration, dimensions and checksum; status <code>READY</code> (guarded transition), plus an outbox event <code>UploadReady</code>.</p>`, he: `<p>שומרים renditions, משך, ממדים ו-checksum; הסטטוס <code>READY</code> (מעבר מוגן), ועוד outbox event בשם <code>UploadReady</code>.</p>` },
-        fail: { en: `DB write fails after outputs exist → retry is safe because both the files and the status update are idempotent.`, he: `הכתיבה ל-DB נכשלת אחרי שהפלטים קיימים → retry בטוח כי גם הקבצים וגם עדכון הסטטוס אידמפוטנטיים.` } },
+        fail: { en: `DB write fails after outputs exist → retry is safe because both the files and the status update are idempotent.`, he: `הכתיבה ל-DB נכשלת אחרי שהפלטים קיימים ← retry בטוח כי גם הקבצים וגם עדכון הסטטוס אידמפוטנטיים.` } },
       { from: 6, to: 7, ms: 150,
         label: { en: "Notify the user", he: "הודעה למשתמש" },
         detail: { en: `<p>The notifier consumes <code>UploadReady</code> and pushes over SSE (or WebSocket) to the user's open sessions; offline users get an email or push notification.</p>
@@ -916,18 +916,18 @@ $ head -c 12 demo.mp4 | xxd
 data: {"id":"9f3c","status":"READY"}</pre>`, he: `<p>ה-notifier צורך <code>UploadReady</code> ודוחף ב-SSE (או WebSocket) ל-sessions הפתוחים של המשתמש; משתמשים לא מחוברים מקבלים מייל או push notification.</p>
 <pre>event: upload.ready
 data: {"id":"9f3c","status":"READY"}</pre>` },
-        fail: { en: `SSE connection dropped by a proxy idle timeout → user never sees "ready". Send heartbeats every 15–30 s and let the page also poll as a fallback.`, he: `חיבור SSE שנסגר בגלל idle timeout בפרוקסי → המשתמש לא רואה "מוכן". שולחים heartbeats כל 15–30 s ונותנים לעמוד גם לעשות polling כגיבוי.` } },
+        fail: { en: `SSE connection dropped by a proxy idle timeout → user never sees "ready". Send heartbeats every 15–30 s and let the page also poll as a fallback.`, he: `חיבור SSE שנסגר בגלל idle timeout בפרוקסי ← המשתמש לא רואה "מוכן". שולחים heartbeats כל 15–30 s ונותנים לעמוד גם לעשות polling כגיבוי.` } },
       { from: 7, to: 0, ms: 50,
         label: { en: "Browser receives the event", he: "הדפדפן מקבל את ה-event" },
         detail: { en: `<p>The UI swaps the progress bar for the player. It asks the API for a playback URL (never builds one itself).</p>`, he: `<p>הממשק מחליף את פס ההתקדמות בנגן. הוא מבקש מה-API URL לניגון (אף פעם לא בונה אותו בעצמו).</p>` } },
       { from: 0, to: 8, ms: 40,
         label: { en: "Play via CDN signed URL", he: "ניגון דרך signed URL של CDN" },
         detail: { en: `<p>The API returns a CDN URL (or signed cookie) valid for e.g. 1 hour, scoped to this tenant's path. The CDN validates the signature at the edge and serves cached segments.</p>`, he: `<p>ה-API מחזיר URL של CDN (או signed cookie) תקף למשל לשעה, מוגבל ל-path של ה-tenant הזה. ה-CDN מאמת את החתימה ב-edge ומגיש segments מה-cache.</p>` },
-        fail: { en: `Signed URL valid for a year and shared on a forum → your egress bill explodes. Short TTLs, path-scoped policies, and egress alerts per tenant.`, he: `Signed URL שתקף לשנה ושותף בפורום → חשבון ה-egress מתפוצץ. TTLs קצרים, policies לפי path, והתראות egress לכל tenant.` } },
+        fail: { en: `Signed URL valid for a year and shared on a forum → your egress bill explodes. Short TTLs, path-scoped policies, and egress alerts per tenant.`, he: `Signed URL שתקף לשנה ושותף בפורום ← חשבון ה-egress מתפוצץ. TTLs קצרים, policies לפי path, והתראות egress לכל tenant.` } },
       { from: 8, to: 2, ms: 80,
-        label: { en: "CDN cache miss → private origin", he: "Cache miss ב-CDN → origin פרטי" },
+        label: { en: "CDN cache miss → private origin", he: "Cache miss ב-CDN ← origin פרטי" },
         detail: { en: `<p>On a miss the CDN fetches from the bucket using Origin Access Control; the bucket itself is private (Block Public Access on).</p>`, he: `<p>ב-miss ה-CDN מביא מה-bucket עם Origin Access Control; ה-bucket עצמו פרטי (Block Public Access מופעל).</p>` },
-        fail: { en: `Bucket made public "to fix the CDN" → every object is downloadable without signatures. Keep Block Public Access on and use OAC.`, he: `Bucket שהפך לציבורי "כדי לתקן את ה-CDN" → כל אובייקט ניתן להורדה בלי חתימה. משאירים Block Public Access ומשתמשים ב-OAC.` } }
+        fail: { en: `Bucket made public "to fix the CDN" → every object is downloadable without signatures. Keep Block Public Access on and use OAC.`, he: `Bucket שהפך לציבורי "כדי לתקן את ה-CDN" ← כל אובייקט ניתן להורדה בלי חתימה. משאירים Block Public Access ומשתמשים ב-OAC.` } }
     ]
   },
   diagram: `Browser    Upload API    S3 bucket     SQS     Scanner   Media wkr   Meta DB   SSE    CDN
@@ -1103,22 +1103,22 @@ Accept: text/event-stream
 Authorization: Bearer eyJ...
 { "conversationId": "cv-12",
   "message": "Where is my order 991?" }</pre>` },
-        fail: { en: `Proxy buffers the response (nginx <code>proxy_buffering on</code>) → user sees nothing until the full answer. Disable buffering for SSE routes.`, he: `פרוקסי עושה buffering לתגובה (nginx <code>proxy_buffering on</code>) → המשתמש לא רואה כלום עד התשובה המלאה. מכבים buffering ל-routes של SSE.` } },
+        fail: { en: `Proxy buffers the response (nginx <code>proxy_buffering on</code>) → user sees nothing until the full answer. Disable buffering for SSE routes.`, he: `פרוקסי עושה buffering לתגובה (nginx <code>proxy_buffering on</code>) ← המשתמש לא רואה כלום עד התשובה המלאה. מכבים buffering ל-routes של SSE.` } },
       { from: 1, to: 1, ms: 4,
         label: { en: "Auth, tenant, rate limit, token budget", he: "Auth, tenant, rate limit, תקציב טוקנים" },
         detail: { en: `<p>Resolve user and tenant from the JWT; check requests/min and the tenant's remaining daily token budget (Redis counters). Reject early with <code>429</code> + <code>Retry-After</code> rather than paying for a call you'll cut off.</p>`, he: `<p>מזהים משתמש ו-tenant מה-JWT; בודקים בקשות לדקה ואת יתרת תקציב הטוקנים היומי של ה-tenant (מונים ב-Redis). דוחים מוקדם עם <code>429</code> + <code>Retry-After</code> במקום לשלם על קריאה שתיחתך.</p>` },
-        fail: { en: `No per-tenant budget → one customer's script burns the whole month's LLM spend in a night. Budgets + cost alerts per tenant.`, he: `אין תקציב לכל tenant → סקריפט של לקוח אחד שורף בלילה את כל תקציב ה-LLM של החודש. תקציבים + התראות עלות לכל tenant.` } },
+        fail: { en: `No per-tenant budget → one customer's script burns the whole month's LLM spend in a night. Budgets + cost alerts per tenant.`, he: `אין תקציב לכל tenant ← סקריפט של לקוח אחד שורף בלילה את כל תקציב ה-LLM של החודש. תקציבים + התראות עלות לכל tenant.` } },
       { from: 1, to: 2, ms: 50,
         label: { en: "Input guardrails", he: "Input guardrails" },
         detail: { en: `<p>Redact PII that shouldn't leave your boundary, run a prompt-injection / jailbreak classifier, enforce length limits and content policy. Runs in parallel with the next step to save TTFT.</p>`, he: `<p>Redaction ל-PII שלא צריך לצאת מהגבולות שלך, classifier ל-prompt injection / jailbreak, גבולות אורך ו-content policy. רץ במקביל לשלב הבא כדי לחסוך TTFT.</p>` },
-        fail: { en: `Classifier outage → decide explicitly: fail closed for high-risk features, degrade to stricter prompts for low-risk ones. Never "skip silently".`, he: `Classifier למטה → מחליטים במפורש: fail closed לפיצ'רים בסיכון גבוה, ו-prompts מחמירים יותר לפיצ'רים בסיכון נמוך. אף פעם לא "מדלגים בשקט".` } },
+        fail: { en: `Classifier outage → decide explicitly: fail closed for high-risk features, degrade to stricter prompts for low-risk ones. Never "skip silently".`, he: `Classifier למטה ← מחליטים במפורש: fail closed לפיצ'רים בסיכון גבוה, ו-prompts מחמירים יותר לפיצ'רים בסיכון נמוך. אף פעם לא "מדלגים בשקט".` } },
       { from: 2, to: 3, ms: 10,
         label: { en: "Load history, rewrite the query", he: "טעינת היסטוריה וניסוח מחדש של השאלה" },
         detail: { en: `<p>The orchestrator loads the last turns of the conversation (trimmed to a token budget) and rewrites the question into a standalone search query ("order 991 shipping status").</p>`, he: `<p>ה-orchestrator טוען את התורות האחרונות בשיחה (מקוצרות לתקציב טוקנים) ומנסח את השאלה מחדש כ-query חיפוש עצמאי ("order 991 shipping status").</p>` } },
       { from: 3, to: 4, ms: 30,
         label: { en: "Embed the query", he: "Embedding לשאלה" },
         detail: { en: `<p>Turn the query into a vector (e.g. 1024 dims) with the <em>same</em> embedding model used at indexing time. Cache embeddings of frequent queries.</p>`, he: `<p>הופכים את השאלה לווקטור (למשל 1024 ממדים) עם <em>אותו</em> מודל embedding ששימש באינדוקס. שומרים ב-cache embeddings של שאלות נפוצות.</p>` },
-        fail: { en: `Embedding model upgraded without re-indexing → vectors live in different spaces, retrieval quality collapses silently. Version the index with the model.`, he: `שדרוג מודל embedding בלי אינדוקס מחדש → הווקטורים במרחבים שונים, ואיכות השליפה קורסת בשקט. מנהלים גרסה לאינדקס יחד עם המודל.` } },
+        fail: { en: `Embedding model upgraded without re-indexing → vectors live in different spaces, retrieval quality collapses silently. Version the index with the model.`, he: `שדרוג מודל embedding בלי אינדוקס מחדש ← הווקטורים במרחבים שונים, ואיכות השליפה קורסת בשקט. מנהלים גרסה לאינדקס יחד עם המודל.` } },
       { from: 3, to: 5, ms: 25,
         label: { en: "Vector search with a mandatory tenant filter", he: "Vector search עם filter חובה לפי tenant" },
         detail: { en: `<pre>SELECT id, chunk FROM doc_chunks
@@ -1130,11 +1130,11 @@ Authorization: Bearer eyJ...
    AND acl &amp;&amp; $2          -- user's groups
  ORDER BY embedding &lt;=&gt; $3 -- cosine distance
  LIMIT 50;</pre><p>חיפוש היברידי (vector + keyword/BM25) עוזר עם מזהים ומונחים מדויקים כמו "991".</p>` },
-        fail: { en: `Filter applied after the ANN search → fewer than k results, or worse, another tenant's chunks if the filter is forgotten. Filter inside the query; test cross-tenant retrieval in CI.`, he: `Filter שמופעל אחרי ה-ANN search → פחות מ-k תוצאות, או גרוע מזה, chunks של tenant אחר אם שוכחים את ה-filter. מסננים בתוך ה-query; בודקים שליפה חוצת-tenants ב-CI.` } },
+        fail: { en: `Filter applied after the ANN search → fewer than k results, or worse, another tenant's chunks if the filter is forgotten. Filter inside the query; test cross-tenant retrieval in CI.`, he: `Filter שמופעל אחרי ה-ANN search ← פחות מ-k תוצאות, או גרוע מזה, chunks של tenant אחר אם שוכחים את ה-filter. מסננים בתוך ה-query; בודקים שליפה חוצת-tenants ב-CI.` } },
       { from: 3, to: 6, ms: 90,
         label: { en: "Rerank 50 → 8", he: "Rerank מ-50 ל-8" },
         detail: { en: `<p>A cross-encoder scores (query, chunk) pairs more accurately than vector similarity. Keep the best 8 to control context size and cost.</p>`, he: `<p>Cross-encoder נותן ציון לזוגות (שאלה, chunk) בצורה מדויקת יותר מדמיון ווקטורי. שומרים את 8 הטובים כדי לשלוט בגודל ה-context ובעלות.</p>` },
-        fail: { en: `Reranker slow under load → TTFT doubles. Give it a timeout and fall back to the vector order.`, he: `ה-reranker איטי בעומס → ה-TTFT מוכפל. נותנים לו timeout וחוזרים לסדר של ה-vector search.` } },
+        fail: { en: `Reranker slow under load → TTFT doubles. Give it a timeout and fall back to the vector order.`, he: `ה-reranker איטי בעומס ← ה-TTFT מוכפל. נותנים לו timeout וחוזרים לסדר של ה-vector search.` } },
       { from: 3, to: 3, ms: 5,
         label: { en: "Assemble the prompt", he: "הרכבת ה-prompt" },
         detail: { en: `<pre>[system]  rules, tools, answer format
@@ -1148,17 +1148,17 @@ Authorization: Bearer eyJ...
       { from: 3, to: 7, ms: 650,
         label: { en: "Call the LLM with stream=true (TTFT)", he: "קריאה ל-LLM עם stream=true (TTFT)" },
         detail: { en: `<p>Streaming request with a timeout and max output tokens. The first token arrives after ~0.3–1.5 s depending on model size, prompt length and provider load.</p>`, he: `<p>בקשת streaming עם timeout ומקסימום טוקני פלט. הטוקן הראשון מגיע אחרי ~0.3–1.5 s לפי גודל המודל, אורך ה-prompt והעומס אצל הספק.</p>` },
-        fail: { en: `Provider 429/529 or outage → retry with backoff on a different region/model; circuit breaker; degraded "here are the relevant docs" answer.`, he: `429/529 או תקלה אצל הספק → retry עם backoff לאזור/מודל אחר; circuit breaker; תשובה מופחתת של "הנה המסמכים הרלוונטיים".` } },
+        fail: { en: `Provider 429/529 or outage → retry with backoff on a different region/model; circuit breaker; degraded "here are the relevant docs" answer.`, he: `429/529 או תקלה אצל הספק ← retry עם backoff לאזור/מודל אחר; circuit breaker; תשובה מופחתת של "הנה המסמכים הרלוונטיים".` } },
       { from: 7, to: 3, ms: 300,
         label: { en: "Model requests a tool call", he: "המודל מבקש tool call" },
         detail: { en: `<pre>{ "type": "tool_use", "name": "get_order_status",
   "input": { "order_id": "991" } }</pre><p>The orchestrator validates the arguments against the tool's JSON schema.</p>`, he: `<pre>{ "type": "tool_use", "name": "get_order_status",
   "input": { "order_id": "991" } }</pre><p>ה-orchestrator מאמת את הארגומנטים מול ה-JSON schema של ה-tool.</p>` },
-        fail: { en: `Model hallucinates a tool name or bad args → validation error returned to the model as a tool result, not an exception that kills the request.`, he: `המודל ממציא שם tool או ארגומנטים שגויים → שגיאת אימות חוזרת למודל כתוצאת tool, לא exception שהורג את הבקשה.` } },
+        fail: { en: `Model hallucinates a tool name or bad args → validation error returned to the model as a tool result, not an exception that kills the request.`, he: `המודל ממציא שם tool או ארגומנטים שגויים ← שגיאת אימות חוזרת למודל כתוצאת tool, לא exception שהורג את הבקשה.` } },
       { from: 3, to: 8, ms: 120,
         label: { en: "Execute the tool as the user", he: "הרצת ה-tool בשם המשתמש" },
         detail: { en: `<p>The call goes to the Orders API with the <em>user's</em> token, so object-level authorization still applies (order 991 must belong to this user). Timeout 2 s; read-only tools run directly, writes need confirmation.</p>`, he: `<p>הקריאה הולכת ל-Orders API עם ה-token <em>של המשתמש</em>, כך ש-authorization ברמת האובייקט עדיין חל (הזמנה 991 חייבת להיות של המשתמש הזה). timeout של 2 s; tools של קריאה בלבד רצים ישר, כתיבות דורשות אישור.</p>` },
-        fail: { en: `Tool runs with a service account that can read every order → the model can be talked into leaking other customers' data (excessive agency). Least privilege per user.`, he: `ה-tool רץ עם service account שקורא כל הזמנה → אפשר לשכנע את המודל להדליף נתונים של לקוחות אחרים (excessive agency). least privilege לכל משתמש.` } },
+        fail: { en: `Tool runs with a service account that can read every order → the model can be talked into leaking other customers' data (excessive agency). Least privilege per user.`, he: `ה-tool רץ עם service account שקורא כל הזמנה ← אפשר לשכנע את המודל להדליף נתונים של לקוחות אחרים (excessive agency). least privilege לכל משתמש.` } },
       { from: 8, to: 7, ms: 700,
         label: { en: "Tool result back to the model", he: "תוצאת ה-tool חוזרת למודל" },
         detail: { en: `<p>The result is sent as a <code>tool_result</code> (marked as data). The model continues generating the answer with the real status.</p>`, he: `<p>התוצאה נשלחת כ-<code>tool_result</code> (מסומנת כנתונים). המודל ממשיך לייצר את התשובה עם הסטטוס האמיתי.</p>` } },
@@ -1179,15 +1179,15 @@ data: {"t":"shipped yesterday"}
 
 event: done
 data: {"citations":["kb-17"],"usage":{...}}</pre><p>הערות heartbeat כל 15 s מונעות מפרוקסים לסגור streams שקטים.</p>` },
-        fail: { en: `User closes the tab → keep paying for tokens unless you propagate cancellation to the provider. Abort upstream on client disconnect.`, he: `המשתמש סוגר את הלשונית → ממשיכים לשלם על טוקנים אלא אם מעבירים את הביטול לספק. עושים abort ל-upstream כשה-client מתנתק.` } },
+        fail: { en: `User closes the tab → keep paying for tokens unless you propagate cancellation to the provider. Abort upstream on client disconnect.`, he: `המשתמש סוגר את הלשונית ← ממשיכים לשלם על טוקנים אלא אם מעבירים את הביטול לספק. עושים abort ל-upstream כשה-client מתנתק.` } },
       { from: 3, to: 2, ms: 40,
         label: { en: "Output guardrails", he: "Output guardrails" },
         detail: { en: `<p>On chunks and on the final answer: PII/secret leakage scan, unsafe content, groundedness (claims must cite retrieved docs), JSON schema validation for structured outputs. Rendered as escaped markdown with a link allowlist.</p>`, he: `<p>על chunks ועל התשובה הסופית: סריקת דליפת PII/secrets, תוכן לא בטוח, groundedness (טענות חייבות לצטט מסמכים שנשלפו), אימות JSON schema לפלט מובנה. מוצג כ-markdown עם escape ו-allowlist של קישורים.</p>` },
-        fail: { en: `Model output rendered as raw HTML → XSS via a poisoned document (improper output handling). Escape, sanitize, allowlist link domains.`, he: `פלט המודל מוצג כ-HTML גולמי → XSS דרך מסמך מורעל (improper output handling). escape, sanitize ו-allowlist לדומייני קישורים.` } },
+        fail: { en: `Model output rendered as raw HTML → XSS via a poisoned document (improper output handling). Escape, sanitize, allowlist link domains.`, he: `פלט המודל מוצג כ-HTML גולמי ← XSS דרך מסמך מורעל (improper output handling). escape, sanitize ו-allowlist לדומייני קישורים.` } },
       { from: 3, to: 9, ms: 2,
         label: { en: "Trace, tokens, cost", he: "Trace, טוקנים, עלות" },
         detail: { en: `<p>Async: one trace with spans per stage, model and version, input/output/cached tokens, cost, TTFT, retrieved doc IDs, tool calls, guardrail verdicts, user feedback later. PII redacted.</p>`, he: `<p>אסינכרונית: trace אחד עם span לכל שלב, מודל וגרסה, טוקני קלט/פלט/cache, עלות, TTFT, IDs של מסמכים שנשלפו, tool calls, החלטות guardrails, ופידבק משתמש בהמשך. PII עובר redaction.</p>` },
-        fail: { en: `Logging full prompts with customer PII into a shared log index → a privacy incident. Redact at the source and restrict access to trace payloads.`, he: `לוגים של prompts מלאים עם PII של לקוחות לאינדקס לוגים משותף → אירוע פרטיות. redaction במקור והגבלת גישה ל-payloads של traces.` } },
+        fail: { en: `Logging full prompts with customer PII into a shared log index → a privacy incident. Redact at the source and restrict access to trace payloads.`, he: `לוגים של prompts מלאים עם PII של לקוחות לאינדקס לוגים משותף ← אירוע פרטיות. redaction במקור והגבלת גישה ל-payloads של traces.` } },
       { from: 9, to: 9, ms: 0,
         label: { en: "Evals close the loop", he: "Evals סוגרים את הלולאה" },
         detail: { en: `<p>Sampled traces get scored (LLM judge + human), failures become new golden-set cases, and every prompt/model/index change must pass the eval suite before rollout — like unit tests for quality.</p>`, he: `<p>Traces שנדגמו מקבלים ציון (LLM judge + אדם), כשלים הופכים למקרים חדשים ב-golden set, וכל שינוי prompt/מודל/אינדקס חייב לעבור את ה-eval suite לפני rollout — כמו unit tests לאיכות.</p>` } }

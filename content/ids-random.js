@@ -306,7 +306,7 @@ ${UUID7_CODE}
 <tr><td>v7</td><td>Unix ms של 48 bits + 74 bits אקראיים (או counter)</td><td>כן, לפי ms</td><td>ברירת המחדל הכי טובה ל-keys בדאטהבייס</td></tr>
 <tr><td>v8</td><td>מה שתרצה. רק version ו-variant קבועים (122 bits חופשיים)</td><td>תלוי בך</td><td>סכמות של vendor, למשל להטמיע shard id</td></tr></table>
 <p><strong>דליפת הפרטיות של v1 היא היסטוריה אמיתית:</strong> ב-1999 איתרו את כותב וירוס Melissa בין היתר דרך ה-GUID שבתוך מסמך ה-Word, שהכיל את כתובת ה-MAC של המחשב שלו. מי שמחזיק UUID v1 יכול לחלץ ממנו מתי ועל איזה כרטיס רשת הוא נוצר.</p>
-<p><strong>v5 = מזהים דטרמיניסטיים.</strong> אותו namespace ואותו שם ⇒ אותו UUID בכל מכונה. זה נותן לך imports אידמפוטנטיים ("לשורת המשתמש של <code>alice@corp.com</code> תמיד יש id X"), dedupe בין שירותים בלי תיאום, ומזהים יציבים לדברים שיש להם רק natural key (URLs, נתיבי קבצים, שמות של אובייקטים ב-Kubernetes). הצד השני: מי שיודע את השם יכול לחשב את המזהה, אז v5 הוא אף פעם לא סוד.</p>
+<p><strong>v5 = מזהים דטרמיניסטיים.</strong> אותו namespace ואותו שם ⇐ אותו UUID בכל מכונה. זה נותן לך imports אידמפוטנטיים ("לשורת המשתמש של <code>alice@corp.com</code> תמיד יש id X"), dedupe בין שירותים בלי תיאום, ומזהים יציבים לדברים שיש להם רק natural key (URLs, נתיבי קבצים, שמות של אובייקטים ב-Kubernetes). הצד השני: מי שיודע את השם יכול לחשב את המזהה, אז v5 הוא אף פעם לא סוד.</p>
 <p><strong>v7 ו-monotonicity.</strong> v7 ממוין רק לפי מילישנייה. בתוך אותה ms הזנב האקראי לא מסודר:</p>
 ${UUID7_CODE}
 <p>ה-RFC מאפשר להשתמש ב-12 ה-bits של <code>rand_a</code> כשבר של מילישנייה או כ-counter כדי לשמור על סדר בתוך generator אחד. ה-<code>uuidv7()</code> של PostgreSQL 18 עושה בדיוק את זה בתוך session. בין הרבה שרתי אפליקציה אין סדר גלובלי בכל מקרה (שעונים זזים), אז תתייחס לסדר של v7 כ"בערך לפי זמן יצירה", לא כ-event log.</p>`
@@ -332,7 +332,7 @@ ${COLLISION_CODE}
 <tr><td>מיליארד בשנייה במשך שנה (3.2 × 10<sup>16</sup>)</td><td>9.4 × 10<sup>-5</sup></td></tr>
 <tr><td>2.71 × 10<sup>18</sup> (מיליארד בשנייה במשך ~86 שנה)</td><td>50%</td></tr></table>
 <p>ב-v7 מתחרים רק 74 ה-bits האקראיים בתוך <em>אותה מילישנייה</em>: צריך בערך 1.6 × 10<sup>11</sup> מזהים ב-ms אחת כדי להגיע ל-50%. במיליון מזהים ל-ms הסיכוי הוא 2.65 × 10<sup>-11</sup> לכל ms. מספיק לכל מערכת אמיתית.</p>
-<blockquote>💡 מהשטח: כל postmortem של "התנגשות UUID" שאני מכיר היה <strong>באג באקראיות</strong>, לא מתמטיקה: polyfill שבנוי על <code>Math.random()</code>, image של VM ששוכפל עם מצב ה-RNG של userspace בפנים, workers אחרי fork שחולקים PRNG אחד עם אותו seed, או מישהו ש"קיצר" UUID-ים ל-8 תווי hex ‏(32 bits ⇒ סיכוי של 50% להתנגשות אחרי ~77,000 מזהים בלבד). המתמטיקה מחזיקה רק אם 122 ה-bits מגיעים מ-CSPRNG. ראה <strong>random-numbers</strong>.</blockquote>`
+<blockquote>💡 מהשטח: כל postmortem של "התנגשות UUID" שאני מכיר היה <strong>באג באקראיות</strong>, לא מתמטיקה: polyfill שבנוי על <code>Math.random()</code>, image של VM ששוכפל עם מצב ה-RNG של userspace בפנים, workers אחרי fork שחולקים PRNG אחד עם אותו seed, או מישהו ש"קיצר" UUID-ים ל-8 תווי hex ‏(32 bits ⇐ סיכוי של 50% להתנגשות אחרי ~77,000 מזהים בלבד). המתמטיקה מחזיקה רק אם 122 ה-bits מגיעים מ-CSPRNG. ראה <strong>random-numbers</strong>.</blockquote>`
       }
     },
     {
@@ -418,7 +418,7 @@ ${GEN_CODE}`,
 <tr><td>Nano ID</td><td>~126 / 21 ‏(A-Za-z0-9_-)</td><td>הכל אקראי</td><td>לא</td><td>אין</td><td>טוקנים קצרים ו-URL-safe כלפי חוץ</td></tr></table>
 <p><strong>חשיפת מזהים החוצה:</strong></p>
 <ul>
-<li><strong>מזהים רציפים</strong> מזמינים enumeration ‏(<code>/invoices/1043</code> → מנסים 1044: חולשת IDOR אם חסרה בדיקת הרשאה) וחושפים נפח. שתי חשבוניות בהפרש שבוע מגלות את המכירות השבועיות שלך.</li>
+<li><strong>מזהים רציפים</strong> מזמינים enumeration ‏(<code>/invoices/1043</code> ← מנסים 1044: חולשת IDOR אם חסרה בדיקת הרשאה) וחושפים נפח. שתי חשבוניות בהפרש שבוע מגלות את המכירות השבועיות שלך.</li>
 <li><strong>v7, ULID ו-Snowflake חושפים את זמן היצירה</strong> ברמת מילישנייה (<code>uuid_extract_timestamp()</code> למעלה). בדרך כלל לא מזיק, אבל לא בסדר כש"מתי נפתח החשבון או המסמך" זה מידע רגיש, למשל רשומות רפואיות או פניות של חושפי שחיתויות.</li>
 <li><strong>v1 חושף את כתובת ה-MAC</strong>, ואת v5 יכול לחשב מחדש כל מי שיודע את השם.</li>
 <li><strong>מזהה שאי אפשר לנחש הוא לא הרשאה.</strong> ל-v4 יש 122 bits של אנטרופיה, אבל מזהים מגיעים ללוגים, ל-referrers ולצילומי מסך. בודקים הרשאה בכל בקשה, ולשיתוף של "כל מי שיש לו את הלינק" משתמשים בטוקן CSPRNG נפרד (<code>secrets.token_urlsafe(32)</code>).</li>
@@ -464,7 +464,7 @@ ${GEN_CODE}`
         { en: "v8, NCS variant", he: "v8, ה-variant של NCS" }
       ],
       answer: 1,
-      explain: { en: "The 13th hex digit (first of group 3, '11d1') is 1 → time-based v1. The 17th ('80b4') is 8 → binary 10xx → RFC variant. This is the famous NAMESPACE_DNS UUID used as input for v3/v5.", he: "ספרת ה-hex ה-13 (ראשונה בקבוצה 3, ‏'11d1') היא 1 → v1 מבוסס זמן. ה-17 ‏('80b4') היא 8 → בינארי 10xx → ה-variant של RFC. זה ה-UUID המפורסם NAMESPACE_DNS, שמשמש כקלט ל-v3/v5." }
+      explain: { en: "The 13th hex digit (first of group 3, '11d1') is 1 → time-based v1. The 17th ('80b4') is 8 → binary 10xx → RFC variant. This is the famous NAMESPACE_DNS UUID used as input for v3/v5.", he: "ספרת ה-hex ה-13 (ראשונה בקבוצה 3, ‏'11d1') היא 1 ← v1 מבוסס זמן. ה-17 ‏('80b4') היא 8 ← בינארי 10xx ← ה-variant של RFC. זה ה-UUID המפורסם NAMESPACE_DNS, שמשמש כקלט ל-v3/v5." }
     },
     {
       q: { en: "Roughly how many v4 UUIDs must you generate for a 50% chance of a single collision?", he: "בערך כמה UUID v4 צריך לייצר כדי להגיע לסיכוי של 50% להתנגשות אחת?" },
@@ -541,7 +541,7 @@ INFRA.lessons.push({
 <tr><td>מהירות</td><td>איטי ומוגבל</td><td>מהיר מאוד (ננו-שניות)</td><td>מהיר (GB/s עם ChaCha20 או AES-CTR)</td></tr>
 <tr><td>דוגמאות</td><td>חומרה, <code>/dev/hwrng</code></td><td>Mersenne Twister, ‏LCG, ‏xorshift128+, ‏PCG, ‏ChaCha8 ‏(math/rand/v2 של Go)</td><td><code>getrandom()</code> של Linux, ‏<code>BCryptGenRandom</code> של Windows, ‏<code>arc4random</code> של macOS</td></tr>
 <tr><td>משמש ל-</td><td>Seed ל-CSPRNG (מערכת ההפעלה עושה את זה)</td><td>סימולציות, משחקים, jitter, ‏sampling, בדיקות</td><td>טוקנים, מפתחות, nonces, ‏salts, סיסמאות, UUID v4</td></tr></table>
-<p>מהנדסים כמעט אף פעם לא נוגעים ב-TRNG ישירות. הכלל בינארי: <strong>האם משנה אם מישהו יחזה את זה?</strong> כן ⇒ CSPRNG. לא ⇒ כל PRNG מהיר בסדר, ו-PRNG שאפשר לתת לו seed הוא אפילו יתרון.</p>`
+<p>מהנדסים כמעט אף פעם לא נוגעים ב-TRNG ישירות. הכלל בינארי: <strong>האם משנה אם מישהו יחזה את זה?</strong> כן ⇐ CSPRNG. לא ⇐ כל PRNG מהיר בסדר, ו-PRNG שאפשר לתת לו seed הוא אפילו יתרון.</p>`
       }
     },
     {
@@ -588,9 +588,9 @@ ${LINUX_RNG}
 <p><strong>מיתוס החסימה.</strong> במשך שנים <code>/dev/random</code> "צרך" הערכת אנטרופיה ונחסם, והפולקלור אמר שהוא "יותר אקראי". לא נכון: ברגע שה-CSPRNG קיבל seed של ~256 bits, הפלט שלו לא נגמר. ב-Linux 5.6 ‏(2020) ‏<code>/dev/random</code> הפסיק להיחסם אחרי האתחול, וב-5.18 שני ההתקנים נהיו זהים. חלון הסכנה האמיתי היחיד הוא <strong>תחילת ה-boot, לפני "crng init done"</strong>: שם <code>getrandom()</code> נחסם בצדק, בזמן שקריאות ישנות מ-<code>/dev/urandom</code> החזירו bytes חלשים.</p>
 <table><tr><th>מצב</th><th>סיכון</th><th>מה עושים</th></tr>
 <tr><td>VM או instance חדש בענן בזמן boot</td><td>מעט אירועי אנטרופיה, ושירותים שמייצרים SSH host keys או מפתחות TLS בשניות הראשונות</td><td>התקן virtio-rng (ברירת מחדל ברוב העננים), <code>RDRAND</code> של המעבד, ולהשתמש ב-<code>getrandom()</code></td></tr>
-<tr><td>Snapshot של VM ששוחזר או שוכפל</td><td>שתי מכונות ממשיכות מאותו state של RNG ⇒ אותו פלט "אקראי"</td><td><strong>VM Generation ID</strong> של ה-hypervisor. ‏Linux 5.18 ומעלה עושה עליו reseed. גם PRNG-ים של userspace בתוך אפליקציות צריכים reseed</td></tr>
+<tr><td>Snapshot של VM ששוחזר או שוכפל</td><td>שתי מכונות ממשיכות מאותו state של RNG ⇐ אותו פלט "אקראי"</td><td><strong>VM Generation ID</strong> של ה-hypervisor. ‏Linux 5.18 ומעלה עושה עליו reseed. גם PRNG-ים של userspace בתוך אפליקציות צריכים reseed</td></tr>
 <tr><td>קונטיינרים</td><td>שום דבר מיוחד: הם חולקים את ה-CSPRNG של ה-kernel של ה-host</td><td>לא לעשות mount ל-<code>/dev/random</code> מזויף, ולא לאפות seeds לתוך images</td></tr>
-<tr><td><code>fork()</code> עם PRNG של userspace</td><td>האב והבן חולקים state ⇒ רצפים זהים</td><td>Reseed אחרי fork, או לקרוא מה-kernel בכל פעם</td></tr></table>
+<tr><td><code>fork()</code> עם PRNG של userspace</td><td>האב והבן חולקים state ⇐ רצפים זהים</td><td>Reseed אחרי fork, או לקרוא מה-kernel בכל פעם</td></tr></table>
 <blockquote>💡 מהשטח: באג ה-fork הקלאסי: ה-workers של <code>DataLoader</code> ב-PyTorch ירשו את אותו random state של NumPy, אז כל worker הפעיל את <em>אותן</em> augmentations "אקראיות" במשך שנים באינספור פרויקטים, עד שזה התפרסם בהרחבה ב-2021. אותה משפחה של באגים כמו תהליכי בן ב-OpenSSL הישן שהוציאו bytes זהים.</blockquote>`
       }
     },

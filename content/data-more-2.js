@@ -151,7 +151,7 @@ join {{ ref('dim_date') }} d on d.date = o.created_at::date
 where o.updated_at &gt; (select max(updated_at) from {{ this }})
 {% endif %}</pre>
 <p>The classic modeling pattern is the <strong>star schema</strong>: a central <em>fact</em> table of events/measures (<code>fct_orders</code>: one row per order, numeric measures, foreign keys) surrounded by <em>dimension</em> tables of descriptive attributes (<code>dim_customer</code>, <code>dim_product</code>, <code>dim_date</code>). Analysts join fact → dimensions and GROUP BY attributes. Columnar engines also love wide, denormalized "one big table" models, which avoid joins entirely.</p>`,
-        he: `<p><strong>ETL</strong> (Extract → Transform → Load) עשה את הטרנספורמציה בשרת נפרד (Informatica, jobs של Spark) לפני הטעינה, כי compute ב-warehouse היה יקר. <strong>ELT</strong> הופך את הסדר: טוענים קודם data גולמי (Fivetran/Airbyte/CDC עם Debezium → טבלאות raw), ואז עושים טרנספורמציה <em>בתוך</em> ה-warehouse עם SQL, כי היום ה-compute שם אלסטי וזול. ה-data הגולמי נשמר, אז אפשר להריץ את הטרנספורמציה מחדש כשהלוגיקה משתנה.</p>
+        he: `<p><strong>ETL</strong> (Extract ← Transform ← Load) עשה את הטרנספורמציה בשרת נפרד (Informatica, jobs של Spark) לפני הטעינה, כי compute ב-warehouse היה יקר. <strong>ELT</strong> הופך את הסדר: טוענים קודם data גולמי (Fivetran/Airbyte/CDC עם Debezium ← טבלאות raw), ואז עושים טרנספורמציה <em>בתוך</em> ה-warehouse עם SQL, כי היום ה-compute שם אלסטי וזול. ה-data הגולמי נשמר, אז אפשר להריץ את הטרנספורמציה מחדש כשהלוגיקה משתנה.</p>
 <p><strong>dbt</strong> הוא הסטנדרט ל-"T": כל model הוא <code>SELECT</code> בקובץ, dbt בונה את ה-DAG של התלויות מתוך <code>ref()</code>, יוצר טבלאות/views/incremental models, ומריץ טסטים (<code>unique</code>, <code>not_null</code>, <code>relationships</code>).</p>
 <pre>-- models/marts/fct_orders.sql
 {{ config(materialized='incremental', unique_key='order_id') }}
@@ -555,7 +555,7 @@ INFRA.lessons.push({
 <li><code>ef_construction</code> — גודל רשימת המועמדים בזמן הבנייה (בדרך כלל 64-400). גבוה יותר = גרף טוב יותר, בנייה איטית יותר.</li>
 <li><code>ef_search</code> — גודל רשימת המועמדים בזמן query (לפחות k, בדרך כלל 40-200). זה <strong>הכפתור בזמן ריצה</strong> בין recall ל-latency.</li></ul>
 <p>HNSW נותן את היחס הכי טוב בין recall ל-latency, אבל יושב ב-RAM, נבנה לאט ומתמודד לא טוב עם מחיקות.</p>
-<p><strong>IVF</strong> (inverted file) מחלק את הוקטורים ל-<code>nlist</code> דליים (k-means); query סורק רק את <code>nprobe</code> הדליים הקרובים. מהיר יותר לבנייה, פחות זיכרון, recall נמוך יותר באותה מהירות. <strong>PQ</strong> (product quantization) דוחס כל וקטור, למשל 1536 floats ‏(6 KB) → ‏96 בייט, כך שמיליארדים נכנסים ל-RAM, במחיר של recall (שבדרך כלל מתקנים עם re-scoring של המועמדים המובילים עם הוקטורים המלאים). יש גם scalar quantization ‏(float32 → int8, פי 4 קטן יותר) ו-binary quantization (פי 32).</p>
+<p><strong>IVF</strong> (inverted file) מחלק את הוקטורים ל-<code>nlist</code> דליים (k-means); query סורק רק את <code>nprobe</code> הדליים הקרובים. מהיר יותר לבנייה, פחות זיכרון, recall נמוך יותר באותה מהירות. <strong>PQ</strong> (product quantization) דוחס כל וקטור, למשל 1536 floats ‏(6 KB) ← ‏96 בייט, כך שמיליארדים נכנסים ל-RAM, במחיר של recall (שבדרך כלל מתקנים עם re-scoring של המועמדים המובילים עם הוקטורים המלאים). יש גם scalar quantization ‏(float32 ← int8, פי 4 קטן יותר) ו-binary quantization (פי 32).</p>
 <pre>Typical shape (1M vectors, 768-1536 dims, one node):
  exact scan          recall 1.00   ~100-500 ms
  HNSW ef_search=40   recall ~0.95  ~1-3 ms

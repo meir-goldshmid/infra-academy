@@ -32,6 +32,24 @@ The user opens Claude Code in this folder **instead of** an AI chat or Google. W
   - Write English terms, commands, paths and numbers naturally; `js/bidi.js` wraps every LTR run in Hebrew text in `<bdi dir="ltr">` at render time so ".NET", "C++", "/etc/fstab", "-o wide", "R+W>N", "99.9%" keep their order. Don't add `<bdi>` by hand except to force a long mixed phrase together.
   - Put whole commands, YAML and code in `<code>`/`<pre>` (always LTR), not in running Hebrew text.
   - Don't start or end a Hebrew sentence with a long English phrase when you can rephrase; keep sentence punctuation (. , :) after the English term, outside parentheses.
+  - Arrows in Hebrew text point the way Hebrew reads: **←**, not →. This applies to any text that contains Hebrew, even between two English terms: "דרישות ← ענן ← סביבות", "רשת ו-traffic ← compute ← data", "כמעט ממוין ← כמעט O(n)".
+    - Keep → in three places: inside `<pre>`/`<code>`/`.formula`, in a tag that holds only English (`<td>kitten→sitting</td>`), and in `en` strings.
+    - `tools/validate.js` fails on a wrong-way arrow; `node tools/bidi-arrows.js --fix` flips them exactly.
+
+## RTL/BiDi check: mandatory for you and for every agent you spawn
+
+Any change to Hebrew text (lessons, glossary, scenarios, paths, CS units, sims, UI strings) is not done until it passes this check. When you delegate content writing to a subagent, copy this section into its brief.
+
+1. `node tools/validate.js` (and `node tools/validate-cs.js` for CS) prints OK. It catches Hebrew glued to English and wrong-way arrows.
+2. Re-read the Hebrew you wrote for:
+   - **English terms:** hyphen-attached prefixes and suffixes ("ה-namespace", "cluster-ים").
+   - **Commands and code:** in `<code>`/`<pre>`, not loose in Hebrew prose.
+   - **Sentence edges:** no Hebrew sentence that starts or ends with a long English phrase.
+   - **Arrows:** ← in Hebrew.
+   - **Brackets and quotes:** each closes on the same side as it opens.
+   - **Numbers with units or %:** written as one token ("300 ms", "99.95%").
+   - **Mixed lists and tables:** don't let them read in the wrong order.
+3. Render it: serve the repo (`python -m http.server` from the repo root), open the changed pages in Hebrew (the EN/HE toggle), and look at the tldr, tables, lists, flow steps and quiz options. Things to catch: reversed sequences, punctuation that jumped to the wrong end, English phrases split apart. Fix, re-validate, and only then publish.
 - Lesson ids are unique kebab-case; `track` must be one of the ids in `CONTENT_SCHEMA.md`; `playground` must be an existing sim id.
 - Content strings are rendered as HTML: escape `<` / `>` inside `<pre>`/`<code>`.
 - No build step, no npm dependencies, no frameworks. Keep it working from `file://` and GitHub Pages.

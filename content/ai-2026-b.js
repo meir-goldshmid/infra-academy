@@ -245,7 +245,7 @@ aliases: [candidate]        # promote: candidate -&gt; canary -&gt; prod</pre>
 <li><strong>משאירים את הגרסה הקודמת חמה</strong> לפחות מחזור release אחד. עם LoRA adapters זה עולה כמעט כלום.</li>
 <li><strong>מנטרים drift</strong>: התפלגות הקלט זזה (מוצר חדש, סוגי tickets חדשים) ומודל קפוא מתדרדר בשקט. עוקבים אחרי ציוני ה-graders על דגימה מתעבורת פרודקשן ומתזמנים אימונים מחדש מדאטה טרי.</li>
 </ul>
-<blockquote>⚠️ טיפ לפרודקשן: כותבים את טריגר ה-rollback לפני ה-rollout, למשל "JSON-valid rate &lt; 99.5% או ניתובים שגויים של billing פי 2 מה-baseline במשך 30 דקות ⇒ מחזירים את ה-alias ל-v2". להחליט על ספים באמצע האירוע זו הדרך שבה מודל גרוע נשאר באוויר יום שלם.</blockquote>`
+<blockquote>⚠️ טיפ לפרודקשן: כותבים את טריגר ה-rollback לפני ה-rollout, למשל "JSON-valid rate &lt; 99.5% או ניתובים שגויים של billing פי 2 מה-baseline במשך 30 דקות ⇐ מחזירים את ה-alias ל-v2". להחליט על ספים באמצע האירוע זו הדרך שבה מודל גרוע נשאר באוויר יום שלם.</blockquote>`
       }
     }
   ],
@@ -574,9 +574,9 @@ kubectl cordon gpu-node-117 &amp;&amp; kubectl drain gpu-node-117 --ignore-daemo
 <p><strong>בריאות GPU</strong>: מריצים NVIDIA DCGM בכל מקום. <code>dcgm-exporter</code> מזין את Prometheus; <code>dcgmi diag</code> מריץ בדיקות אקטיביות בין jobs. עוקבים אחרי שגיאות <strong>Xid</strong> בלוגים של ה-kernel:</p>
 <table>
 <tr><th>Xid</th><th>משמעות</th><th>פעולה</th></tr>
-<tr><td>13, 31, 43</td><td>Graphics engine exception / MMU fault / הפסקת עיבוד: הרבה פעמים באגים באפליקציה</td><td>קודם בודקים את ה-job; חוזר על אותו GPU בכמה jobs ⇒ חשד לחומרה</td></tr>
+<tr><td>13, 31, 43</td><td>Graphics engine exception / MMU fault / הפסקת עיבוד: הרבה פעמים באגים באפליקציה</td><td>קודם בודקים את ה-job; חוזר על אותו GPU בכמה jobs ⇐ חשד לחומרה</td></tr>
 <tr><td>48, 94/95</td><td>Double-bit ECC / שגיאת ECC מוכלת או לא מוכלת</td><td>Drain; reset או החלפה לפי ההנחיות של NVIDIA</td></tr>
-<tr><td>63, 64</td><td>Row remapping ממתין / נכשל</td><td>Reset ל-GPU כדי להחיל את ה-remap; כישלון ⇒ RMA</td></tr>
+<tr><td>63, 64</td><td>Row remapping ממתין / נכשל</td><td>Reset ל-GPU כדי להחיל את ה-remap; כישלון ⇐ RMA</td></tr>
 <tr><td>74</td><td>שגיאת NVLink</td><td>Drain, בדיקה של NVLink/NVSwitch</td></tr>
 <tr><td>79</td><td>ה-GPU נפל מה-bus</td><td>Drain ל-node מיד</td></tr>
 </table>
@@ -584,7 +584,7 @@ kubectl cordon gpu-node-117 &amp;&amp; kubectl drain gpu-node-117 --ignore-daemo
 nvidia-smi -q -d ECC,ROW_REMAPPER | grep -iE "pending|failure|uncorr"
 dcgmi diag -r 3                               # active diagnostics (minutes), run between jobs
 kubectl cordon gpu-node-117 &amp;&amp; kubectl drain gpu-node-117 --ignore-daemonsets --delete-emptydir-data</pre>
-<p><strong>ה-utilization שחשוב: MFU</strong> (Model FLOPs Utilization) = ה-FLOPs שהמודל באמת השיג חלקי ה-FLOPs של ה-peak. ה-"GPU-Util" של <code>nvidia-smi</code> אומר רק ש-kernel רץ, ומראה 100% גם כשה-GPU מחכה ל-NCCL. דוגמה: מודל 70B ב-1,000 tokens לשנייה לכל GPU → 6 × 7e10 × 1,000 = 420 TFLOPS → בערך 42% MFU על H100. ריצות dense גדולות ומכווננות היטב מדווחות בערך 35-50%; אם אתה ב-15%, תבדוק תקשורת, dataloader ו-stragglers לפני שקונים עוד GPU-ים. מדדי profiling של DCGM כמו <code>DCGM_FI_PROF_SM_ACTIVE</code> ו-<code>DCGM_FI_PROF_PIPE_TENSOR_ACTIVE</code> הם proxy חי טוב יותר מ-GPU-Util.</p>
+<p><strong>ה-utilization שחשוב: MFU</strong> (Model FLOPs Utilization) = ה-FLOPs שהמודל באמת השיג חלקי ה-FLOPs של ה-peak. ה-"GPU-Util" של <code>nvidia-smi</code> אומר רק ש-kernel רץ, ומראה 100% גם כשה-GPU מחכה ל-NCCL. דוגמה: מודל 70B ב-1,000 tokens לשנייה לכל GPU ← 6 × 7e10 × 1,000 = 420 TFLOPS ← בערך 42% MFU על H100. ריצות dense גדולות ומכווננות היטב מדווחות בערך 35-50%; אם אתה ב-15%, תבדוק תקשורת, dataloader ו-stragglers לפני שקונים עוד GPU-ים. מדדי profiling של DCGM כמו <code>DCGM_FI_PROF_SM_ACTIVE</code> ו-<code>DCGM_FI_PROF_PIPE_TENSOR_ACTIVE</code> הם proxy חי טוב יותר מ-GPU-Util.</p>
 <blockquote>⚠️ טיפ לפרודקשן: עושים alert על <em>goodput</em>, לא על uptime: tokens שאומנו בשעה מול הקצב הצפוי. Job שנמצא ב-"Running" אבל איבד מהירות NIC ב-node אחד, או עושה restart כל 40 דקות, שורף כסף בזמן שכל ה-dashboards ירוקים.</blockquote>`
       }
     }
@@ -642,7 +642,7 @@ kubectl cordon gpu-node-117 &amp;&amp; kubectl drain gpu-node-117 --ignore-daemo
         { en: "≈42%", he: "≈42%" },
         { en: "≈85%", he: "≈85%" }
       ],
-      answer: 1, explain: { en: "6 × 7e10 × 500 = 2.1e14 = 210 TFLOPS ⇒ 210/989 ≈ 21%. Time to look at communication and stragglers.", he: "6 × 7e10 × 500 = 2.1e14 = 210 TFLOPS ⇒ 210/989 ≈ 21%. הגיע הזמן לבדוק תקשורת ו-stragglers." } }
+      answer: 1, explain: { en: "6 × 7e10 × 500 = 2.1e14 = 210 TFLOPS ⇒ 210/989 ≈ 21%. Time to look at communication and stragglers.", he: "6 × 7e10 × 500 = 2.1e14 = 210 TFLOPS ⇐ 210/989 ≈ 21%. הגיע הזמן לבדוק תקשורת ו-stragglers." } }
   ],
   related: ["k8s-gpu-inference", "ai-llm-serving", "ai-finetune-vs-rag", "k8s-scheduling", "k8s-jobs-cronjobs", "cloud-ai-platforms", "pr-clusters"]
 });
@@ -1156,7 +1156,7 @@ gitleaks git -v                             # scan history for committed secrets
         he: `<table>
 <tr><th>משימה</th><th>למה זה עובד</th><th>האימות שלך</th></tr>
 <tr><td>IaC: מודולים חדשים, המרת ClickOps ל-Terraform, הוספת tags בכל מקום</td><td>Providers מתועדים היטב, עריכות מכניות, ו-<code>plan</code> נותן לולאת פידבק הדוקה</td><td>קוראים את ה-plan: רק המשאבים הצפויים, בלי החלפות (<code>-/+</code>) של דברים עם state</td></tr>
-<tr><td>מיגרציות: APIs ישנים של K8s, שדרוגי Helm charts, Python 3.9 → 3.12, SDK v1 → v2</td><td>דפוס חוזר שמוחל על הרבה קבצים</td><td>טסטים + <code>kubeconform</code>/<code>pluto</code>; canary ל-rollout</td></tr>
+<tr><td>מיגרציות: APIs ישנים של K8s, שדרוגי Helm charts, Python 3.9 ← 3.12, SDK v1 ← v2</td><td>דפוס חוזר שמוחל על הרבה קבצים</td><td>טסטים + <code>kubeconform</code>/<code>pluto</code>; canary ל-rollout</td></tr>
 <tr><td>Runbooks ותיעוד מתוך קוד, alerts ואירועי עבר</td><td>סיכום ומבנה הם חוזקות של LLM</td><td>מריצים כל פקודה ב-runbook פעם אחת ב-dry-run</td></tr>
 <tr><td>ניתוח logs ו-traces, "למה ה-Pod הזה עושה restart"</td><td>זיהוי דפוסים בפלטים גדולים</td><td>מאשרים את ההשערה עם metric או שחזור</td></tr>
 <tr><td>סקריפטים, pipelines של CI, תיקוני דאטה חד-פעמיים</td><td>טיוטות מהירות של קוד דבק</td><td>מריצים קודם על דאטה של staging; עוברים על צעדים הרסניים שורה אחרי שורה</td></tr>

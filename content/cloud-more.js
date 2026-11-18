@@ -536,7 +536,7 @@ module "payments_prod" {
 <li><strong>Shared services</strong>: CI runners, artifact registry, central observability.</li>
 </ul>
 <blockquote>💡 Real world: plan a non-overlapping IP space (IPAM) <em>before</em> vending account #5. Two VPCs both on 10.0.0.0/16 can never be peered or attached to the same TGW route table without NAT gymnastics.</blockquote>`,
-        he: `<p><strong>Account vending</strong>: צוות פותח PR (או טופס בפורטל) → pipeline יוצר את ה-account ב-OU הנכון, מגדיר alternate contacts, מחיל baseline (Terraform): budget alarm, מחיקת ה-default VPC, permission sets של IAM Identity Center, רישום ל-GuardDuty/Security Hub, חיבור VPC ל-hub, ו-DNS delegation. היעד: <strong>account חדש בפחות משעה, אפס tickets</strong>.</p>
+        he: `<p><strong>Account vending</strong>: צוות פותח PR (או טופס בפורטל) ← pipeline יוצר את ה-account ב-OU הנכון, מגדיר alternate contacts, מחיל baseline (Terraform): budget alarm, מחיקת ה-default VPC, permission sets של IAM Identity Center, רישום ל-GuardDuty/Security Hub, חיבור VPC ל-hub, ו-DNS delegation. היעד: <strong>account חדש בפחות משעה, אפס tickets</strong>.</p>
 <pre># AFT-style request (terraform)
 module "payments_prod" {
   source = "./modules/aft-account-request"
@@ -579,7 +579,7 @@ $ aws sts get-caller-identity --profile payments-prod-ro
   "Account": "210987654321",
   "Arn": "arn:aws:sts::210987654321:assumed-role/AWSReservedSSO_ReadOnly_3f2a.../dana@acme.io"
 }</pre>
-<p><strong>Break-glass</strong>: אם ה-IdP נפל או הוגדר לא נכון, גם ה-SSO נפל. שומרים 2 principals לחירום (IAM users עם MFA חומרתי, או role ייעודי) ב-management account, עם credentials מפוצלים וחתומים, ומוחרגים מה-deny על regions ב-SCP דרך תנאי ה-<code>ArnNotLike</code> שלמעלה. מתריעים על <em>כל</em> שימוש (EventBridge rule על <code>ConsoleLogin</code> לזהויות האלה → page לאבטחה), ובודקים אותם פעמיים בשנה.</p>
+<p><strong>Break-glass</strong>: אם ה-IdP נפל או הוגדר לא נכון, גם ה-SSO נפל. שומרים 2 principals לחירום (IAM users עם MFA חומרתי, או role ייעודי) ב-management account, עם credentials מפוצלים וחתומים, ומוחרגים מה-deny על regions ב-SCP דרך תנאי ה-<code>ArnNotLike</code> שלמעלה. מתריעים על <em>כל</em> שימוש (EventBridge rule על <code>ConsoleLogin</code> לזהויות האלה ← page לאבטחה), ובודקים אותם פעמיים בשנה.</p>
 <blockquote>⚠️ Production tip: תאבטח את ה-root user של כל member account — Organizations תומך היום בניהול מרכזי של root access (הסרת root credentials מ-member accounts וביצוע פעולות root מוגנות מה-management account). איפוס סיסמת root בלי ניטור על account נשכח הוא נתיב השתלטות קלאסי.</blockquote>`
       }
     }
@@ -598,7 +598,7 @@ $ aws sts get-caller-identity --profile payments-prod-ro
   pitfalls: [
     { en: "Running workloads in the management account. SCPs don't apply there, so it's the one account your guardrails can't protect.", he: "להריץ workloads ב-management account. SCPs לא חלים עליו, אז זה בדיוק ה-account היחיד שה-guardrails לא מגנים עליו." },
     { en: "A region-deny SCP without NotAction for global services — IAM, STS and Route 53 calls start failing everywhere.", he: "SCP של deny על regions בלי NotAction לשירותים גלובליים — קריאות IAM, STS ו-Route 53 מתחילות להיכשל בכל מקום." },
-    { en: "Attaching a brand-new SCP to the Prod OU first. Roll it out like code: Sandbox → NonProd → Prod, and check CloudTrail for denies in between.", he: "לחבר SCP חדש לגמרי קודם ל-OU של Prod. מגלגלים אותו כמו קוד: Sandbox → NonProd → Prod, ובודקים ב-CloudTrail שגיאות deny בין לבין." },
+    { en: "Attaching a brand-new SCP to the Prod OU first. Roll it out like code: Sandbox → NonProd → Prod, and check CloudTrail for denies in between.", he: "לחבר SCP חדש לגמרי קודם ל-OU של Prod. מגלגלים אותו כמו קוד: Sandbox ← NonProd ← Prod, ובודקים ב-CloudTrail שגיאות deny בין לבין." },
     { en: "Overlapping CIDRs across vended accounts. Fixing IP plans after 40 VPCs exist is a multi-quarter migration.", he: "CIDRs חופפים בין accounts שהונפקו. תיקון תוכנית IP אחרי ש-40 VPCs כבר קיימים זו מיגרציה של כמה רבעונים." }
   ],
   interview: [
@@ -787,7 +787,7 @@ def is_on(flag_key, user_id, percent):
 <li><strong>Salt עם מפתח ה-flag</strong>: אחרת אותו 1% של משתמשים הם שפני ניסיון בכל flag.</li>
 <li><strong>לבחור את היחידה</strong>: <code>user_id</code> ל-UX, <code>tenant_id</code> ל-B2B (כל החברה רואה אותו דבר), <code>request_id</code> רק לשינויי backend stateless.</li>
 </ul>
-<p>לוח זמנים הדרגתי טיפוסי: עובדים פנימיים → 1% → 5% → 25% → 50% → 100%, ומחזיקים כל שלב מספיק זמן כדי לראות p99 latency, error rate ו-KPIs עסקיים לכל variant. הכלים ממכנים את השערים: guarded releases ב-LaunchDarkly, gradual rollout ב-Unleash, Argo Rollouts / Flagger ל-canaries ברמת ה-traffic.</p>`
+<p>לוח זמנים הדרגתי טיפוסי: עובדים פנימיים ← 1% ← 5% ← 25% ← 50% ← 100%, ומחזיקים כל שלב מספיק זמן כדי לראות p99 latency, error rate ו-KPIs עסקיים לכל variant. הכלים ממכנים את השערים: guarded releases ב-LaunchDarkly, gradual rollout ב-Unleash, Argo Rollouts / Flagger ל-canaries ברמת ה-traffic.</p>`
       }
     },
     {
@@ -863,7 +863,7 @@ def is_on(flag_key, user_id, percent):
         { en: "It guarantees exactly 10% of requests", he: "הוא מבטיח בדיוק 10% מהבקשות" }
       ],
       answer: 1,
-      explain: { en: "Determinism gives stickiness without shared state; monotonic buckets mean 10% → 25% only adds users. Salting with the flag key keeps flags independent.", he: "דטרמיניזם נותן קביעות בלי state משותף; buckets מונוטוניים אומרים ש-10% → 25% רק מוסיף משתמשים. ה-salt עם מפתח ה-flag שומר על flags בלתי תלויים." }
+      explain: { en: "Determinism gives stickiness without shared state; monotonic buckets mean 10% → 25% only adds users. Salting with the flag key keeps flags independent.", he: "דטרמיניזם נותן קביעות בלי state משותף; buckets מונוטוניים אומרים ש-10% ← 25% רק מוסיף משתמשים. ה-salt עם מפתח ה-flag שומר על flags בלתי תלויים." }
     },
     {
       q: { en: "The flag service has a full outage. What happens to backend services using server SDKs with local evaluation?", he: "לשירות ה-flags יש השבתה מלאה. מה קורה לשירותי backend שמשתמשים ב-server SDKs עם evaluation מקומי?" },
@@ -1045,7 +1045,7 @@ spec:
   selector: { app: kafka }
   ports: [{ name: broker, port: 9092 }]
   publishNotReadyAddresses: true   # peers must find each other before ready</pre>`,
-        he: `<p>ה-registration אוטומטי: ה-EndpointSlice controller עוקב אחרי pods שתואמים ל-selector של ה-Service ומונה את אלה שה-<strong>readiness probe</strong> שלהם עובר. kube-proxy (iptables / IPVS / nftables) או תוכניות eBPF של Cilium מתכנתים את המיפוי ClusterIP → pod IP על כל node. CoreDNS עונה על <code>orders.prod.svc.cluster.local</code> עם ה-ClusterIP.</p>
+        he: `<p>ה-registration אוטומטי: ה-EndpointSlice controller עוקב אחרי pods שתואמים ל-selector של ה-Service ומונה את אלה שה-<strong>readiness probe</strong> שלהם עובר. kube-proxy (iptables / IPVS / nftables) או תוכניות eBPF של Cilium מתכנתים את המיפוי ClusterIP ← pod IP על כל node. CoreDNS עונה על <code>orders.prod.svc.cluster.local</code> עם ה-ClusterIP.</p>
 <pre>$ kubectl get endpointslices -n prod -l kubernetes.io/service-name=orders
 NAME           ADDRESSTYPE   PORTS   ENDPOINTS                      AGE
 orders-7xk2p   IPv4          8080    10.0.1.14,10.0.2.31,10.0.3.9   12d
@@ -1093,9 +1093,9 @@ ENDPOINT          STATUS      OUTLIER CHECK   CLUSTER
 <p><strong>AWS Cloud Map</strong>: registry ל-resources של ECS, EKS, EC2 ו-Lambda. Namespaces הם DNS ציבורי, DNS פרטי (רשומות Route 53) או HTTP בלבד (שאילתה דרך ה-API <code>DiscoverInstances</code>, בלי בעיות של DNS caching). ECS Service Connect בנוי עליו. Health דרך health checks של Route 53 (ציבורי) או health status מותאם שהקוד שלך מדווח.</p>
 <p><strong>כשלים של endpoints ישנים</strong> (התקלות האמיתיות):</p>
 <ul>
-<li><strong>מרוץ בסיום</strong>: pod מקבל SIGTERM ויוצא בזמן ש-kube-proxy על nodes אחרים עדיין מנתב אליו → 502 בכל deploy. התיקון: <code>preStop: sleep 5-10</code>, להמשיך לשרת בזמן ה-drain, לכבד את <code>terminationGracePeriodSeconds</code>.</li>
+<li><strong>מרוץ בסיום</strong>: pod מקבל SIGTERM ויוצא בזמן ש-kube-proxy על nodes אחרים עדיין מנתב אליו ← 502 בכל deploy. התיקון: <code>preStop: sleep 5-10</code>, להמשיך לשרת בזמן ה-drain, לכבד את <code>terminationGracePeriodSeconds</code>.</li>
 <li><strong>רישום זומבי</strong>: התהליך ב-deadlock אבל ה-TCP check של ה-agent עובר. Health checks צריכים להפעיל את האפליקציה (HTTP <code>/healthz</code> שעובר במסלול הבקשה), לא רק את הפורט.</li>
-<li><strong>Deregistration שלא קורה</strong>: VM נהרג בלי ניקוי → הרשומה ב-registry נשארת עד שה-TTL/lease פג (Eureka 90 שניות; ב-Consul <code>deregister_critical_service_after</code>).</li>
+<li><strong>Deregistration שלא קורה</strong>: VM נהרג בלי ניקוי ← הרשומה ב-registry נשארת עד שה-TTL/lease פג (Eureka 90 שניות; ב-Consul <code>deregister_critical_service_after</code>).</li>
 <li><strong>מחזור IP</strong>: cache ישן מצביע על IP ששייך עכשיו לשירות <em>אחר</em>. עם mTLS + בדיקת identity הקריאה נכשלת בבטחה; בלי זה, אתה עלול לכתוב למערכת הלא נכונה.</li>
 <li><strong>השבתה של ה-registry</strong>: הלקוחות צריכים לשמור את הרשימה האחרונה הידועה (cache של לקוח Eureka, Envoy שומר endpoints) ולא לרוקן אותה — fail static, לא fail closed.</li>
 </ul>

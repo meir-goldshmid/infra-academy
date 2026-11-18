@@ -42,7 +42,7 @@ window.INFRA.lessons.push({
         he: `<p>ה-<strong>Cluster Autoscaler (CA)</strong> הקלאסי לא יוצר מכונות בעצמו. הוא מחפש Pods שה-scheduler סימן כ-<code>Unschedulable</code>, מריץ סימולציה של "האם ה-Pod היה נכנס אם ל-node group X היה עוד node אחד?", ואז מעלה את ה-<em>desired count</em> של node group בענן: Auto Scaling Group ב-AWS, VMSS ב-Azure, managed instance group ב-GKE. הענן מרים VM לפי ה-launch template של הקבוצה.</p>
 <ul>
 <li><strong>צורות קבועות:</strong> לכל node group יש instance type אחד (או רשימה קצרה של types באותו גודל). Pod שמבקש 30 GiB ב-cluster שיש בו רק קבוצות של <code>m6i.large</code> יישאר Pending לנצח. בסוף צוותים מתחזקים 5-15 node groups: general, memory, GPU, spot, אחת לכל AZ.</li>
-<li><strong>איטי:</strong> לולאת CA (כל 10 שניות) → API של ה-ASG → EC2 launch → bootstrap → kubelet נרשם → CNI מוכן. בדרך כלל <strong>3-5 דקות</strong> מ-Pending ל-Running, ויותר עם images כבדים.</li>
+<li><strong>איטי:</strong> לולאת CA (כל 10 שניות) ← API של ה-ASG ← EC2 launch ← bootstrap ← kubelet נרשם ← CNI מוכן. בדרך כלל <strong>3-5 דקות</strong> מ-Pending ל-Running, ויותר עם images כבדים.</li>
 <li><strong>Scale-down</strong> שמרני: node צריך להיות מתחת ל-50% בערך מבחינת requests (<code>--scale-down-utilization-threshold=0.5</code>) במשך 10 דקות (<code>--scale-down-unneeded-time=10m</code>), וכל ה-Pods שלו צריכים להיות ניתנים להזזה.</li>
 </ul>
 <pre>--expander=least-waste            # pick the group that leaves least idle CPU/mem
@@ -213,7 +213,7 @@ spec:
 <blockquote>💡 Real world: the #1 fix for ICE is <em>flexibility</em>. Allow 3 categories × 3 generations × 2 architectures × all AZs and Karpenter has 50+ instance types to fall back on. NodePools pinned to a single <code>m5.2xlarge</code> are just a slower Cluster Autoscaler.</blockquote>`,
         he: `<p>עובדים מבחוץ פנימה, בסדר הזה:</p>
 <ol>
-<li><strong>למה ה-Pod לא נכנס?</strong> <code>kubectl describe pod</code> → Events. ההודעה <code>0/12 nodes are available: 12 Insufficient cpu</code> נורמלית (זה הטריגר). מחפשים את ה-event של Karpenter עצמו: <code>FailedScheduling ... incompatible with nodepool "general"</code>.</li>
+<li><strong>למה ה-Pod לא נכנס?</strong> <code>kubectl describe pod</code> ← Events. ההודעה <code>0/12 nodes are available: 12 Insufficient cpu</code> נורמלית (זה הטריגר). מחפשים את ה-event של Karpenter עצמו: <code>FailedScheduling ... incompatible with nodepool "general"</code>.</li>
 <li><strong>האם בכלל אפשר לספק את הבקשה?</strong> Pod שמבקש <code>cpu: 96</code> כשה-NodePool מרשה רק עד <code>xlarge</code> לא ייכנס אף פעם. אותו דבר לגבי <code>nodeSelector</code> על label שאף NodePool לא מייצר, או toleration שחסר ל-<code>taints</code> של NodePool.</li>
 <li><strong>האם Karpenter ניסה?</strong> <code>kubectl get nodeclaims</code>. NodeClaim שתקוע עם <code>Launched=False</code> אומר שהקריאה לענן נכשלה. אם הוא עם <code>Registered=False</code> – ה-instance עלה אבל ה-kubelet לא הצטרף (user data שבור, security group לא נכון, node IAM role שחסר ב-<code>aws-auth</code> או ב-access entries).</li>
 <li><strong>קוראים לוגים:</strong> <code>kubectl logs -n kube-system -l app.kubernetes.io/name=karpenter</code> ומחפשים <code>InsufficientInstanceCapacity</code> (ICE – ל-AWS אין capacity מה-type הזה ב-AZ הזה), <code>VcpuLimitExceeded</code> (ה-quota של vCPU בחשבון), <code>UnauthorizedOperation</code> (IAM של ה-controller), או <code>exceeds limits</code> (הגעת ל-<code>limits</code> של ה-NodePool).</li>
@@ -341,7 +341,7 @@ window.INFRA.lessons.push({
   title: { en: "KEDA: Event-Driven Autoscaling & Scale to Zero", he: "KEDA: Autoscaling מבוסס events ו-Scale to Zero" },
   tldr: {
     en: "KEDA turns 'how much work is waiting' (Kafka lag, SQS depth, a Prometheus query, a cron window) into replicas: it scales 0→1 itself and feeds an HPA it creates for 1→N.",
-    he: "KEDA הופך את 'כמה עבודה מחכה' (Kafka lag, עומק SQS, query של Prometheus, חלון cron) למספר replicas: את 0→1 הוא עושה בעצמו, ול-1→N הוא מזין HPA שהוא יוצר."
+    he: "KEDA הופך את 'כמה עבודה מחכה' (Kafka lag, עומק SQS, query של Prometheus, חלון cron) למספר replicas: את 0←1 הוא עושה בעצמו, ול-1←N הוא מזין HPA שהוא יוצר."
   },
   analogy: {
     en: "CPU-based HPA is a bakery that hires more bakers only once the current bakers are sweating. KEDA is a bakery manager who looks at the line outside the door: 40 people waiting and each baker serves 10? Call in 4 bakers — before anyone sweats. Line empty at 3 a.m.? Send everyone home and lock the door; the first customer who knocks wakes one baker up.",
@@ -431,7 +431,7 @@ spec:
         lagThreshold: "100"           # target lag per replica
         activationLagThreshold: "10"  # 0 -&gt; 1 only when lag &gt; 10
       authenticationRef: { name: kafka-auth }</pre>
-<p>מספר ה-replicas הרצוי ≈ <code>ceil(totalLag / lagThreshold)</code>: lag של 2,400 הודעות → 24 Pods. יש שני thresholds חשובים: <strong>activation</strong> (האם יש עבודה בכלל? מחליט על 0↔1, באחריות KEDA) וה-<strong>target</strong> (כמה עבודה לכל replica, ה-HPA משתמש בו ל-1↔N).</p>
+<p>מספר ה-replicas הרצוי ≈ <code>ceil(totalLag / lagThreshold)</code>: lag של 2,400 הודעות ← 24 Pods. יש שני thresholds חשובים: <strong>activation</strong> (האם יש עבודה בכלל? מחליט על 0↔1, באחריות KEDA) וה-<strong>target</strong> (כמה עבודה לכל replica, ה-HPA משתמש בו ל-1↔N).</p>
 <p>עוד triggers נפוצים:</p>
 <pre>- type: aws-sqs-queue
   metadata: { queueURL: https://sqs.eu-west-1.amazonaws.com/123456789012/jobs, queueLength: "20", awsRegion: eu-west-1 }
@@ -543,7 +543,7 @@ keda-hpa-orders-consumer   Deployment/orders-consumer   1840/100 (avg)     1    
 <ul>
 <li><strong>READY=False</strong> – בעיה בקונפיגורציה או ב-auth. <code>kubectl describe scaledobject</code> מראה את הודעת ה-condition (למשל <code>error getting scaler: ... AccessDenied</code>).</li>
 <li><strong>ACTIVE=False למרות שיש עבודה בתור</strong> – activation threshold גבוה מדי, topic או consumer group לא נכונים, או שה-consumer group אף פעם לא עשה commit ל-offsets (ואז ה-scaler של Kafka משתמש ב-<code>offsetResetPolicy</code>).</li>
-<li><strong>ה-target ב-HPA מראה <code>&lt;unknown&gt;</code></strong> – ה-HPA לא מצליח לקרוא את ה-external metric: ה-Pod של ה-metrics-apiserver למטה, adapter אחר (למשל prometheus-adapter) כבר תפס את <code>external.metrics.k8s.io</code> (רק אחד יכול להחזיק אותו!), או NetworkPolicy שחוסמת את ה-API server → KEDA בפורט 6443.</li>
+<li><strong>ה-target ב-HPA מראה <code>&lt;unknown&gt;</code></strong> – ה-HPA לא מצליח לקרוא את ה-external metric: ה-Pod של ה-metrics-apiserver למטה, adapter אחר (למשל prometheus-adapter) כבר תפס את <code>external.metrics.k8s.io</code> (רק אחד יכול להחזיק אותו!), או NetworkPolicy שחוסמת את ה-API server ← KEDA בפורט 6443.</li>
 <li><strong>ה-replicas קופצים למעלה ולמטה</strong> – מעלים את <code>cooldownPeriod</code> ואת <code>scaleDown.stabilizationWindowSeconds</code> של ה-HPA.</li>
 </ul>
 <p>חוק הזהב: <strong>אף פעם לא יוצרים HPA משלך</strong> ל-workload שיש לו ScaledObject. שני HPAs על אותו Deployment נלחמים כל 15 שניות ומספר ה-replicas מתנדנד. במעבר – מוחקים קודם את ה-HPA שלך, או נותנים ל-KEDA לאמץ אותו עם ה-annotation <code>scaledobject.keda.sh/transfer-hpa-ownership: "true"</code>. כדי להקפיא scaling באמצע אירוע, מוסיפים <code>autoscaling.keda.sh/paused-replicas: "5"</code>.</p>`
@@ -883,7 +883,7 @@ Conditions:
 <pre>kubectl patch pod api-7d9f-xk2p --subresource resize --patch \
   '{"spec":{"containers":[{"name":"api","resources":{"requests":{"cpu":"800m"},"limits":{"cpu":"1500m"}}}]}}'
 # container spec: resizePolicy: [{resourceName: memory, restartPolicy: RestartContainer}]</pre>
-<p><strong>אף פעם לא מריצים VPA (Recreate/InPlace) ו-HPA על אותו metric של CPU או memory.</strong> ה-target של HPA הוא אחוז מה-requests, ו-VPA משנה את ה-requests. VPA מעלה requests → אחוז ה-utilization יורד → HPA מוריד Pods → כל Pod עמוס יותר → VPA מעלה שוב. הם רודפים אחד אחרי השני. שילובים בטוחים: HPA לפי RPS/queue lag ו-VPA על CPU/memory, או VPA במצב <code>Off</code> שמזין המלצות לבני אדם.</p>
+<p><strong>אף פעם לא מריצים VPA (Recreate/InPlace) ו-HPA על אותו metric של CPU או memory.</strong> ה-target של HPA הוא אחוז מה-requests, ו-VPA משנה את ה-requests. VPA מעלה requests ← אחוז ה-utilization יורד ← HPA מוריד Pods ← כל Pod עמוס יותר ← VPA מעלה שוב. הם רודפים אחד אחרי השני. שילובים בטוחים: HPA לפי RPS/queue lag ו-VPA על CPU/memory, או VPA במצב <code>Off</code> שמזין המלצות לבני אדם.</p>
 <p><strong>Goldilocks</strong> (של Fairwinds) עושה אוטומציה לגישת ה-Off: שמים על namespace את ה-label <code>goldilocks.fairwinds.com/enabled=true</code>, והוא יוצר VPA במצב Off לכל Deployment ומציג dashboard עם requests/limits מומלצים לכל קונטיינר.</p>`
       }
     }
@@ -921,7 +921,7 @@ Conditions:
     he: "\"עיגול, מקסימום, חיתוך, הרגעה\": ceil(replicas × current/target) לכל metric, לוקחים מקסימום, חותכים ל-min/max ומרגיעים עם behavior. ו: HPA סופר Pods, VPA מודד Pods – אסור לתת להם להתווכח על CPU."
   },
   pitfalls: [
-    { en: "A sidecar without CPU requests (service mesh proxy, log shipper) breaks Resource CPU utilization for the whole Pod → &lt;unknown&gt;. Use ContainerResource or set sidecar requests.", he: "Sidecar בלי CPU requests (proxy של service mesh, log shipper) שובר את ה-CPU utilization מסוג Resource לכל ה-Pod → &lt;unknown&gt;. משתמשים ב-ContainerResource או נותנים requests ל-sidecar." },
+    { en: "A sidecar without CPU requests (service mesh proxy, log shipper) breaks Resource CPU utilization for the whole Pod → &lt;unknown&gt;. Use ContainerResource or set sidecar requests.", he: "Sidecar בלי CPU requests (proxy של service mesh, log shipper) שובר את ה-CPU utilization מסוג Resource לכל ה-Pod ← &lt;unknown&gt;. משתמשים ב-ContainerResource או נותנים requests ל-sidecar." },
     { en: "Keeping spec.replicas in the Deployment manifest managed by GitOps. Every sync resets the count and fights the HPA. Remove the field once an HPA exists.", he: "להשאיר spec.replicas ב-manifest של Deployment שמנוהל ב-GitOps. כל sync מאפס את המספר ונלחם ב-HPA. מוחקים את השדה ברגע שיש HPA." },
     { en: "Setting a 90% CPU target. New Pods need 1-3 minutes to absorb load, so you're saturated before help arrives. 50-70% leaves headroom for the reaction time.", he: "לשים target של 90% CPU. Pods חדשים צריכים 1-3 דקות עד שהם סופגים עומס, אז אתה רווי לפני שהעזרה מגיעה. 50-70% משאיר מרווח לזמן התגובה." },
     { en: "VPA in Recreate mode on a single-replica Deployment without a PDB: every recommendation change is a full outage while the Pod restarts.", he: "VPA במצב Recreate על Deployment עם replica אחד ובלי PDB: כל שינוי בהמלצה הוא השבתה מלאה בזמן שה-Pod עולה מחדש." }
@@ -1557,7 +1557,7 @@ metadata:
     argocd.argoproj.io/hook-delete-policy: BeforeHookCreation,HookSucceeded
 ---
 # PostSync hook: smoke test / Slack notification</pre>
-<blockquote>💡 מהשטח: Argo CD מרנדר Helm charts עם <code>helm template</code> ומחיל אותם בעצמו – לכן <code>helm list</code> לא מראה כלום, ו-Helm hooks ממופים ל-Argo hooks (<code>pre-install</code> → PreSync וכו'). אל תריץ <code>helm upgrade</code> ידנית על אפליקציה שמנוהלת ע"י Argo – ה-self-heal יבטל את זה.</blockquote>`
+<blockquote>💡 מהשטח: Argo CD מרנדר Helm charts עם <code>helm template</code> ומחיל אותם בעצמו – לכן <code>helm list</code> לא מראה כלום, ו-Helm hooks ממופים ל-Argo hooks (<code>pre-install</code> ← PreSync וכו'). אל תריץ <code>helm upgrade</code> ידנית על אפליקציה שמנוהלת ע"י Argo – ה-self-heal יבטל את זה.</blockquote>`
       }
     },
     {
@@ -2050,7 +2050,7 @@ spec:
     - name: run
       inputs: { parameters: [ { name: cmd } ] }
       container: { image: ghcr.io/acme/ml:1.9, args: ["{{inputs.parameters.cmd}}"] }</pre>
-<p><strong>Argo Events</strong> היא שכבת הטריגרים: <code>EventSource</code> (GitHub webhook, SQS, Kafka, S3, cron, calendar) מפרסם ל-<code>EventBus</code> (NATS JetStream), ו-<code>Sensor</code> עם dependencies ו-filters מפעיל <em>triggers</em> – ליצור Workflow, Job, Argo Rollout או קריאת HTTP. שילוב טיפוסי: "קובץ נוחת ב-S3 → Sensor → DAG של Workflow → תוצאות ל-bucket".</p>
+<p><strong>Argo Events</strong> היא שכבת הטריגרים: <code>EventSource</code> (GitHub webhook, SQS, Kafka, S3, cron, calendar) מפרסם ל-<code>EventBus</code> (NATS JetStream), ו-<code>Sensor</code> עם dependencies ו-filters מפעיל <em>triggers</em> – ליצור Workflow, Job, Argo Rollout או קריאת HTTP. שילוב טיפוסי: "קובץ נוחת ב-S3 ← Sensor ← DAG של Workflow ← תוצאות ל-bucket".</p>
 <p>אז המשפחה היא: <strong>CD</strong> (מה רץ), <strong>Rollouts</strong> (איך משחררים), <strong>Workflows</strong> (jobs/pipelines), <strong>Events</strong> (מה מתניע את הכול).</p>`
       }
     }
@@ -2241,7 +2241,7 @@ max_over_time(container_memory_working_set_bytes{namespace="shop",container!=""}
 </ol>
 <p><strong>CPU limits</strong> are a cost/performance debate: many platform teams set CPU requests but no CPU limits (CPU is compressible; limits cause CFS throttling even on an idle node) while always setting memory limit = request. Others keep CPU limits for noisy-neighbor isolation in multi-tenant clusters. Either way, a <code>LimitRange</code> with default requests stops "no requests at all" Pods, which are both unbillable and dangerous.</p>
 <blockquote>💡 Real world: Java services are the classic over-requesters: -Xmx sized for an old VM, 4 Gi requests, 900 Mi working set. Setting <code>-XX:MaxRAMPercentage=75</code> and letting the container memory request drive heap size often frees a third of a cluster's memory.</blockquote>`,
-        he: `<p>Rightsizing זו לולאה, לא פעולה חד-פעמית: <strong>לצפות → להמליץ → להחיל דרך Git → לוודא → לחזור כל חודש</strong>.</p>
+        he: `<p>Rightsizing זו לולאה, לא פעולה חד-פעמית: <strong>לצפות ← להמליץ ← להחיל דרך Git ← לוודא ← לחזור כל חודש</strong>.</p>
 <ol>
 <li><strong>לצפות</strong> לפחות שבוע-שבועיים, כולל ימי שיא. משתמשים ב-VPA במצב <code>Off</code> (או Goldilocks) להמלצות לכל קונטיינר, או ישירות ב-PromQL:
 <pre># p95 CPU usage per container over 14 days (cores)

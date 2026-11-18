@@ -216,7 +216,7 @@ services:
 <blockquote>⚠️ Production tip: Keep business logic OUT of the gateway. Once it starts knowing about discount rules, it's a bottleneck monolith every team must change.</blockquote>`,
         he: `<p><strong>API gateway</strong> הוא reverse proxy בקצה המערכת שנותן ללקוחות נקודת כניסה אחת ומטפל ב-cross-cutting concerns, כדי שכל service לא יממש אותם מחדש:</p>
 <ul>
-<li><strong>Routing</strong>: <code>/api/orders/*</code> → orders-svc, <code>/api/users/*</code> → users-svc; ניהול גרסאות (<code>/v1</code>, <code>/v2</code>).</li>
+<li><strong>Routing</strong>: <code>/api/orders/*</code> → orders-svc, <code>/api/users/*</code> ← users-svc; ניהול גרסאות (<code>/v1</code>, <code>/v2</code>).</li>
 <li><strong>Auth</strong>: מאמתים JWT/OAuth2 או API keys פעם אחת, ומעבירים את הזהות הלאה ב-headers.</li>
 <li><strong>Rate limiting ו-quotas</strong>: למשל 100 req/s לכל API key, ו-429 כשחורגים.</li>
 <li><strong>Aggregation</strong>: קריאה אחת של הלקוח מתפצלת ל-3 services והתוצאה מאוחדת.</li>
@@ -244,7 +244,7 @@ services:
 <p>Warning sign: if your BFFs start duplicating business rules, push that logic down into a domain service.</p>`,
         he: `<p>API גנרי אחד ל-web, iOS, Android ולשותפים בסוף לא משרת אף אחד טוב: המובייל רוצה payloads קטנים ופחות round-trips על 4G; הדשבורד ב-web רוצה דאטה עשיר; שותפים רוצים חוזים יציבים עם גרסאות. <strong>תבנית BFF</strong> נותנת לכל סוג לקוח backend דק משלו, שבבעלות הצוות שמחזיק את ה-frontend הזה.</p>
 <p>ה-BFF של המובייל קורא ל-orders, users ו-recommendations במקביל ומחזיר JSON קומפקטי אחד שתפור למסך הבית — round-trip אחד במקום שלושה על RTT של 150 ms במובייל חוסך ~300 ms של latency מורגש. הרבה פעמים משתמשים ב-GraphQL server כ-BFF, כי הלקוח בוחר את הצורה.</p>
-<blockquote>💡 מהשטח: SoundCloud הפכו את BFF לפופולרי; Netflix הריצו שכבות adapter לכל סוג מכשיר במשך שנים. מבנה נפוץ: edge gateway (auth, rate limit, TLS) → BFF לכל לקוח (aggregation, עיצוב התשובה) → domain services.</blockquote>
+<blockquote>💡 מהשטח: SoundCloud הפכו את BFF לפופולרי; Netflix הריצו שכבות adapter לכל סוג מכשיר במשך שנים. מבנה נפוץ: edge gateway (auth, rate limit, TLS) ← BFF לכל לקוח (aggregation, עיצוב התשובה) ← domain services.</blockquote>
 <p>סימן אזהרה: אם ה-BFFs מתחילים לשכפל חוקים עסקיים, הורד את הלוגיקה הזו ל-domain service.</p>`
       }
     },
@@ -493,10 +493,10 @@ GET  /reports/r-8f2  -&gt; 200 { "status": "done", "url": "https://..." }</pre>
 <p>Async is not free: you now need a broker (another thing to run), message schemas and versioning, idempotent consumers, DLQs, and tracing that propagates context through messages. Debugging "why didn't this happen?" is harder than "why did this 500?"</p>
 <blockquote>⚠️ Production tip: Don't fake sync over async (send a message, then block waiting for a reply message) on the user's request path unless you really must — you get the latency of sync plus the moving parts of async.</blockquote>`,
         he: `<ul>
-<li><strong>Query</strong> (צריך דאטה עכשיו, קריאה בלבד) → סינכרוני. אם אפשר — cache.</li>
-<li><strong>Command שהמשתמש חייב לראות את התוצאה שלו עכשיו</strong> (login, אישור תשלום) → סינכרוני, עם timeout + retry + fallback.</li>
-<li><strong>Side effects שמעניינים אחרים</strong> (שליחת מייל, עדכון search index, analytics, נקודות מועדון) → מפרסמים event, אסינכרוני.</li>
-<li><strong>עבודה ארוכה</strong> (transcoding לווידאו, הפקת דוחות, batch של ML inference) → queue + מחזירים <code>202 Accepted</code> עם job ID; הלקוח עושה polling או מקבל webhook/WebSocket.</li>
+<li><strong>Query</strong> (צריך דאטה עכשיו, קריאה בלבד) ← סינכרוני. אם אפשר — cache.</li>
+<li><strong>Command שהמשתמש חייב לראות את התוצאה שלו עכשיו</strong> (login, אישור תשלום) ← סינכרוני, עם timeout + retry + fallback.</li>
+<li><strong>Side effects שמעניינים אחרים</strong> (שליחת מייל, עדכון search index, analytics, נקודות מועדון) ← מפרסמים event, אסינכרוני.</li>
+<li><strong>עבודה ארוכה</strong> (transcoding לווידאו, הפקת דוחות, batch של ML inference) ← queue + מחזירים <code>202 Accepted</code> עם job ID; הלקוח עושה polling או מקבל webhook/WebSocket.</li>
 </ul>
 <pre>POST /reports        -&gt; 202 Accepted  { "jobId": "r-8f2", "status": "queued" }
 GET  /reports/r-8f2  -&gt; 200 { "status": "done", "url": "https://..." }</pre>
@@ -817,11 +817,11 @@ INFRA.lessons.push({
 <blockquote>💡 Real world: The classic AWS combo is SNS topic → multiple SQS queues ("fan-out"). Each service gets its own durable queue with its own retries and DLQ, while the publisher sends once.</blockquote>`,
         he: `<ul>
 <li><strong>Queue (point-to-point)</strong>: כל הודעה הולכת ל-consumer <em>אחד</em> מבין המתחרים ואז נמחקת. משמש לחלוקת עבודה: "תעשה resize לתמונה הזו". (SQS, queue ב-RabbitMQ, queue ב-Service Bus.)</li>
-<li><strong>Pub/Sub (fan-out)</strong>: כל הודעה הולכת ל<em>כל</em> המנויים. משמש ל-events שהרבה גורמים צריכים: "OrderPlaced" → מייל, analytics, מלאי. (SNS, fanout/topic exchange ב-RabbitMQ, Google Pub/Sub, topics ב-Service Bus.)</li>
+<li><strong>Pub/Sub (fan-out)</strong>: כל הודעה הולכת ל<em>כל</em> המנויים. משמש ל-events שהרבה גורמים צריכים: "OrderPlaced" ← מייל, analytics, מלאי. (SNS, fanout/topic exchange ב-RabbitMQ, Google Pub/Sub, topics ב-Service Bus.)</li>
 <li><strong>Stream (log)</strong>: הודעות נכתבות ל-log עמיד וממוין ו<em>נשמרות</em> לא משנה מי קרא אותן. כל consumer group עוקב אחרי המיקום שלו ויכול לחזור אחורה. משמש לשדרת events, replay, CDC, pipelines של analytics. (Kafka, Kinesis, Event Hubs, Redpanda, Pulsar.)</li>
 </ul>
 <p>ההבדל המנטלי החשוב: queue הוא <strong>רשימת משימות</strong> (מה שבוצע נמחק); log הוא <strong>ספר היסטוריה</strong> (שום דבר לא נמחק עד שה-retention פג).</p>
-<blockquote>💡 מהשטח: הקומבו הקלאסי ב-AWS הוא SNS topic → כמה SQS queues ("fan-out"). כל service מקבל queue עמיד משלו עם retries ו-DLQ משלו, וה-publisher שולח פעם אחת.</blockquote>`
+<blockquote>💡 מהשטח: הקומבו הקלאסי ב-AWS הוא SNS topic ← כמה SQS queues ("fan-out"). כל service מקבל queue עמיד משלו עם retries ו-DLQ משלו, וה-publisher שולח פעם אחת.</blockquote>`
       }
     },
     {
@@ -873,8 +873,8 @@ kafka-consumer-groups.sh --describe --group billing   # shows LAG per partition<
 <blockquote>💡 Real world: Consumer <strong>lag</strong> (latest offset minus committed offset) is THE Kafka health metric. LinkedIn, where Kafka was born, pushes trillions of messages per day through it.</blockquote>`,
         he: `<p><strong>Topic</strong> ב-Kafka מחולק ל-<strong>partitions</strong>; כל partition הוא log של append-only שמשוכפל ל-N brokers (בדרך כלל <code>replication.factor=3</code>, <code>min.insync.replicas=2</code>, ו-<code>acks=all</code> ב-producer). כל רשומה מקבלת <strong>offset</strong> רץ.</p>
 <ul>
-<li><strong>ה-key קובע את ה-partition</strong>: <code>hash(key) % partitions</code>. אותו key (למשל <code>customerId</code>) → אותו partition → <strong>סדר מובטח רק בתוך partition</strong>, אף פעם לא על כל ה-topic.</li>
-<li><strong>Consumer groups</strong>: כל partition משויך ל-consumer אחד בדיוק בתוך group. 12 partitions → מקסימום 12 consumers פעילים לכל group; ה-13 יושב בטל. groups שונים קוראים באופן עצמאי (billing ו-analytics מקבלים כל אחד את הכול).</li>
+<li><strong>ה-key קובע את ה-partition</strong>: <code>hash(key) % partitions</code>. אותו key (למשל <code>customerId</code>) ← אותו partition ← <strong>סדר מובטח רק בתוך partition</strong>, אף פעם לא על כל ה-topic.</li>
+<li><strong>Consumer groups</strong>: כל partition משויך ל-consumer אחד בדיוק בתוך group. 12 partitions ← מקסימום 12 consumers פעילים לכל group; ה-13 יושב בטל. groups שונים קוראים באופן עצמאי (billing ו-analytics מקבלים כל אחד את הכול).</li>
 <li><strong>Offsets</strong>: consumers עושים commit ל-offset שעיבדו. commit אחרי עיבוד = at-least-once. איפוס ל-offset מוקדם יותר = replay של ההיסטוריה.</li>
 <li><strong>Retention</strong>: לפי זמן (<code>retention.ms</code>, ברירת מחדל 7 ימים) או גודל; או <strong>log compaction</strong> ששומר לנצח את הערך האחרון לכל key.</li>
 </ul>
@@ -905,7 +905,7 @@ kafka-consumer-groups.sh --describe --group billing   # shows LAG per partition<
 <tr><td>Throughput</td><td>~10k–100k לשנייה</td><td>מיליונים לשנייה</td><td>כמעט בלי גבול (standard)</td><td>גבוה מאוד</td><td>גבוה (Premium)</td></tr>
 <tr><td>עומס תפעולי</td><td>אתה מריץ</td><td>אתה מריץ (או MSK/Confluent)</td><td>אפס</td><td>אפס</td><td>אפס</td></tr>
 </table>
-<p>כללי אצבע: <strong>task queue / routing מורכב</strong> → RabbitMQ או SQS. <strong>שדרת events, replay, הרבה קוראים עצמאיים, נפח גבוה</strong> → Kafka (או Kinesis/Event Hubs). <strong>על AWS ורוצים משעמם</strong> → SNS+SQS. <strong>Enterprise ב-.NET עם sessions, טרנזקציות, scheduled messages</strong> → Service Bus.</p>
+<p>כללי אצבע: <strong>task queue / routing מורכב</strong> ← RabbitMQ או SQS. <strong>שדרת events, replay, הרבה קוראים עצמאיים, נפח גבוה</strong> ← Kafka (או Kinesis/Event Hubs). <strong>על AWS ורוצים משעמם</strong> → SNS+SQS. <strong>Enterprise ב-.NET עם sessions, טרנזקציות, scheduled messages</strong> → Service Bus.</p>
 <blockquote>⚠️ טיפ לפרודקשן: SQS FIFO מוגבל (300 הודעות לשנייה לכל API action בלי batching, הרבה יותר במצב high-throughput) ושומר על סדר רק בתוך MessageGroupId — בחר group IDs כמו שבוחרים keys ב-Kafka.</blockquote>`
       }
     }
@@ -925,7 +925,7 @@ Kafka topic "orders" (3 partitions), key = customerId
     { cmd: "docker run -d --name kafka -p 9092:9092 apache/kafka:3.8.0", what: { en: "Start a single-node Kafka (KRaft mode, no ZooKeeper) for experiments.", he: "מרימים Kafka עם node אחד (מצב KRaft, בלי ZooKeeper) לניסויים." } },
     { cmd: "docker exec -it kafka /opt/kafka/bin/kafka-console-producer.sh --bootstrap-server localhost:9092 --topic orders --property parse.key=true --property key.separator=:", what: { en: "Produce keyed messages (type cust1:hello). Same key always lands in the same partition.", he: "שולחים הודעות עם key (הקלד cust1:hello). אותו key תמיד נוחת באותו partition." } },
     { cmd: "docker exec -it kafka /opt/kafka/bin/kafka-consumer-groups.sh --bootstrap-server localhost:9092 --group billing --reset-offsets --to-earliest --topic orders --execute", what: { en: "Replay: rewind a consumer group to the beginning (group must be stopped). Impossible with a classic queue.", he: "Replay: מחזירים consumer group להתחלה (ה-group חייב להיות עצור). בלתי אפשרי עם queue קלאסי." } },
-    { cmd: "aws sns subscribe --topic-arn $TOPIC --protocol sqs --notification-endpoint $QUEUE_ARN", what: { en: "Wire the SNS→SQS fan-out: every message published to the topic lands in this queue too (queue policy must allow SNS).", he: "מחברים fan-out של SNS→SQS: כל הודעה שמתפרסמת ל-topic נוחתת גם ב-queue הזה (ה-queue policy צריך לאשר ל-SNS)." } }
+    { cmd: "aws sns subscribe --topic-arn $TOPIC --protocol sqs --notification-endpoint $QUEUE_ARN", what: { en: "Wire the SNS→SQS fan-out: every message published to the topic lands in this queue too (queue policy must allow SNS).", he: "מחברים fan-out של SNS←SQS: כל הודעה שמתפרסמת ל-topic נוחתת גם ב-queue הזה (ה-queue policy צריך לאשר ל-SNS)." } }
   ],
   mnemonic: {
     en: "\"Rabbit Routes, Kafka Keeps.\" Rabbit is a post office (route, deliver, delete); Kafka is a library (append, keep, re-read by bookmark).",
@@ -933,7 +933,7 @@ Kafka topic "orders" (3 partitions), key = customerId
   },
   pitfalls: [
     { en: "Expecting global ordering in Kafka. You only get order within a partition — key by the entity whose events must be ordered (orderId, accountId).", he: "לצפות לסדר גלובלי ב-Kafka. יש סדר רק בתוך partition — בוחרים key לפי הישות שה-events שלה חייבים להיות מסודרים (orderId, accountId)." },
-    { en: "Too few partitions: they cap consumer parallelism per group, and increasing them later changes key→partition mapping, breaking ordering for existing keys.", he: "מעט מדי partitions: הם מגבילים את המקביליות של consumers בכל group, והגדלה בהמשך משנה את המיפוי key→partition ושוברת סדר ל-keys קיימים." },
+    { en: "Too few partitions: they cap consumer parallelism per group, and increasing them later changes key→partition mapping, breaking ordering for existing keys.", he: "מעט מדי partitions: הם מגבילים את המקביליות של consumers בכל group, והגדלה בהמשך משנה את המיפוי key←partition ושוברת סדר ל-keys קיימים." },
     { en: "A hot key (one huge customer) pins one partition at 100% while others idle — consider compound keys or splitting that tenant.", he: "Hot key (לקוח ענק אחד) מקבע partition אחד על 100% בזמן שהשאר בטלים — שקלו keys מורכבים או פיצול של אותו tenant." },
     { en: "Using Kafka as a task queue with per-message retries: a single slow/poison record blocks its whole partition. You need retry topics + DLQ topics.", he: "להשתמש ב-Kafka כ-task queue עם retries לכל הודעה: רשומה איטית/רעילה אחת חוסמת את כל ה-partition. צריך retry topics ו-DLQ topics." }
   ],
@@ -1152,7 +1152,7 @@ redis-cli INFO stats | grep -E "keyspace_(hits|misses)|evicted_keys"</pre>
 <tr><td>תוספות</td><td>Pub/sub, Lua, locks, rate limiters, leaderboards</td><td>פשוט, צפוי, מעולה ל-caches ענקיים ושטוחים</td></tr>
 </table>
 <p>ברירת מחדל: <strong>Redis</strong> (או ה-fork של Linux Foundation, <strong>Valkey</strong>) — מבני הנתונים מחזירים את ההשקעה. <strong>Memcached</strong> — ל-cache ענק, פשוט ו-multi-threaded של blobs.</p>
-<p>שכבות cache, מהקרוב לרחוק: cache בדפדפן → CDN (CloudFront, Cloudflare) → cache ב-API gateway/reverse proxy → cache בתוך ה-process (Caffeine, Map עם LRU: ~100 ns אבל לכל instance בנפרד ולא עקבי בין pods) → cache מבוזר (Redis: ~0.5–1 ms ברשת) → ה-buffer pool של ה-DB.</p>
+<p>שכבות cache, מהקרוב לרחוק: cache בדפדפן ← CDN (CloudFront, Cloudflare) ← cache ב-API gateway/reverse proxy ← cache בתוך ה-process (Caffeine, Map עם LRU: ~100 ns אבל לכל instance בנפרד ולא עקבי בין pods) ← cache מבוזר (Redis: ~0.5–1 ms ברשת) ← ה-buffer pool של ה-DB.</p>
 <blockquote>⚠️ טיפ לפרודקשן: לעולם אל תהפוך את ה-cache לתלות קשיחה. אם Redis נפל — fallback ל-DB עם circuit breaker ו-rate limit. אחרת הפכת אופטימיזציית ביצועים ל-single point of failure.</blockquote>`
       }
     }
@@ -1260,13 +1260,13 @@ await fetch(url, { signal: AbortSignal.timeout(400) })        // JS</pre>
 <blockquote>⚠️ Production tip: Outer timeouts must be longer than inner ones. Gateway 30 s → service 10 s → DB 5 s. If the gateway gives up at 5 s while the service still waits 10 s for the DB, you burn resources on answers nobody will receive.</blockquote>`,
         he: `<p>כל קריאת רשת צריכה timeout. בלי זה, dependency איטי מחזיק את ה-threads/connections שלך כבני ערובה; כשה-pool נגמר — גם <em>השירות שלך</em> למטה — <strong>cascading failure</strong>. הרבה ברירות מחדל מפחידות: ל-<code>requests</code> של Python אין timeout כברירת מחדל; ב-HttpURLConnection של Java ברירת המחדל היא אינסוף.</p>
 <ul>
-<li><strong>Connect</strong> timeout קצר (~100 ms–1 s בתוך datacenter), ו-<strong>request</strong> timeout לפי ה-p99.9 של ה-dependency פלוס מרווח (למשל p99.9 = 250 ms → timeout של 400 ms).</li>
+<li><strong>Connect</strong> timeout קצר (~100 ms–1 s בתוך datacenter), ו-<strong>request</strong> timeout לפי ה-p99.9 של ה-dependency פלוס מרווח (למשל p99.9 = 250 ms ← timeout של 400 ms).</li>
 <li><strong>Deadline propagation</strong>: אם לבקשת המשתמש יש תקציב של 2 שניות ו-1.5 כבר נוצלו, קריאות downstream מקבלות 500 ms, לא 2 שניות טריות משלהן. gRPC עושה את זה מובנה עם deadlines.</li>
 </ul>
 <pre>requests.get(url, timeout=(0.5, 2.0))           # (connect, read) seconds
 ctx, cancel := context.WithTimeout(ctx, 400*time.Millisecond)  // Go
 await fetch(url, { signal: AbortSignal.timeout(400) })        // JS</pre>
-<blockquote>⚠️ טיפ לפרודקשן: timeouts חיצוניים חייבים להיות ארוכים מהפנימיים. Gateway 30 שניות → service 10 → DB 5. אם ה-gateway מוותר אחרי 5 שניות בזמן שה-service עדיין מחכה 10 ל-DB — שורפים משאבים על תשובות שאף אחד לא יקבל.</blockquote>`
+<blockquote>⚠️ טיפ לפרודקשן: timeouts חיצוניים חייבים להיות ארוכים מהפנימיים. Gateway 30 שניות ← service 10 ← DB 5. אם ה-gateway מוותר אחרי 5 שניות בזמן שה-service עדיין מחכה 10 ל-DB — שורפים משאבים על תשובות שאף אחד לא יקבל.</blockquote>`
       }
     },
     {
@@ -1329,8 +1329,8 @@ resilience4j.circuitbreaker.instances.pricing:
         he: `<p><strong>Circuit breaker</strong> עוטף קריאות ל-dependency ועוקב אחרי כשלונות. שלושה מצבים:</p>
 <ul>
 <li><strong>Closed</strong> (רגיל): קריאות עוברות. אם שיעור הכשלונות עובר סף (למשל 50% מ-20 הקריאות האחרונות, או קריאות איטיות &gt; 2 שניות) — קופץ ל-Open.</li>
-<li><strong>Open</strong>: קריאות נכשלות <em>מיד</em> בלי לגעת ב-dependency (מחזירים fallback או שגיאה). זה מגן גם עליך (אין threads שמחכים) וגם על ה-dependency (זמן להתאושש). אחרי המתנה (למשל 30 שניות) → Half-Open.</li>
-<li><strong>Half-Open</strong>: נותנים לכמה קריאות ניסיון לעבור. הצלחה → Closed. כשלון → חוזר ל-Open.</li>
+<li><strong>Open</strong>: קריאות נכשלות <em>מיד</em> בלי לגעת ב-dependency (מחזירים fallback או שגיאה). זה מגן גם עליך (אין threads שמחכים) וגם על ה-dependency (זמן להתאושש). אחרי המתנה (למשל 30 שניות) ← Half-Open.</li>
+<li><strong>Half-Open</strong>: נותנים לכמה קריאות ניסיון לעבור. הצלחה ← Closed. כשלון ← חוזר ל-Open.</li>
 </ul>
 <pre># Resilience4j (Spring Boot application.yml)
 resilience4j.circuitbreaker.instances.pricing:
@@ -1362,7 +1362,7 @@ location /api/ { limit_req zone=api burst=20 nodelay; limit_req_status 429; }</p
 <p><strong>Rate limiting</strong> מגן על service מהלקוחות שלו (כולל אלה שלך, עם הבאגים). <strong>Token bucket</strong> הוא האלגוריתם הקלאסי:</p>
 <ul>
 <li>דלי מחזיק עד <strong>B</strong> tokens (גודל ה-burst), ומתמלא בקצב של <strong>R</strong> tokens לשנייה.</li>
-<li>כל בקשה לוקחת token; דלי ריק → דוחים עם <code>429 Too Many Requests</code> + <code>Retry-After</code>.</li>
+<li>כל בקשה לוקחת token; דלי ריק ← דוחים עם <code>429 Too Many Requests</code> + <code>Retry-After</code>.</li>
 <li>דוגמה R=10/s, B=50: לקוח יכול לשלוח 50 בקשות בבת אחת, ואז להחזיק 10 לשנייה.</li>
 </ul>
 <pre># NGINX: 10 r/s per client IP, burst of 20 served without delay
@@ -1384,9 +1384,9 @@ location /api/ { limit_req zone=api burst=20 nodelay; limit_req_status 429; }</p
   -d amount=2000 -d currency=usd
 # retrying with the same key returns the SAME PaymentIntent, no double charge</pre>
 <blockquote>⚠️ Production tip: Generate the idempotency key once, <em>before</em> the first attempt, and persist it with the pending operation — generating a fresh UUID inside the retry loop defeats the purpose.</blockquote>`,
-        he: `<p><strong>Graceful degradation</strong>: מחליטים מראש מה המוצר עושה כש-dependency נופל. recommendations למטה → מציגים רבי-מכר מרשימה סטטית. reviews למטה → מסתירים את הווידג'ט. תמחור מותאם אישית למטה → מציגים מחיר מחירון. ה-checkout לעולם לא אמור להיכשל כי הקרוסלה של "אנשים קנו גם" עשתה timeout. מסמנים כל dependency כ-<em>critical</em> או <em>optional</em>; ל-optional יש timeouts הדוקים ו-fallbacks.</p>
+        he: `<p><strong>Graceful degradation</strong>: מחליטים מראש מה המוצר עושה כש-dependency נופל. recommendations למטה ← מציגים רבי-מכר מרשימה סטטית. reviews למטה ← מסתירים את הווידג'ט. תמחור מותאם אישית למטה ← מציגים מחיר מחירון. ה-checkout לעולם לא אמור להיכשל כי הקרוסלה של "אנשים קנו גם" עשתה timeout. מסמנים כל dependency כ-<em>critical</em> או <em>optional</em>; ל-optional יש timeouts הדוקים ו-fallbacks.</p>
 <p><strong>Load shedding</strong>: בעומס יתר, דוחים מוקדם (503 זול) במקום לקבל הכול ולעשות timeout על הכול. עדיף לשרת 80% מהמשתמשים טוב מאשר 100% רע.</p>
-<p><strong>Idempotency keys</strong> הופכים retries לבטוחים לפעולות לא-אידמפוטנטיות כמו "צור תשלום". הלקוח מייצר key ייחודי לכל פעולה לוגית ושולח אותו בכל retry; השרת שומר key → תוצאה ומחזיר את התוצאה השמורה בחזרות.</p>
+<p><strong>Idempotency keys</strong> הופכים retries לבטוחים לפעולות לא-אידמפוטנטיות כמו "צור תשלום". הלקוח מייצר key ייחודי לכל פעולה לוגית ושולח אותו בכל retry; השרת שומר key ← תוצאה ומחזיר את התוצאה השמורה בחזרות.</p>
 <pre>curl https://api.stripe.com/v1/payment_intents \\
   -u sk_test_xxx: \\
   -H "Idempotency-Key: 8e03978e-40d5-43e8-bc93-6894a57f9324" \\
@@ -1541,9 +1541,9 @@ app.use(session({
 <p>לאן ה-state הולך במקום:</p>
 <ul>
 <li><strong>Sessions</strong> → Redis/Memcached (<code>connect-redis</code>, Spring Session), או token חתום/מוצפן (JWT) שהלקוח מחזיק.</li>
-<li><strong>קבצים שהועלו</strong> → object storage (S3, GCS, Azure Blob), לא <code>/tmp</code> על ה-pod.</li>
-<li><strong>Scheduled jobs / locks</strong> → lock מבוסס DB או Redis, או worker יחיד נפרד — לא "ה-cron שרץ על instance מספר 1".</li>
-<li><strong>Caches בזיכרון</strong> → בסדר כאופטימיזציה, אף פעם לא כמקור האמת.</li>
+<li><strong>קבצים שהועלו</strong> ← object storage (S3, GCS, Azure Blob), לא <code>/tmp</code> על ה-pod.</li>
+<li><strong>Scheduled jobs / locks</strong> ← lock מבוסס DB או Redis, או worker יחיד נפרד — לא "ה-cron שרץ על instance מספר 1".</li>
+<li><strong>Caches בזיכרון</strong> ← בסדר כאופטימיזציה, אף פעם לא כמקור האמת.</li>
 </ul>
 <pre>// Express: sessions in Redis instead of process memory
 app.use(session({
@@ -1571,7 +1571,7 @@ app.use(session({
 <li><strong>Partitioning / sharding</strong>: מחלקים דאטה לפי key (<code>tenant_id</code>, <code>user_id</code>) על פני databases עצמאיים, לכל אחד קיבולת כתיבה משלו. החלקים הקשים: בחירת ה-shard key, שאילתות וטרנזקציות חוצות-shards, rebalancing, hot shards.</li>
 <li><strong>Connection pooling</strong> (PgBouncer, RDS Proxy): 200 pods × 20 connections = 4,000 חיבורים ל-Postgres — הרבה מעבר למה ש-Postgres אחד מחזיק טוב. pooler עושה להם multiplexing.</li>
 </ul>
-<blockquote>💡 מהשטח: לפני sharding, ממצים את האופציות הזולות לפי הסדר: indexes ותיקוני שאילתות → caching → read replicas → instance גדול יותר → ארכוב דאטה ישן → פיצול פונקציונלי (מעבירים את הטבלאות של דומיין אחד ל-DB משלו) → sharding.</blockquote>`
+<blockquote>💡 מהשטח: לפני sharding, ממצים את האופציות הזולות לפי הסדר: indexes ותיקוני שאילתות ← caching ← read replicas ← instance גדול יותר ← ארכוב דאטה ישן ← פיצול פונקציונלי (מעבירים את הטבלאות של דומיין אחד ל-DB משלו) ← sharding.</blockquote>`
       }
     },
     {
@@ -1784,8 +1784,8 @@ read side:   GET /accounts/42  -&gt; SELECT * FROM account_summary  (may lag by 
 <blockquote>💡 Real world: Uber built Cadence (now Temporal) because choreographed flows across dozens of services became impossible to reason about. Rule of thumb: choreography for simple fan-out reactions, orchestration for business-critical multi-step workflows.</blockquote>`,
         he: `<p>כשלכל service יש database משלו, אין טרנזקציית ACID חוצת-שירותים (2PC בין שירותים שביר וחוסם). <strong>Saga</strong> היא רצף של טרנזקציות מקומיות; אם שלב N נכשל, מריצים <strong>compensating actions</strong> לשלבים N-1...1 (החזר כספי, שחרור מלאי) — ביטול סמנטי, לא rollback.</p>
 <ul>
-<li><strong>Choreography</strong>: אין מתאם. כל service מגיב ל-events ומוציא חדשים: <code>OrderPlaced</code> → payments מחייב → <code>PaymentCompleted</code> → inventory שומר מלאי → <code>StockReserved</code> → shipping. פשוט ל-2–4 שלבים, צימוד רופף; אבל הזרימה מובלעת, קשה לראות אותה, ותלויות מעגליות מתגנבות.</li>
-<li><strong>Orchestration</strong>: orchestrator מרכזי (state machine) שולח commands ומטפל בתשובות: "charge" → ok → "reserve" → נכשל → "refund". הזרימה מפורשת, ניתנת לבדיקה ולצפייה; ה-orchestrator הוא עוד תשתית ועלול לגדול ל-god-service. כלים: Temporal, AWS Step Functions, Camunda/Zeebe, Azure Durable Functions.</li>
+<li><strong>Choreography</strong>: אין מתאם. כל service מגיב ל-events ומוציא חדשים: <code>OrderPlaced</code> ← payments מחייב ← <code>PaymentCompleted</code> ← inventory שומר מלאי ← <code>StockReserved</code> ← shipping. פשוט ל-2–4 שלבים, צימוד רופף; אבל הזרימה מובלעת, קשה לראות אותה, ותלויות מעגליות מתגנבות.</li>
+<li><strong>Orchestration</strong>: orchestrator מרכזי (state machine) שולח commands ומטפל בתשובות: "charge" ← ok ← "reserve" ← נכשל ← "refund". הזרימה מפורשת, ניתנת לבדיקה ולצפייה; ה-orchestrator הוא עוד תשתית ועלול לגדול ל-god-service. כלים: Temporal, AWS Step Functions, Camunda/Zeebe, Azure Durable Functions.</li>
 </ul>
 <pre>Orchestrated order saga
  1. payments.Charge        -- compensate: payments.Refund

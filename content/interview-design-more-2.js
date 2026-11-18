@@ -18,7 +18,7 @@ INFRA.designs.push({
     { en: "How fresh must it be? Is a daily rebuild OK, or must breaking news (\"earthquake tel aviv\") appear within minutes?",
       he: "כמה טרי זה צריך להיות? Rebuild יומי זה בסדר, או ש-breaking news (\"רעידת אדמה תל אביב\") צריך להופיע תוך דקות?" },
     { en: "Prefix match only, or also typo tolerance (\"amazn\" → \"amazon\") and mid-word matches?",
-      he: "רק התאמת prefix, או גם סובלנות לשגיאות (\"amazn\" → \"amazon\") והתאמה באמצע מילה?" },
+      he: "רק התאמת prefix, או גם סובלנות לשגיאות (\"amazn\" ← \"amazon\") והתאמה באמצע מילה?" },
     { en: "Which languages and scripts? Hebrew + English mixed, right-to-left, keyboard-layout mistakes (\"ageu\" typed instead of \"שלום\")?",
       he: "אילו שפות וכתבים? עברית ואנגלית מעורבבות, RTL, טעויות של שפת מקלדת (הקלדה באנגלית כשהתכוונת לעברית)?" },
     { en: "Content policy: who owns the blocklist, and how fast must a takedown take effect?",
@@ -55,11 +55,11 @@ INFRA.designs.push({
 </ul>`,
     he: `<ul>
 <li><strong>קצב בקשות</strong>: ‏1B חיפושים ביום × ~4 קריאות suggest ‏(debounce של 50-100ms, מדלגים כשהמשתמש מקליד מהר) = ‏4B ביום ≈ <strong>46K QPS</strong> בממוצע, ‏~פי 3 ב-peak ≈ <strong>150K QPS</strong>.</li>
-<li><strong>Edge cache</strong>: prefixes של 1-3 תווים הם כמה מאות אלפי מפתחות ומקבלים ~50% מהתנועה. עם TTL של 5-10 דקות ב-CDN, ‏~60-70% מהבקשות לא מגיעות ל-origin → ה-origin רואה ~50K QPS ב-peak.</li>
-<li><strong>קורפוס</strong>: ‏~100M שאילתות שונות ביום; שומרים את ~20M שמופיעות לפחות N פעמים (פרטיות + איכות). שאילתה ממוצעת ~20 תווים → עם prefixes משותפים, ‏~<strong>150-200M prefixes שונים</strong> (חותכים ב-30 תווים).</li>
+<li><strong>Edge cache</strong>: prefixes של 1-3 תווים הם כמה מאות אלפי מפתחות ומקבלים ~50% מהתנועה. עם TTL של 5-10 דקות ב-CDN, ‏~60-70% מהבקשות לא מגיעות ל-origin ← ה-origin רואה ~50K QPS ב-peak.</li>
+<li><strong>קורפוס</strong>: ‏~100M שאילתות שונות ביום; שומרים את ~20M שמופיעות לפחות N פעמים (פרטיות + איכות). שאילתה ממוצעת ~20 תווים ← עם prefixes משותפים, ‏~<strong>150-200M prefixes שונים</strong> (חותכים ב-30 תווים).</li>
 <li><strong>Top-K מחושב מראש</strong>: לכל prefix שומרים 10 מזהי הצעות (4B כל אחד) + scores ≈ ‏80B + מפתח + overhead ≈ <strong>~120B</strong>. ‏200M × 120B ≈ <strong>24GB</strong> — נכנס ל-RAM של node אחד memory-optimized; עושים 4 shards לפי hash של ה-prefix בשביל מרווח, ו-3 replicas בכל region.</li>
-<li><strong>קיבולת origin</strong>: lookup בזיכרון לוקח ~10-50µs; עם ה-overhead של HTTP, ‏node של 16 vCPU מגיש ~30-50K QPS → ‏4 shards × 3 replicas בכל region זה יותר ממספיק.</li>
-<li><strong>Logs</strong>: ‏4B אירועים ביום × ~200B ≈ <strong>800GB ביום</strong> ל-Kafka → אגרגציה שעתית ב-batch ועוד ספירות streaming של דקה.</li>
+<li><strong>קיבולת origin</strong>: lookup בזיכרון לוקח ~10-50µs; עם ה-overhead של HTTP, ‏node של 16 vCPU מגיש ~30-50K QPS ← ‏4 shards × 3 replicas בכל region זה יותר ממספיק.</li>
+<li><strong>Logs</strong>: ‏4B אירועים ביום × ~200B ≈ <strong>800GB ביום</strong> ל-Kafka ← אגרגציה שעתית ב-batch ועוד ספירות streaming של דקה.</li>
 </ul>`
   },
   api: `GET /v1/suggest?q=how+to+ex&locale=he-IL&limit=10&session=s_9f2
@@ -126,7 +126,7 @@ Blocklist (config DB -> pushed to all serving nodes in seconds):
         he: `<p>התשובה מהספר היא <strong>trie</strong>: יורדים לפי התווים של ה-prefix, ואז עושים DFS על תת-העץ כדי למצוא את 10 ההשלמות הכי פופולריות. הירידה היא O(אורך ה-prefix), אבל DFS על prefix קצר כמו "a" נוגע במיליוני nodes — איטי מדי ב-150K QPS.</p>
 <ul>
 <li><strong>תיקון 1: לשמור top-K בכל node.</strong> כל node מחזיק את 10 ההשלמות הכי טובות שלו, שמחושבות מלמטה למעלה בזמן ה-build. Lookup הופך ל-O(אורך ה-prefix) בלי לעבור על תת-העץ. הזיכרון גדל (10 מצביעים לכל node), אבל זה עדיין עשרות GB.</li>
-<li><strong>תיקון 2: לשטח.</strong> ברגע שכל node מחזיק top-K, בזמן serving בכלל לא צריך את העץ: <strong>hash map פשוט של prefix → top-K</strong> (או KV ממוין כמו RocksDB) עושה אותה עבודה, מתחלק ל-shards בקלות לפי prefix, ויכול לשבת ב-Redis, ב-KV store או בשירות in-memory ייעודי.</li>
+<li><strong>תיקון 2: לשטח.</strong> ברגע שכל node מחזיק top-K, בזמן serving בכלל לא צריך את העץ: <strong>hash map פשוט של prefix ← top-K</strong> (או KV ממוין כמו RocksDB) עושה אותה עבודה, מתחלק ל-shards בקלות לפי prefix, ויכול לשבת ב-Redis, ב-KV store או בשירות in-memory ייעודי.</li>
 <li><strong>Build מחוץ לנתיב</strong>: job של Spark סופר שאילתות עם דעיכה בזמן (score = Σ count × 0.5^(age/7d)), זורק שאילתות מתחת לסף מינימלי, ואז לכל שאילתה מוציא את כל ה-prefixes שלה (<code>"vim" → "v","vi","vim"</code>), מקבץ לפי prefix ושומר את ה-10 הטובים. כותב snapshot עם גרסה; ה-serving nodes טוענים אותו ומחליפים באופן אטומי.</li>
 <li><strong>להגביל אורך prefix</strong> (למשל 30 תווים): prefixes ארוכים נדירים; עבורם עושים fallback לשאילתת search engine ‏(<code>search_as_you_type</code> ב-Elasticsearch) או לא מחזירים כלום.</li>
 </ul>
@@ -164,7 +164,7 @@ Blocklist (config DB -> pushed to all serving nodes in seconds):
 </ul>`,
         he: `<ul>
 <li><strong>Client</strong>: ‏debounce של ~50-100ms, ביטול בקשות שבדרך כשמגיעה הקשה חדשה (AbortController), ‏cache מקומי של תשובות לכל prefix, וכשהמשתמש ממשיך מ-"vi" ל-"vim" — סינון של הרשימה השמורה אם היא ארוכה מספיק.</li>
-<li><strong>Edge</strong>: תשובות אנונימיות ולא מותאמות אישית ל-prefixes קצרים זהות לכולם באותו locale → שומרים אותן ב-CDN עם <code>Cache-Control: public, max-age=300</code> לפי (locale, prefix). PoP של CDN נמצא ~10-20ms ממך, לעומת 50-150ms ל-region רחוק.</li>
+<li><strong>Edge</strong>: תשובות אנונימיות ולא מותאמות אישית ל-prefixes קצרים זהות לכולם באותו locale ← שומרים אותן ב-CDN עם <code>Cache-Control: public, max-age=300</code> לפי (locale, prefix). PoP של CDN נמצא ~10-20ms ממך, לעומת 50-150ms ל-region רחוק.</li>
 <li><strong>התאמה אישית בלי להרוג את ה-cache</strong>: מביאים את הרשימה הגלובלית מה-edge ואת ההיסטוריה של המשתמש בנפרד (או שומרים את 100 החיפושים האחרונים בדפדפן) וממזגים בצד הלקוח.</li>
 <li><strong>Server</strong>: הכל בזיכרון של התהליך; לכל היותר hop רשת אחד (Redis ל-trending והיסטוריה באותו AZ, ‏~0.5ms). נמנעים מ-fan-out בין shards: מחלקים לפי hash של ה-prefix המלא כך שבקשה נוגעת ב-shard אחד.</li>
 <li><strong>שימוש חוזר בחיבורים</strong>: HTTP/2 או HTTP/3 מול ה-edge כדי שהקשה לא תשלם על TCP ו-TLS handshakes (רק זה 2-3 RTTs).</li>
@@ -213,7 +213,7 @@ Blocklist (config DB -> pushed to all serving nodes in seconds):
     { q: { en: "How would you handle Hebrew typed on an English keyboard layout?",
            he: "איך היית מטפל בעברית שהוקלדה במקלדת באנגלית?" },
       a: { en: "Map the prefix through the keyboard layout (\"ahk\" → \"שלו\") when it yields no or poor results in the typed script, and query both; rank the converted results slightly lower unless the user's locale is he-IL. It is cheap: a fixed 1:1 character table and one extra lookup.",
-           he: "ממפים את ה-prefix דרך פריסת המקלדת (\"ahk\" → \"שלו\") כשבכתב שהוקלד אין תוצאות או שהן חלשות, ושואלים את שניהם; מדרגים את התוצאות המומרות קצת נמוך יותר, אלא אם ה-locale של המשתמש הוא he-IL. זה זול: טבלת תווים קבועה של 1:1 ו-lookup נוסף אחד." } }
+           he: "ממפים את ה-prefix דרך פריסת המקלדת (\"ahk\" ← \"שלו\") כשבכתב שהוקלד אין תוצאות או שהן חלשות, ושואלים את שניהם; מדרגים את התוצאות המומרות קצת נמוך יותר, אלא אם ה-locale של המשתמש הוא he-IL. זה זול: טבלת תווים קבועה של 1:1 ו-lookup נוסף אחד." } }
   ],
   related: ["algo-search-ranking", "db-search-engines", "arch-caching", "net-proxies-cdn", "redis-deep", "algo-edit-distance"]
 });
@@ -270,9 +270,9 @@ INFRA.designs.push({
     he: `<ul>
 <li><strong>קצב הורדה</strong>: ‏1B דפים ÷ ‏(30 × 86,400 שניות) ≈ <strong>~400 דפים בשנייה</strong>; מתכננים ל-1,000 בשנייה ב-peak.</li>
 <li><strong>רוחב פס</strong>: דף HTML ממוצע ~100KB לא דחוס (~30KB על הקו עם gzip או br). ‏400 × 100KB = ‏40MB/s ≈ <strong>320Mbps</strong> אחרי פענוח, ‏~100Mbps על הקו. זול.</li>
-<li><strong>אחסון</strong>: ‏1B × 100KB = <strong>100TB בחודש</strong> גולמי; דחוס (~4:1) ≈ <strong>25TB בחודש</strong> ב-object storage. שומרים 2-3 גרסאות אחרונות → ‏~75TB.</li>
+<li><strong>אחסון</strong>: ‏1B × 100KB = <strong>100TB בחודש</strong> גולמי; דחוס (~4:1) ≈ <strong>25TB בחודש</strong> ב-object storage. שומרים 2-3 גרסאות אחרונות ← ‏~75TB.</li>
 <li><strong>URL-seen set</strong>: ‏10B URLs. סט מדויק של fingerprints של 8 בייט = ‏80GB; ‏Bloom filter עם 1% false positives צריך ~9.6 ביט ל-URL ≈ <strong>12GB</strong> — נכנס ל-RAM, מחולק ל-shards לפי hash של ה-host.</li>
-<li><strong>מקביליות</strong>: כל הורדה לוקחת ~0.5-2 שניות (DNS + TCP + TLS + שרתים איטיים). ‏1,000 דפים בשנייה × ~1.5 שניות ≈ <strong>1,500 חיבורים פתוחים במקביל</strong>. עם async I/O, ‏worker אחד מחזיק ~500 → מספיקים כמה fetchers; ‏parsing ‏(~5-10ms CPU לדף) צריך ~10 vCPU. מריצים ~20 workers בשביל מרווח ובידוד.</li>
+<li><strong>מקביליות</strong>: כל הורדה לוקחת ~0.5-2 שניות (DNS + TCP + TLS + שרתים איטיים). ‏1,000 דפים בשנייה × ~1.5 שניות ≈ <strong>1,500 חיבורים פתוחים במקביל</strong>. עם async I/O, ‏worker אחד מחזיק ~500 ← מספיקים כמה fetchers; ‏parsing ‏(~5-10ms CPU לדף) צריך ~10 vCPU. מריצים ~20 workers בשביל מרווח ובידוד.</li>
 <li><strong>מגבלת politeness</strong>: ב-1 בקשה בשנייה ל-host, ‏1,000 דפים בשנייה דורשים לפחות 1,000 hosts שונים פעילים בו-זמנית — ה-frontier חייב לשזור hosts ולעולם לא לרוקן אתר אחד.</li>
 </ul>`
   },
@@ -377,7 +377,7 @@ Raw pages: s3://crawl/2026/11/14/<shard>/<warc-file>.warc.gz   (WARC format, ~1 
 <li><strong>robots.txt</strong>: מורידים פעם אחת לכל host, שומרים ב-cache ל-~24 שעות, ומתאימים לקבוצת User-agent הכי ספציפית. 4xx אומר "אין הגבלות"; ‏5xx או timeout אומר "להניח Disallow מלא" לזמן מה (RFC 9309). מכבדים את <code>Crawl-delay</code> ומשתמשים ב-sitemaps כמקור ל-URLs.</li>
 <li><strong>DNS הוא צוואר בקבוק נסתר</strong>: ‏1,000 הורדות בשנייה על הרבה hosts זה מאות lookups בשנייה; resolvers ציבוריים יגבילו אותך וכל lookup מוסיף 20-200ms. מריצים caching resolver מקומי (Unbound) בכל worker node, מכבדים TTLs עם רצפה (~5 דקות), ועושים resolve מראש ל-hosts שה-queue שלהם עומד להגיע לתורו.</li>
 <li><strong>Timeouts ומגבלות</strong>: connect של 5 שניות, סה"כ 30 שניות, ‏body מקסימלי 10MB (חותכים), עד 5 redirects, ומקבלים רק <code>text/html</code> וסוגים מאושרים. ‏host איטי אחד לעולם לא מחזיק thread של worker — ‏async I/O בכל מקום.</li>
-<li><strong>Backoff לפי סימנים</strong>: ‏429 או 503 → exponential backoff ל-host הזה וכיבוד של <code>Retry-After</code>; שיעור שגיאות עולה → חוצים את המקביליות שלו.</li>
+<li><strong>Backoff לפי סימנים</strong>: ‏429 או 503 ← exponential backoff ל-host הזה וכיבוד של <code>Retry-After</code>; שיעור שגיאות עולה ← חוצים את המקביליות שלו.</li>
 <li><strong>להזדהות</strong>: ‏User-Agent ברור עם URL ליצירת קשר, טווחי IP מפורסמים ושם reverse-DNS, כדי שאדמינים יוכלו לאמת אותך במקום לחסום.</li>
 </ul>`
       }
@@ -394,7 +394,7 @@ Raw pages: s3://crawl/2026/11/14/<shard>/<warc-file>.warc.gz   (WARC format, ~1 
         he: `<p><strong>Recrawl</strong>: עם 10B URLs ידועים ו-1B הורדות בחודש אפשר לבקר מחדש רק ב-10% בחודש, אז משקיעים את התקציב איפה שזה חשוב. מעריכים לכל דף קצב שינוי λ מההיסטוריה (השתנה k מתוך n הביקורים האחרונים — מודל Poisson), וקובעים את המרווח הבא ≈ ‏1/λ, חתוך בין 5 דקות (דפי בית של חדשות) ל-6 חודשים, ומשוקלל לפי חשיבות. ‏Sitemaps עם <code>lastmod</code> ו-push signals ‏(IndexNow, ‏RSS או WebSub) עדיפים על ניחוש.</p>
 <p><strong>מלכודות</strong> הן מרחבי URL אינסופיים, בטעות או בכוונה:</p>
 <ul>
-<li>לוחות שנה (<code>/calendar?month=2026-12</code> → הבא → הבא… לנצח), צירופים של faceted search, ‏session IDs בתוך ה-path, ולולאות <code>/a/b/a/b/a/b/</code> מלינקים יחסיים.</li>
+<li>לוחות שנה (<code>/calendar?month=2026-12</code> ← הבא ← הבא… לנצח), צירופים של faceted search, ‏session IDs בתוך ה-path, ולולאות <code>/a/b/a/b/a/b/</code> מלינקים יחסיים.</li>
 <li><strong>הגנות</strong>: אורך URL מקסימלי (~2,000 תווים), עומק path מקסימלי (~15), חוק נגד segments חוזרים ב-path, תקציב דפים לכל host לפי חשיבות ה-host (למשל 1,000 דפים לדומיין לא מוכר), ועצירת התרחבות ב-host שרוב הדפים החדשים שלו הם כמעט-כפילויות לפי SimHash.</li>
 </ul>`
       }
@@ -414,7 +414,7 @@ Raw pages: s3://crawl/2026/11/14/<shard>/<warc-file>.warc.gz   (WARC format, ~1 
     { q: { en: "A site owner complains you're overloading their server. What happened and what do you change?",
            he: "בעל אתר מתלונן שאתה מעמיס על השרת שלו. מה קרה ומה משנים?" },
       a: { en: "Usually many hostnames (shop.example.com, img.example.com, thousands of customer subdomains) resolve to the same IP, and politeness was enforced per hostname only. Enforce a second budget per IP / per registered domain (eTLD+1), adapt to response time (slower responses → longer delay), and offer a self-service crawl-rate setting. Short term: pause the domain immediately.",
-           he: "בדרך כלל הרבה hostnames ‏(shop.example.com, ‏img.example.com, אלפי subdomains של לקוחות) מצביעים לאותו IP, וה-politeness נאכף רק לפי hostname. אוכפים תקציב שני לכל IP או לכל דומיין רשום (eTLD+1), מתאימים לזמן התגובה (תגובות איטיות → השהיה ארוכה יותר), ומציעים הגדרת קצב crawl בשירות עצמי. בטווח הקצר: עוצרים מיד את הדומיין." } },
+           he: "בדרך כלל הרבה hostnames ‏(shop.example.com, ‏img.example.com, אלפי subdomains של לקוחות) מצביעים לאותו IP, וה-politeness נאכף רק לפי hostname. אוכפים תקציב שני לכל IP או לכל דומיין רשום (eTLD+1), מתאימים לזמן התגובה (תגובות איטיות ← השהיה ארוכה יותר), ומציעים הגדרת קצב crawl בשירות עצמי. בטווח הקצר: עוצרים מיד את הדומיין." } },
     { q: { en: "How do you scale the URL-seen Bloom filter past one machine and survive restarts?",
            he: "איך מגדילים את ה-Bloom filter של URL-seen מעבר למכונה אחת ושורדים restarts?" },
       a: { en: "Shard it by hash(host) together with the frontier, so the check is local to the frontier node that will enqueue the URL. Snapshot each shard to disk periodically and replay URLs enqueued since the snapshot from the frontier log. When a shard nears its design capacity (false-positive rate climbing), add a new, larger filter layer (scalable Bloom filter) rather than rebuilding.",
@@ -480,7 +480,7 @@ INFRA.designs.push({
 </ul>`,
     he: `<ul>
 <li><strong>הגעה</strong>: ‏2M משתמשים ב-~10 דקות ≈ <strong>3,300 משתמשים חדשים בשנייה</strong>, ובדקה הראשונה הרבה יותר (~20K בשנייה כשכולם עושים refresh ב-10:00:00).</li>
-<li><strong>ביקוש מול היצע</strong>: ‏50K מקומות ÷ ‏~3.5 כרטיסים להזמנה ≈ <strong>~14K הזמנות</strong> בלבד יכולות להצליח. ‏2M משתמשים שרודפים אחרי 14K הזמנות → יותר מ-99% יצאו בידיים ריקות; התפקיד של המערכת הוא להגיד את זה מהר ובהוגנות, לא לתת ל-2M אנשים להפציץ את ה-DB של המקומות.</li>
+<li><strong>ביקוש מול היצע</strong>: ‏50K מקומות ÷ ‏~3.5 כרטיסים להזמנה ≈ <strong>~14K הזמנות</strong> בלבד יכולות להצליח. ‏2M משתמשים שרודפים אחרי 14K הזמנות ← יותר מ-99% יצאו בידיים ריקות; התפקיד של המערכת הוא להגיד את זה מהר ובהוגנות, לא לתת ל-2M אנשים להפציץ את ה-DB של המקומות.</li>
 <li><strong>קצב הכנסה</strong>: checkout לוקח ~3-5 דקות. כדי להחזיק ~5K משתמשים בשלב "בחירת מקומות" בו-זמנית, מכניסים ~<strong>1,000-2,000 משתמשים בדקה</strong>. האירוע נמכר בערך תוך 15-30 דקות; התור אומר לכל השאר את המיקום שלהם וזמן המתנה משוער.</li>
 <li><strong>קריאות של מפת המקומות</strong>: ‏5K משתמשים שהוכנסו ועושים refresh כל ~3 שניות ≈ ‏1.7K בקשות בשנייה למפה — זניח אם מגישים מ-bitmap זמינות ב-cache: ‏50K מקומות × 2 ביט (פנוי, מוחזק, נמכר) ≈ <strong>12.5KB לאירוע</strong>.</li>
 <li><strong>כתיבות hold</strong>: ‏~14K holds מוצלחים ועוד פי כמה התנגשויות ≈ <strong>~100-300 ניסיונות hold בשנייה</strong> ב-peak, מרוכזים באזורים הטובים — ה-hot spot הוא כמה אלפי שורות.</li>
@@ -574,7 +574,7 @@ COMMIT;</pre>
 <ul>
 <li><strong>הכל או כלום</strong>: קבוצה של 4 מקומות צמודים או שכולם מוחזקים או שאף אחד — ה-rollback מבטיח את זה.</li>
 <li><strong>תפוגה עצלה</strong> בנויה לתוך ה-WHERE (hold שפג שווה למקום פנוי), כך שהנכונות לא תלויה ב-worker של התפוגה; ה-worker רק מעדכן את מפת המקומות מהר יותר.</li>
-<li><strong>אישור</strong> הוא עוד conditional update: <code>SET status='sold', order_id=$o WHERE hold_id=$hold AND status='held'</code>. אם ה-hold פג ומישהו אחר תפס את המקום, ‏0 שורות → מחזירים את הכסף אוטומטית.</li>
+<li><strong>אישור</strong> הוא עוד conditional update: <code>SET status='sold', order_id=$o WHERE hold_id=$hold AND status='held'</code>. אם ה-hold פג ומישהו אחר תפס את המקום, ‏0 שורות ← מחזירים את הכסף אוטומטית.</li>
 <li><strong>למה לא רק locks ב-Redis?</strong> <code>SET seat NX PX 480000</code> מהיר וטוב כמסנן קדמי, אבל failover של Redis יכול לאבד כתיבות אחרונות; ה-conditional update ב-DB נשאר ה-source of truth. משתמשים ב-Redis כדי לדחות התנגשויות ברורות לפני שהן נוגעות ב-Postgres.</li>
 <li><strong>Contention</strong>: ‏~300 ניסיונות hold בשנייה על אירוע אחד זה נוח ל-primary יחיד של Postgres (ה-row locks הם לכל מקום, טרנזקציה לוקחת ~2-5ms). מחלקים לפי <code>event_id</code> כדי שמכירה ענקית אחת לא תפגע באירועים אחרים.</li>
 </ul>`
@@ -681,7 +681,7 @@ COMMIT;</pre>
     { q: { en: "Why not just use SELECT ... FOR UPDATE on the seat rows?",
            he: "למה לא פשוט להשתמש ב-SELECT ... FOR UPDATE על שורות המקומות?" },
       a: { en: "You can, but under heavy contention hundreds of transactions queue on the same hot rows, holding connections and causing lock-wait timeouts and connection-pool exhaustion. A single conditional UPDATE fails fast (0 rows → 409) with no waiting, and SKIP LOCKED for best-available picks free seats without queuing. Keep transactions short and never call the payment provider while holding a row lock.",
-           he: "אפשר, אבל תחת contention כבד מאות טרנזקציות עומדות בתור על אותן שורות חמות, מחזיקות connections וגורמות ל-lock-wait timeouts ולמיצוי ה-connection pool. ‏UPDATE מותנה יחיד נכשל מהר (0 שורות → 409) בלי לחכות, ו-SKIP LOCKED ל-best-available בוחר מקומות פנויים בלי לעמוד בתור. שומרים על טרנזקציות קצרות ולעולם לא קוראים לספק התשלומים בזמן שמחזיקים row lock." } }
+           he: "אפשר, אבל תחת contention כבד מאות טרנזקציות עומדות בתור על אותן שורות חמות, מחזיקות connections וגורמות ל-lock-wait timeouts ולמיצוי ה-connection pool. ‏UPDATE מותנה יחיד נכשל מהר (0 שורות ← 409) בלי לחכות, ו-SKIP LOCKED ל-best-available בוחר מקומות פנויים בלי לעמוד בתור. שומרים על טרנזקציות קצרות ולעולם לא קוראים לספק התשלומים בזמן שמחזיקים row lock." } }
   ],
   related: ["pr-idempotency", "db-transactions", "pr-race-deadlock", "pr-rate-limiters", "net-ddos-edge", "staff-overload-metastable", "redis-deep"]
 });
@@ -739,8 +739,8 @@ INFRA.designs.push({
 <li><strong>נתוני מקומות</strong>: ‏200M מקומות × ~1KB (שם, כתובת, שעות, קטגוריה, דירוג) ≈ <strong>200GB</strong> — ב-DB רגיל.</li>
 <li><strong>Geo index של מקומות</strong>: רק (place_id של 8B, ‏cell_id של 8B, ‏lat/lng של 8B) ≈ ‏24B ‏+ overhead ≈ ‏50B × 200M ≈ <strong>10GB</strong> — נכנס ל-RAM בכל replica. לא צריך sharding לאינדקס; משכפלים בשביל QPS.</li>
 <li><strong>עומס חיפוש מקומות</strong>: ‏100M DAU × 5 חיפושים ≈ ‏500M ביום ≈ ‏6K QPS בממוצע, <strong>~20K QPS</strong> ב-peak. כל שאילתה בודקת ~9 תאים ומחזירה ~20-50 מועמדים — כמה replicas מטפלים בזה; שומרים ב-cache אזורים פופולריים (מרכזי ערים) ל-1-5 דקות.</li>
-<li><strong>עדכוני נהגים</strong>: ‏1M נהגים מחוברים ÷ 4 שניות = <strong>250K כתיבות בשנייה</strong>. כל עדכון ~100B → ‏25MB/s נכנסים. ה-state הנוכחי של כל הנהגים: ‏1M × ~100B ≈ <strong>100MB</strong> — זעיר. האתגר הוא קצב הכתיבה וה-churn של האינדקס, לא הגודל.</li>
-<li><strong>לפי עיר</strong>: עיר גדולה מגיעה ב-peak ל-~30-50K נהגים מחוברים → ‏~10K כתיבות בשנייה, נכנס בנוחות ל-shard אחד של Redis ‏(~100K ops/s).</li>
+<li><strong>עדכוני נהגים</strong>: ‏1M נהגים מחוברים ÷ 4 שניות = <strong>250K כתיבות בשנייה</strong>. כל עדכון ~100B ← ‏25MB/s נכנסים. ה-state הנוכחי של כל הנהגים: ‏1M × ~100B ≈ <strong>100MB</strong> — זעיר. האתגר הוא קצב הכתיבה וה-churn של האינדקס, לא הגודל.</li>
+<li><strong>לפי עיר</strong>: עיר גדולה מגיעה ב-peak ל-~30-50K נהגים מחוברים ← ‏~10K כתיבות בשנייה, נכנס בנוחות ל-shard אחד של Redis ‏(~100K ops/s).</li>
 <li><strong>בקשות נסיעה</strong>: ‏~20M נסיעות ביום ≈ ‏230 בשנייה בממוצע, ‏~1-2K בשנייה ב-peak. כל אחת מפעילה שאילתת קרבה אחת + קריאות ETA ל-~10-20 מועמדים.</li>
 </ul>`
   },
@@ -822,7 +822,7 @@ Trips (Postgres/Spanner, strongly consistent):
 <li><strong>Density</strong>: 1 km in central Tel Aviv may hold 2,000 restaurants and 0 in the Negev — cap candidates per cell and rank, and expand radius adaptively in sparse areas.</li>
 </ul>`,
         he: `<ul>
-<li><strong>שאילתה</strong>: מחשבים את התא של (lat, lng) ברזולוציה שמתאימה לרדיוס (1 ק"מ → geohash 6 או H3 res 8), מביאים את התא + השכנים, ואז מחשבים מרחק haversine מדויק על ~50-500 מועמדים ומסננים וממיינים. אם יש מעט מדי תוצאות, מרחיבים לרמה הגסה הבאה.</li>
+<li><strong>שאילתה</strong>: מחשבים את התא של (lat, lng) ברזולוציה שמתאימה לרדיוס (1 ק"מ ← geohash 6 או H3 res 8), מביאים את התא + השכנים, ואז מחשבים מרחק haversine מדויק על ~50-500 מועמדים ומסננים וממיינים. אם יש מעט מדי תוצאות, מרחיבים לרמה הגסה הבאה.</li>
 <li><strong>קודם האפשרות הפשוטה</strong>: ‏200M שורות ב-Postgres עם PostGIS ואינדקס GIST, עם שאילתה <code>ST_DWithin(geog, ST_MakePoint(lng,lat)::geography, 1000)</code>, ועוד read replicas — מטפל באלפי QPS. ‏Elasticsearch עם <code>geo_distance</code> אם צריך גם חיפוש טקסט ו-facets.</li>
 <li><strong>Scale לקריאות</strong>: האינדקס (~10GB) נכנס ל-RAM, אז <strong>משכפלים, לא עושים sharding</strong>: N replicas זהים ו-stateless מאחורי load balancer, כל אחד טוען snapshot לילי ועוד stream של CDC עם עריכות.</li>
 <li><strong>Cache</strong>: מעגלים את השאילתה לתא (ולא לקואורדינטה המדויקת) כדי ששכנים יחלקו רשומות cache: מפתח = (cell, radius, category, open_now). תאים פופולריים במרכז העיר מגיעים ל-80% hit ומעלה.</li>
@@ -842,8 +842,8 @@ Trips (Postgres/Spanner, strongly consistent):
 </ul>`,
         he: `<ul>
 <li><strong>Ingest</strong>: נהגים מחזיקים stream של WebSocket או gRPC מול location gateway ‏(sticky לפי עיר). ה-gateway מוודא תקינות (סבירות מהירות — קפיצות של 300 קמ"ש הן תקלות GPS או זיוף), כותב את המיקום האחרון ל-store בזיכרון של העיר ומפרסם ל-Kafka בשביל אנליטיקה ואימון מודלי ETA.</li>
-<li><strong>Store של אחרון בלבד</strong>: בנתיב החם צריך מיקום נוכחי, לא היסטוריה. ‏Redis <code>GEOADD drivers:tlv:available</code> דורס במקום (O(log N)), ו-<code>GEOSEARCH ... BYRADIUS 2 km ASC COUNT 20</code> עונה על שאילתות קרבה. שינוי סטטוס (פנוי → בנסיעה) מעביר את הנהג בין sets. ‏Hash של <code>driver:{id}</code> עם TTL של 30 שניות תופס נהגים שהאפליקציה שלהם מתה.</li>
-<li><strong>אלטרנטיבה</strong>: שירות בזיכרון לפי תא H3 ‏(map של תא → set של נהגים); בעדכון, אם התא השתנה, מעבירים את הנהג (~5% מהעדכונים). בערך מה ש-Uber בנו (שירותים עם sharding של Ringpop).</li>
+<li><strong>Store של אחרון בלבד</strong>: בנתיב החם צריך מיקום נוכחי, לא היסטוריה. ‏Redis <code>GEOADD drivers:tlv:available</code> דורס במקום (O(log N)), ו-<code>GEOSEARCH ... BYRADIUS 2 km ASC COUNT 20</code> עונה על שאילתות קרבה. שינוי סטטוס (פנוי ← בנסיעה) מעביר את הנהג בין sets. ‏Hash של <code>driver:{id}</code> עם TTL של 30 שניות תופס נהגים שהאפליקציה שלהם מתה.</li>
+<li><strong>אלטרנטיבה</strong>: שירות בזיכרון לפי תא H3 ‏(map של תא ← set של נהגים); בעדכון, אם התא השתנה, מעבירים את הנהג (~5% מהעדכונים). בערך מה ש-Uber בנו (שירותים עם sharding של Ringpop).</li>
 <li><strong>Sharding לפי עיר או region</strong>, לא לפי driver_id: שאילתת קרבה חייבת לפגוע ב-shard אחד. ערים גדולות מתפצלות לתתי-אזורים לפי תאי H3 ברזולוציה 4-5; שאילתות ליד גבול בודקות שני shards.</li>
 <li><strong>Durability</strong>: לא צריך למיקום נוכחי — ב-failover של Redis מאבדים עד 4 שניות של state והוא מתמלא מהעדכונים הבאים.</li>
 </ul>`
@@ -859,7 +859,7 @@ Trips (Postgres/Spanner, strongly consistent):
 <li><strong>Idempotency</strong>: the trip request carries an Idempotency-Key, so a rider double-tap doesn't create two trips searching for two drivers.</li>
 </ol>`,
         he: `<ol>
-<li><strong>מועמדים</strong>: ‏k-ring של תאי H3 סביב נקודת האיסוף (או GEOSEARCH של 3 ק"מ), סינון לפי סטטוס, סוג רכב ודירוג → ‏~20 נהגים.</li>
+<li><strong>מועמדים</strong>: ‏k-ring של תאי H3 סביב נקודת האיסוף (או GEOSEARCH של 3 ק"מ), סינון לפי סטטוס, סוג רכב ודירוג ← ‏~20 נהגים.</li>
 <li><strong>דירוג לפי ETA, לא מרחק</strong>: קוראים ל-routing engine ‏(גרף כבישים + תנועה חיה) עבור ~20 המועמדים בבקשה אחת ב-batch ‏(~20-50ms). אפשר גם batch matching: אוספים בקשות במשך ~2 שניות ופותרים בעיית שיבוץ על פני נוסעים ונהגים, מה שעדיף על greedy ב-peak.</li>
 <li><strong>הצעה עם lease</strong>: תופסים את הנהג באופן אטומי: <code>INSERT INTO driver_assignment(driver_id, trip_id, lease_until) ... ON CONFLICT DO NOTHING</code> (או Redis <code>SET driver:lock:{id} trip NX EX 15</code> עם DB מאחור). רק המנצח שולח את ההצעה; לנהג יש 15 שניות לאשר, אחרת ה-lease פג ומנסים את המועמד הבא.</li>
 <li><strong>Idempotency</strong>: בקשת הנסיעה נושאת Idempotency-Key, כך שדאבל-טאפ של נוסע לא יוצר שתי נסיעות שמחפשות שני נהגים.</li>
@@ -946,10 +946,10 @@ INFRA.designs.push({
 <li><strong>Fan-out</strong>: each op goes to the other N-1 editors of that doc; with avg 2-3 per doc, outbound ≈ 2× inbound ≈ 2M messages/s.</li>
 </ul>`,
     he: `<ul>
-<li><strong>חיבורים</strong>: ‏3M עורכים במקביל + צופים ≈ ‏4M WebSockets. ב-~50K חיבורים ל-gateway node ‏(זיכרון של ~20-40KB לכל אחד) → ‏~80 nodes; מריצים <strong>~120</strong> על פני regions בשביל מרווח ו-failover.</li>
-<li><strong>פעולות</strong>: משתמש שמקליד מייצר ~5 הקשות בשנייה, אבל ה-clients מקבצים לפעולה אחת כל ~100-200ms, ורוב הסשנים הפתוחים במנוחה → ממוצע של ~0.3 פעולות בשנייה לעורך → <strong>~1M פעולות בשנייה</strong> ב-peak על פני ~1M מסמכים פעילים (≈ פעולה אחת בשנייה למסמך; מסמך עמוס עם 20 מקלידים רואה ~100 פעולות בשנייה).</li>
-<li><strong>גודל פעולה</strong>: ‏~100-300B עם metadata → ‏~200MB/s ל-op log ב-peak.</li>
-<li><strong>אחסון פעולות</strong>: ממוצע של ~300K פעולות בשנייה × 86,400 ≈ ‏26B פעולות ביום × 200B ≈ <strong>5TB ביום</strong> גולמי. עושים snapshot כל ~1,000 פעולות או 5 דקות; אחרי 30 יום דוחסים פעולות עדינות ישנות ל-checkpoints גסים יותר של היסטוריה → הגדילה לטווח ארוך הרבה מתחת ל-1TB ביום.</li>
+<li><strong>חיבורים</strong>: ‏3M עורכים במקביל + צופים ≈ ‏4M WebSockets. ב-~50K חיבורים ל-gateway node ‏(זיכרון של ~20-40KB לכל אחד) ← ‏~80 nodes; מריצים <strong>~120</strong> על פני regions בשביל מרווח ו-failover.</li>
+<li><strong>פעולות</strong>: משתמש שמקליד מייצר ~5 הקשות בשנייה, אבל ה-clients מקבצים לפעולה אחת כל ~100-200ms, ורוב הסשנים הפתוחים במנוחה ← ממוצע של ~0.3 פעולות בשנייה לעורך ← <strong>~1M פעולות בשנייה</strong> ב-peak על פני ~1M מסמכים פעילים (≈ פעולה אחת בשנייה למסמך; מסמך עמוס עם 20 מקלידים רואה ~100 פעולות בשנייה).</li>
+<li><strong>גודל פעולה</strong>: ‏~100-300B עם metadata ← ‏~200MB/s ל-op log ב-peak.</li>
+<li><strong>אחסון פעולות</strong>: ממוצע של ~300K פעולות בשנייה × 86,400 ≈ ‏26B פעולות ביום × 200B ≈ <strong>5TB ביום</strong> גולמי. עושים snapshot כל ~1,000 פעולות או 5 דקות; אחרי 30 יום דוחסים פעולות עדינות ישנות ל-checkpoints גסים יותר של היסטוריה ← הגדילה לטווח ארוך הרבה מתחת ל-1TB ביום.</li>
 <li><strong>מסמכים</strong>: ‏~5B מסמכים × ~10KB בממוצע אחרי דחיסה ≈ <strong>~50TB</strong> של snapshots נוכחיים (היסטוריה ו-op logs מוסיפים פי כמה) — ב-object storage, עם metadata ב-DB מחולק ל-shards. ה-hot set (מסמכים שנפתחו השבוע) הוא חלק קטנטן.</li>
 <li><strong>Fan-out</strong>: כל פעולה נשלחת ל-N-1 העורכים האחרים של המסמך; עם ממוצע של 2-3 למסמך, היוצא ≈ פי 2 מהנכנס ≈ ‏2M הודעות בשנייה.</li>
 </ul>`

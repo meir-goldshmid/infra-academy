@@ -565,7 +565,7 @@ Snowflake (64 bits)
         he: `<table>
 <tr><th>ID</th><th>גודל</th><th>ממוין</th><th>תיאום</th><th>הערות</th></tr>
 <tr><td>BIGSERIAL</td><td>8 B</td><td>כן</td><td>Sequence אחד ב-DB</td><td>חושף נפח; קשה למזג/לעשות shard</td></tr>
-<tr><td>UUID v4</td><td>16 B</td><td>לא</td><td>אין</td><td>אקראי → page splits ב-B-tree</td></tr>
+<tr><td>UUID v4</td><td>16 B</td><td>לא</td><td>אין</td><td>אקראי ← page splits ב-B-tree</td></tr>
 <tr><td>UUID v7</td><td>16 B</td><td>לפי ms</td><td>אין</td><td>RFC 9562 (2024); ברירת המחדל הכי טובה</td></tr>
 <tr><td>ULID</td><td>16 B</td><td>לפי ms</td><td>אין</td><td>26 תווים ב-Crockford Base32</td></tr>
 <tr><td>Snowflake</td><td>8 B</td><td>לפי ms</td><td>Worker id</td><td>נכנס ל-bigint; Twitter, Discord</td></tr>
@@ -808,7 +808,7 @@ INFRA.lessons.push({
 <tr><td>תפעול</td><td>N deploys, N שדרוגים</td><td>Deploy אחד</td><td>לפי שכבות</td></tr>
 <tr><td>מתאים ל-</td><td>בנקים, ממשלה, רגולציה, tenants ענקיים</td><td>SaaS ל-SMB, freemium</td><td>"Enterprise tier" מעל pool</td></tr>
 </table>
-<p>רוב ה-SaaS הבוגרים מגיעים ל-<strong>מדרג</strong>: tenants של free/pro ב-pool, tenants של enterprise על DB ייעודי או cell ייעודי — אותו קוד, ועוד טבלת ניתוב tenant→placement.</p>
+<p>רוב ה-SaaS הבוגרים מגיעים ל-<strong>מדרג</strong>: tenants של free/pro ב-pool, tenants של enterprise על DB ייעודי או cell ייעודי — אותו קוד, ועוד טבלת ניתוב tenant←placement.</p>
 <blockquote>💡 מהשטח: Slack, Atlassian ו-Salesforce משתמשים כולם בארכיטקטורת cells/pods: tenant מוצמד ל-cell אחד (עותק מלא של ה-stack), אז deploy גרוע או tenant רועש פוגעים רק בלקוחות של אותו cell.</blockquote>`
       }
     },
@@ -1905,7 +1905,7 @@ aws s3api put-object --bucket b --key k --body f \
       /        \             /        \
    H1(blk1) H2(blk2)    H3(blk3)  H4(blk4)
 replicas disagree? compare root -&gt; H34 -&gt; H4 -&gt; sync blk4 only</pre>`,
-        he: `<p>תכונות: דטרמיניסטי, גודל קבוע, אפקט מפולת (ביט אחד בקלט → ~50% מהביטים בפלט מתהפכים), עמידות ל-preimage, עמידות להתנגשויות. <strong>MD5 ו-SHA-1 שבורים לאבטחה</strong> (התנגשויות מעשיות: הנוזקה Flame ב-2012 זייפה תעודה של Microsoft עם MD5; SHAttered ב-2017 ל-SHA-1). בסדר כ-checksums לא עוינים, אף פעם לא לחתימות או לשלמות מול תוקפים.</p>
+        he: `<p>תכונות: דטרמיניסטי, גודל קבוע, אפקט מפולת (ביט אחד בקלט ← ~50% מהביטים בפלט מתהפכים), עמידות ל-preimage, עמידות להתנגשויות. <strong>MD5 ו-SHA-1 שבורים לאבטחה</strong> (התנגשויות מעשיות: הנוזקה Flame ב-2012 זייפה תעודה של Microsoft עם MD5; SHAttered ב-2017 ל-SHA-1). בסדר כ-checksums לא עוינים, אף פעם לא לחתימות או לשלמות מול תוקפים.</p>
 <ul>
 <li><strong>Content addressing</strong>: השם <em>הוא</em> ה-hash. אובייקטים ב-Git (SHA-1, במעבר ל-SHA-256), digests של Docker images (<code>sha256:...</code> — בפרוד מצמידים אותם, לא tags), IPFS, ה-store של Nix, build caches (Bazel).</li>
 <li><strong>Dedupe</strong>: כלי גיבוי (restic, borg) מחלקים קבצים ל-chunks ושומרים כל chunk פעם אחת לפי hash.</li>
@@ -2003,7 +2003,7 @@ store a password? -> argon2id (slow + salt)`,
     { cmd: "echo -n hello | sha256sum; echo -n hellp | sha256sum", what: { en: "See the avalanche effect: one letter changes the entire digest.", he: "רואים את אפקט המפולת: אות אחת משנה את כל ה-digest." } },
     { cmd: "echo -n '1700000000.{\"id\":1}' | openssl dgst -sha256 -hmac 'whsec_test'", what: { en: "Compute an HMAC-SHA256 webhook signature by hand.", he: "מחשבים חתימת webhook של HMAC-SHA256 ידנית." } },
     { cmd: "docker buildx imagetools inspect nginx:1.27 | head -5", what: { en: "Get the immutable sha256 digest behind a mutable tag — pin that in production.", he: "מקבלים את ה-digest הבלתי משתנה מאחורי tag משתנה — אותו מצמידים בפרודקשן." } },
-    { cmd: "git cat-file -p HEAD && git rev-parse HEAD^{tree}", what: { en: "Explore Git's content-addressed Merkle structure: commit → tree hashes.", he: "חוקרים את מבנה ה-Merkle של Git לפי תוכן: commit → hashes של tree." } }
+    { cmd: "git cat-file -p HEAD && git rev-parse HEAD^{tree}", what: { en: "Explore Git's content-addressed Merkle structure: commit → tree hashes.", he: "חוקרים את מבנה ה-Merkle של Git לפי תוכן: commit ← hashes של tree." } }
   ],
   mnemonic: {
     en: "\"Count the boxes (checksum), fingerprint the goods (hash), seal with our stamp (HMAC), notarize (signature), lock the truck (encryption).\"",
@@ -2254,7 +2254,7 @@ BITCOUNT both
 <li><strong>Bitmap indexes</strong> (ClickHouse, Druid, Roaring bitmaps ב-Elasticsearch/Lucene) עונים על "country=IL AND plan=pro" עם AND אחד על bitsets דחוסים.</li>
 <li><strong>Bloom filter</strong>: m ביטים, k hashes; הוספה = הדלקת k ביטים; בדיקה = כל k דולקים? 10 ביט לפריט, k=7 ≈ 1% false positive, אף פעם לא false negative.</li>
 <li><strong>IDs ארוזים</strong>: Snowflake = <code>(ms &lt;&lt; 22) | (worker &lt;&lt; 12) | seq</code>; מפענחים עם shifts ו-masks: <code>worker = (id &gt;&gt; 12) &amp; 0x3FF</code>.</li>
-<li><strong>טריקים של XOR</strong>: <code>a ^ a = 0</code>, <code>a ^ 0 = a</code> → XOR על כל המספרים מוצא את זה שאין לו זוג; parity של RAID 5 = XOR של בלוקי המידע, אז כל בלוק שאבד = XOR של השאר.</li>
+<li><strong>טריקים של XOR</strong>: <code>a ^ a = 0</code>, <code>a ^ 0 = a</code> ← XOR על כל המספרים מוצא את זה שאין לו זוג; parity של RAID 5 = XOR של בלוקי המידע, אז כל בלוק שאבד = XOR של השאר.</li>
 </ul>`
       }
     },
@@ -2463,7 +2463,7 @@ $ kubectl get secret db -o jsonpath='{.data.password}' \
 <tr><td>Hex</td><td>×2</td><td>Hashes, דיבאג של בתים (<code>sha256sum</code>)</td></tr>
 <tr><td>Base64</td><td>×4/3 (+33%)</td><td>קבצים מצורפים במייל (MIME), data: URIs, בינארי בתוך JSON, Secrets ב-k8s</td></tr>
 <tr><td>Base64url</td><td>+33%</td><td>JWT, URLs, שמות קבצים (<code>-</code> <code>_</code> במקום <code>+</code> <code>/</code>, בלי padding)</td></tr>
-<tr><td>Percent (URL)</td><td>עד ×3</td><td>Query strings: רווח → <code>%20</code>, ש → <code>%D7%A9</code></td></tr>
+<tr><td>Percent (URL)</td><td>עד ×3</td><td>Query strings: רווח ← <code>%20</code>, ש ← <code>%D7%A9</code></td></tr>
 </table>
 <pre>$ echo -n 'hi!' | base64           # aGkh
 $ echo -n 'secret' | base64        # c2VjcmV0

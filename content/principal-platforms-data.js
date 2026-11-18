@@ -217,7 +217,7 @@ CPU-bound : Go / Java / .NET / Rust  >>  Node / Python (offload!)`,
     { en: "Choosing a platform from a TechEmpower benchmark — your bottleneck is almost always the database or network, not the language.", he: "לבחור פלטפורמה לפי benchmark של TechEmpower — צוואר הבקבוק כמעט תמיד ה-DB או הרשת, לא השפה." },
     { en: "Running CPU-heavy work on the Node.js event loop or in Python threads (GIL) and wondering why p99 explodes.", he: "להריץ עבודת CPU כבדה על ה-event loop של Node או ב-threads של Python (GIL) ולתהות למה ה-p99 מתפוצץ." },
     { en: "Letting every team pick its own language: 6 stacks = 6× base images, CVE patching, libraries and on-call knowledge.", he: "לתת לכל צוות לבחור שפה משלו: 6 stacks = פי 6 base images, טלאי CVE, ספריות וידע on-call." },
-    { en: "Not matching JVM/V8 heap flags to the container memory limit → OOMKilled or wasted memory.", he: "לא להתאים את דגלי ה-heap של JVM/V8 ל-memory limit של הקונטיינר → OOMKilled או זיכרון מבוזבז." }
+    { en: "Not matching JVM/V8 heap flags to the container memory limit → OOMKilled or wasted memory.", he: "לא להתאים את דגלי ה-heap של JVM/V8 ל-memory limit של הקונטיינר ← OOMKilled או זיכרון מבוזבז." }
   ],
   interview: [
     { q: { en: "When would you NOT choose Node.js for a new service?", he: "מתי לא היית בוחר Node.js לשירות חדש?" },
@@ -252,7 +252,7 @@ INFRA.lessons.push({
   title: { en: "Big Data: Hadoop, Spark, Streaming, Lakehouse", he: "Big Data: Hadoop, Spark, Streaming ו-Lakehouse" },
   tldr: {
     en: "When data no longer fits one machine, you move the computation to the data: split files into blocks, process partitions in parallel (MapReduce → Spark), stream events with event-time windows (Flink), and store everything as columnar files in a lake with table formats (Iceberg/Delta).",
-    he: "כשהנתונים כבר לא נכנסים למכונה אחת, מזיזים את החישוב אל הנתונים: מפצלים קבצים לבלוקים, מעבדים partitions במקביל (MapReduce → Spark), מזרימים events עם חלונות לפי event-time (Flink), ושומרים הכול כקבצים עמודתיים ב-lake עם table formats (Iceberg/Delta)."
+    he: "כשהנתונים כבר לא נכנסים למכונה אחת, מזיזים את החישוב אל הנתונים: מפצלים קבצים לבלוקים, מעבדים partitions במקביל (MapReduce ← Spark), מזרימים events עם חלונות לפי event-time (Flink), ושומרים הכול כקבצים עמודתיים ב-lake עם table formats (Iceberg/Delta)."
   },
   analogy: {
     en: "Counting every word in a national library: one librarian would take 50 years. Instead you give each of 1,000 volunteers one shelf (map), each writes a tally sheet, then sorters collect all sheets for the letter A to one table, B to another (shuffle), and each table sums its letter (reduce). Hadoop is that, with the rule that volunteers sit next to their shelf (data locality). Spark is the same volunteers keeping their notes on the desk instead of filing them in the basement between every step (in-memory). Streaming is counting words in books as they arrive by conveyor belt — you must decide when 'the 9:00–9:05 batch' is complete even though some books arrive late (watermarks).",
@@ -310,7 +310,7 @@ if cur: print(f"{cur}\\t{n}")</pre>
 <p>The big idea that survived: <strong>move compute to data</strong> (schedule the mapper on the node holding the block) and <strong>shared-nothing parallelism</strong>. HDFS itself has mostly been replaced by object storage (S3/GCS/ADLS) which separates storage from compute.</p>`,
         he: `<ul>
 <li><strong>HDFS</strong>: קבצים מפוצלים לבלוקים של 128 MB, כל בלוק משוכפל <strong>פי 3</strong> בין DataNodes (rack-aware: 2 ב-rack אחד, 1 באחר). ה-<strong>NameNode</strong> מחזיק את המטא-דאטה (אילו בלוקים, איפה) ב-RAM — ה-SPOF ההיסטורי, שתוקן אחר כך עם standby ב-HA ו-JournalNodes. קבצים קטנים הורגים אותו: 100M קבצים זעירים = 100M אובייקטים בזיכרון של ה-NameNode.</li>
-<li><strong>MapReduce</strong>: map (פולט key/value) → shuffle ומיון לפי key על הרשת → reduce (אגרגציה לכל key). כל שלב כותב לדיסק.</li>
+<li><strong>MapReduce</strong>: map (פולט key/value) ← shuffle ומיון לפי key על הרשת ← reduce (אגרגציה לכל key). כל שלב כותב לדיסק.</li>
 <li><strong>YARN</strong>: מנהל המשאבים של הקלאסטר שמתזמן containers (הוא היה ה-"Kubernetes של Hadoop").</li>
 </ul>
 <pre># Word count — Hadoop Streaming with Python
@@ -434,7 +434,7 @@ GROUP BY window_start, window_end, country;</pre>
 <tr><td>דוגמאות</td><td>bucket גולמי ב-S3</td><td>Snowflake, BigQuery, Redshift</td><td>Databricks, Iceberg + Trino/Spark</td></tr>
 </table>
 <p><strong>Parquet</strong> הוא עמודתי + דחוס: שאילתה שקוראת 3 מתוך 80 עמודות קוראת ~4% מה-bytes; סטטיסטיקות min/max לכל row group מאפשרות למנועים לדלג על chunks שלמים. <strong>Iceberg/Delta</strong> מוסיפים מעליו transaction log: commits אטומיים, time travel (<code>FOR VERSION AS OF</code>), schema evolution, hidden partitioning, compaction.</p>
-<p><strong>ETL</strong> מבצע טרנספורמציה לפני הטעינה (הישן: Informatica, Spark מותאם). <strong>ELT</strong> טוען קודם גולמי, ואז מבצע טרנספורמציה בתוך ה-warehouse עם SQL (Fivetran/Airbyte → dbt). מתזמרים DAGs של jobs עם <strong>Airflow</strong>, Dagster או Prefect: תלויות, retries, backfills, SLAs.</p>
+<p><strong>ETL</strong> מבצע טרנספורמציה לפני הטעינה (הישן: Informatica, Spark מותאם). <strong>ELT</strong> טוען קודם גולמי, ואז מבצע טרנספורמציה בתוך ה-warehouse עם SQL (Fivetran/Airbyte ← dbt). מתזמרים DAGs של jobs עם <strong>Airflow</strong>, Dagster או Prefect: תלויות, retries, backfills, SLAs.</p>
 <pre>Sizing example: clickstream
  50M users x 40 events/day = 2B events/day ~ 23k ev/s avg, 70k peak
  1 KB JSON each = 2 TB/day raw -&gt; Parquet+zstd ~ 10x = 200 GB/day
@@ -471,7 +471,7 @@ Spark:      DAG of stages, intermediate data in memory, shuffle only on wide ops
   ],
   interview: [
     { q: { en: "Why did Spark replace MapReduce?", he: "למה Spark החליף את MapReduce?" },
-      a: { en: "MapReduce writes every stage to disk and forces jobs into map→reduce pairs, so multi-step and iterative jobs chain many disk-bound jobs. Spark plans a whole DAG, pipelines narrow transformations, keeps intermediates in memory, only shuffles on wide operations, and offers SQL/DataFrame APIs with a cost-based optimizer — 10–100× faster for iterative work and far easier to write.", he: "MapReduce כותב כל שלב לדיסק ומכריח jobs לזוגות של map→reduce, אז jobs רב-שלביים ואיטרטיביים משרשרים הרבה jobs שכבולים לדיסק. Spark מתכנן DAG שלם, עושה pipelining לטרנספורמציות narrow, מחזיק נתוני ביניים בזיכרון, עושה shuffle רק בפעולות wide, ומציע API של SQL/DataFrame עם optimizer מבוסס עלות — פי 10–100 מהר יותר לעבודה איטרטיבית והרבה יותר קל לכתוב." } },
+      a: { en: "MapReduce writes every stage to disk and forces jobs into map→reduce pairs, so multi-step and iterative jobs chain many disk-bound jobs. Spark plans a whole DAG, pipelines narrow transformations, keeps intermediates in memory, only shuffles on wide operations, and offers SQL/DataFrame APIs with a cost-based optimizer — 10–100× faster for iterative work and far easier to write.", he: "MapReduce כותב כל שלב לדיסק ומכריח jobs לזוגות של map←reduce, אז jobs רב-שלביים ואיטרטיביים משרשרים הרבה jobs שכבולים לדיסק. Spark מתכנן DAG שלם, עושה pipelining לטרנספורמציות narrow, מחזיק נתוני ביניים בזיכרון, עושה shuffle רק בפעולות wide, ומציע API של SQL/DataFrame עם optimizer מבוסס עלות — פי 10–100 מהר יותר לעבודה איטרטיבית והרבה יותר קל לכתוב." } },
     { q: { en: "Design a pipeline for real-time fraud scores plus accurate daily finance reports from the same events.", he: "תכנן pipeline ל-fraud scores בזמן אמת וגם לדוחות כספיים יומיים מדויקים מאותם events." },
       a: { en: "Events via CDC/outbox into Kafka (keyed by account). Flink consumes with event-time windows and keyed state for features and scoring, writing alerts within seconds. The same topic is sunk to S3 as Iceberg tables (bronze); nightly dbt/Spark builds silver/gold finance tables with late data included, reconciled against the ledger DB. One source of truth (the log), two consumers with different latency/accuracy — Kappa-style, with replay for bug fixes.", he: "Events דרך CDC/outbox ל-Kafka (עם key לפי חשבון). Flink צורך עם חלונות event-time ו-keyed state בשביל features ו-scoring, וכותב התראות תוך שניות. אותו topic נשפך ל-S3 כטבלאות Iceberg (bronze); כל לילה dbt/Spark בונים טבלאות silver/gold לכספים כולל data מאוחר, ומבצעים reconciliation מול ה-ledger DB. מקור אמת אחד (ה-log), שני consumers עם latency/דיוק שונים — בסגנון Kappa, עם replay לתיקוני באגים." } }
   ],
@@ -675,7 +675,7 @@ velero restore create \\
 </table>
 <p>דברים שאנשים שוכחים לגבות: <strong>Terraform state</strong>, <strong>מפתחות Vault/KMS</strong>, רשומות ה-<strong>DNS zone</strong>, <strong>קונפיג IdP/SSO</strong>, pipelines של CI/CD וה-secrets שלהם, data ב-SaaS (Jira, Google Workspace, GitHub org), וה-<strong>runbook לשחזור</strong> — שמור במקום שהוא לא המערכת שנפלה.</p>
 <p><strong>תרגולי שחזור</strong>: אוטומציה של job שבועי שמשחזר את הגיבוי האחרון לסביבה מבודדת, מריץ checksums/ספירת שורות/smoke tests של האפליקציה, רושם כמה זמן זה לקח (ה-RTO <em>האמיתי</em> שלך) ומתריע על כשל. Game day מלא של DR פעמיים בשנה.</p>
-<p><strong>עלות</strong>: DB של 10 TB, diff יומי ~3%, retention של 30 יום ≈ 4 fulls (40 TB) + 30 diffs (9 TB) ≈ 49 TB גולמי → דחוס ~20 TB → S3 Standard-IA ≈ $250 לחודש; עותקים שנתיים ב-Glacier עולים אגורות. גיבויים זולים; downtime ונתונים שאבדו — לא.</p>`
+<p><strong>עלות</strong>: DB של 10 TB, diff יומי ~3%, retention של 30 יום ≈ 4 fulls (40 TB) + 30 diffs (9 TB) ≈ 49 TB גולמי ← דחוס ~20 TB ← S3 Standard-IA ≈ $250 לחודש; עותקים שנתיים ב-Glacier עולים אגורות. גיבויים זולים; downtime ונתונים שאבדו — לא.</p>`
       }
     }
   ],

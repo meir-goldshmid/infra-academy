@@ -371,7 +371,7 @@ INFRA.lessons.push({
         he: `<ul>
 <li><strong>Layered (n-tier)</strong> — <code>UI → Service → Repository → DB</code>. אנלוגיה: עוגת שכבות. + מוכר, מהיר להתחיל. − שינויים חוצים את כל השכבות; לוגיקה עסקית דולפת לכל מקום; שכבות "בור" שרק מעבירות קריאות. מתאים ל: אפליקציות CRUD קטנות, כלים פנימיים.</li>
 <li><strong>Hexagonal / ports &amp; adapters</strong> — ה-domain במרכז, <em>ports</em> (interfaces) בקצוות, <em>adapters</em> מתחברים (HTTP, Kafka, Postgres, fake לבדיקות). אנלוגיה: לפטופ עם חיבורי USB-C. + הדומיין נבדק בלי תשתית; אפשר להחליף DB או broker. − יותר interfaces וקוד מיפוי. מתאים ל: core domains עם הרבה חוקים.</li>
-<li><strong>Clean / onion</strong> — אותו רעיון כמו hexagonal עם טבעות מפורשות (entities → use cases → interface adapters → frameworks); התלויות מצביעות <em>רק פנימה</em>.</li>
+<li><strong>Clean / onion</strong> — אותו רעיון כמו hexagonal עם טבעות מפורשות (entities ← use cases ← interface adapters ← frameworks); התלויות מצביעות <em>רק פנימה</em>.</li>
 <li><strong>Modular monolith</strong> — יחידת deploy אחת, הרבה מודולים עם גבולות נאכפים ו-schemas משלהם. אנלוגיה: בניין דירות. + deploy אחד, קריאות in-process, refactor קל, טרנזקציות כשצריך. − runtime אחד: memory leak במודול אחד פוגע בכולם; הסקייל הוא הכול-או-כלום. מתאים ל: רוב המוצרים החדשים וצוותים של עד ~30–50 מהנדסים.</li>
 <li><strong>Microkernel / plugin</strong> — core מינימלי ועוד plugins דרך extension API יציב. אנלוגיה: דפדפן וה-extensions שלו. דוגמאות: VS Code, Jenkins, Kubernetes (CRDs + controllers), Envoy filters. מתאים ל: מוצרים שהלקוחות מרחיבים.</li>
 </ul>

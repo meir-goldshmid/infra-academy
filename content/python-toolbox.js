@@ -777,7 +777,7 @@ INFRA.lessons.push({
   ],
   mnemonic: {
     en: "Numbers → NumPy, Notebook → pandas, Need speed → Polars, Questions on files → DuckDB. And never loop, never average a p99.",
-    he: "מספרים → NumPy, מחברת → pandas, צריך מהירות → Polars, שאלות על קבצים → DuckDB. ואף פעם לא לולאה, ואף פעם לא ממוצע של p99."
+    he: "מספרים ← NumPy, מחברת ← pandas, צריך מהירות ← Polars, שאלות על קבצים ← DuckDB. ואף פעם לא לולאה, ואף פעם לא ממוצע של p99."
   },
   pitfalls: [
     { en: "Averaging per-host or per-minute p99 values to get a fleet or daily p99. The result is meaningless (usually far too low). Recompute from raw samples or mergeable histograms.",

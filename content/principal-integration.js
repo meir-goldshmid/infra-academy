@@ -90,12 +90,12 @@ CREATE INDEX ON idempotency_keys (created_at); -- for TTL cleanup (e.g. 24h)</pr
 <p>האלגוריתם בשרת:</p>
 <ol>
 <li><code>INSERT ... (status='in_progress', locked_until=now()+30s) ON CONFLICT DO NOTHING RETURNING *</code>.</li>
-<li>הוכנס → הוא שלך. מבצעים את העבודה; <em>באותה טרנזקציה</em> של הכתיבה העסקית מעדכנים את השורה ל-<code>completed</code> עם התשובה, ומחזירים.</li>
-<li>Conflict → קוראים את השורה הקיימת:
-  <ul><li><code>request_hash</code> שונה → <strong>422</strong> "key שומש עם body אחר" (באג אצל ה-client).</li>
-  <li><code>completed</code> → מחזירים את הקוד וה-body השמורים (עם header <code>Idempotent-Replayed: true</code>).</li>
-  <li><code>in_progress</code> וה-lock עוד בתוקף → <strong>409 Conflict</strong> "בקשה בטיפול, נסה שוב" (כפילות במקביל — למשל double-click).</li>
-  <li><code>in_progress</code> וה-lock פג → ה-worker הקודם קרס; משתלטים עם <code>UPDATE ... WHERE locked_until &lt; now()</code>.</li></ul></li>
+<li>הוכנס ← הוא שלך. מבצעים את העבודה; <em>באותה טרנזקציה</em> של הכתיבה העסקית מעדכנים את השורה ל-<code>completed</code> עם התשובה, ומחזירים.</li>
+<li>Conflict ← קוראים את השורה הקיימת:
+  <ul><li><code>request_hash</code> שונה ← <strong>422</strong> "key שומש עם body אחר" (באג אצל ה-client).</li>
+  <li><code>completed</code> ← מחזירים את הקוד וה-body השמורים (עם header <code>Idempotent-Replayed: true</code>).</li>
+  <li><code>in_progress</code> וה-lock עוד בתוקף ← <strong>409 Conflict</strong> "בקשה בטיפול, נסה שוב" (כפילות במקביל — למשל double-click).</li>
+  <li><code>in_progress</code> וה-lock פג ← ה-worker הקודם קרס; משתלטים עם <code>UPDATE ... WHERE locked_until &lt; now()</code>.</li></ul></li>
 </ol>
 <p>אם העבודה קוראת למערכת חיצונית (רשת כרטיסי אשראי), מעבירים את ה-key גם <em>הלאה</em> (Stripe, Adyen, PayPal כולם מקבלים כזה) — האידמפוטנטיות שלך חזקה רק כמו ה-hop החלש ביותר.</p>
 <blockquote>⚠️ טיפ לפרודקשן: היזהר בשמירת כשלונות. שומרים שגיאות <strong>4xx</strong> של ולידציה (דטרמיניסטיות), אבל <em>לא</em> שומרים <strong>5xx</strong>/timeouts כסופיים — משחררים את ה-key כדי ש-retry באמת ינסה שוב. Stripe שומרים keys ל-24 שעות; בחר TTL ארוך מחלון ה-retry המקסימלי של ה-clients.</blockquote>`
@@ -124,7 +124,7 @@ COMMIT;                             -- then ack the message</pre>
 <li><strong>Set, לא increment.</strong> <code>UPDATE accounts SET balance = 70</code> אידמפוטנטי; <code>balance = balance - 30</code> לא. למונים — רושמים את ה-<em>event</em> עם id ייחודי וגוזרים את הסכום.</li>
 <li><strong>Upsert עם business key.</strong> <code>INSERT INTO orders (order_ref, ...) VALUES ('web-2026-11-13-8812', ...) ON CONFLICT (order_ref) DO NOTHING</code>. נותנים ל-client לבחור את ה-id (UUID) כדי ש-retry יפגע באותה שורה.</li>
 <li><strong>Conditional writes / optimistic concurrency.</strong> HTTP: <code>If-Match: "v7"</code> → <code>412 Precondition Failed</code> אם השתנה. SQL: <code>UPDATE ... SET status='SHIPPED', version=8 WHERE id=81 AND version=7</code>. DynamoDB: <code>ConditionExpression</code>. S3: <code>If-None-Match: *</code> ליצירה בלבד.</li>
-<li><strong>State machines.</strong> מעברים אידמפוטנטיים באופן טבעי אם בודקים את המצב הנוכחי: "סמן PAID" כשכבר PAID → no-op, מחזירים 200.</li>
+<li><strong>State machines.</strong> מעברים אידמפוטנטיים באופן טבעי אם בודקים את המצב הנוכחי: "סמן PAID" כשכבר PAID ← no-op, מחזירים 200.</li>
 <li><strong>IDs דטרמיניסטיים ל-side effects.</strong> מזהה מייל = <code>hash(user_id, "welcome")</code>; תור המיילים עושה dedupe עליו. ב-Kafka, producer עם <code>enable.idempotence=true</code> עושה dedupe בצד ה-broker לפי producer/partition/sequence.</li>
 </ul>
 <pre>-- consumer-side dedupe ("inbox"): side effect + dedupe in ONE transaction
@@ -307,7 +307,7 @@ INFRA.lessons.push({
 <tr><td>Streaming</td><td>לא (משתמשים ב-SSE/WebSockets)</td><td>streams של client, server ו-bidi</td><td>Subscriptions (על WS)</td></tr>
 <tr><td>Caching</td><td>HTTP caching / CDN מובנה</td><td>קשה</td><td>קשה (endpoint ‏POST יחיד)</td></tr>
 <tr><td>דפדפן</td><td>מובנה</td><td>צריך proxy של gRPC-Web</td><td>מובנה</td></tr>
-<tr><td>מלכודות</td><td>Over/under-fetching, הרבה קריאות</td><td>לא קריא על הרשת, LB חייב L7 (multiplexing של HTTP/2)</td><td>N+1 ב-resolvers, queries יקרות → צריך מגבלות depth/cost</td></tr>
+<tr><td>מלכודות</td><td>Over/under-fetching, הרבה קריאות</td><td>לא קריא על הרשת, LB חייב L7 (multiplexing של HTTP/2)</td><td>N+1 ב-resolvers, queries יקרות ← צריך מגבלות depth/cost</td></tr>
 </table>
 <p>קריאות sync מצמידות אותך <strong>בזמן</strong>: אם הצד השני למטה או איטי — גם אתה. זמינות מוכפלת: בקשה שנוגעת באופן סינכרוני ב-5 שירותים של 99.9% כל אחד היא לכל היותר 99.5% זמינה. Latency מצטבר (או המקסימום, אם במקביל). לכן: sync ל-queries שהמשתמש מחכה לתשובה שלהן; async ל-commands שההשפעה שלהם יכולה לקרות אחר כך.</p>
 <blockquote>💡 מהשטח: נקודת איזון נפוצה היא REST/JSON בקצה (API ציבורי, שותפים), gRPC בין שירותים פנימיים, GraphQL או BFF ל-UI של web/mobile, ו-events לכל מה ש"צריך לקרות אחרי".</blockquote>`
@@ -375,7 +375,7 @@ def verify(secret: bytes, body: bytes, header_sig: str, ts: int) -&gt; bool:
     "topic.prefix": "orders" } }</pre>
 <p><strong>File/batch transfer</strong> (SFTP, S3 "drop zones", nightly CSV/Parquet) is still how banks, insurers, governments and many partners integrate. Do it properly: write to a temp name then atomic rename (or a <code>_SUCCESS</code> marker), include a manifest with row counts + checksums, make loads idempotent by file name, and alert on "file did not arrive by 06:00".</p>
 <blockquote>⚠️ Production tip: raw CDC events expose your internal schema just like a shared DB. Prefer CDC of an <strong>outbox</strong> table (curated, versioned events) for consumers outside your team; raw-table CDC is fine for your own derived stores.</blockquote>`,
-        he: `<p><strong>DB משותף</strong> (שירות B קורא טבלאות של שירות A) הוא האינטגרציה הכי מהירה לבנות והכי יקרה להחזיק: ה-schema של A הופך ל-API של B בלי שאף אחד הסכים לזה. A משנה שם של עמודה → B נשבר בפרודקשן. A לא יכול לשנות אינדקסים, partitioning או אפילו מנוע DB. locks ו-queries כבדות של B פוגעות ב-A. כלל: <em>בעלים אחד לכל טבלה</em>; כל השאר עוברים דרך API, events, או read replica/view שפורסמו במפורש כחוזה.</p>
+        he: `<p><strong>DB משותף</strong> (שירות B קורא טבלאות של שירות A) הוא האינטגרציה הכי מהירה לבנות והכי יקרה להחזיק: ה-schema של A הופך ל-API של B בלי שאף אחד הסכים לזה. A משנה שם של עמודה ← B נשבר בפרודקשן. A לא יכול לשנות אינדקסים, partitioning או אפילו מנוע DB. locks ו-queries כבדות של B פוגעות ב-A. כלל: <em>בעלים אחד לכל טבלה</em>; כל השאר עוברים דרך API, events, או read replica/view שפורסמו במפורש כחוזה.</p>
 <p><strong>Change Data Capture (CDC)</strong>: מזרימים את השינויים ב-DB של הבעלים (מה-WAL/binlog) ל-bus בלי לגעת בקוד האפליקציה. Debezium קורא logical replication של Postgres ומוציא event ל-Kafka על כל שינוי שורה — מעולה להזנת search indexes, caches, data warehouses ולמיגרציה מ-monolith.</p>
 <pre># Debezium Postgres connector (Kafka Connect), trimmed
 { "name": "orders-cdc",
@@ -412,7 +412,7 @@ def verify(secret: bytes, body: bytes, header_sig: str, ts: int) -&gt; bool:
 <tr><td>לפי תאריך</td><td><code>Stripe-Version: 2024-06-20</code></td><td>החשבון מקובע לגרסה; השרת ממיר תשובות — ה-gold standard ל-APIs ציבוריים</td></tr>
 <tr><td>Protobuf</td><td>package <code>orders.v1</code></td><td>אף פעם לא ממחזרים מספרי שדות; <code>reserved 4;</code> לשדות שהוסרו</td></tr>
 </table>
-<p><strong>Deprecation</strong> הוא תהליך: מכריזים, מוסיפים headers של <code>Deprecation</code>/<code>Sunset</code>, מודדים מי עוד קורא לגרסה הישנה (metrics לפי client!), פונים אליהם, עושים brown-out (מכשילים 1% מהקריאות לשעה) לפני שמכבים. Expand → migrate → contract: משחררים את השדה החדש לצד הישן, מעבירים את הצרכנים, ואז מסירים.</p>
+<p><strong>Deprecation</strong> הוא תהליך: מכריזים, מוסיפים headers של <code>Deprecation</code>/<code>Sunset</code>, מודדים מי עוד קורא לגרסה הישנה (metrics לפי client!), פונים אליהם, עושים brown-out (מכשילים 1% מהקריאות לשעה) לפני שמכבים. Expand ← migrate ← contract: משחררים את השדה החדש לצד הישן, מעבירים את הצרכנים, ואז מסירים.</p>
 <blockquote>💡 מהשטח: מדריך ה-API של Google ‏(AIP) וה-versioning של Stripe הם המקורות הציבוריים הכי טובים. בפנים, "אי אפשר להימנע משבירת צרכנים שאתה לא מכיר" — לכן כל client חייב להזדהות (header עם שם השירות / זהות mTLS).</blockquote>`
       }
     },
@@ -476,7 +476,7 @@ def verify(secret: bytes, body: bytes, header_sig: str, ts: int) -&gt; bool:
     { en: "Integrating through another team's database 'just for this report' — six months later five services depend on its schema and it can never change.", he: "להתממשק דרך ה-DB של צוות אחר 'רק בשביל הדוח הזה' — חצי שנה אחר כך חמישה שירותים תלויים ב-schema שלו והוא לא יכול להשתנות לעולם." },
     { en: "Webhook handlers that do the slow work inline: the provider times out at 10–30 s, retries, and you process the same event three times in parallel.", he: "Webhook handlers שעושים את העבודה האיטית inline: הספק מגיע ל-timeout אחרי 10–30 שניות, עושה retry, ואתה מעבד את אותו event שלוש פעמים במקביל." },
     { en: "Adding a new enum value and calling it 'non-breaking' — strict clients with exhaustive switches crash on the unknown value.", he: "להוסיף ערך חדש ל-enum ולקרוא לזה 'לא שובר' — clients קשוחים עם switch מלא קורסים על הערך הלא מוכר." },
-    { en: "Long synchronous call chains (A→B→C→D→E): latency adds up, availability multiplies down, and one slow leaf stalls everything.", he: "שרשראות קריאות סינכרוניות ארוכות (A→B→C→D→E): ה-latency מצטבר, הזמינות מוכפלת כלפי מטה, ועלה איטי אחד תוקע הכול." }
+    { en: "Long synchronous call chains (A→B→C→D→E): latency adds up, availability multiplies down, and one slow leaf stalls everything.", he: "שרשראות קריאות סינכרוניות ארוכות (A←B←C←D←E): ה-latency מצטבר, הזמינות מוכפלת כלפי מטה, ועלה איטי אחד תוקע הכול." }
   ],
   interview: [
     { q: { en: "When would you choose gRPC over REST, and what infrastructure changes does it require?", he: "מתי תבחר gRPC על פני REST, ואילו שינויי תשתית זה דורש?" },
@@ -538,7 +538,7 @@ INFRA.lessons.push({
 <tr><td><strong>Log / stream</strong></td><td>כל consumer <em>group</em> קורא הכול; בתוך group, ה-partitions מחלקים את העבודה</td><td>נשמר לפי retention (7 ימים, לנצח)</td><td>כן — מאפסים offsets</td><td>Kafka, ‏Kinesis, ‏Redis Streams, ‏Pulsar, ‏Event Hubs, ‏NATS JetStream</td></tr>
 </table>
 <p>שילובים הם סטנדרט: <strong>SNS → N × SQS</strong> = fan-out עמיד, לכל subscriber תור עבודה משלו עם retries ו-DLQ. ב-Kafka, topic אחד + consumer groups נותן את שניהם: fan-out בין groups, חלוקת עבודה בתוך group (מקביליות מקסימלית = מספר ה-partitions).</p>
-<blockquote>💡 מהשטח: השאלה המכריעה היא "האם אני צריך <strong>לקרוא שוב היסטוריה</strong>?" — בנייה מחדש של search index, ‏consumer חדש שצריך את 7 הימים האחרונים, עיבוד מחדש אחרי תיקון באג. אם כן → log. אם ההודעות הן משימות שצריך לבצע פעם אחת → work queue. ראה <code>#/lesson/arch-brokers</code> לפנים של ה-brokers.</blockquote>`
+<blockquote>💡 מהשטח: השאלה המכריעה היא "האם אני צריך <strong>לקרוא שוב היסטוריה</strong>?" — בנייה מחדש של search index, ‏consumer חדש שצריך את 7 הימים האחרונים, עיבוד מחדש אחרי תיקון באג. אם כן ← log. אם ההודעות הן משימות שצריך לבצע פעם אחת ← work queue. ראה <code>#/lesson/arch-brokers</code> לפנים של ה-brokers.</blockquote>`
       }
     },
     {
@@ -627,7 +627,7 @@ aws sqs start-message-move-task --source-arn arn:aws:sqs:eu-west-1:123456789012:
         he: `<table>
 <tr><th>מוצר</th><th>מודל</th><th>סדר</th><th>Replay</th><th>הכי מתאים ל</th><th>שים לב</th></tr>
 <tr><td>AWS SQS</td><td>Work queue (pull)</td><td>Standard: אין; FIFO: לכל group</td><td>לא</td><td>תורי משימות בלי תפעול ב-AWS</td><td>הודעה עד 256KB, השהיה עד 15 דקות, אין fan-out לבד</td></tr>
-<tr><td>AWS SNS</td><td>Pub/sub (push)</td><td>FIFO topics לכל group</td><td>לא (archive ב-FIFO)</td><td>Fan-out ל-SQS/Lambda/HTTP/SMS/email</td><td>לא עמיד ל-subscribers איטיים → לצרף SQS</td></tr>
+<tr><td>AWS SNS</td><td>Pub/sub (push)</td><td>FIFO topics לכל group</td><td>לא (archive ב-FIFO)</td><td>Fan-out ל-SQS/Lambda/HTTP/SMS/email</td><td>לא עמיד ל-subscribers איטיים ← לצרף SQS</td></tr>
 <tr><td>RabbitMQ</td><td>Exchanges → queues ‏(push), ‏streams</td><td>לכל תור</td><td>רק streams</td><td>Routing גמיש, עדיפויות, RPC, ‏on-prem</td><td>Backlogs גדולים מזיקים; quorum queues ל-HA</td></tr>
 <tr><td>Apache Kafka</td><td>Log עם partitions ‏(pull)</td><td>לכל partition ‏(key)</td><td>כן, לפי retention</td><td>Event streaming, ‏CDC, ‏throughput גבוה, הרבה consumers</td><td>כבד לתפעול; partitions מגבילים מקביליות; אין ack/delay להודעה בודדת</td></tr>
 <tr><td>NATS / JetStream</td><td>Pub/sub בליבה + streams עמידים</td><td>לכל stream/subject</td><td>ב-JetStream כן</td><td>Latency נמוך, ‏edge/IoT, קל משקל, ‏request-reply</td><td>Core NATS הוא at-most-once</td></tr>
@@ -666,9 +666,9 @@ producer              publisher                  producer ─▶ [p0|0 1 2 3 4 5
   ],
   interview: [
     { q: { en: "SQS or Kafka for a new order-processing pipeline? Walk through the decision.", he: "SQS או Kafka ל-pipeline חדש של עיבוד הזמנות? עבור על ההחלטה." },
-      a: { en: "Ask: how many independent consumers now and later? Need replay/backfill? Throughput? Per-message delay/retry/DLQ? Team ops capacity? If it's tasks with 1–3 consumers, per-message retries and no replay → SNS+SQS (zero ops, DLQ built in). If many teams will consume the same order events, need replay for new projections/CDC, or 100k+ msg/s → Kafka (managed), keyed by order_id for per-order ordering, with retry topics and DLQ built by hand.", he: "שואלים: כמה consumers עצמאיים עכשיו ובעתיד? צריך replay/backfill? throughput? השהיה/retry/DLQ לכל הודעה? יכולת תפעול של הצוות? אם אלה משימות עם 1–3 consumers, retries לכל הודעה ובלי replay → SNS+SQS (בלי תפעול, DLQ מובנה). אם הרבה צוותים יצרכו את אותם events, צריך replay ל-projections חדשים/CDC, או 100k+ הודעות בשנייה → Kafka (מנוהל), עם key לפי order_id לסדר לכל הזמנה, ו-retry topics ו-DLQ שבונים לבד." } },
+      a: { en: "Ask: how many independent consumers now and later? Need replay/backfill? Throughput? Per-message delay/retry/DLQ? Team ops capacity? If it's tasks with 1–3 consumers, per-message retries and no replay → SNS+SQS (zero ops, DLQ built in). If many teams will consume the same order events, need replay for new projections/CDC, or 100k+ msg/s → Kafka (managed), keyed by order_id for per-order ordering, with retry topics and DLQ built by hand.", he: "שואלים: כמה consumers עצמאיים עכשיו ובעתיד? צריך replay/backfill? throughput? השהיה/retry/DLQ לכל הודעה? יכולת תפעול של הצוות? אם אלה משימות עם 1–3 consumers, retries לכל הודעה ובלי replay ← SNS+SQS (בלי תפעול, DLQ מובנה). אם הרבה צוותים יצרכו את אותם events, צריך replay ל-projections חדשים/CDC, או 100k+ הודעות בשנייה ← Kafka (מנוהל), עם key לפי order_id לסדר לכל הזמנה, ו-retry topics ו-DLQ שבונים לבד." } },
     { q: { en: "How do you implement retries with delay in Kafka, which has no per-message delay?", he: "איך מממשים retries עם השהיה ב-Kafka, שאין בו delay להודעה?" },
-      a: { en: "Retry topics: on failure publish to orders.retry.1m (then .10m, .1h) with attempt count in headers; a consumer on each retry topic pauses until the message's due time before processing; after the last tier → orders.dlq. Commit the original offset so the main partition isn't blocked. (Spring Kafka and Uber's pattern work this way.) Note it breaks per-key ordering.", he: "Retry topics: בכשל מפרסמים ל-orders.retry.1m (ואחר כך ‎.10m, ‎.1h) עם מספר הניסיון ב-headers; consumer על כל retry topic ממתין עד זמן היעד של ההודעה לפני העיבוד; אחרי השלב האחרון → orders.dlq. עושים commit ל-offset המקורי כדי שה-partition הראשי לא ייחסם. (Spring Kafka והתבנית של Uber עובדים ככה.) שים לב שזה שובר סדר לכל key." } }
+      a: { en: "Retry topics: on failure publish to orders.retry.1m (then .10m, .1h) with attempt count in headers; a consumer on each retry topic pauses until the message's due time before processing; after the last tier → orders.dlq. Commit the original offset so the main partition isn't blocked. (Spring Kafka and Uber's pattern work this way.) Note it breaks per-key ordering.", he: "Retry topics: בכשל מפרסמים ל-orders.retry.1m (ואחר כך ‎.10m, ‎.1h) עם מספר הניסיון ב-headers; consumer על כל retry topic ממתין עד זמן היעד של ההודעה לפני העיבוד; אחרי השלב האחרון ← orders.dlq. עושים commit ל-offset המקורי כדי שה-partition הראשי לא ייחסם. (Spring Kafka והתבנית של Uber עובדים ככה.) שים לב שזה שובר סדר לכל key." } }
   ],
   quiz: [
     { q: { en: "You need a new analytics service to process the last 7 days of order events. Which kind fits?", he: "צריך ששירות אנליטיקה חדש יעבד את 7 הימים האחרונים של events הזמנות. איזה סוג מתאים?" },
@@ -679,7 +679,7 @@ producer              publisher                  producer ─▶ [p0|0 1 2 3 4 5
       answer: 1, explain: { en: "SQS doesn't know you're still working; extend visibility or size the timeout to ~6× p99.", he: "SQS לא יודע שאתה עוד עובד; מאריכים את ה-visibility או קובעים timeout של בערך פי 6 מ-p99." } },
     { q: { en: "How do you get strict ordering for each customer while keeping high parallelism?", he: "איך מקבלים סדר קשיח לכל לקוח ועדיין מקביליות גבוהה?" },
       options: [ { en: "Single partition / single consumer", he: "Partition אחד / consumer אחד" }, { en: "Use customer_id as the partition key / MessageGroupId", he: "להשתמש ב-customer_id כ-partition key / ‏MessageGroupId" }, { en: "Random keys", he: "Keys אקראיים" }, { en: "Priority queue", he: "Priority queue" } ],
-      answer: 1, explain: { en: "Same key → same partition/group → ordered; different customers spread across partitions in parallel.", he: "אותו key → אותו partition/group → מסודר; לקוחות שונים מתפזרים על partitions במקביל." } },
+      answer: 1, explain: { en: "Same key → same partition/group → ordered; different customers spread across partitions in parallel.", he: "אותו key ← אותו partition/group ← מסודר; לקוחות שונים מתפזרים על partitions במקביל." } },
     { q: { en: "Which is the most important metric to alert on for a work queue?", he: "על איזה metric הכי חשוב להתריע בתור עבודה?" },
       options: [ { en: "Number of producers", he: "מספר ה-producers" }, { en: "Age of the oldest message (plus DLQ depth > 0)", he: "הגיל של ההודעה הכי ישנה (ועוד DLQ depth > 0)" }, { en: "Message size", he: "גודל ההודעה" }, { en: "Broker CPU only", he: "רק CPU של ה-broker" } ],
       answer: 1, explain: { en: "Age directly measures how late work is (user impact); depth alone depends on throughput.", he: "הגיל מודד ישירות כמה העבודה מאחרת (השפעה על המשתמש); עומק לבד תלוי ב-throughput." } }
@@ -1019,7 +1019,7 @@ psp = httpx.Client(
         he: `<p>ה-timeout ברירת המחדל של הרבה HTTP clients הוא <strong>אינסופי</strong> (‏<code>requests</code> בפייתון, ‏<code>http.Client{}</code> ב-Go) או ארוך מאוד (ב-Java לרוב 0 = לנצח). ספק שנתקע בלי להיכשל ימצה את ה-threads/connections שלך ויפיל אותך — תלות איטית גרועה מתלות מתה.</p>
 <ul>
 <li><strong>Connect timeout</strong> קצר (0.5–2 שניות): endpoint בריא מקבל TCP+TLS מהר.</li>
-<li><strong>Read/response timeout</strong> לפי ה-p99 שנמדד אצל הספק + מרווח (למשל p99 = 800ms → ‏2 שניות), לא לפי תקווה.</li>
+<li><strong>Read/response timeout</strong> לפי ה-p99 שנמדד אצל הספק + מרווח (למשל p99 = 800ms ← ‏2 שניות), לא לפי תקווה.</li>
 <li><strong>Deadline / budget כולל</strong>: לבקשת המשתמש יש 3 שניות בסך הכול; אם עברו 2.5 — לא מתחילים קריאה של 2 שניות, נכשלים מהר או עושים degrade. מעבירים deadlines הלאה.</li>
 <li><strong>Retries</strong>: רק לפעולות אידמפוטנטיות (או עם idempotency key — ראה <code>#/lesson/pr-idempotency</code>), מקסימום 2–3, exponential backoff + jitter, לכבד 429/Retry-After, ו-retry budget. Hedged requests (לשלוח עותק שני אחרי p95) רק לקריאות אידמפוטנטיות.</li>
 </ul>
@@ -1065,7 +1065,7 @@ var pipeline = new ResiliencePipelineBuilder&lt;HttpResponseMessage&gt;()
     .Build();</pre>
 <p>A <strong>bulkhead</strong> gives each dependency its own bounded pool (threads, connections, semaphore), so a hung maps API can only consume its 20 slots — checkout's PSP calls still have theirs. In Kubernetes you can go further and run the integration in a separate deployment with its own resources.</p>
 <blockquote>💡 Real world: Netflix Hystrix popularized breaker + bulkhead + fallback per dependency; today it lives in resilience4j (Java), Polly (.NET), Envoy/Istio outlier detection and circuit breaking (mesh level, language-agnostic). See <code>#/lesson/arch-resilience</code> and <code>#/lesson/staff-service-mesh</code>.</blockquote>`,
-        he: `<p><strong>Circuit breaker</strong> מנטר קריאות לתלות אחת. <strong>Closed</strong>: הקריאות זורמות, הכשלים נספרים. כשאחוז הכשלים (או הקריאות האיטיות) בחלון עובר סף → <strong>Open</strong>: הקריאות נכשלות מיד (בלי המתנה, בלי עומס על הספק החולה) ומריצים את ה-fallback. אחרי זמן צינון → <strong>Half-open</strong>: מעבירים כמה קריאות ניסיון; הצלחה → Closed, כשל → שוב Open.</p>
+        he: `<p><strong>Circuit breaker</strong> מנטר קריאות לתלות אחת. <strong>Closed</strong>: הקריאות זורמות, הכשלים נספרים. כשאחוז הכשלים (או הקריאות האיטיות) בחלון עובר סף ← <strong>Open</strong>: הקריאות נכשלות מיד (בלי המתנה, בלי עומס על הספק החולה) ומריצים את ה-fallback. אחרי זמן צינון ← <strong>Half-open</strong>: מעבירים כמה קריאות ניסיון; הצלחה ← Closed, כשל ← שוב Open.</p>
 <pre># resilience4j (Spring Boot application.yml)
 resilience4j:
   circuitbreaker:

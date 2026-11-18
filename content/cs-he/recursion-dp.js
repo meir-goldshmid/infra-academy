@@ -51,7 +51,7 @@ returns 3 * 2 = 6</code></pre>
         {
           type: 'input', q: 'כמה frames יש על ה-stack בנקודה העמוקה ביותר של factorial(5) (כולל הקריאה ל-factorial(5) עצמה)?',
           answer: ['5', 'five', 'חמש', 'חמישה'], placeholder: 'מספר',
-          explain: `factorial(5) → factorial(4) → factorial(3) → factorial(2) → factorial(1). זה 5 frames שנערמים לפני ש-factorial(1) פוגעת ב-base case והם מתחילים להתפרק. העומק גדל לינארית עם n.`
+          explain: `factorial(5) ← factorial(4) ← factorial(3) ← factorial(2) ← factorial(1). זה 5 frames שנערמים לפני ש-factorial(1) פוגעת ב-base case והם מתחילים להתפרק. העומק גדל לינארית עם n.`
         },
         {
           type: 'learn', title: 'איפה רקורסיה זורחת: עצים',
@@ -156,13 +156,13 @@ while stack:
         {
           type: 'tf', q: 'עומק ה-stack המקסימלי של fib(n) הנאיבי הוא בערך n, למרות שמספר הקריאות הכולל אקספוננציאלי.',
           answer: true,
-          explain: `ה-stack מחזיק בכל רגע רק מסלול אחד מהשורש לעלה: fib(n) → fib(n−1) → ... → fib(1). עומק ≈ n. הזמן אקספוננציאלי כי העץ רחב בטירוף, לא עמוק.`
+          explain: `ה-stack מחזיק בכל רגע רק מסלול אחד מהשורש לעלה: fib(n) ← fib(n−1) ← ... ← fib(1). עומק ≈ n. הזמן אקספוננציאלי כי העץ רחב בטירוף, לא עמוק.`
         },
         {
           type: 'learn', title: 'שתי צורות שונות של רקורסיה',
           html: `<ul><li><b>קריאה אחת בכל רמה</b> (factorial, מעבר על רשימה): שרשרת. O(n) קריאות.</li>
-<li><b>שתי קריאות, כל אחת על חצי מה-input</b> (merge sort): log n רמות, n עבודה בכל רמה → O(n log n).</li>
-<li><b>שתי קריאות, כל אחת על input שקטן רק ב-1 או 2</b> (fib נאיבי): ~n רמות, הכפלה בכל רמה → אקספוננציאלי.</li></ul>
+<li><b>שתי קריאות, כל אחת על חצי מה-input</b> (merge sort): log n רמות, n עבודה בכל רמה ← O(n log n).</li>
+<li><b>שתי קריאות, כל אחת על input שקטן רק ב-1 או 2</b> (fib נאיבי): ~n רמות, הכפלה בכל רמה ← אקספוננציאלי.</li></ul>
 <div class="callout">הקומבו הקטלני: <b>הסתעפות</b> + <b>הקטנה זעירה</b>. חיתוך לחצי מאלף את ההסתעפות; הורדה של 1 לא.</div>
 <div class="dev">זה כמו retry storm: כל בקשה שנכשלה מתפצלת ל-2 retries, וכל אחד מהם מתפצל לעוד 2... fan-out עם מעט התקדמות בכל hop = עומס אקספוננציאלי.</div>`
         },
@@ -218,7 +218,7 @@ def fib(n):
         return n
     return fib(n - 1) + fib(n - 2)</code></pre>
 <p>(<code>functools.cache</code> זה אותו דבר, רק קצר יותר.) ה-decorator עוטף את הפונקציה שלך ב-dict שהמפתח שלו הוא הארגומנטים.</p>
-<div class="callout">Memoization עובד רק על פונקציות <b>pure</b> (טהורות): אותו input → אותו output, בלי side effects.</div>
+<div class="callout">Memoization עובד רק על פונקציות <b>pure</b> (טהורות): אותו input ← אותו output, בלי side effects.</div>
 <div class="dev">אותו כלל כמו HTTP caching: אפשר לעשות cache ל-GET /users/42, אבל cache ל-POST /payments יהיה... אינסידנט. ואם המידע מאחורי זה משתנה, צריך invalidation. פונקציות pure אף פעם לא צריכות invalidation, ובגלל זה memoization כל כך קל.</div>`
         },
         {
@@ -324,7 +324,7 @@ def fib(n):
         {
           type: 'input', q: 'מה ה-edit distance בין "flaw" ל-"lawn"?',
           answer: ['2', 'two', 'שתיים', 'שניים'], placeholder: 'מספר',
-          explain: `מוחקים את ה-'f' בהתחלה (→ "law"), ואז מוסיפים 'n' בסוף (→ "lawn"). 2 עריכות, ואי אפשר לעשות את זה ב-1 כי המחרוזות שונות בשני הקצוות.`
+          explain: `מוחקים את ה-'f' בהתחלה (← "law"), ואז מוסיפים 'n' בסוף (← "lawn"). 2 עריכות, ואי אפשר לעשות את זה ב-1 כי המחרוזות שונות בשני הקצוות.`
         },
         {
           type: 'order', q: 'סדר את השלבים לתכנון פתרון DP בגישת bottom-up.',

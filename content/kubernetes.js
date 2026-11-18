@@ -96,12 +96,12 @@ INFRA.lessons.push({
 <p>Notice: no component calls another directly. They all <strong>watch</strong> the API server and react. That's why each piece can crash and restart independently.</p>
 <blockquote>⚠️ Production tip: watch this chain live with <code>kubectl get events -w</code> in one terminal while you apply in another. It's the best 5 minutes of k8s education you'll get.</blockquote>`,
         he: `<ol>
-<li><code>kubectl apply -f deploy.yaml</code> → בקשת HTTP PATCH/POST ל-API server.</li>
+<li><code>kubectl apply -f deploy.yaml</code> ← בקשת HTTP PATCH/POST ל-API server.</li>
 <li>ה-API server מאמת אותך, בודק RBAC, מריץ admission webhooks וכותב את ה-Deployment ל-etcd.</li>
-<li>ה-Deployment controller רואה Deployment חדש → יוצר ReplicaSet.</li>
-<li>ה-ReplicaSet controller רואה שצריך 3 Pods ויש 0 → יוצר 3 אובייקטי Pod (עדיין בלי node).</li>
-<li>ה-scheduler רואה 3 Pods לא משובצים → בוחר nodes → כותב <code>spec.nodeName</code>.</li>
-<li>ה-kubelet בכל node שנבחר רואה "הנה Pod שלי" → מושך image דרך containerd, מרים קונטיינרים ומריץ probes.</li>
+<li>ה-Deployment controller רואה Deployment חדש ← יוצר ReplicaSet.</li>
+<li>ה-ReplicaSet controller רואה שצריך 3 Pods ויש 0 ← יוצר 3 אובייקטי Pod (עדיין בלי node).</li>
+<li>ה-scheduler רואה 3 Pods לא משובצים ← בוחר nodes ← כותב <code>spec.nodeName</code>.</li>
+<li>ה-kubelet בכל node שנבחר רואה "הנה Pod שלי" ← מושך image דרך containerd, מרים קונטיינרים ומריץ probes.</li>
 <li>ה-kubelet מעדכן את ה-status ל-<code>Running</code>, וה-EndpointSlice controller מוסיף את ה-IP של ה-Pod מאחורי ה-Service.</li>
 </ol>
 <p>שים לב: אף רכיב לא קורא לרכיב אחר ישירות. כולם עושים <strong>watch</strong> על ה-API server ומגיבים. בגלל זה כל חלק יכול לקרוס ולעלות מחדש באופן עצמאי.</p>

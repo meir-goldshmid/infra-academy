@@ -359,9 +359,9 @@ INFRA.lessons.push({
 <p>Cloud volumes enforce caps on each axis. AWS <strong>gp3</strong> gives a baseline of <strong>3,000 IOPS and 125 MB/s</strong> regardless of size, and you pay extra for more (up to 16,000 IOPS / 1,000 MB/s). Hit the cap and requests queue: latency climbs from 1 ms to 50 ms while the disk "isn't even busy".</p>
 <blockquote>⚠️ Production tip: when a cloud DB suddenly slows down, check the volume's IOPS/throughput graphs against its provisioned limits — and burst-credit balance on older gp2 volumes — before blaming the code.</blockquote>`,
         he: `<p>הם מחוברים בנוסחה אחת: <strong>throughput = IOPS × block size</strong>. ‏10,000 IOPS של 4 KB = ‏40 MB/s; ‏1,000 IOPS של 1 MB = ‏1 GB/s. אז "דיסק מהיר" תלוי בעומס:</p>
-<ul><li><strong>דאטאבייסים OLTP</strong>: קריאות/כתיבות רנדומליות זעירות (דפים של 8–16 KB) → IOPS ו-latency הם מה שחשוב.</li>
-<li><strong>Log ingestion, וידאו, גיבויים, סריקות analytics</strong>: זרמים סדרתיים גדולים → throughput הוא מה שחשוב.</li>
-<li><strong>עומסים עם הרבה fsync</strong> (commits של DB, Kafka עם durability קשיח): כל commit מחכה לדיסק → write latency הוא המלך.</li></ul>
+<ul><li><strong>דאטאבייסים OLTP</strong>: קריאות/כתיבות רנדומליות זעירות (דפים של 8–16 KB) ← IOPS ו-latency הם מה שחשוב.</li>
+<li><strong>Log ingestion, וידאו, גיבויים, סריקות analytics</strong>: זרמים סדרתיים גדולים ← throughput הוא מה שחשוב.</li>
+<li><strong>עומסים עם הרבה fsync</strong> (commits של DB, Kafka עם durability קשיח): כל commit מחכה לדיסק ← write latency הוא המלך.</li></ul>
 <p>Volumes בענן אוכפים תקרה על כל ציר. ב-AWS, ‏<strong>gp3</strong> נותן בסיס של <strong>3,000 IOPS ו-125 MB/s</strong> בלי קשר לגודל, ומשלמים בנפרד על יותר (עד 16,000 IOPS / ‏1,000 MB/s). פוגעים בתקרה — והבקשות נכנסות לתור: ה-latency עולה מ-1 ms ל-50 ms בזמן שהדיסק "אפילו לא עסוק".</p>
 <blockquote>⚠️ טיפ לפרודקשן: כש-DB בענן פתאום מאט, תבדוק את גרפי ה-IOPS/throughput של ה-volume מול ה-limits שהוקצו — ואת יתרת ה-burst credits ב-gp2 ישנים — לפני שמאשימים את הקוד.</blockquote>`
       }
@@ -375,7 +375,7 @@ INFRA.lessons.push({
 <blockquote>💡 Real world: the default cloud-native pattern is stateless app containers + a managed DB on block storage + user uploads and backups in object storage. NFS is the "we have a legacy app" choice.</blockquote>`,
         he: `<p><strong>Block storage</strong> ‏(EBS, Azure Disk, NVMe מקומי) הוא דיסק וירטואלי גולמי: מערכת ההפעלה מפרמטת אותו עם filesystem ומחזיקה בו. ה-latency הכי נמוך, ובדרך כלל מחובר ל<strong>מכונה אחת בכל פעם</strong>. מתאים לדאטאבייסים ולכל מה שצריך POSIX filesystem אמיתי.</p>
 <p><strong>File storage</strong> ‏(NFS, EFS, Azure Files, SMB) הוא filesystem משותף על הרשת: הרבה מכונות עושות mount לאותה תיקייה. נוח (uploads משותפים, אפליקציות legacy), אבל כל פעולה היא round trip ברשת, ועבודה כבדה על metadata (מיליוני קבצים קטנים, <code>ls</code> על תיקיות ענק) נהיית איטית.</p>
-<p><strong>Object storage</strong> ‏(S3, GCS, Azure Blob) הוא store ענק של key → blob על HTTP: <code>PUT /bucket/photos/cat.jpg</code>. אין עריכה במקום, אין באמת תיקיות, latency של עשרות ms לבקשה — אבל בפועל אינסופי, durability של 11 תשיעיות, זול (~$0.023 ל-GB לחודש ב-S3 Standard) ומקבילי בטירוף.</p>
+<p><strong>Object storage</strong> ‏(S3, GCS, Azure Blob) הוא store ענק של key ← blob על HTTP: <code>PUT /bucket/photos/cat.jpg</code>. אין עריכה במקום, אין באמת תיקיות, latency של עשרות ms לבקשה — אבל בפועל אינסופי, durability של 11 תשיעיות, זול (~$0.023 ל-GB לחודש ב-S3 Standard) ומקבילי בטירוף.</p>
 <blockquote>💡 מהשטח: הדפוס ה-cloud-native הדיפולטי הוא קונטיינרים stateless לאפליקציה + DB מנוהל על block storage + uploads של משתמשים וגיבויים ב-object storage. NFS זו הבחירה של "יש לנו אפליקציית legacy".</blockquote>`
       }
     },

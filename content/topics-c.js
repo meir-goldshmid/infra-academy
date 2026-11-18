@@ -692,7 +692,7 @@ INFRA.lessons.push({
 <p>Also worth knowing: SQL:2023 added <strong>SQL/PGQ</strong> (property graph queries over relational tables with <code>GRAPH_TABLE(... MATCH ...)</code>), and Oracle and DuckDB extensions already implement it — the line between "graph DB" and "SQL DB" is getting thinner.</p>`,
         he: `<p>שני מודלים של data שולטים:</p>
 <table><tr><th></th><th>Property graph</th><th>RDF ‏(triple store)</th></tr>
-<tr><td>יחידה</td><td>nodes ו-relationships, לשניהם labels ו-properties של key/value</td><td>triples: ‏subject → predicate → object, מזוהים לפי URIs</td></tr>
+<tr><td>יחידה</td><td>nodes ו-relationships, לשניהם labels ו-properties של key/value</td><td>triples: ‏subject ← predicate ← object, מזוהים לפי URIs</td></tr>
 <tr><td>שפת שאילתות</td><td>Cypher / openCypher, ‏Gremlin, ‏<strong>GQL</strong> של ISO (פורסם ב-2024)</td><td>SPARQL</td></tr>
 <tr><td>Properties על קשתות</td><td>מובנה (<code>[:PAID {amount: 120, at: ...}]</code>)</td><td>מסורבל (reification, ‏RDF-star)</td></tr>
 <tr><td>חוזקה</td><td>data של אפליקציות, ביצועי traversal</td><td>אונטולוגיות, linked open data, הסקה ו-reasoning, אינטגרציית data</td></tr>

@@ -12,7 +12,7 @@ window.INFRA.designs.push({
   },
   prompt: {
     en: "\"You have 45 minutes. Design X.\" — Before any specific product, learn the repeatable process strong candidates use: clarify → requirements → estimates → API → data model → high-level design → deep dives → wrap-up.",
-    he: "\"יש לך 45 דקות. תתכנן את X.\" — לפני כל מוצר ספציפי, תלמד את התהליך שחוזר על עצמו אצל מועמדים חזקים: הבהרה → דרישות → הערכות → API → מודל נתונים → High-level design → Deep dives → סיכום."
+    he: "\"יש לך 45 דקות. תתכנן את X.\" — לפני כל מוצר ספציפי, תלמד את התהליך שחוזר על עצמו אצל מועמדים חזקים: הבהרה ← דרישות ← הערכות ← API ← מודל נתונים ← High-level design ← Deep dives ← סיכום."
   },
   clarify: [
     { en: "Who are the users and what is the core use case? (\"Is this consumer-facing or internal? Mobile, web, or both?\") — scope it to 2-3 features you will actually design.",
@@ -95,8 +95,8 @@ window.INFRA.designs.push({
 </table>
 <ul>
 <li><strong>שניות ביום</strong> = 86,400 ≈ <strong>10^5</strong>. שניות בחודש ≈ 2.5 × 10^6. שניות בשנה ≈ 3 × 10^7.</li>
-<li><strong>QPS מ-DAU</strong>: מיליון בקשות ביום ≈ 12 QPS. אז 100M DAU × 10 בקשות ביום = 10^9 / 10^5 = <strong>10K QPS בממוצע</strong>; peak ≈ פי 2-3 → בערך 25K QPS.</li>
-<li><strong>אחסון</strong>: פריטים ליום × גודל × retention. ‏10M כתיבות ביום × 1KB = ‏10GB ביום → × 365 × 5 ≈ 18TB ב-5 שנים (× 3 replicas ≈ 55TB).</li>
+<li><strong>QPS מ-DAU</strong>: מיליון בקשות ביום ≈ 12 QPS. אז 100M DAU × 10 בקשות ביום = 10^9 / 10^5 = <strong>10K QPS בממוצע</strong>; peak ≈ פי 2-3 ← בערך 25K QPS.</li>
+<li><strong>אחסון</strong>: פריטים ליום × גודל × retention. ‏10M כתיבות ביום × 1KB = ‏10GB ביום ← × 365 × 5 ≈ 18TB ב-5 שנים (× 3 replicas ≈ 55TB).</li>
 <li><strong>Bandwidth</strong>: QPS × גודל payload. ‏10K QPS × 100KB = ‏1GB/s ≈ 8Gbps של egress.</li>
 </ul>
 <table>
@@ -356,11 +356,11 @@ window.INFRA.designs.push({
 <blockquote>💡 Conclusion: the problem is read QPS and latency, not storage complexity. Design = cache-first redirect path + a simple unique-ID generator on writes.</blockquote>`,
     he: `<ul>
 <li><strong>כתיבות</strong>: ‏100M URLs חדשים ביום ÷ 10^5 שניות ≈ <strong>1,200 writes/s</strong> בממוצע, ~3K/s ב-peak.</li>
-<li><strong>קריאות</strong>: ‏100:1 → ‏10^10 redirects ביום ÷ 10^5 ≈ <strong>115K redirects/s</strong> בממוצע, ~300K/s ב-peak.</li>
-<li><strong>אחסון</strong>: ~500 בייט לרשומה (URL ארוך ~200B + metadata) × 100M ביום = 50GB ביום → × 365 × 5 ≈ <strong>90TB</strong> ב-5 שנים (לפני replication). גדול מדי ל-node אחד, מצוין ל-KV store עם sharding.</li>
-<li><strong>אורך הקוד</strong>: סך הלינקים ב-5 שנים = 100M × 365 × 5 ≈ 1.8 × 10^11. ‏Base62 עם 7 תווים = 62^7 ≈ 3.5 × 10^12 → ‏7 תווים מספיקים עם מרווח של בערך פי 20.</li>
+<li><strong>קריאות</strong>: ‏100:1 ← ‏10^10 redirects ביום ÷ 10^5 ≈ <strong>115K redirects/s</strong> בממוצע, ~300K/s ב-peak.</li>
+<li><strong>אחסון</strong>: ~500 בייט לרשומה (URL ארוך ~200B + metadata) × 100M ביום = 50GB ביום ← × 365 × 5 ≈ <strong>90TB</strong> ב-5 שנים (לפני replication). גדול מדי ל-node אחד, מצוין ל-KV store עם sharding.</li>
+<li><strong>אורך הקוד</strong>: סך הלינקים ב-5 שנים = 100M × 365 × 5 ≈ 1.8 × 10^11. ‏Base62 עם 7 תווים = 62^7 ≈ 3.5 × 10^12 ← ‏7 תווים מספיקים עם מרווח של בערך פי 20.</li>
 <li><strong>Cache</strong>: התעבורה Zipfian — ‏~20% מהלינקים מקבלים ~80% מהקליקים. בפועל כמה מאות GB של Redis (למשל 10 nodes של 64GB) נותנים hit ratio מעל 90%.</li>
-<li><strong>Bandwidth</strong>: תשובת redirect היא ~500B → ‏115K × 500B ≈ 60MB/s. זניח.</li>
+<li><strong>Bandwidth</strong>: תשובת redirect היא ~500B ← ‏115K × 500B ≈ 60MB/s. זניח.</li>
 </ul>
 <blockquote>💡 המסקנה: הבעיה היא read QPS ו-latency, לא מורכבות אחסון. ה-design = מסלול redirect שמתחיל מ-cache + מחולל ID ייחודי ופשוט לכתיבות.</blockquote>`
   },
@@ -426,7 +426,7 @@ clicks (Kafka topic -> ClickHouse / BigQuery for analytics)
         he: `<table>
 <tr><th>גישה</th><th>איך</th><th>יתרונות / חסרונות</th></tr>
 <tr><td>Hash ‏(MD5/SHA של ה-URL), לוקחים 7 תווים</td><td>base62(md5(url))[0:7]</td><td>דטרמיניסטי (dedup בחינם), אבל חייבים לבדוק ולפתור collisions (להוסיף salt ולנסות שוב). עוד קריאה בכל כתיבה.</td></tr>
-<tr><td>Counter גלובלי → base62</td><td>Sequence אחד ב-DB</td><td>אין collisions, אבל נקודת contention אחת והקודים רציפים (אפשר לעשות enumeration).</td></tr>
+<tr><td>Counter גלובלי ← base62</td><td>Sequence אחד ב-DB</td><td>אין collisions, אבל נקודת contention אחת והקודים רציפים (אפשר לעשות enumeration).</td></tr>
 <tr><td><strong>הקצאת טווחים</strong></td><td>כל שרת אפליקציה "שוכר" בלוק של מיליון IDs מ-etcd/Postgres ומחלק מהזיכרון</td><td>אין תיאום בכל בקשה, אין collisions. ב-crash מאבדים לכל היותר בלוק שלא נוצל. עושים shuffle לביטים (Feistel cipher / ערבוב bijective) כדי שהקודים לא יהיו רציפים.</td></tr>
 <tr><td>7 תווים רנדומליים</td><td>crypto random + insert-if-not-exists</td><td>פשוט, לא ניתן לניחוש; ההסתברות ל-collision נמוכה כל עוד המרחב דליל (1.8e11 / 3.5e12 ≈ 5%), ו-conditional write מטפל בזה.</td></tr>
 </table>
@@ -446,7 +446,7 @@ clicks (Kafka topic -> ClickHouse / BigQuery for analytics)
 <blockquote>💡 With a 95% cache hit ratio, the KV store sees only 5% × 300K = 15K reads/s — comfortable for a 6-node Cassandra or DynamoDB on-demand.</blockquote>`,
         he: `<p>שירות ה-redirect הוא stateless; עושים לו scale אופקי מאחורי ה-LB. בכל בקשה: מחפשים את ה-<code>code</code> ב-Redis ‏(cache-aside). ב-miss קוראים מה-KV store ומכניסים ל-Redis עם TTL (למשל 24 שעות). המיפויים בפועל immutable, אז invalidation נדרש רק במחיקה או השבתה — מפרסמים delete event ועושים <code>DEL</code> למפתח.</p>
 <ul>
-<li><strong>Redis Cluster</strong> עם sharding לפי מפתח; ~100K ops/s ל-node → ‏4-6 primaries ל-300K ב-peak, עם replicas בשביל HA.</li>
+<li><strong>Redis Cluster</strong> עם sharding לפי מפתח; ~100K ops/s ל-node ← ‏4-6 primaries ל-300K ב-peak, עם replicas בשביל HA.</li>
 <li>להוסיף <strong>LRU בתוך התהליך</strong> (למשל 100K רשומות לכל pod) ללינקים הכי חמים — חוסך network hop וסופג spikes ויראליים על מפתח בודד.</li>
 <li><strong>Negative caching</strong>: לשמור "לא נמצא" ל-60 שניות כדי שבוטים שסורקים קודים רנדומליים לא יפציצו את ה-DB.</li>
 <li>אפשר גם להגיש redirects מה-<strong>CDN edge</strong> עם <code>Cache-Control: max-age=300</code> — אבל אז הקליקים לא נספרים, אלא אם משתמשים ב-edge logs.</li>
@@ -477,7 +477,7 @@ clicks (Kafka topic -> ClickHouse / BigQuery for analytics)
 <li>Bot filtering and unique-visitor estimates (HyperLogLog) happen in the stream job.</li>
 </ul>
 <p>This is also why <strong>302 vs 301</strong> matters: 301 is cached by browsers, so repeat clicks never reach you — cheaper but undercounted. Products that sell analytics (bit.ly) use 302.</p>`,
-        he: `<p>אף פעם לא כותבים counter ל-DB באופן סינכרוני בכל קליק — ‏115K increments בשנייה על שורות חמות זה אסון של contention. במקום זה, שירות ה-redirect שולח click event <strong>אסינכרונית</strong> (fire-and-forget ל-buffer מקומי → Kafka). אם Kafka איטי — מפילים או עושים sampling ל-event; ה-redirect לא מחכה.</p>
+        he: `<p>אף פעם לא כותבים counter ל-DB באופן סינכרוני בכל קליק — ‏115K increments בשנייה על שורות חמות זה אסון של contention. במקום זה, שירות ה-redirect שולח click event <strong>אסינכרונית</strong> (fire-and-forget ל-buffer מקומי ← Kafka). אם Kafka איטי — מפילים או עושים sampling ל-event; ה-redirect לא מחכה.</p>
 <ul>
 <li>Kafka topic עם partitions לפי <code>code</code>; ‏~115K הודעות בשנייה × 200B ≈ 23MB/s — cluster קטן.</li>
 <li>Consumers ‏(Flink / Kafka Streams) מאגרגים לכל קוד לכל דקה וכותבים ל-<strong>ClickHouse</strong> או BigQuery; ה-API של הסטטיסטיקות קורא אגרגציות.</li>
@@ -491,7 +491,7 @@ clicks (Kafka topic -> ClickHouse / BigQuery for analytics)
     { en: "301 vs 302: 301 reduces load and latency for repeat visitors; 302 keeps every click visible for analytics and lets you change/disable the target.",
       he: "301 מול 302: ‏301 מוריד עומס ו-latency למבקרים חוזרים; 302 משאיר כל קליק גלוי ל-analytics ומאפשר לשנות או להשבית את היעד." },
     { en: "Dedup identical long URLs: saves storage but needs an extra index (hash(long_url) → code) and leaks that someone else shortened the same URL. Usually skip it per user.",
-      he: "Dedup ל-URLs ארוכים זהים: חוסך אחסון אבל דורש אינדקס נוסף (hash(long_url) → code) ומדליף שמישהו אחר קיצר את אותו URL. בדרך כלל מוותרים, או עושים רק per-user." },
+      he: "Dedup ל-URLs ארוכים זהים: חוסך אחסון אבל דורש אינדקס נוסף (hash(long_url) ← code) ומדליף שמישהו אחר קיצר את אותו URL. בדרך כלל מוותרים, או עושים רק per-user." },
     { en: "Sequential IDs are simple but enumerable; scrambling or random codes cost a little complexity but prevent scraping all links.",
       he: "IDs רציפים פשוטים אבל ניתנים ל-enumeration; ערבוב או קודים רנדומליים עולים קצת מורכבות אבל מונעים scraping של כל הלינקים." },
     { en: "Managed KV (DynamoDB) vs self-run Cassandra: managed wins on ops; Cassandra can be cheaper at very high steady throughput.",
@@ -571,10 +571,10 @@ window.INFRA.designs.push({
 <li><strong>Rule config</strong>: maybe thousands of rules, a few MB — cached in each gateway's memory, refreshed every 10-30 s.</li>
 </ul>`,
     he: `<ul>
-<li><strong>בדיקות</strong>: ‏500K QPS → ‏500K פעולות Redis בשנייה (קריאה אחת ל-Lua script לכל בקשה). ב-~100K ops/s ל-node של Redis → <strong>~6-10 shards</strong> ב-Redis Cluster, ועוד replicas.</li>
+<li><strong>בדיקות</strong>: ‏500K QPS ← ‏500K פעולות Redis בשנייה (קריאה אחת ל-Lua script לכל בקשה). ב-~100K ops/s ל-node של Redis ← <strong>~6-10 shards</strong> ב-Redis Cluster, ועוד replicas.</li>
 <li><strong>זיכרון (token bucket)</strong>: לכל מפתח שומרים tokens + last_refill ≈ שני שדות; עם שם המפתח וה-overhead של Redis ≈ <strong>~100 בייט</strong>. ‏10M מפתחות × 100B = <strong>1GB</strong>. קטן מאוד.</li>
 <li><strong>זיכרון (sliding window log)</strong>: שומר כל timestamp. מפתח של 1,000 בקשות בדקה מחזיק עד 1,000 רשומות × ~30B ב-sorted set ≈ ‏30KB למפתח. ‏10M מפתחות × 30KB = <strong>300GB</strong>. בגלל זה כמעט לא משתמשים בגרסת ה-log ב-scale.</li>
-<li><strong>תקציב latency</strong>: Redis באותו AZ ≈ ‏0.3-0.5ms RTT + ~50µs ל-script → בערך 1ms ב-p99. נכנס בתקציב; Redis ב-region אחר (60ms) לא היה נכנס.</li>
+<li><strong>תקציב latency</strong>: Redis באותו AZ ≈ ‏0.3-0.5ms RTT + ~50µs ל-script ← בערך 1ms ב-p99. נכנס בתקציב; Redis ב-region אחר (60ms) לא היה נכנס.</li>
 <li><strong>קונפיגורציית חוקים</strong>: אולי אלפי חוקים, כמה MB — נשמרים בזיכרון של כל gateway ומתרעננים כל 10-30 שניות.</li>
 </ul>`
   },
@@ -798,7 +798,7 @@ window.INFRA.designs.push({
 <p><strong>Provider limits.</strong> APNs/FCM are effectively high-throughput over HTTP/2 multiplexed connections; SES/SendGrid and Twilio have per-account rate limits (e.g. hundreds-thousands/s) — our workers must rate-limit <em>outbound</em> to stay under quota.</p>`,
     he: `<p><strong>Throughput.</strong> 500M הודעות ביום ÷ 86,400 שניות ≈ <strong>5,800 בשנייה בממוצע</strong>. Peak יומי בערך פי 3 ≈ 17K/s. קמפיין ל-50M משתמשים שצריך להתרוקן תוך 10 דקות = 50,000,000 ÷ 600 ≈ <strong>83K/s</strong> — ה-burst הזה, לא הממוצע, קובע כמה workers ואיזה quota צריך מול ה-providers.</p>
 <p><strong>חלוקה לערוצים (הנחה).</strong> 70% push (350M), 25% email (125M), 5% SMS (25M). SMS עולה ~$0.01-0.05 ליחידה = $250K עד $1.25M ביום — כלומר SMS זו בעיית <em>עלות</em>, ו-dedup ובדיקת preferences חוסכים כסף אמיתי.</p>
-<p><strong>Storage.</strong> שורת log להודעה ≈ 500 B. 500M × 500 B = <strong>250 GB ביום</strong>; 30 יום hot ≈ 7.5 TB → Cassandra/DynamoDB, ומה שישן ל-S3. Preferences: 200M משתמשים × 1 KB = 200 GB, הרבה קריאות → cache ב-Redis. Device tokens: 200M × 2 מכשירים × 200 B = 80 GB.</p>
+<p><strong>Storage.</strong> שורת log להודעה ≈ 500 B. 500M × 500 B = <strong>250 GB ביום</strong>; 30 יום hot ≈ 7.5 TB ← Cassandra/DynamoDB, ומה שישן ל-S3. Preferences: 200M משתמשים × 1 KB = 200 GB, הרבה קריאות ← cache ב-Redis. Device tokens: 200M × 2 מכשירים × 200 B = 80 GB.</p>
 <p><strong>Kafka.</strong> 83K הודעות/s × 1 KB ≈ 83 MB/s ב-peak — קלאסטר צנוע (broker מחזיק 100+ MB/s בקלות). את מספר ה-partitions קובעים לפי ה-parallelism של ה-consumers, למשל 200 partitions ל-topic של bulk push.</p>
 <p><strong>מגבלות providers.</strong> APNs/FCM מחזיקים throughput גבוה על HTTP/2 multiplexing; ל-SES/SendGrid ול-Twilio יש rate limits לכל account — ה-workers שלנו חייבים לעשות rate limiting <em>יוצא</em> כדי לא לחרוג מה-quota.</p>`
   },
@@ -892,7 +892,7 @@ templates (Postgres) template_id, version, locale, channel, subject, body`,
 <p>Retries use delay topics (<code>retry.1m</code>, <code>retry.5m</code>) rather than sleeping in the consumer, so a stuck message doesn't block the partition.</p>`,
         he: `<p>Consumers של Kafka נותנים <strong>at-least-once</strong>: worker יכול לשלוח ל-Twilio, ליפול לפני commit של ה-offset, וההודעה תגיע שוב. ההגנה בשכבות:</p>
 <ul><li><strong>Ingest:</strong> הקוראים שולחים <code>Idempotency-Key</code>; ה-API עושה <code>SET key notification_id NX EX 86400</code> ב-Redis. retry של הקורא מחזיר את אותו id במקום הודעה שנייה.</li>
-<li><strong>שליחה:</strong> לפני הקריאה ל-provider ה-worker בודק את שורת ה-delivery: אם כבר <code>sent</code> — מדלגים. כותבים <code>sending</code> → קוראים ל-provider → כותבים <code>sent</code> עם ה-<code>provider_msg_id</code>. חלק מה-providers מקבלים מאיתנו מפתח dedup (collapse key ב-FCM, Message-ID במייל).</li>
+<li><strong>שליחה:</strong> לפני הקריאה ל-provider ה-worker בודק את שורת ה-delivery: אם כבר <code>sent</code> — מדלגים. כותבים <code>sending</code> ← קוראים ל-provider ← כותבים <code>sent</code> עם ה-<code>provider_msg_id</code>. חלק מה-providers מקבלים מאיתנו מפתח dedup (collapse key ב-FCM, Message-ID במייל).</li>
 <li><strong>Retry policy:</strong> exponential backoff עם jitter (1s, 4s, 16s, 1m, 5m), רק על שגיאות retryable (5xx, 429, timeouts). 4xx כמו invalid token זה סופי: מסמנים failed ומבטלים את ה-token.</li>
 <li><strong>DLQ:</strong> אחרי N ניסיונות שמים ב-dead-letter topic, מקפיצים alert ומאפשרים replay.</li></ul>
 <p>את ה-retries עושים עם delay topics (<code>retry.1m</code>, <code>retry.5m</code>) ולא עם sleep בתוך ה-consumer, כדי שהודעה תקועה לא תחסום את כל ה-partition.</p>`
@@ -928,7 +928,7 @@ templates (Postgres) template_id, version, locale, channel, subject, body`,
 <tr><td>Consumer lag on notify.high</td><td>alert if &gt; 10 s</td></tr></table>
 <p>Dashboards per channel/provider: send rate, error rate by code, p99 provider latency, DLQ size, and SMS spend per hour (a cost anomaly is often the first sign of a bug or abuse).</p>`,
         he: `<p>ה-providers החיצוניים הם מקור הנפילות הכי גדול שלנו. כל sender עוטף את ה-provider שלו ב-<strong>circuit breaker</strong> וב-<strong>token bucket rate limiter</strong> יוצא שמכויל ל-quota של ה-account.</p>
-<ul><li><strong>Failover ל-SMS/email:</strong> מחזיקים provider משני (Twilio → Vonage, SES → SendGrid). כשה-breaker נפתח על הראשי, הודעות high-priority עוברות למשני; bulk פשוט מחכה.</li>
+<ul><li><strong>Failover ל-SMS/email:</strong> מחזיקים provider משני (Twilio ← Vonage, SES ← SendGrid). כשה-breaker נפתח על הראשי, הודעות high-priority עוברות למשני; bulk פשוט מחכה.</li>
 <li><strong>Tokens לא תקפים:</strong> APNs מחזיר 410 Unregistered ו-FCM מחזיר UNREGISTERED — מבטלים את ה-tokens האלה, אחרת עם הזמן 10-20% מה-push הופכים לקריאות מבוזבזות.</li>
 <li><strong>Delivery receipts:</strong> ה-providers מדווחים delivered/bounced ב-webhooks; מכניסים אותם ל-topic ומעדכנים את Cassandra באופן אסינכרוני.</li></ul>
 <table><tr><th>SLI</th><th>SLO לדוגמה</th></tr>
@@ -1091,7 +1091,7 @@ devices (Postgres) user_id, device_id, push_token, platform`,
 <p>We only promise ordering <em>within a conversation</em> — global ordering would require a single sequencer for 500K msg/s, a pointless bottleneck. For IDs that are globally unique and roughly time-sortable, use Snowflake-style IDs (timestamp + machine id + counter).</p>`,
         he: `<p>אי אפשר לסמוך על timestamps מהקליינט (שעונים לא מסונכרנים), ואפילו שעונים של שרתים זזים אחד מהשני. הגישה החסינה: <strong>sequence number עולה לכל שיחה</strong>, שהשרת מקצה.</p>
 <ul><li>מנתבים את כל הכתיבות של שיחה לאותו מקום (Kafka key = <code>conv_id</code>, או shard של chat service שאחראי על השיחה) ומשתמשים ב-counter אטומי, למשל <code>INCR conv:{id}:seq</code> ב-Redis או LWT ב-Cassandra, כדי להקצות <code>seq</code>.</li>
-<li>שומרים הודעות עם clustering key של <code>seq</code>; הקליינט מציג לפי seq ומזהה חורים ("יש לי 1200, הגיע 1203 → תביא 1201-1202").</li>
+<li>שומרים הודעות עם clustering key של <code>seq</code>; הקליינט מציג לפי seq ומזהה חורים ("יש לי 1200, הגיע 1203 ← תביא 1201-1202").</li>
 <li>הקליינט מייצר <code>client_msg_id</code> (UUID) כך ששליחה חוזרת אחרי ניתוק רגעי עוברת dedup: השרת ממפה אותה ל-seq שכבר הוקצה.</li></ul>
 <p>אנחנו מבטיחים סדר רק <em>בתוך שיחה</em> — סדר גלובלי ידרוש sequencer יחיד ל-500K הודעות בשנייה, צוואר בקבוק מיותר. ל-IDs ייחודיים גלובלית שממוינים בערך לפי זמן משתמשים ב-Snowflake IDs (timestamp + machine id + counter).</p>`
       }
@@ -1107,9 +1107,9 @@ devices (Postgres) user_id, device_id, push_token, platform`,
 <p>Receipts are <strong>cumulative watermarks</strong> (<code>read up_to_seq=1250</code>), not one event per message — this cuts receipt traffic by an order of magnitude, especially in groups. For groups of 1,000, per-member read receipts get noisy; show aggregated "read by 37" and compute on demand.</p>
 <blockquote>💡 Real world: WhatsApp deletes messages from the server once all recipient devices acked delivery — the phone is the source of truth. That shrinks storage dramatically but makes multi-device sync harder.</blockquote>`,
         he: `<p>ה-flow של שליחה, צעד אחרי צעד:</p>
-<ol><li>ה-gateway של השולח מעביר ל-chat service → מקצה seq → <strong>כותב ל-Cassandra</strong> (quorum) → מחזיר <code>sent</code> (וי אחד). קודם persist ואז ack, כך ש-'sent' אומר שההודעה שמורה.</li>
+<ol><li>ה-gateway של השולח מעביר ל-chat service ← מקצה seq ← <strong>כותב ל-Cassandra</strong> (quorum) ← מחזיר <code>sent</code> (וי אחד). קודם persist ואז ack, כך ש-'sent' אומר שההודעה שמורה.</li>
 <li>Publish ל-Kafka; fan-out worker מחפש כל מכשיר של הנמען ב-session registry ב-Redis.</li>
-<li><strong>Online:</strong> RPC ל-gateway הרלוונטי שדוחף ב-socket. הקליינט מחזיר ack → מעדכנים <code>delivered_seq</code> ושולחים receipt לשולח (שני וי).</li>
+<li><strong>Online:</strong> RPC ל-gateway הרלוונטי שדוחף ב-socket. הקליינט מחזיר ack ← מעדכנים <code>delivered_seq</code> ושולחים receipt לשולח (שני וי).</li>
 <li><strong>Offline:</strong> שולחים push דרך ה-notification service. ב-reconnect הקליינט עושה sync: "תביא לי כל מה שאחרי ה-<code>delivered_seq</code> שלי בכל שיחה".</li></ol>
 <p>ה-receipts הם <strong>watermarks מצטברים</strong> (<code>read up_to_seq=1250</code>), לא event לכל הודעה — זה חותך את התעבורה בסדר גודל, במיוחד בקבוצות. בקבוצה של 1,000 read receipts לכל חבר זה רעש; מציגים "נקרא ע״י 37" ומחשבים on demand.</p>
 <blockquote>💡 מהשטח: WhatsApp מוחקים הודעות מהשרת ברגע שכל המכשירים של הנמענים אישרו delivery — הטלפון הוא ה-source of truth. זה מקטין את ה-storage דרמטית אבל מסבך sync בין כמה מכשירים.</blockquote>`
@@ -1124,7 +1124,7 @@ devices (Postgres) user_id, device_id, push_token, platform`,
 <li><strong>Pull, don't push</strong>: subscribe to presence only for the contacts currently visible on screen (open chat or chat list), and fetch on demand.</li></ul>
 <p><strong>Group fan-out:</strong> a message to a 1,000-member group means 1,000 deliveries. We store the message <em>once</em> in the conversation partition (fan-out on read for storage) and only fan out lightweight delivery notifications to online members' gateways (fan-out on write for delivery). Typing indicators in big groups are rate-limited or dropped — they're ephemeral, never persisted, and losing one is fine.</p>`,
         he: `<p><strong>Presence</strong> נראה פשוט אבל זו מלכודת של write amplification. אם כל שינוי online/offline נדחף לכל אנשי הקשר, משתמש עם 500 אנשי קשר שמתנדנד ברשת סלולרית גרועה מייצר אלפי events. טכניקות:</p>
-<ul><li>שומרים presence ב-Redis עם TTL שמתרענן ב-heartbeats; offline = ה-key פג → <code>last_seen</code>.</li>
+<ul><li>שומרים presence ב-Redis עם TTL שמתרענן ב-heartbeats; offline = ה-key פג ← <code>last_seen</code>.</li>
 <li><strong>Debounce</strong>: מפרסמים 'offline' רק אחרי ~30 שניות בלי heartbeat, וככה בולעים reconnect flaps.</li>
 <li><strong>Pull, לא push</strong>: נרשמים ל-presence רק של אנשי הקשר שכרגע מוצגים במסך (שיחה פתוחה או רשימת צ'אטים), ומביאים on demand.</li></ul>
 <p><strong>Fan-out בקבוצות:</strong> הודעה לקבוצה של 1,000 חברים = 1,000 deliveries. שומרים את ההודעה <em>פעם אחת</em> ב-partition של השיחה (fan-out on read ל-storage) ועושים fan-out רק להתראות delivery קלות ל-gateways של החברים שמחוברים (fan-out on write ל-delivery). Typing indicators בקבוצות גדולות עוברים rate limit או נזרקים — הם ephemeral, לא נשמרים, ולאבד אחד זה לא נורא.</p>`
@@ -1189,8 +1189,8 @@ window.INFRA.designs.push({
 <p><strong>Hydration.</strong> 100K feed reads/s × 20 posts = 2M post lookups/s — must be served from a post cache (Memcached/Redis), not the DB.</p>`,
     he: `<p><strong>קריאות.</strong> 300M DAU × 10 טעינות feed ביום = 3B ביום ÷ 86,400 ≈ <strong>35K קריאות feed בשנייה</strong> בממוצע, peak בערך פי 3 ≈ <strong>100K/s</strong>. כל טעינה מחזירה ~20 פוסטים.</p>
 <p><strong>כתיבות.</strong> 50M פוסטים ביום ÷ 86,400 ≈ <strong>580 פוסטים בשנייה</strong> (peak ~2K/s). זניח — אבל fan-out on write מכפיל את זה: 50M × 300 עוקבים בממוצע = <strong>15B הכנסות ל-feeds ביום ≈ 175K/s</strong>. פוסט אחד של סלב עם 100M עוקבים = 100M inserts — ב-1M inserts בשנייה זה 100 שניות של כל הקלאסטר בשביל פוסט אחד. בגלל זה סלבס צריכים טיפול מיוחד.</p>
-<p><strong>Feed cache.</strong> שומרים 500 post ids אחרונים לכל משתמש. רשומה = post_id (8 B) + author_id (8 B) = 16 B → 500 × 16 B = 8 KB למשתמש. רק משתמשים פעילים: 300M × 8 KB = <strong>2.4 TB</strong> ב-Redis (עם overhead פי 2 → ~5 TB) ≈ 80 nodes של 64 GB — סביר. למשתמשים לא פעילים לא מחשבים feed מראש; בונים מחדש ב-login.</p>
-<p><strong>Storage לפוסטים.</strong> 50M × 1 KB = 50 GB ביום → ~18 TB בשנה, בסדר גמור ל-MySQL/Cassandra עם sharding. Media: אם ל-30% יש תמונה של 500 KB = 15M × 500 KB = 7.5 TB ביום ל-S3 + CDN.</p>
+<p><strong>Feed cache.</strong> שומרים 500 post ids אחרונים לכל משתמש. רשומה = post_id (8 B) + author_id (8 B) = 16 B ← 500 × 16 B = 8 KB למשתמש. רק משתמשים פעילים: 300M × 8 KB = <strong>2.4 TB</strong> ב-Redis (עם overhead פי 2 ← ~5 TB) ≈ 80 nodes של 64 GB — סביר. למשתמשים לא פעילים לא מחשבים feed מראש; בונים מחדש ב-login.</p>
+<p><strong>Storage לפוסטים.</strong> 50M × 1 KB = 50 GB ביום ← ~18 TB בשנה, בסדר גמור ל-MySQL/Cassandra עם sharding. Media: אם ל-30% יש תמונה של 500 KB = 15M × 500 KB = 7.5 TB ביום ל-S3 + CDN.</p>
 <p><strong>Hydration.</strong> 100K קריאות feed/s × 20 פוסטים = 2M lookups של פוסטים בשנייה — חייב להגיע מ-post cache (Memcached/Redis), לא מה-DB.</p>`
   },
   api: `POST /v1/posts {text, media_ids[]}            -> 201 {post_id}
@@ -1273,7 +1273,7 @@ users (MySQL) user_id, name, avatar, follower_count, is_celebrity`,
 <blockquote>💡 Real world: replicate hot celebrity posts across several cache nodes (or use a local in-process cache) — one viral post can make a single Memcached shard a hot key.</blockquote>`,
         he: `<p>ה-feed cache שומר <strong>רק IDs</strong>, אף פעם לא פוסטים מלאים. למה: אחרת פוסט שנערך או נמחק היה צריך עדכון במיליוני feeds, ו-ID זה 16 B לעומת ~1 KB.</p>
 <ul><li><code>feed:{uid}</code> הוא sorted set ב-Redis (score = post_id, שהוא Snowflake וממוין לפי זמן) עם תקרה של 500 בעזרת <code>ZREMRANGEBYRANK</code>. עמודים ישנים יותר נופלים ל-pull מה-DB — נדיר, מעט משתמשים גוללים מעבר ל-500.</li>
-<li><strong>Hydration:</strong> לוקחים 20 ids → multi-get מ-Memcached <code>post:{id}</code> (hit ratio של 95%+ כי פוסטים חדשים חמים) → multi-get של כותבים מ-user cache → counters. מריצים את הקריאות במקביל; ה-dependency הכי איטי קובע את ה-P99.</li>
+<li><strong>Hydration:</strong> לוקחים 20 ids ← multi-get מ-Memcached <code>post:{id}</code> (hit ratio של 95%+ כי פוסטים חדשים חמים) ← multi-get של כותבים מ-user cache ← counters. מריצים את הקריאות במקביל; ה-dependency הכי איטי קובע את ה-P99.</li>
 <li><strong>Pagination</strong> עם cursor (ה-post_id/score האחרון שנראה), לא offset — פוסטים חדשים שנכנסים למעלה היו מזיזים את ה-offsets ויוצרים כפילויות.</li>
 <li><strong>מחיקות/חסימות:</strong> מסננים בזמן קריאה (בדיקת tombstone, בדיקת block list) במקום לנקות כל feed.</li></ul>
 <blockquote>💡 מהשטח: משכפלים פוסטים חמים של סלבס על כמה cache nodes (או local in-process cache) — פוסט ויראלי אחד יכול להפוך shard יחיד של Memcached ל-hot key.</blockquote>`
@@ -1308,7 +1308,7 @@ users (MySQL) user_id, name, avatar, follower_count, is_celebrity`,
         he: `<p><strong>Like counters:</strong> פוסט ויראלי יכול לקבל 50K likes בשנייה. <code>UPDATE posts SET likes = likes + 1</code> על שורה אחת מסתדר בתור על row lock. במקום זה: <code>INCR</code> ב-Redis (sharded counters <code>likes:{post}:{0..15}</code> לפוסטים הכי חמים), ו-flush של הדלתאות המצטברות ל-DB כל כמה שניות. ה-feed מציג מספר מקורב — אף אחד לא שם לב ל-1,204,331 מול 1,204,350.</p>
 <p><strong>Failure modes ששווה להזכיר:</strong></p>
 <ul><li><strong>Node של Redis feed נפל:</strong> ה-feeds שעליו נבנים מחדש on demand ב-pull מהנעקבים (איטי יותר למשתמשים האלה, לא down). Replicas מונעים rebuild storm קר.</li>
-<li><strong>Fan-out lag:</strong> ה-consumer lag ב-Kafka גדל אחרי burst → פוסטים מופיעים באיחור. מנטרים את ה-lag כ-SLI ("95% מהפוסטים מופיעים אצל העוקבים תוך 10 שניות") ועושים autoscale ל-workers לפי lag.</li>
+<li><strong>Fan-out lag:</strong> ה-consumer lag ב-Kafka גדל אחרי burst ← פוסטים מופיעים באיחור. מנטרים את ה-lag כ-SLI ("95% מהפוסטים מופיעים אצל העוקבים תוך 10 שניות") ועושים autoscale ל-workers לפי lag.</li>
 <li><strong>Thundering herd ב-cache miss</strong> על פוסט ויראלי: request coalescing (single-flight) כך שרק בקשה אחת מגיעה ל-DB.</li></ul>
 <p>SLOs מרכזיים: feed P99 latency מתחת ל-200ms, availability של 99.95%, freshness של fan-out תוך 10 שניות.</p>`
       }
@@ -1373,11 +1373,11 @@ window.INFRA.designs.push({
 <p><strong>Memory:</strong> the head block (last ~2h) keeps every active series in RAM: ~3-4 KB/series incl. index → 50M × 4 KB ≈ <strong>200 GB RAM</strong>, ×3 replication = 600 GB → e.g. 20 ingesters × 32 GB. This is why cardinality, not sample rate, sizes the cluster.</p>
 <p><strong>Alerts:</strong> 20,000 rules evaluated every 30s ≈ 670 rule evaluations/sec — mostly hitting the in-memory head.</p>`,
     he: `<p><strong>Series:</strong> 10,000 hosts × בערך 5,000 series לכל אחד (node exporter + containers + metrics של האפליקציה) = <strong>50M active series</strong>.</p>
-<p><strong>קצב קליטה:</strong> scrape כל 15 שניות → 50M / 15 ≈ <strong>3.3M samples לשנייה</strong>.</p>
-<p><strong>בייטים:</strong> דחיסה בסגנון Gorilla (delta-of-delta על timestamps ו-XOR על הערכים) נותנת כ-1.3 בייט ל-sample. 3.3M × 1.3 ≈ 4.3 MB/s → × 86,400 ≈ <strong>כ-375 GB ביום</strong> דחוס. התעבורה ברשת (remote_write עם snappy) בערך 33 MB/s – לא סיפור.</p>
+<p><strong>קצב קליטה:</strong> scrape כל 15 שניות ← 50M / 15 ≈ <strong>3.3M samples לשנייה</strong>.</p>
+<p><strong>בייטים:</strong> דחיסה בסגנון Gorilla (delta-of-delta על timestamps ו-XOR על הערכים) נותנת כ-1.3 בייט ל-sample. 3.3M × 1.3 ≈ 4.3 MB/s ← × 86,400 ≈ <strong>כ-375 GB ביום</strong> דחוס. התעבורה ברשת (remote_write עם snappy) בערך 33 MB/s – לא סיפור.</p>
 <p><strong>Retention של raw ל-15 יום:</strong> 375 GB × 15 ≈ 5.6 TB; × 3 replicas ≈ <strong>17 TB</strong> על SSD מקומי ב-fleet.</p>
-<p><strong>Downsampled לשנה:</strong> rollups של 5 דקות = פי 20 פחות נקודות, אבל כל נקודה מחזיקה min/max/sum/count (כ-4 ערכים) → בערך פי 5 קטן מ-raw ≈ 75 GB ביום × 365 ≈ <strong>27 TB</strong> ב-S3 (זול, בערך 600$ לחודש).</p>
-<p><strong>זיכרון:</strong> ה-head block (השעתיים האחרונות) מחזיק כל active series ב-RAM: בערך 3-4 KB ל-series כולל אינדקס → 50M × 4 KB ≈ <strong>200 GB RAM</strong>, × 3 replication = 600 GB → למשל 20 ingesters עם 32 GB. בגלל זה cardinality, ולא קצב ה-samples, הוא מה שקובע את גודל הקלאסטר.</p>
+<p><strong>Downsampled לשנה:</strong> rollups של 5 דקות = פי 20 פחות נקודות, אבל כל נקודה מחזיקה min/max/sum/count (כ-4 ערכים) ← בערך פי 5 קטן מ-raw ≈ 75 GB ביום × 365 ≈ <strong>27 TB</strong> ב-S3 (זול, בערך 600$ לחודש).</p>
+<p><strong>זיכרון:</strong> ה-head block (השעתיים האחרונות) מחזיק כל active series ב-RAM: בערך 3-4 KB ל-series כולל אינדקס ← 50M × 4 KB ≈ <strong>200 GB RAM</strong>, × 3 replication = 600 GB ← למשל 20 ingesters עם 32 GB. בגלל זה cardinality, ולא קצב ה-samples, הוא מה שקובע את גודל הקלאסטר.</p>
 <p><strong>Alerts:</strong> 20,000 rules שמוערכים כל 30 שניות ≈ 670 הערכות לשנייה, רובן על ה-head שבזיכרון.</p>`
   },
   api: `# Write (Prometheus remote_write compatible, protobuf + snappy)
@@ -1584,11 +1584,11 @@ window.INFRA.designs.push({
 <p><strong>Full-text index (Elasticsearch/OpenSearch) for everything, 7 days:</strong> index size ≈ 1× raw, + 1 replica → 43 × 7 × 2 ≈ <strong>600 TB of SSD</strong>. At ~$0.10/GB-month for EBS gp3 alone that is ~$60k/month before compute — the reason to avoid indexing everything.</p>
 <p><strong>Label-indexed + object storage (Loki/ClickHouse style):</strong> compressed chunks ~10× → 4.3 TB/day in S3. 30 days ≈ 130 TB × $0.023 ≈ <strong>$3k/month</strong>. 1 year in Glacier Instant/Deep Archive: 1.6 PB × $0.004 ≈ $6.4k/month, or ~$1.6k on Deep Archive.</p>
 <p><strong>Query math:</strong> "service X, last 1h" = 1/1000 of volume ≈ 43 TB/24/1000 ≈ 1.8 GB raw → ~180 MB compressed — scannable in seconds by 20 parallel queriers. Full-text across <em>all</em> services for 1h = 1.8 TB raw — this is where you need either an index or a lot of parallel compute.</p>`,
-    he: `<p><strong>נפח:</strong> 1,000 services × בערך 10 pods × בערך 100 שורות לשנייה = <strong>1M שורות לשנייה</strong>. שורה ממוצעת כ-500 בייט (JSON + metadata) → 500 MB/s → × 86,400 ≈ <strong>43 TB ביום raw</strong>.</p>
-<p><strong>Kafka כ-buffer:</strong> 500 MB/s נכנס, דחיסת zstd בערך פי 4 → 125 MB/s לדיסק. Retention של 24 שעות × RF=3: 125 MB × 86,400 × 3 ≈ <strong>32 TB</strong> על כל ה-brokers. בערך 200 partitions (כ-50 MB/s בנוחות לכל partition בשיא), וכ-12 brokers עם 4 TB NVMe כל אחד.</p>
-<p><strong>Full-text index (Elasticsearch/OpenSearch) על הכל ל-7 ימים:</strong> גודל האינדקס ≈ פי 1 מה-raw, + replica → 43 × 7 × 2 ≈ <strong>600 TB של SSD</strong>. ב-0.10$ ל-GB לחודש על EBS gp3 בלבד זה כ-60k$ לחודש לפני compute – וזו הסיבה לא לאנדקס הכל.</p>
-<p><strong>Index רק על labels + object storage (בסגנון Loki/ClickHouse):</strong> chunks דחוסים פי 10 → 4.3 TB ביום ב-S3. 30 יום ≈ 130 TB × 0.023$ ≈ <strong>3k$ לחודש</strong>. שנה ב-Glacier: 1.6 PB × 0.004$ ≈ 6.4k$ לחודש, או כ-1.6k$ ב-Deep Archive.</p>
-<p><strong>חשבון שאילתות:</strong> "service X, שעה אחרונה" = 1/1000 מהנפח ≈ 43 TB/24/1000 ≈ 1.8 GB raw → כ-180 MB דחוס – 20 queriers במקביל סורקים את זה בשניות. Full-text על <em>כל</em> ה-services לשעה = 1.8 TB raw – פה צריך או אינדקס או הרבה compute מקבילי.</p>`
+    he: `<p><strong>נפח:</strong> 1,000 services × בערך 10 pods × בערך 100 שורות לשנייה = <strong>1M שורות לשנייה</strong>. שורה ממוצעת כ-500 בייט (JSON + metadata) ← 500 MB/s ← × 86,400 ≈ <strong>43 TB ביום raw</strong>.</p>
+<p><strong>Kafka כ-buffer:</strong> 500 MB/s נכנס, דחיסת zstd בערך פי 4 ← 125 MB/s לדיסק. Retention של 24 שעות × RF=3: 125 MB × 86,400 × 3 ≈ <strong>32 TB</strong> על כל ה-brokers. בערך 200 partitions (כ-50 MB/s בנוחות לכל partition בשיא), וכ-12 brokers עם 4 TB NVMe כל אחד.</p>
+<p><strong>Full-text index (Elasticsearch/OpenSearch) על הכל ל-7 ימים:</strong> גודל האינדקס ≈ פי 1 מה-raw, + replica ← 43 × 7 × 2 ≈ <strong>600 TB של SSD</strong>. ב-0.10$ ל-GB לחודש על EBS gp3 בלבד זה כ-60k$ לחודש לפני compute – וזו הסיבה לא לאנדקס הכל.</p>
+<p><strong>Index רק על labels + object storage (בסגנון Loki/ClickHouse):</strong> chunks דחוסים פי 10 ← 4.3 TB ביום ב-S3. 30 יום ≈ 130 TB × 0.023$ ≈ <strong>3k$ לחודש</strong>. שנה ב-Glacier: 1.6 PB × 0.004$ ≈ 6.4k$ לחודש, או כ-1.6k$ ב-Deep Archive.</p>
+<p><strong>חשבון שאילתות:</strong> "service X, שעה אחרונה" = 1/1000 מהנפח ≈ 43 TB/24/1000 ≈ 1.8 GB raw ← כ-180 MB דחוס – 20 queriers במקביל סורקים את זה בשניות. Full-text על <em>כל</em> ה-services לשעה = 1.8 TB raw – פה צריך או אינדקס או הרבה compute מקבילי.</p>`
   },
   api: `# Collection is not an API: agents tail /var/log/pods/*/*.log on each node.
 
@@ -1800,10 +1800,10 @@ window.INFRA.designs.push({
 <p><strong>Compute cost:</strong> 25,000 jobs × 10 min × 4 vCPU ≈ 1M vCPU-minutes/day ≈ 16,700 vCPU-hours/day. On spot at ~$0.01/vCPU-h ≈ $170/day (~$5k/month); on-demand ~3× that. Always-on fleet sized for peak would be 6,200 × 24 × $0.04 ≈ $6k/day — autoscaling is the whole game.</p>
 <p><strong>Artifacts:</strong> 2,500 runs × ~1 image × ~500 MB = 1.25 TB/day logical, but layer dedup leaves maybe ~10% new layers → ~125 GB/day. 30-day retention for non-release builds ≈ 4 TB; releases kept forever (small).</p>
 <p><strong>Cache traffic:</strong> 25,000 jobs × ~1 GB of dependencies = 25 TB/day if downloaded from the internet each time — a local cache/proxy (Artifactory/Nexus, S3-backed build cache) in the same AZ turns this into fast LAN reads and removes npm/Maven rate-limit failures.</p>`,
-    he: `<p><strong>Pipelines:</strong> 500 מהנדסים × בערך 5 pushes ביום = 2,500 ריצות pipeline ביום, כל אחת מתפצלת לכ-10 jobs → <strong>25,000 jobs ביום</strong>.</p>
-<p><strong>מקביליות בשיא:</strong> העבודה מתרכזת בכ-8 שעות → 3,100 jobs בשעה בממוצע; שעת שיא (אחרי ה-stand-up, לפני release cut) בערך פי 3 → כ-9,400 jobs בשעה. Job ממוצע 10 דקות → לפי Little's law: מקביליות = 9,400/60 × 10 ≈ <strong>1,560 jobs במקביל</strong>. עם 4 vCPU ו-8 GB לכל אחד → כ-6,200 vCPU בשיא, וכמעט 0 בלילה.</p>
+    he: `<p><strong>Pipelines:</strong> 500 מהנדסים × בערך 5 pushes ביום = 2,500 ריצות pipeline ביום, כל אחת מתפצלת לכ-10 jobs ← <strong>25,000 jobs ביום</strong>.</p>
+<p><strong>מקביליות בשיא:</strong> העבודה מתרכזת בכ-8 שעות ← 3,100 jobs בשעה בממוצע; שעת שיא (אחרי ה-stand-up, לפני release cut) בערך פי 3 ← כ-9,400 jobs בשעה. Job ממוצע 10 דקות ← לפי Little's law: מקביליות = 9,400/60 × 10 ≈ <strong>1,560 jobs במקביל</strong>. עם 4 vCPU ו-8 GB לכל אחד ← כ-6,200 vCPU בשיא, וכמעט 0 בלילה.</p>
 <p><strong>עלות compute:</strong> 25,000 jobs × 10 דקות × 4 vCPU ≈ מיליון vCPU-דקות ביום ≈ 16,700 vCPU-שעות ביום. על spot בכ-0.01$ ל-vCPU-שעה ≈ 170$ ביום (כ-5k$ לחודש); on-demand בערך פי 3. Fleet קבוע בגודל השיא היה 6,200 × 24 × 0.04$ ≈ 6k$ ביום – autoscaling זה כל הסיפור.</p>
-<p><strong>Artifacts:</strong> 2,500 ריצות × בערך image אחד × כ-500 MB = 1.25 TB ביום לוגי, אבל dedup של layers משאיר אולי 10% layers חדשים → כ-125 GB ביום. Retention של 30 יום ל-builds שאינם release ≈ 4 TB; releases נשמרים לתמיד (קטן).</p>
+<p><strong>Artifacts:</strong> 2,500 ריצות × בערך image אחד × כ-500 MB = 1.25 TB ביום לוגי, אבל dedup של layers משאיר אולי 10% layers חדשים ← כ-125 GB ביום. Retention של 30 יום ל-builds שאינם release ≈ 4 TB; releases נשמרים לתמיד (קטן).</p>
 <p><strong>תעבורת cache:</strong> 25,000 jobs × בערך 1 GB של dependencies = 25 TB ביום אם מורידים כל פעם מהאינטרנט – cache/proxy מקומי (Artifactory/Nexus, build cache על S3) באותו AZ הופך את זה לקריאות LAN מהירות ומעלים כשלים של rate limit מ-npm/Maven.</p>`
   },
   api: `# Webhook from Git (GitHub/GitLab)
@@ -1877,7 +1877,7 @@ Desired state for deploys: Git repo "env-config" (GitOps) per cluster`,
         he: `<p>כל job רץ ב-<strong>pod חדש וזמני</strong> (או Firecracker microVM לבידוד חזק יותר) שנהרס בסוף. זה הורג את ה-flakiness הקלאסי של "עובד על runner 7 כי מישהו השאיר שם קובץ", ומונע מ-PR זדוני להשתרש על host משותף.</p>
 <ul>
 <li><strong>Pull model:</strong> ה-runners מושכים jobs מה-scheduler (רק outbound), כך שהם יכולים לשבת ב-private subnets בלי לפתוח חורים ב-firewall.</li>
-<li><strong>Autoscaling:</strong> לפי <em>עומק התור וזמן ההמתנה</em>, לא לפי CPU. KEDA קורא כמה jobs ממתינים לכל label → pods; Karpenter מרים spot nodes תוך כדקה. מחזיקים warm pool קטן (למשל 50 runners) בשעות העבודה כדי להסתיר את זמן עליית ה-node.</li>
+<li><strong>Autoscaling:</strong> לפי <em>עומק התור וזמן ההמתנה</em>, לא לפי CPU. KEDA קורא כמה jobs ממתינים לכל label ← pods; Karpenter מרים spot nodes תוך כדקה. מחזיקים warm pool קטן (למשל 50 runners) בשעות העבודה כדי להסתיר את זמן עליית ה-node.</li>
 <li><strong>Spot interruptions:</strong> CI סובל retry בקלות; ה-scheduler מסמן jobs שנקטעו ומכניס אותם שוב לתור (attempt+1), בלי לספור את זה ככישלון טסט.</li>
 <li><strong>רמות אמון:</strong> PRs מ-forks רצים ב-pool בלי secrets ובלי גישת רשת למערכות פנימיות; pipelines של main ו-release רצים ב-pool נפרד עם credentials קצרי-חיים שמונפקים דרך OIDC.</li>
 </ul>
@@ -1919,7 +1919,7 @@ Desired state for deploys: Git repo "env-config" (GitOps) per cluster`,
 <li><strong>Storage:</strong> registry backed by S3 (ECR/Harbor), replicated to each deploy region so pulls are local; lifecycle rules delete untagged PR images after 30 days, release images kept.</li>
 </ul>
 <blockquote>💡 When a CVE like Log4Shell hits, SBOMs let you answer "which running services contain log4j 2.14?" in minutes instead of days.</blockquote>`,
-        he: `<p>הכלל: <strong>בונים פעם אחת, מריצים את אותם בייטים בכל מקום</strong>. ה-image שנבנה מ-commit <code>abc123</code> נדחף פעם אחת, מזוהה לפי ה-digest הקבוע שלו (<code>sha256</code>), ובדיוק ה-digest הזה מקודם dev → staging → prod. לעולם לא בונים מחדש בשביל prod ולעולם לא עושים deploy ל-<code>:latest</code>.</p>
+        he: `<p>הכלל: <strong>בונים פעם אחת, מריצים את אותם בייטים בכל מקום</strong>. ה-image שנבנה מ-commit <code>abc123</code> נדחף פעם אחת, מזוהה לפי ה-digest הקבוע שלו (<code>sha256</code>), ובדיוק ה-digest הזה מקודם dev ← staging ← prod. לעולם לא בונים מחדש בשביל prod ולעולם לא עושים deploy ל-<code>:latest</code>.</p>
 <ul>
 <li><strong>חתימה:</strong> חותמים images עם cosign (Sigstore) בעזרת זהות OIDC של ה-pipeline (keyless); admission controller (Kyverno/Gatekeeper) ב-prod דוחה images לא חתומים או כאלה שלא נבנו ב-pipeline המהימן.</li>
 <li><strong>Provenance ו-SBOM:</strong> מצרפים SLSA provenance (איזה repo, commit, builder) ו-SBOM (Syft); סורקים עם Trivy/Grype וחוסמים CVEs קריטיים לפי policy.</li>
@@ -1945,10 +1945,10 @@ Desired state for deploys: Git repo "env-config" (GitOps) per cluster`,
 <ol>
 <li>Deploy של canary ל-5% מהתעבורה (דרך weights ב-service mesh או ב-ingress).</li>
 <li>ניתוח אוטומטי במשך 10 דקות: משווים canary מול stable על error rate, p99 latency ו-saturation מ-Prometheus.</li>
-<li>עבר → 25% → 50% → 100%. נכשל → abort אוטומטי, התעבורה חוזרת ל-stable תוך שניות.</li>
+<li>עבר ← 25% ← 50% ← 100%. נכשל ← abort אוטומטי, התעבורה חוזרת ל-stable תוך שניות.</li>
 <li>מתקדמים קלאסטר אחרי קלאסטר / region אחרי region (prod-eu ואז prod-us) כדי להגביל blast radius.</li>
 </ol>
-<p><strong>Rollback</strong> = להצביע חזרה על ה-digest הקודם (עדיין ב-registry ועדיין ב-cache על ה-nodes), אז זה לוקח שניות. החלק הקשה הוא <em>הדאטה</em>: DB migrations חייבות להיות backward compatible (expand → migrate → contract), כדי שהגרסה הישנה תוכל לרוץ מול ה-schema החדש.</p>`
+<p><strong>Rollback</strong> = להצביע חזרה על ה-digest הקודם (עדיין ב-registry ועדיין ב-cache על ה-nodes), אז זה לוקח שניות. החלק הקשה הוא <em>הדאטה</em>: DB migrations חייבות להיות backward compatible (expand ← migrate ← contract), כדי שהגרסה הישנה תוכל לרוץ מול ה-schema החדש.</p>`
       }
     },
     {
@@ -2031,9 +2031,9 @@ window.INFRA.designs.push({
 <p><strong>Cost of warm standby:</strong> current compute ~$80k/month. Standby at 25% compute ($20k) + full-size DB replica ($6k) + replicated storage ($1.2k) ≈ <strong>$27k/month ≈ 34% overhead</strong>. Active-active at full size ≈ +100%.</p>
 <p><strong>RTO budget:</strong> detect 2-3 min + decide 2-5 min + promote DB 1-2 min + scale standby from 25% to 100% (Karpenter nodes ~2-3 min) + DNS TTL 60 s ≈ <strong>10-14 min</strong>, inside the 15-minute target.</p>`,
     he: `<p><strong>תעבורה:</strong> 5M משתמשים ביום, ~50 צפיות בדף לכל אחד = 250M בקשות ביום ÷ 86,400 ≈ <strong>3,000 RPS בממוצע</strong>, peak פי 3 ≈ 9,000 RPS (בבלאק פריידי פי 10 = 30,000 RPS). הזמנות: 200k ביום ≈ 2.3 כתיבות בשנייה בממוצע, peak בערך 25 לשנייה — מסלול הכתיבה זעיר, הקריאות שולטות.</p>
-<p><strong>DB:</strong> Postgres של 2 TB, נוצר ~20 GB של WAL ביום ≈ 230 KB/s בממוצע, peaks של ~5 MB/s בזמן batch jobs. כלומר רוחב הפס לרפליקציה בין regions זניח (&lt; 50 Mbps), וה-RTT בין us-east-1 ל-us-west-2 הוא בערך 65 ms. ה-lag של replica אסינכרוני בדרך כלל מתחת לשנייה → RPO הרבה מתחת לדקה.</p>
+<p><strong>DB:</strong> Postgres של 2 TB, נוצר ~20 GB של WAL ביום ≈ 230 KB/s בממוצע, peaks של ~5 MB/s בזמן batch jobs. כלומר רוחב הפס לרפליקציה בין regions זניח (&lt; 50 Mbps), וה-RTT בין us-east-1 ל-us-west-2 הוא בערך 65 ms. ה-lag של replica אסינכרוני בדרך כלל מתחת לשנייה ← RPO הרבה מתחת לדקה.</p>
 <p><strong>למה לא סינכרוני?</strong> commit סינכרוני מוסיף RTT אחד (≈65 ms) לכל טרנזקציה. ל-25 הזמנות בשנייה זה בסדר, אבל כל כתיבה (עגלות, sessions, מלאי) תשלם את זה — אז נשארים אסינכרוניים ומגינים על הזמנות עם idempotency ו-reconciliation.</p>
-<p><strong>Object storage:</strong> 50 TB תמונות עם S3 Cross-Region Replication: בערך $0.02 ל-GB העברה → העתקה ראשונית ≈ $1,000, ואז רק דלתות יומיות (~50 GB ביום ≈ $1 ליום).</p>
+<p><strong>Object storage:</strong> 50 TB תמונות עם S3 Cross-Region Replication: בערך $0.02 ל-GB העברה ← העתקה ראשונית ≈ $1,000, ואז רק דלתות יומיות (~50 GB ביום ≈ $1 ליום).</p>
 <p><strong>עלות warm standby:</strong> compute היום בערך $80k בחודש. standby ב-25% compute ($20k) + DB replica בגודל מלא ($6k) + storage משוכפל ($1.2k) ≈ <strong>$27k בחודש ≈ 34% תוספת</strong>. active-active בגודל מלא ≈ פי 2.</p>
 <p><strong>תקציב RTO:</strong> זיהוי 2-3 דק' + החלטה 2-5 דק' + promote ל-DB דקה-שתיים + scale של ה-standby מ-25% ל-100% (nodes של Karpenter ~2-3 דק') + DNS TTL של 60 שניות ≈ <strong>10-14 דקות</strong>, בתוך יעד ה-15.</p>`
   },
@@ -2103,7 +2103,7 @@ dr_state (in DynamoDB global table or Route 53 ARC): {active_region, fenced_regi
         he: `<p>ה-tier ה-stateless קל; <strong>ה-state הוא כל הבעיה</strong>. לפי store:</p>
 <ul><li><strong>Postgres:</strong> streaming replica פיזי אסינכרוני ב-us-west-2 (או Aurora Global Database, lag טיפוסי מתחת לשנייה, promote מנוהל של כדקה). alert על <code>replica_lag_seconds &gt; 30</code> — ה-lag <em>הוא</em> ה-RPO החי שלך.</li>
 <li><strong>S3:</strong> CRR עם Replication Time Control (99.99% מהאובייקטים תוך 15 דקות). לתמונות קטלוג זה מספיק.</li>
-<li><strong>Redis:</strong> מתייחסים אליו כ-cache בלבד, בלי רפליקציה. אחרי failover הוא מתחיל קר → מגינים על ה-DB עם request coalescing ועושים pre-warm ל-10k מפתחות המוצר החמים.</li>
+<li><strong>Redis:</strong> מתייחסים אליו כ-cache בלבד, בלי רפליקציה. אחרי failover הוא מתחיל קר ← מגינים על ה-DB עם request coalescing ועושים pre-warm ל-10k מפתחות המוצר החמים.</li>
 <li><strong>Kafka:</strong> MirrorMaker 2 עם offset translation כדי שה-consumers ימשיכו בערך מאיפה שהפסיקו; ה-consumers חייבים להיות idempotent כי חלק מההודעות יחזרו.</li></ul>
 <p>הרגע המסוכן הוא outage <em>חלקי</em>: ה-health checker לא רואה את east, אבל east עדיין חי ומקבל כתיבות. אם עושים promote גם ל-west, יש שני primaries — split-brain. הפתרון הוא <strong>fencing</strong>: לפני ה-promote, משנים flag ב-control plane שיושב מחוץ לשני ה-regions (Route 53 Application Recovery Controller, או DynamoDB global table עם מספר epoch) שה-app ב-east בודק ועובר ל-read-only; ובנוסף סוגרים את ה-security group של ה-DB ב-east.</p>`
       }
@@ -2134,7 +2134,7 @@ dr_state (in DynamoDB global table or Route 53 ARC): {active_region, fenced_regi
 <blockquote>⚠️ Production tip: the payment provider is a hidden single point of truth — and also a hidden SPOF. Check its own multi-region story.</blockquote>`,
         he: `<p>ברפליקציה אסינכרונית, השנייה האחרונה של commits ב-east עלולה לא להגיע ל-west לעולם. את הכלל העסקי "אף הזמנה מאושרת לא אובדת או מחויבת פעמיים" משיגים ב-design, לא ברפליקציה:</p>
 <ul><li>כל checkout נושא <strong>idempotency key</strong> שנוצר בצד הלקוח; ספק התשלומים (Stripe וכו') נקרא עם אותו key, כך ש-retry מ-west אחרי failover לא יחייב פעמיים.</li>
-<li>מיילים של אישור הזמנה יוצאים דרך טבלת outbox → Kafka, כך שהזמנה שנאבדה ב-DB גם לא שלחה מייל.</li>
+<li>מיילים של אישור הזמנה יוצאים דרך טבלת outbox ← Kafka, כך שהזמנה שנאבדה ב-DB גם לא שלחה מייל.</li>
 <li>אחרי failover רץ <strong>reconciliation job</strong> שמושך מספק התשלומים את רשימת החיובים המוצלחים בחלון ה-outage ומשווה מול ההזמנות ב-primary החדש. הזמנות חסרות נוצרות מחדש מהדאטה של הספק; חיובים יתומים מקבלים refund.</li>
 <li>כש-east חוזר, אף פעם לא פשוט "מחברים אותו בחזרה": את הזנב שלא שוכפל (הכתיבות ה"אבודות") שולפים עם logical decoding לבדיקה, ואז בונים את east מחדש כ-replica טרי של west.</li></ul>
 <blockquote>⚠️ טיפ מה-production: ספק התשלומים הוא single source of truth נסתר — וגם SPOF נסתר. תבדוק מה הסיפור ה-multi-region שלו.</blockquote>`
@@ -2197,7 +2197,7 @@ window.INFRA.designs.push({
     { en: "Scale: daily active viewers, uploads per day, average video length?", he: "סקייל: כמה צופים פעילים ביום, כמה העלאות ביום, מה אורך ממוצע של וידאו?" },
     { en: "Is live streaming in scope, or only video on demand?", he: "Live streaming בסקופ, או רק video on demand?" },
     { en: "Which devices and max resolution (4K, HDR)? Do we need DRM?", he: "אילו מכשירים ומה הרזולוציה המקסימלית (4K, HDR)? צריך DRM?" },
-    { en: "Are search, recommendations, comments in scope, or focus on upload → playback?", he: "חיפוש, המלצות ותגובות בסקופ, או להתמקד ב-upload → playback?" },
+    { en: "Are search, recommendations, comments in scope, or focus on upload → playback?", he: "חיפוש, המלצות ותגובות בסקופ, או להתמקד ב-upload ← playback?" },
     { en: "How fast must an uploaded video become watchable?", he: "תוך כמה זמן וידאו שהועלה צריך להיות זמין לצפייה?" }
   ],
   functional: [
@@ -2222,10 +2222,10 @@ window.INFRA.designs.push({
 <p><strong>Metadata:</strong> 500k new rows/day, tiny. View-count writes: 500M views/day ÷ 86,400 ≈ 6k/s → aggregate in Kafka/stream processor, not per-view DB updates.</p>`,
     he: `<p><strong>צפייה:</strong> 100M DAU × 5 סרטונים × 6 דקות בממוצע = 3B דקות ביום. מקביליות: 3B דקות ÷ 1,440 דקות ביממה ≈ 2M streams במקביל בממוצע, peak (ערב) פי 2.5 ≈ <strong>5M streams במקביל</strong>.</p>
 <p><strong>רוחב פס:</strong> bitrate ממוצע שנמסר ~3 Mbps (תמהיל של 480p-1080p במובייל ובדסקטופ). 5M × 3 Mbps = <strong>15 Tbps egress ב-peak</strong>. בגלל זה CDN (ועוד caches שיושבים אצל ספקי האינטרנט, כמו Netflix Open Connect) הוא לא אופציונלי — שום origin לא מגיש 15 Tbps. עם hit ratio של 98% ב-CDN, ה-origin רואה 2% ≈ 300 Gbps.</p>
-<p><strong>העלאות:</strong> 500k סרטונים ביום × 300 MB גולמי בממוצע = 150 TB ביום של מקורות → ≈ 1.7 GB/s ingest (≈ 14 Gbps).</p>
-<p><strong>אחסון:</strong> ה-ladder המקודד (~6 renditions × 2 codecs, H.264 + AV1) ≈ פי 1.5 מגודל המקור → 150 TB × 2.5 (מקור + renditions) ≈ <strong>375 TB ביום ≈ 135 PB בשנה</strong>. לכן lifecycle: מעבירים מקורות ל-S3 Glacier אחרי 30 יום, ומוחקים renditions של סרטונים שכמעט לא נצפים (re-transcode on demand).</p>
-<p><strong>Compute ל-transcoding:</strong> 500k סרטונים × 7 דקות בממוצע = 3.5M דקות וידאו ביום. קידוד ladder מלא עולה ~שעת CPU לכל דקת וידאו (AV1 + H.264 בתוכנה) → 3.5M שעות CPU ביום ÷ 24 ≈ <strong>146k vCPUs באופן קבוע</strong> → משתמשים ב-spot instances, ב-GPUs/ASICs (YouTube משתמשים ב-VCUs ייעודיים), ומקודדים AV1 רק לסרטונים פופולריים.</p>
-<p><strong>מטא-דאטה:</strong> 500k שורות חדשות ביום, זניח. כתיבות של מונה צפיות: 500M צפיות ביום ÷ 86,400 ≈ 6k לשנייה → מאגרגים ב-Kafka/stream processor, לא update ל-DB על כל צפייה.</p>`
+<p><strong>העלאות:</strong> 500k סרטונים ביום × 300 MB גולמי בממוצע = 150 TB ביום של מקורות ← ≈ 1.7 GB/s ingest (≈ 14 Gbps).</p>
+<p><strong>אחסון:</strong> ה-ladder המקודד (~6 renditions × 2 codecs, H.264 + AV1) ≈ פי 1.5 מגודל המקור ← 150 TB × 2.5 (מקור + renditions) ≈ <strong>375 TB ביום ≈ 135 PB בשנה</strong>. לכן lifecycle: מעבירים מקורות ל-S3 Glacier אחרי 30 יום, ומוחקים renditions של סרטונים שכמעט לא נצפים (re-transcode on demand).</p>
+<p><strong>Compute ל-transcoding:</strong> 500k סרטונים × 7 דקות בממוצע = 3.5M דקות וידאו ביום. קידוד ladder מלא עולה ~שעת CPU לכל דקת וידאו (AV1 + H.264 בתוכנה) ← 3.5M שעות CPU ביום ÷ 24 ≈ <strong>146k vCPUs באופן קבוע</strong> ← משתמשים ב-spot instances, ב-GPUs/ASICs (YouTube משתמשים ב-VCUs ייעודיים), ומקודדים AV1 רק לסרטונים פופולריים.</p>
+<p><strong>מטא-דאטה:</strong> 500k שורות חדשות ביום, זניח. כתיבות של מונה צפיות: 500M צפיות ביום ÷ 86,400 ≈ 6k לשנייה ← מאגרגים ב-Kafka/stream processor, לא update ל-DB על כל צפייה.</p>`
   },
   api: `POST /v1/videos {title, description, size_bytes, content_type}
      -> 201 {video_id, upload_id, part_urls:[presigned S3 multipart URLs]}
@@ -2278,7 +2278,7 @@ Object storage layout (S3):
 <li>Incomplete multipart uploads cost money forever — add a lifecycle rule to abort them after 7 days.</li></ul>
 <p>Originals are the only irreplaceable data: S3 Standard with versioning and cross-region replication, moved to Glacier Instant/Deep Archive after 30 days. Everything else can be regenerated.</p>`,
         he: `<p>אף פעם לא מזרימים העלאות של כמה GB דרך שרתי ה-API — זה יתפוס connections וזיכרון לדקות. במקום זה ה-API יוצר את שורת המטא-דאטה (status=<code>uploading</code>) ומחזיר <strong>presigned URLs ל-S3 multipart upload</strong>. ה-client מעלה parts של 8-64 MB במקביל ישירות ל-S3 (או ל-edge הקרוב עם S3 Transfer Acceleration); part שנכשל פשוט נשלח שוב, כך שחיבור מובייל שנפל לא מתחיל מחדש העלאה של 2 GB.</p>
-<ul><li>ב-<code>complete</code>, S3 מרכיב את האובייקט ומוציא event (S3 → EventBridge/SQS → Kafka <code>video.uploaded</code>).</li>
+<ul><li>ב-<code>complete</code>, S3 מרכיב את האובייקט ומוציא event (S3 ← EventBridge/SQS ← Kafka <code>video.uploaded</code>).</li>
 <li>מוודאים מוקדם: ffprobe על הקובץ לבדיקת אורך ו-codec, ומריצים בדיקות content-safety ו-fingerprinting לזכויות יוצרים (בסגנון Content ID) במקביל ל-transcoding.</li>
 <li>Multipart uploads שלא הושלמו עולים כסף לנצח — מוסיפים lifecycle rule שמבטל אותם אחרי 7 ימים.</li></ul>
 <p>קבצי המקור הם הדאטה היחיד שאי אפשר לשחזר: S3 Standard עם versioning ו-cross-region replication, ומעבר ל-Glacier Instant/Deep Archive אחרי 30 יום. כל השאר אפשר לייצר מחדש.</p>`
@@ -2326,7 +2326,7 @@ Object storage layout (S3):
 <li><strong>Multi-CDN</strong> (e.g. Akamai + CloudFront + Fastly) with client-side or DNS steering based on real-user measurements — for both resilience and price negotiation.</li>
 <li><strong>Security:</strong> signed URLs/cookies with short expiry and DRM for premium content; segment URLs are cacheable because the token is validated at the edge, not baked into the cache key.</li></ul>`,
         he: `<p>Egress הוא העלות מספר 1, אז ה-design של ה-CDN חשוב יותר מכל בחירת DB.</p>
-<ul><li><strong>Tiered caching:</strong> edge PoPs → <strong>origin shield</strong> אזורי → S3. ה-shield מכווץ אלפי misses של edges על אותו segment ל-fetch אחד מה-origin (request coalescing), מגן על S3 וחוסך כסף.</li>
+<ul><li><strong>Tiered caching:</strong> edge PoPs → <strong>origin shield</strong> אזורי ← S3. ה-shield מכווץ אלפי misses של edges על אותו segment ל-fetch אחד מה-origin (request coalescing), מגן על S3 וחוסך כסף.</li>
 <li><strong>פופולריות מתפלגת לפי power-law:</strong> ~10% מהסרטונים מקבלים ~90% מהצפיות. תוכן פופולרי נשאר חם ב-edges באופן טבעי; בקטלוג בסגנון Netflix <em>דוחפים מראש</em> את הכותרים שיהיו פופולריים מחר למכשירים שיושבים אצל ה-ISPs בלילה (Open Connect), כשהלינקים פנויים.</li>
 <li><strong>Long tail:</strong> סרטון שנצפה פעם בחודש תמיד יפספס את ה-edge — וזה בסדר, הוא מוגש מה-shield/S3 עם startup קצת יותר איטי.</li>
 <li><strong>Multi-CDN</strong> (למשל Akamai + CloudFront + Fastly) עם ניתוב בצד ה-client או ב-DNS לפי מדידות של משתמשים אמיתיים — גם לחוסן וגם למשא ומתן על מחיר.</li>
@@ -2342,7 +2342,7 @@ Object storage layout (S3):
 <li><strong>Average bitrate</strong> delivered and % of time at HD.</li>
 <li>Exits before video start (users giving up).</li></ul>
 <p>Slice everything by CDN, ISP, country, device and app version — a rebuffering spike limited to one ISP on one CDN is a peering problem, and multi-CDN steering can route around it automatically. Pipeline SLIs: time from upload-complete to playable (p95 &lt; 10 min), transcode failure rate, queue depth/age. Alert on queue age, not depth: 1M queued tasks with 50k workers may be fine, a 30-minute-old oldest task is not.</p>`,
-        he: `<p>מטריקות שרת (5xx ב-CDN, latency של ה-origin) נחוצות אבל מפספסות את מה שהמשתמש מרגיש. ה-SLIs האמיתיים מגיעים מ-<strong>טלמטריה בצד ה-client</strong> (ה-players שולחים beacon כל ~30 שניות ל-collector → Kafka → Flink/ClickHouse):</p>
+        he: `<p>מטריקות שרת (5xx ב-CDN, latency של ה-origin) נחוצות אבל מפספסות את מה שהמשתמש מרגיש. ה-SLIs האמיתיים מגיעים מ-<strong>טלמטריה בצד ה-client</strong> (ה-players שולחים beacon כל ~30 שניות ל-collector ← Kafka ← Flink/ClickHouse):</p>
 <ul><li><strong>Video start time</strong> (p50/p95) ו-<strong>video start failures</strong>.</li>
 <li><strong>Rebuffering ratio</strong> = זמן תקיעה ÷ זמן צפייה; יעד &lt; 0.5%.</li>
 <li><strong>Bitrate ממוצע</strong> שנמסר ואחוז הזמן ב-HD.</li>
@@ -2391,7 +2391,7 @@ window.INFRA.designs.push({
   ],
   functional: [
     { en: "Create/update/delete jobs with a cron expression, a one-off time, or a delay; time zones supported.", he: "יצירה/עדכון/מחיקה של jobs עם cron expression, זמן חד-פעמי או delay; עם תמיכה ב-time zones." },
-    { en: "Execute each scheduled run once (at-least-once delivery + idempotency keys → effectively once), with retries and backoff.", he: "להריץ כל ריצה מתוזמנת פעם אחת (at-least-once + idempotency keys → effectively once), עם retries ו-backoff." },
+    { en: "Execute each scheduled run once (at-least-once delivery + idempotency keys → effectively once), with retries and backoff.", he: "להריץ כל ריצה מתוזמנת פעם אחת (at-least-once + idempotency keys ← effectively once), עם retries ו-backoff." },
     { en: "Per-job policies: timeout, max retries, concurrency (allow / forbid overlap), misfire policy.", he: "מדיניות לכל job: timeout, מקסימום retries, concurrency (לאפשר / לאסור חפיפה), misfire policy." },
     { en: "Execution history, logs and alerting on failures or missed runs.", he: "היסטוריית הרצות, לוגים, ו-alerts על כשלונות או ריצות שפוספסו." }
   ],
@@ -2406,10 +2406,10 @@ window.INFRA.designs.push({
 <p><strong>Storage:</strong> job definitions 10M × 1 KB = 10 GB — fits in one Postgres, but we shard for write throughput. Execution history: 100M/day × 500 B = 50 GB/day → 30-day retention = 1.5 TB → time-partitioned table or Cassandra/ClickHouse with TTL.</p>
 <p><strong>Scheduler work:</strong> each trigger = read due job + write execution row + enqueue + update <code>next_run_at</code> ≈ 3-4 DB writes. 1,160/s × 4 ≈ 5k writes/s average, ~2M writes/s at the midnight spike → impossible for one DB in one second, so we <strong>pre-load</strong>: a minute ahead, schedulers fetch jobs due in the next 60 s into an in-memory timing wheel, spreading DB reads over a minute (500k ÷ 60 ≈ 8.3k rows/s).</p>
 <p><strong>Workers:</strong> if average run = 30 s, concurrency = 1,160 × 30 ≈ 35k jobs running at once on average (Little's law L = λ × W). With 50 concurrent jobs per worker pod → ~700 pods average, autoscale to several thousand on spikes — or ask tenants to add jitter.</p>`,
-    he: `<p><strong>Throughput:</strong> 100M הרצות ביום ÷ 86,400 ≈ <strong>1,160 טריגרים בשנייה בממוצע</strong>. אבל cron מאוד קוצני: בני אדם אוהבים <code>0 * * * *</code> ו-<code>0 0 * * *</code>. נניח ש-5% מהריצות היומיות יורות בתחילת שעה → 5M ÷ 24 ≈ 200k בשנייה אחת, ובמקרה הגרוע (חצות UTC) ~500k בשנייה.</p>
-<p><strong>אחסון:</strong> הגדרות jobs: 10M × 1 KB = 10 GB — נכנס ל-Postgres אחד, אבל עושים sharding בשביל throughput של כתיבות. היסטוריית הרצות: 100M ביום × 500 B = 50 GB ביום → retention של 30 יום = 1.5 TB → טבלה עם partitions לפי זמן, או Cassandra/ClickHouse עם TTL.</p>
-<p><strong>עבודת ה-scheduler:</strong> כל טריגר = קריאת ה-job + כתיבת שורת execution + enqueue + עדכון <code>next_run_at</code> ≈ 3-4 כתיבות ל-DB. 1,160 בשנייה × 4 ≈ 5k כתיבות בשנייה בממוצע, ~2M בשנייה ב-spike של חצות → בלתי אפשרי ל-DB אחד בשנייה אחת, אז עושים <strong>pre-load</strong>: דקה מראש, ה-schedulers מושכים את ה-jobs של 60 השניות הבאות ל-timing wheel בזיכרון, ומפזרים את הקריאות מה-DB על דקה (500k ÷ 60 ≈ 8.3k שורות בשנייה).</p>
-<p><strong>Workers:</strong> אם ריצה ממוצעת = 30 שניות, המקביליות = 1,160 × 30 ≈ 35k jobs רצים במקביל בממוצע (Little's law L = λ × W). עם 50 jobs במקביל לכל worker pod → ~700 pods בממוצע, autoscaling לכמה אלפים ב-spikes — או לבקש מהצוותים להוסיף jitter.</p>`
+    he: `<p><strong>Throughput:</strong> 100M הרצות ביום ÷ 86,400 ≈ <strong>1,160 טריגרים בשנייה בממוצע</strong>. אבל cron מאוד קוצני: בני אדם אוהבים <code>0 * * * *</code> ו-<code>0 0 * * *</code>. נניח ש-5% מהריצות היומיות יורות בתחילת שעה ← 5M ÷ 24 ≈ 200k בשנייה אחת, ובמקרה הגרוע (חצות UTC) ~500k בשנייה.</p>
+<p><strong>אחסון:</strong> הגדרות jobs: 10M × 1 KB = 10 GB — נכנס ל-Postgres אחד, אבל עושים sharding בשביל throughput של כתיבות. היסטוריית הרצות: 100M ביום × 500 B = 50 GB ביום ← retention של 30 יום = 1.5 TB ← טבלה עם partitions לפי זמן, או Cassandra/ClickHouse עם TTL.</p>
+<p><strong>עבודת ה-scheduler:</strong> כל טריגר = קריאת ה-job + כתיבת שורת execution + enqueue + עדכון <code>next_run_at</code> ≈ 3-4 כתיבות ל-DB. 1,160 בשנייה × 4 ≈ 5k כתיבות בשנייה בממוצע, ~2M בשנייה ב-spike של חצות ← בלתי אפשרי ל-DB אחד בשנייה אחת, אז עושים <strong>pre-load</strong>: דקה מראש, ה-schedulers מושכים את ה-jobs של 60 השניות הבאות ל-timing wheel בזיכרון, ומפזרים את הקריאות מה-DB על דקה (500k ÷ 60 ≈ 8.3k שורות בשנייה).</p>
+<p><strong>Workers:</strong> אם ריצה ממוצעת = 30 שניות, המקביליות = 1,160 × 30 ≈ 35k jobs רצים במקביל בממוצע (Little's law L = λ × W). עם 50 jobs במקביל לכל worker pod ← ~700 pods בממוצע, autoscaling לכמה אלפים ב-spikes — או לבקש מהצוותים להוסיף jitter.</p>`
   },
   api: `POST   /v1/jobs {name, schedule:"0 */5 * * *" | run_at | delay_s, tz:"Asia/Jerusalem",
                  target:{type:"http"|"kafka"|"container", ...}, payload,
@@ -2481,7 +2481,7 @@ Queues: Kafka topic "executions.ready" partitioned by tenant/job_id (or per-tena
 <blockquote>💡 Real world: this is how many internal schedulers work (e.g. Airbnb's, Dropbox's ATF); Kubernetes CronJob controller uses a single leader-elected controller because its scale is much smaller.</blockquote>`,
         he: `<p>Scheduler מוביל יחיד זה פשוט, אבל מגביל throughput והופך failover לעצירה מלאה. במקום זה מחלקים את ה-jobs ל-<strong>1024 shards לוגיים</strong> (<code>hash(job_id) % 1024</code>) ונותנים ל-N מופעי scheduler להחזיק כל אחד חלק מהם דרך <strong>leases ב-etcd/ZooKeeper</strong> (או אובייקטי Lease של Kubernetes).</p>
 <ul><li>Scheduler שמפסיק לחדש את ה-lease (קריסה, GC pause, partition) מאבד את ה-shards שלו אחרי ה-TTL (~10 שניות); אחרים לוקחים אותם וטוענים מחדש את ה-jobs שהגיע זמנם. זה זמן ה-failover ל-shards האלה.</li>
-<li>הבאג הקלאסי: scheduler A נתקע 20 שניות ב-GC, ה-lease שלו פג, B לוקח את ה-shard, A מתעורר ויורה jobs גם הוא → כפילויות. הפתרון: <strong>fencing token</strong> — כל הענקת lease מגדילה מספר; הכתיבות של A ל-DB כוללות אותו (<code>UPDATE ... WHERE shard_owner_token = :token</code>) ונדחות כשהוא ישן.</li>
+<li>הבאג הקלאסי: scheduler A נתקע 20 שניות ב-GC, ה-lease שלו פג, B לוקח את ה-shard, A מתעורר ויורה jobs גם הוא ← כפילויות. הפתרון: <strong>fencing token</strong> — כל הענקת lease מגדילה מספר; הכתיבות של A ל-DB כוללות אותו (<code>UPDATE ... WHERE shard_owner_token = :token</code>) ונדחות כשהוא ישן.</li>
 <li>Shards לוגיים (הרבה יותר מ-nodes) הופכים rebalancing לזול — להעביר את shard 517 זה רק העברת lease, בלי להזיז דאטה.</li></ul>
 <blockquote>💡 מהשטח: ככה עובדים הרבה schedulers פנימיים (למשל של Airbnb, ה-ATF של Dropbox); ה-controller של Kubernetes CronJob משתמש ב-controller יחיד עם leader election כי הסקייל שלו הרבה יותר קטן.</blockquote>`
       }
@@ -2496,7 +2496,7 @@ Queues: Kafka topic "executions.ready" partitioned by tenant/job_id (or per-tena
 <li><strong>Side effect:</strong> we pass <code>execution_id</code> as an <strong>idempotency key</strong> to the target (HTTP header <code>Idempotency-Key</code>). The target is responsible for making the effect happen once — e.g. a billing job stores processed keys in its own DB in the same transaction as the charge.</li></ol>
 <p>Be honest with the interviewer: "the scheduler guarantees at-least-once and gives you a stable key; effectively-once is a contract with the job owner."</p>`,
         he: `<p>הרצה exactly-once אמיתית של side effect חיצוני היא בלתי אפשרית על גבי רשת: worker יכול לסיים את ה-job ולקרוס לפני שדיווח הצלחה. לכן בונים <strong>at-least-once עם dedupe בכל שלב</strong>:</p>
-<ol><li><strong>Dedupe בטריגר:</strong> <code>UNIQUE(job_id, scheduled_for)</code> על executions. שני schedulers שמתחרים על אותו tick → רק INSERT אחד מצליח.</li>
+<ol><li><strong>Dedupe בטריגר:</strong> <code>UNIQUE(job_id, scheduled_for)</code> על executions. שני schedulers שמתחרים על אותו tick ← רק INSERT אחד מצליח.</li>
 <li><strong>Dispatch:</strong> התור יכול לשלוח שוב; ה-worker תופס את ה-execution עם <code>UPDATE executions SET state='running', worker_id=?, lease_until=now()+60s WHERE id=? AND state='queued'</code> — update מותנה = רק תופס אחד.</li>
 <li><strong>הרצה:</strong> ה-worker שולח heartbeats שמאריכים את ה-lease. אם הוא מת, reaper רואה ש-<code>lease_until</code> פג ומכניס שוב לתור עם attempt+1.</li>
 <li><strong>Side effect:</strong> מעבירים את <code>execution_id</code> כ-<strong>idempotency key</strong> ליעד (header של HTTP בשם <code>Idempotency-Key</code>). היעד אחראי לכך שהאפקט יקרה פעם אחת — למשל job של billing שומר את ה-keys שעובדו ב-DB שלו באותה טרנזקציה של החיוב.</li></ol>
@@ -2547,7 +2547,7 @@ Queues: Kafka topic "executions.ready" partitioned by tenant/job_id (or per-tena
     },
     {
       q: { en: "The Jobs DB primary fails over and the replica was 5 seconds behind. What happens?", he: "ה-primary של Jobs DB עושה failover וה-replica היה 5 שניות מאחור. מה קורה?" },
-      a: { en: "Up to 5 s of writes are lost: some executions inserted and dispatched won't exist in the new primary, and some next_run_at updates revert. Schedulers reload and see those ticks as due again → they re-dispatch with the same (job_id, scheduled_for) and therefore the same deterministic execution_id. Workers/targets that honor the idempotency key dedupe it. This is why the execution id must be derived from (job_id, scheduled_for), not a random UUID. If even that is unacceptable, use synchronous replication (or a consensus store like CockroachDB/Spanner) for the jobs DB — affordable since write volume is moderate.", he: "עד 5 שניות של כתיבות אובדות: חלק מה-executions שהוכנסו ונשלחו לא יהיו קיימים ב-primary החדש, וחלק מעדכוני next_run_at יחזרו אחורה. ה-schedulers טוענים מחדש ורואים את ה-ticks האלה כ-due שוב → שולחים מחדש עם אותו (job_id, scheduled_for) ולכן עם אותו execution_id דטרמיניסטי. workers ויעדים שמכבדים את ה-idempotency key עושים dedupe. בגלל זה ה-execution id חייב להיגזר מ-(job_id, scheduled_for) ולא להיות UUID רנדומלי. אם גם זה לא מקובל, משתמשים ברפליקציה סינכרונית (או store מבוסס consensus כמו CockroachDB/Spanner) ל-jobs DB — זה בר השגה כי נפח הכתיבות מתון." }
+      a: { en: "Up to 5 s of writes are lost: some executions inserted and dispatched won't exist in the new primary, and some next_run_at updates revert. Schedulers reload and see those ticks as due again → they re-dispatch with the same (job_id, scheduled_for) and therefore the same deterministic execution_id. Workers/targets that honor the idempotency key dedupe it. This is why the execution id must be derived from (job_id, scheduled_for), not a random UUID. If even that is unacceptable, use synchronous replication (or a consensus store like CockroachDB/Spanner) for the jobs DB — affordable since write volume is moderate.", he: "עד 5 שניות של כתיבות אובדות: חלק מה-executions שהוכנסו ונשלחו לא יהיו קיימים ב-primary החדש, וחלק מעדכוני next_run_at יחזרו אחורה. ה-schedulers טוענים מחדש ורואים את ה-ticks האלה כ-due שוב ← שולחים מחדש עם אותו (job_id, scheduled_for) ולכן עם אותו execution_id דטרמיניסטי. workers ויעדים שמכבדים את ה-idempotency key עושים dedupe. בגלל זה ה-execution id חייב להיגזר מ-(job_id, scheduled_for) ולא להיות UUID רנדומלי. אם גם זה לא מקובל, משתמשים ברפליקציה סינכרונית (או store מבוסס consensus כמו CockroachDB/Spanner) ל-jobs DB — זה בר השגה כי נפח הכתיבות מתון." }
     },
     {
       q: { en: "One tenant creates 2M jobs that all run every minute and each takes 5 minutes. How do you protect the platform?", he: "צוות אחד יוצר 2M jobs שכולם רצים כל דקה וכל אחד לוקח 5 דקות. איך מגינים על הפלטפורמה?" },

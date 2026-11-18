@@ -336,7 +336,7 @@ INFRA.lessons.push({
   title: { en: "SQL Foundations & Joins", he: "יסודות SQL ו-joins" },
   tldr: {
     en: "SQL runs FROM → WHERE → GROUP BY → HAVING → SELECT → ORDER BY → LIMIT, so think in rows: a join multiplies rows, NULL is 'unknown' (not a value), and every write you can't undo goes inside BEGIN … RETURNING … COMMIT.",
-    he: "SQL רץ בסדר FROM → WHERE → GROUP BY → HAVING → SELECT → ORDER BY → LIMIT, אז תחשוב ב-rows: join מכפיל rows, NULL הוא 'לא ידוע' (לא ערך), וכל כתיבה שאי אפשר לבטל נכנסת בתוך BEGIN … RETURNING … COMMIT."
+    he: "SQL רץ בסדר FROM ← WHERE ← GROUP BY ← HAVING ← SELECT ← ORDER BY ← LIMIT, אז תחשוב ב-rows: join מכפיל rows, NULL הוא 'לא ידוע' (לא ערך), וכל כתיבה שאי אפשר לבטל נכנסת בתוך BEGIN … RETURNING … COMMIT."
   },
   analogy: {
     en: "A join is a wedding seating chart. INNER JOIN seats only guests who RSVP'd and have a table; LEFT JOIN seats every guest even if their table number is missing (they get a folding chair called NULL). And if one guest appears on three family lists, they get three chairs — that's join fan-out, and your headcount (SUM) is now wrong.",
@@ -381,7 +381,7 @@ INFRA.lessons.push({
 <pre>${P.full}</pre>
 <p><strong>CROSS JOIN</strong> = every combination (no ON). Useful for generating grids (sizes × colors, days × products). A join with a forgotten or always-true ON condition is an <em>accidental</em> cross join: 10k × 10k = 100M rows. <strong>Self join</strong> = same table, two aliases:</p>
 <pre>${P.crossSelf}</pre>`,
-        he: `<p>המודל המנטלי: join מצמיד כל row משמאל לכל row מימין שמקיים את ה-<code>ON</code>. לקוח אחד עם שתי הזמנות → שני rows בפלט. זה הכול; סוגי ה-join נבדלים רק במה שקורה ל-rows שלא מצאו <strong>אף</strong> בן זוג.</p>
+        he: `<p>המודל המנטלי: join מצמיד כל row משמאל לכל row מימין שמקיים את ה-<code>ON</code>. לקוח אחד עם שתי הזמנות ← שני rows בפלט. זה הכול; סוגי ה-join נבדלים רק במה שקורה ל-rows שלא מצאו <strong>אף</strong> בן זוג.</p>
 <pre>${P.inner}</pre>
 <p><strong>LEFT JOIN</strong> שומר כל row משמאל; כשאין בן זוג, העמודות של הצד הימני הן NULL:</p>
 <pre>${P.left}</pre>
@@ -484,7 +484,7 @@ INFRA.lessons.push({
   ],
   mnemonic: {
     en: "\"Fred Wears Green Hats, So Others Lie\": FROM, WHERE, GROUP BY, HAVING, SELECT, ORDER BY, LIMIT. And: joins multiply, NULL infects, NOT IN lies.",
-    he: "FROM → WHERE → GROUP → HAVING → SELECT → ORDER → LIMIT: קודם בוחרים טבלאות, אחר כך rows, אחר כך קבוצות, ורק בסוף עמודות. וגם: join מכפיל, NULL מדביק, NOT IN משקר."
+    he: "FROM ← WHERE ← GROUP ← HAVING ← SELECT ← ORDER ← LIMIT: קודם בוחרים טבלאות, אחר כך rows, אחר כך קבוצות, ורק בסוף עמודות. וגם: join מכפיל, NULL מדביק, NOT IN משקר."
   },
   pitfalls: [
     { en: "Filtering the right-hand table of a LEFT JOIN in WHERE — it silently becomes an INNER JOIN. Put the condition in ON (or test IS NULL deliberately).", he: "סינון של הטבלה הימנית של LEFT JOIN ב-WHERE — הוא הופך בשקט ל-INNER JOIN. תשים את התנאי ב-ON (או תבדוק IS NULL בכוונה)." },

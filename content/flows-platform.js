@@ -119,7 +119,7 @@ spec:
 </ul>
 <blockquote>⚠️ Production tip: Keep main always deployable. If main is red, fixing it is the team's top priority — otherwise every later commit inherits the breakage and rollbacks become archaeology.</blockquote>`,
         he: `<ul>
-<li><strong>בריאות ה-pipeline</strong>: lead time (commit → prod), זמן המתנה ל-runners, שיעור טסטים flaky, p95 של משך ה-CI, אחוז ה-builds האדומים על main.</li>
+<li><strong>בריאות ה-pipeline</strong>: lead time (commit ← prod), זמן המתנה ל-runners, שיעור טסטים flaky, p95 של משך ה-CI, אחוז ה-builds האדומים על main.</li>
 <li><strong>אירועי deploy כ-annotations</strong> על כל דשבורד של שירות (Grafana annotations מתוך Argo CD notifications) — השאלה הראשונה בכל תקלה היא "מה השתנה?".</li>
 <li><strong>קלט ל-canary analysis</strong>: שיעור שגיאות ו-p99 latency של ה-canary מול ה-stable, וגם saturation (CPU throttling, זיכרון).</li>
 <li><strong>Drift</strong>: כמה זמן Argo CD ב-<code>OutOfSync</code>; כל דבר ששונה ידנית בקלאסטר.</li>

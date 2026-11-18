@@ -19,7 +19,7 @@ INFRA.lessons.push({
   },
   tldr: {
     en: "Infra planning is a sequence of about 12 decisions, each driven by numbers from the one before: requirements → cloud → accounts & environments → network & traffic → compute → data → observability → reliability & DR → security → cost. Make each one with explicit criteria, write it down as an ADR, and note what would make you change it.",
-    he: "תכנון תשתית הוא רצף של בערך 12 החלטות, וכל אחת נשענת על המספרים של הקודמת: דרישות → ענן → accounts וסביבות → רשת ו-traffic → compute → data → observability → reliability ו-DR → security → עלות. כל החלטה מקבלים עם קריטריונים מפורשים, כותבים אותה כ-ADR, ורושמים מה יגרום לך לשנות אותה."
+    he: "תכנון תשתית הוא רצף של בערך 12 החלטות, וכל אחת נשענת על המספרים של הקודמת: דרישות ← ענן ← accounts וסביבות ← רשת ו-traffic ← compute ← data ← observability ← reliability ו-DR ← security ← עלות. כל החלטה מקבלים עם קריטריונים מפורשים, כותבים אותה כ-ADR, ורושמים מה יגרום לך לשנות אותה."
   },
   analogy: {
     en: "Planning infra is like planning a new city before anyone moves in. You don't start by picking the brand of traffic lights. You first ask how many people will live there and where they commute (requirements), then pick the land (cloud and regions), zone it into districts (accounts, environments, namespaces), lay roads and highways (network, global traffic), build utilities (compute, databases), put in a fire department and backup power (monitoring, DR), and only then argue about the traffic lights. Every choice limits the next one, and some, like where the river runs (where your data lives), are almost impossible to move later.",
@@ -136,7 +136,7 @@ Revisit if: managed cost &gt; 2x self-hosted estimate, or we need cross-region s
 <tr><td>Consistency</td><td>Strong ל-metadata (rename, share, ACL); ה-blobs immutable</td><td>סדר בתוך שיחה; eventual בין מכשירים זה בסדר</td><td>Eventual כמעט בכל מקום; strong ל-billing</td></tr>
 <tr><td>ליבת ה-data</td><td>Distributed SQL או Postgres עם sharding + object storage</td><td>Wide-column (Cassandra/Scylla) + Redis ל-presence</td><td>Cassandra + שכבת cache + object storage</td></tr>
 <tr><td>Traffic גלובלי</td><td>Global L7 LB ל-API; uploads ישירים ו-resumable ל-buckets אזוריים</td><td>Anycast או GeoDNS ל-edge אזורי שמחזיק TCP/WebSocket ארוכים</td><td>ה-CDN מגיש 95%+ מה-bytes; ה-API דרך LB אזורי</td></tr>
-<tr><td>הכשל הקשה</td><td>לאבד או להשחית קובץ (RPO≈0 ל-metadata)</td><td>נפילת region מנתקת מיליוני sockets → סערת reconnect</td><td>Control plane למטה = אף אחד לא יכול ללחוץ Play</td></tr>
+<tr><td>הכשל הקשה</td><td>לאבד או להשחית קובץ (RPO≈0 ל-metadata)</td><td>נפילת region מנתקת מיליוני sockets ← סערת reconnect</td><td>Control plane למטה = אף אחד לא יכול ללחוץ Play</td></tr>
 <tr><td>מה מניע עלות</td><td>שכבות storage (hot/cool/archive), dedup</td><td>Compute לכל חיבור, replication בין region-ים</td><td>CDN ו-egress; compute ל-encoding</td></tr>
 <tr><td>סגנון DR</td><td>Metadata ב-multi-region, objects גיאו-רדונדנטיים</td><td>Active-active לכל region, משתמשים "גרים" ב-region</td><td>Active-active על 3+ region-ים, לפנות region בדקות</td></tr>
 </table>
@@ -204,7 +204,7 @@ cost per user    ~$0.035/month storage -&gt; pricing must cover it with margin</
 <li><strong>מסמך SLO</strong>: 3-6 user journeys, הגדרות SLI, יעדים, error budget policy, tier לכל שירות.</li>
 <li><strong>יומן ADR</strong>: ADR לכל דלת חד-כיוונית (ענן, region-ים, data stores, שיטת ID, מודל tenancy, תכנון traffic).</li>
 <li><strong>דיאגרמת ארכיטקטורה</strong>: לכל region וגלובלית, עם ה-failure domains מצוירים (zones, regions, cells).</li>
-<li><strong>מודל capacity ועלות</strong>: גיליון ממשתמשים → QPS → nodes ו-storage → $ לחודש ו-$ לכל 1k משתמשים. מחשבים מחדש כשה-traffic מכפיל את עצמו.</li>
+<li><strong>מודל capacity ועלות</strong>: גיליון ממשתמשים ← QPS ← nodes ו-storage ← $ לחודש ו-$ לכל 1k משתמשים. מחשבים מחדש כשה-traffic מכפיל את עצמו.</li>
 <li><strong>FMEA + תוכנית DR</strong>: מצבי כשל, זיהוי, mitigation, בעלים; RPO/RTO לכל tier; runbooks.</li>
 <li><strong>לוח בדיקות</strong>: load test לפני launch, בדיקת restore חודשית, DR drill או game day רבעוני.</li>
 <li><strong>Production readiness review</strong>: checklist שכל שירות עובר לפני שהוא מקבל traffic (alerts, dashboards, runbook, on-call, backups שנבדקו, limits, rollback שנבדק).</li>
@@ -374,7 +374,7 @@ cost per user    ~$0.035/month storage -&gt; pricing must cover it with margin</
         label: { en: "Production readiness review, then launch", he: "Production readiness review, ואז launch" },
         detail: {
           en: "<p>Every tier 0-1 service passes the checklist: dashboards, alerts, runbook, on-call rota, rollback tested, limits set, backups verified. Launch with a gradual traffic ramp (1% → 10% → 50% → 100%).</p>",
-          he: "<p>כל שירות ב-tier 0-1 עובר את ה-checklist: dashboards, alerts, runbook, תורנות on-call, rollback שנבדק, limits מוגדרים, backups מאומתים. עושים launch עם עלייה הדרגתית ב-traffic (1% → 10% → 50% → 100%).</p>"
+          he: "<p>כל שירות ב-tier 0-1 עובר את ה-checklist: dashboards, alerts, runbook, תורנות on-call, rollback שנבדק, limits מוגדרים, backups מאומתים. עושים launch עם עלייה הדרגתית ב-traffic (1% ← 10% ← 50% ← 100%).</p>"
         },
         fail: {
           en: "Big-bang launch to 100%: the first real peak is also the first load test.",
@@ -391,7 +391,7 @@ cost per user    ~$0.035/month storage -&gt; pricing must cover it with margin</
   ],
   mnemonic: {
     en: "\"Numbers, Nines, Cloud, Fences, Roads, Engines, Stores, Eyes, Fire drills, Money\": requirements, SLOs, cloud, accounts/namespaces, traffic, compute, data, observability, DR, cost. And for each one: constraint → criteria → evidence → ADR → revisit trigger.",
-    he: "\"מספרים, תשיעיות, ענן, גדרות, כבישים, מנועים, מחסנים, עיניים, תרגילי אש, כסף\": דרישות, SLO-ים, ענן, accounts ו-namespaces, traffic, compute, data, observability, DR, עלות. ולכל אחת: אילוץ → קריטריונים → ראיות → ADR → trigger לבדיקה מחדש."
+    he: "\"מספרים, תשיעיות, ענן, גדרות, כבישים, מנועים, מחסנים, עיניים, תרגילי אש, כסף\": דרישות, SLO-ים, ענן, accounts ו-namespaces, traffic, compute, data, observability, DR, עלות. ולכל אחת: אילוץ ← קריטריונים ← ראיות ← ADR ← trigger לבדיקה מחדש."
   },
   pitfalls: [
     { en: "Starting from technology ('we'll use Kubernetes and Kafka') instead of numbers. You end up justifying tools instead of meeting requirements.", he: "להתחיל מטכנולוגיה ('נשתמש ב-Kubernetes וב-Kafka') במקום ממספרים. בסוף אתה מצדיק כלים במקום לעמוד בדרישות." },
@@ -1513,7 +1513,7 @@ INFRA.lessons.push({
 <blockquote>💡 Real world: the worksheet usually shows that 80% of entities are small, relational and read-heavy (users, orgs, billing, settings) and 1-3 entities are the real scale problem (messages, events, blobs). Spend the specialised-store budget only on those.</blockquote>`,
         he: `<p>הטעות הכי נפוצה בארכיטקטורת דאטה היא לבחור את ה-DB בפגישה הראשונה ("אנחנו shop של Mongo", "בוא ניקח DynamoDB, הוא עושה scale"). ההחלטה מתקבלת <em>לכל ישות</em>, לפי איך קוראים וכותבים אותה. ממלאים שורה לכל ישות לפני שמזכירים מוצר כלשהו:</p>
 <table><tr><th>שאלה</th><th>למה היא מכריעה</th><th>תשובות לדוגמה</th></tr>
-<tr><td>יחס read:write ו-QPS בשיא</td><td>הרבה קריאות → replicas ו-cache פותרים; הרבה כתיבות → צריך scale-out לכתיבה (partitioning, מנועי LSM)</td><td>פרופיל 1000:1, ‏2k QPS; הודעות צ'אט 1:1, ‏400k כתיבות בשנייה</td></tr>
+<tr><td>יחס read:write ו-QPS בשיא</td><td>הרבה קריאות ← replicas ו-cache פותרים; הרבה כתיבות ← צריך scale-out לכתיבה (partitioning, מנועי LSM)</td><td>פרופיל 1000:1, ‏2k QPS; הודעות צ'אט 1:1, ‏400k כתיבות בשנייה</td></tr>
 <tr><td>צורת השאילתה</td><td>שליפה לפי key, טווח בתוך partition, joins אד-הוק, full-text, אגרגציה על מיליארדי שורות: כל אחד מתאים למנוע אחר</td><td>"50 ההודעות האחרונות בשיחה X" = טווח בתוך partition אחד</td></tr>
 <tr><td>צורך ב-consistency</td><td>כסף, מלאי ו-ACLs צריכים טרנזקציות ו-read-your-writes; מונים ו-feeds סובלים eventual</td><td>"שיתוף שהוסר חייב להפסיק לעבוד עכשיו" = strong</td></tr>
 <tr><td>גודל וקצב גדילה</td><td>‏200GB נכנס ל-Postgres אחד לשנים; ‏2PB בשנה לא נכנס לשום node בודד</td><td>מטא-דאטה 5TB, ‏+2TB בשנה; קבצים 40PB, ‏+15PB בשנה</td></tr>
@@ -1585,7 +1585,7 @@ INFRA.lessons.push({
 <table><tr><th>ישות</th><th>דפוס</th><th>Store</th><th>למה / מה ישנה את ההחלטה</th></tr>
 <tr><td>מטא-דאטה של קבצים ותיקיות, גרסאות</td><td>עתיר קריאות, שאילתות על עץ, חייב להיות טרנזקציוני (move = אטומי)</td><td>Spanner, או Postgres/MySQL עם sharding לפי user/namespace (ב-Dropbox רץ MySQL מפוצל)</td><td>Strong consistency ב-rename וב-move; sharding לפי namespace שומר את העץ של משתמש על shard אחד. תיקייה משותפת בין ארגונים היא המקרה הקשה</td></tr>
 <tr><td>תוכן הקבצים</td><td>נכתב פעם אחת, עצום (PB), נקרא בטווחים</td><td>Object storage, הקבצים מחולקים ל-chunks (נגיד 4MB) שהכתובת שלהם היא SHA-256</td><td>Chunks לפי תוכן נותנים dedup ו-upload שאפשר לחדש בחינם; קבצים קטנים נארזים יחד כדי לחסוך overhead לכל אובייקט</td></tr>
-<tr><td>אינדקס chunks (hash → מיקום, refcount)</td><td>שליפות לפי key, נפח גבוה מאוד</td><td>KV / wide-column (Bigtable, DynamoDB)</td><td>רק גישה לפי key; ה-refcounts מניעים את ה-garbage collection</td></tr>
+<tr><td>אינדקס chunks (hash ← מיקום, refcount)</td><td>שליפות לפי key, נפח גבוה מאוד</td><td>KV / wide-column (Bigtable, DynamoDB)</td><td>רק גישה לפי key; ה-refcounts מניעים את ה-garbage collection</td></tr>
 <tr><td>ACLs / שיתופים</td><td>נבדק בכל בקשה, ביטול חייב להיות מיידי</td><td>רלציוני יחד עם המטא-דאטה (או שירות authz בסגנון Zanzibar) + cache עם TTL קצר</td><td>Eventual consistency כאן זה באג אבטחה</td></tr>
 <tr><td>חיפוש (שמות, תוכן)</td><td>Full-text, סינון לפי משתמש</td><td>OpenSearch שמוזן מ-CDC או events</td><td>נגזר; יכול לפגר בשניות; אפשר לבנות מחדש</td></tr></table>
 <p><strong>בסגנון WhatsApp (הודעות)</strong></p>
@@ -1842,7 +1842,7 @@ INFRA.lessons.push({
 <tr><td>Cloudflare / NS1 / Akamai</td><td>DNS של anycast + edge proxy ‏(Cloudflare LB, ו-Spectrum ל-TCP/UDP); ‏NS1 עם filter chains וניתוב לפי RUM</td><td>שניות (כשעובר דרך ה-proxy) או TTL ‏(DNS בלבד)</td><td>WAF, ‏bot ו-DDoS חזקים</td><td>Cloudflare Spectrum: כן</td><td>Multi-cloud או hybrid: ניתוב שלא תלוי בענן אחד</td></tr></table>
 <p><strong>קריטריוני ההחלטה, בסדר שבו שואלים אותם:</strong></p>
 <ol><li><strong>פרוטוקול</strong>: HTTP(S) רגיל? ‏WebSockets ארוכים? ‏TCP/UDP גולמי (XMPP, ‏MQTT, משחקים, VoIP)? פרוטוקול שאינו HTTP פוסל את רוב ה-edges של L7, ונשארים DNS, ‏Global Accelerator, ‏proxy NLB של GCP או Cloudflare Spectrum.</li>
-<li><strong>RTO של failover</strong>: דקות זה בסדר → DNS. צריך שניות → anycast.</li>
+<li><strong>RTO של failover</strong>: דקות זה בסדר ← DNS. צריך שניות ← anycast.</li>
 <li><strong>פיצ'רים של L7 ב-edge</strong>: WAF, ‏caching, ניתוב לפי headers, סיום TLS קרוב למשתמש (חוסך 1-2 RTTs, לרוב 50-150ms למשתמשים מיבשת אחרת).</li>
 <li><strong>עלות</strong>: DNS עולה סנטים למיליון שאילתות ועוד בערך 0.50-0.75 דולר ל-health check בחודש; ‏edges של anycast גובים לפי שעה או חוק ועוד לפי GB ‏(Global Accelerator מוסיף פרמיה על data transfer מעבר ל-egress; ‏Front Door Premium מתחיל מכמה מאות דולרים בחודש בסיס).</li>
 <li><strong>Multi-cloud ועצמאות מ-vendor</strong>: LB גלובלי של ענן מנתב רק לענן שלו (Front Door ו-Cloudflare יכולים לעמוד מול כל origin).</li></ol>`
@@ -1903,7 +1903,7 @@ resource "aws_route53_record" "api_primary" {
 <tr><td>Weighted</td><td>חלוקה לפי משקלים (נגיד 90/10)</td><td>Canary ל-region חדש, מעבר blue/green, ריקון region עד 0</td><td>Clients עושים cache, אז החלוקה האמיתית מפגרת אחרי המשקלים</td></tr>
 <tr><td>Failover (priority)</td><td>Primary כל עוד הוא בריא, אחרת secondary</td><td>DR של active-passive / warm standby</td><td>ה-secondary חייב להיות בגודל הנכון ונבדק; passive שלא נבדק = אין DR</td></tr>
 <tr><td>Multivalue</td><td>עד 8 IPs בריאים, ה-client בוחר</td><td>פיזור פשוט בצד ה-client בלי LB</td><td>זה לא load balancer; clients הרבה פעמים בוחרים את הראשון</td></tr></table>
-<p>Policies מתחברות זו לזו: צורה נפוצה ב-Route 53 היא <strong>geolocation למעלה</strong> (EU מול שאר העולם, בשביל residency) → <strong>latency</strong> בין ה-regions בתוך כל קבוצה → <strong>failover</strong> לגיבוי מוגדר, הכול כ-alias records שמצביעים על LBs אזוריים עם "evaluate target health". המקבילה ב-GCP או ב-Front Door היא endpoint אחד של anycast שה-backends שלו הם ה-regions, עם ניתוב לפי latency, בריאות וקיבולת.</p>
+<p>Policies מתחברות זו לזו: צורה נפוצה ב-Route 53 היא <strong>geolocation למעלה</strong> (EU מול שאר העולם, בשביל residency) ← <strong>latency</strong> בין ה-regions בתוך כל קבוצה ← <strong>failover</strong> לגיבוי מוגדר, הכול כ-alias records שמצביעים על LBs אזוריים עם "evaluate target health". המקבילה ב-GCP או ב-Front Door היא endpoint אחד של anycast שה-backends שלו הם ה-regions, עם ניתוב לפי latency, בריאות וקיבולת.</p>
 <pre>{
   "Comment": "Primary/secondary failover for api.example.com",
   "Changes": [{
@@ -1999,7 +1999,7 @@ gcloud compute backend-services create api-global --global \\
 gcloud compute backend-services add-backend api-global --global \\
   --network-endpoint-group=api-neg --network-endpoint-group-region=europe-west1 \\
   --balancing-mode=RATE --max-rate-per-endpoint=200</pre>
-<p><strong>תרגיל ה-failover</strong> (כל רבעון ל-tier 0): מודיעים, מפנים region אחד דרך המתג הידני, מסתכלים על error rate ו-p99 ב-region ששורד, מודדים כמה זמן עד ש-95% מהטראפיק עבר (ה-DNS מראה את הזנב), מוודאים שחיבורים ארוכים התחברו מחדש, ואז חוזרים בהדרגה (10% → 50% → 100%). המספר שנמדד הוא ה-RTO האמיתי שלך.</p>`
+<p><strong>תרגיל ה-failover</strong> (כל רבעון ל-tier 0): מודיעים, מפנים region אחד דרך המתג הידני, מסתכלים על error rate ו-p99 ב-region ששורד, מודדים כמה זמן עד ש-95% מהטראפיק עבר (ה-DNS מראה את הזנב), מוודאים שחיבורים ארוכים התחברו מחדש, ואז חוזרים בהדרגה (10% ← 50% ← 100%). המספר שנמדד הוא ה-RTO האמיתי שלך.</p>`
       }
     },
     {
@@ -2025,7 +2025,7 @@ gcloud compute backend-services add-backend api-global --global \\
 <tr><td>עלות</td><td>בערך פי 2 ומעלה, ועוד egress של replication בין regions</td><td>בערך פי 1.2-1.6, תלוי כמה הוא חם</td></tr></table>
 <p><strong>Stickiness</strong>: עדיף לא להזדקק לה. שמים את ה-session state ב-token או ב-store משותף, כך שכל region יכול להגיש כל בקשה. כשלדאטה יש home region (ההודעות של המשתמש יושבות ב-EU), מנתבים לפי משתמש (cookie או claim ב-token שנקרא ב-edge, או lookup של "home region") ולא לפי latency, אחרת כל בקשה הופכת לקפיצה בין regions.</p>
 <p><strong>חיבורים ארוכים</strong> (WebSockets, ‏MQTT, ‏XMPP, ‏gRPC streams) שוברים את הסיפור של "failover בשניות": חיבורים קיימים נשארים צמודים ל-region הישן עד שהם נופלים. מתכננים לזה:</p>
-<ul><li><strong>מרוקנים, לא חותכים</strong>: בפינוי, קודם עוצרים חיבורים חדשים (weight → 0), ואז סוגרים את הקיימים בהדרגה לאורך דקות (deregistration delay ב-ALB, ‏drain ב-Envoy, ‏GOAWAY של HTTP/2, הודעת "reconnect" ברמת האפליקציה).</li>
+<ul><li><strong>מרוקנים, לא חותכים</strong>: בפינוי, קודם עוצרים חיבורים חדשים (weight ← 0), ואז סוגרים את הקיימים בהדרגה לאורך דקות (deregistration delay ב-ALB, ‏drain ב-Envoy, ‏GOAWAY של HTTP/2, הודעת "reconnect" ברמת האפליקציה).</li>
 <li><strong>Reconnect עם jitter</strong> בצד ה-clients (exponential backoff ועוד jitter אקראי). 10 מיליון clients שמתחברים מחדש באותה שנייה זה DDoS שעשית לעצמך על ה-region ששורד (thundering herd).</li>
 <li><strong>Sessions שאפשר לחדש</strong>: ב-reconnect ה-client מציג token ואת ה-id של ההודעה האחרונה שראה, כך ששום state לא הולך לאיבוד.</li>
 <li><strong>מספר החיבורים הוא קיבולת</strong>: gateway יכול להחזיק 500k עד מיליון ויותר חיבורים שקטים, אבל ה-TLS handshakes בזמן סערת reconnect חוסמים על CPU. תתכנן את הגודל לסערה, לא למצב היציב.</li></ul>`
@@ -2040,7 +2040,7 @@ gcloud compute backend-services add-backend api-global --global \\
 <tr><td>Drive-like</td><td>API calls (list, metadata, share) + large uploads/downloads</td><td>API through a <strong>global L7 LB</strong> (anycast, WAF, TLS at the edge) to the user's home region; uploads go <strong>directly to regional object storage</strong> with resumable, chunked signed URLs (S3 multipart, GCS resumable); downloads via signed URLs behind a CDN</td><td>Keeping GBs of upload off the API tier saves cost and compute. Data residency (EU tenants) turns latency routing into geo or home-region routing</td></tr></table>
 <blockquote>⚠️ Production tip: write down, per traffic class, <em>what steers it, what detects failure, how long failover takes and who can trigger it manually</em>. If you can't fill those four cells, you don't have global failover yet, you have multiple regions.</blockquote>`,
         he: `<table><tr><th>מוצר</th><th>הטראפיק הדומיננטי</th><th>החלטה</th><th>למה / מה ישנה את ההחלטה</th></tr>
-<tr><td>בסגנון WhatsApp</td><td>מאות מיליוני חיבורי TCP/TLS קבועים ושקטים ברובם (נגזר מ-XMPP או דמוי MQTT), הודעות קטנות, ועוד מדיה</td><td>Anycast או GeoDNS ל-<strong>gateways אזוריים ב-edge</strong> שמסיימים TCP/TLS קרוב למשתמשים (L4: ‏Global Accelerator, ‏proxy NLB של GCP, או PoPs משלך עם BGP anycast); ‏registry של "משתמש → gateway" ‏(Redis) מנתב הודעות בין gateways; מדיה דרך CDN ו-object storage</td><td>Edges של HTTP ב-L7 לא מתאימים ל-TCP גולמי וארוך. אם פרוטוקול ה-client היה WebSockets על 443, אז Front Door או Cloudflare נכנסים לתמונה. Failover = ה-clients מתחברים מחדש עם jitter ל-edge הקרוב הבא</td></tr>
+<tr><td>בסגנון WhatsApp</td><td>מאות מיליוני חיבורי TCP/TLS קבועים ושקטים ברובם (נגזר מ-XMPP או דמוי MQTT), הודעות קטנות, ועוד מדיה</td><td>Anycast או GeoDNS ל-<strong>gateways אזוריים ב-edge</strong> שמסיימים TCP/TLS קרוב למשתמשים (L4: ‏Global Accelerator, ‏proxy NLB של GCP, או PoPs משלך עם BGP anycast); ‏registry של "משתמש ← gateway" ‏(Redis) מנתב הודעות בין gateways; מדיה דרך CDN ו-object storage</td><td>Edges של HTTP ב-L7 לא מתאימים ל-TCP גולמי וארוך. אם פרוטוקול ה-client היה WebSockets על 443, אז Front Door או Cloudflare נכנסים לתמונה. Failover = ה-clients מתחברים מחדש עם jitter ל-edge הקרוב הבא</td></tr>
 <tr><td>בסגנון Netflix</td><td>בייטים של וידאו: ה-CDN נושא יותר מ-95% מכל הבייטים; ה-control plane (גלישה, אישור ניגון, רישיון DRM) קטן אבל קריטי</td><td>וידאו: שרתי CDN משלך בתוך ספקי האינטרנט (Open Connect), שה-control plane בוחר לכל בקשת ניגון את השרת הכי טוב ל-client הזה. Control plane: כמה regions בענן ב-active-active, עם ניתוב ב-DNS ופינוי region כפעולה שגרתית</td><td>בנפח בייטים כזה החשבון של CDN מסחרי מצדיק לבנות אחד משלך; שירות קטן יותר לוקח CloudFront, ‏Akamai או Fastly. ה-control plane הוא המקום שבו failover גלובלי חשוב</td></tr>
 <tr><td>בסגנון Drive</td><td>קריאות API (רשימה, מטא-דאטה, שיתוף) ועוד uploads ו-downloads גדולים</td><td>ה-API עובר דרך <strong>LB גלובלי ב-L7</strong> ‏(anycast, ‏WAF, ‏TLS ב-edge) ל-home region של המשתמש; ה-uploads הולכים <strong>ישר ל-object storage האזורי</strong> עם signed URLs מחולקים ל-chunks שאפשר לחדש (S3 multipart, ‏GCS resumable); ה-downloads דרך signed URLs מאחורי CDN</td><td>להוריד ג'יגות של upload משכבת ה-API חוסך עלות ו-compute. Data residency (tenants ב-EU) הופך ניתוב לפי latency לניתוב לפי geo או home region</td></tr></table>
 <blockquote>⚠️ טיפ לפרודקשן: תכתוב, לכל סוג טראפיק, <em>מה מנתב אותו, מה מזהה כשל, כמה זמן לוקח ה-failover ומי יכול להפעיל אותו ידנית</em>. אם אתה לא מצליח למלא את ארבעת התאים האלה, עדיין אין לך failover גלובלי, יש לך כמה regions.</blockquote>`
@@ -2086,7 +2086,7 @@ gcloud compute backend-services add-backend api-global --global \\
   ],
   mnemonic: {
     en: "\"DNS is a map, anycast is a steward.\" Maps are cheap and slow to reprint; stewards redirect in seconds. And: Protocol → RTO → L7 needs → Cost → Vendor independence (PRL-CV).",
-    he: "\"DNS זו מפה, anycast זה סדרן.\" מפות זולות ולוקח זמן להדפיס אותן מחדש; סדרנים מפנים בשניות. והסדר: Protocol → RTO → צורכי L7 → Cost → עצמאות מ-Vendor ‏(PRL-CV)."
+    he: "\"DNS זו מפה, anycast זה סדרן.\" מפות זולות ולוקח זמן להדפיס אותן מחדש; סדרנים מפנים בשניות. והסדר: Protocol ← RTO ← צורכי L7 ← Cost ← עצמאות מ-Vendor ‏(PRL-CV)."
   },
   pitfalls: [
     { en: "Promising 'failover in 60 seconds' because the TTL is 60. Resolver minimums, OS/JVM caches and long-lived connections mean minutes, with a tail of clients that never re-resolve until restart.", he: "להבטיח 'failover תוך 60 שניות' כי ה-TTL הוא 60. מינימום של resolvers, ‏caches של מערכת הפעלה ו-JVM, וחיבורים ארוכים אומרים דקות, עם זנב של clients שלא עושים resolve מחדש עד restart." },
@@ -2147,7 +2147,7 @@ gcloud compute backend-services add-backend api-global --global \\
         { en: "100%, autoscaling will handle it", he: "100%, ה-autoscaling יטפל בזה" }
       ],
       answer: 1,
-      explain: { en: "With N regions, each must stay at or below (N-1)/N: 3 regions → 2/3 ≈ 66%, so the two survivors can absorb the third's load. In practice leave extra headroom for reconnect storms and the time autoscaling takes.", he: "עם N regions, כל אחד צריך להישאר ב-(N-1)/N או פחות: 3 regions → ‏2/3 ≈ 66%, כך ששני השורדים יכולים לבלוע את העומס של השלישי. בפועל משאירים עוד מרווח לסערות reconnect ולזמן שלוקח ל-autoscaling." }
+      explain: { en: "With N regions, each must stay at or below (N-1)/N: 3 regions → 2/3 ≈ 66%, so the two survivors can absorb the third's load. In practice leave extra headroom for reconnect storms and the time autoscaling takes.", he: "עם N regions, כל אחד צריך להישאר ב-(N-1)/N או פחות: 3 regions ← ‏2/3 ≈ 66%, כך ששני השורדים יכולים לבלוע את העומס של השלישי. בפועל משאירים עוד מרווח לסערות reconnect ולזמן שלוקח ל-autoscaling." }
     }
   ],
   playground: "lb",

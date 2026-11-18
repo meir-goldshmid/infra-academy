@@ -199,9 +199,9 @@ spec: { maxUnavailable: 1, selector: { matchLabels: { app: api } } }</pre>
 </table>
 <p>Termination מסודר של Spot ב-Kubernetes זה בדיוק כמו drain רגיל של node, רק עם deadline קשיח:</p>
 <ol>
-<li>מגיע signal (IMDS/EventBridge) → ה-handler עושה <strong>cordon</strong> ל-node ו-<strong>drain</strong> דרך ה-Eviction API.</li>
+<li>מגיע signal (IMDS/EventBridge) ← ה-handler עושה <strong>cordon</strong> ל-node ו-<strong>drain</strong> דרך ה-Eviction API.</li>
 <li>ה-eviction מכבד <strong>PodDisruptionBudgets</strong> — אבל ה-VM מת ב-T+120 שניות בכל מקרה. PDB שחוסם את ה-drain רק אומר שה-Pod-ים ימותו בצורה לא נקייה.</li>
-<li>ה-Pod מקבל <code>SIGTERM</code> → <code>preStop</code> hook → האפליקציה מפסיקה לקבל בקשות, מסיימת עבודה פתוחה → יוצאת בתוך <code>terminationGracePeriodSeconds</code>.</li>
+<li>ה-Pod מקבל <code>SIGTERM</code> → <code>preStop</code> hook ← האפליקציה מפסיקה לקבל בקשות, מסיימת עבודה פתוחה ← יוצאת בתוך <code>terminationGracePeriodSeconds</code>.</li>
 <li>ה-endpoints יורדים; ה-LB מוריד את ה-target (תגדיר ב-ALB deregistration delay של עד ~60 שניות, לא 300 של ברירת המחדל).</li>
 </ol>
 <pre>spec:
@@ -240,7 +240,7 @@ spec: { maxUnavailable: 1, selector: { matchLabels: { app: api } } }</pre>
 <tr><th>תמהיל</th><th>לחודש</th><th>חיסכון</th></tr>
 <tr><td>100% on-demand</td><td>~$8,410</td><td>—</td></tr>
 <tr><td>רצפה של 20% on-demand (מכוסה ב-Savings Plan) + 80% Spot ב-$0.07</td><td>~$1,350 + ~$2,450 ≈ $3,800</td><td>~55%</td></tr>
-<tr><td>אותו דבר, אבל אין Spot ב-10% מהשעות → fallback ל-on-demand</td><td>≈ $4,400</td><td>~48%</td></tr>
+<tr><td>אותו דבר, אבל אין Spot ב-10% מהשעות ← fallback ל-on-demand</td><td>≈ $4,400</td><td>~48%</td></tr>
 </table>
 <p>תתכנן תקציב ל-fallback: <strong>הקיבולת שאתה צריך חייבת תמיד להיות זמינה לקנייה</strong>, גם אם במחיר on-demand. מה שובר fallback:</p>
 <ul>
@@ -414,7 +414,7 @@ window.INFRA.lessons.push({
 </table>
 <p>שים לב שהתחייבות של Savings Plan נמדדת בדולרים <em>אחרי הנחה</em>: התחייבות של $28 לשעה קונה ~$40 לשעה של שימוש במחיר on-demand בהנחה של 30%.</p>
 <p>בדיקת סיכון לפני שחותמים על 3 שנים: יש מיגרציה ב-roadmap (containers ל-serverless, x86 ל-ARM, מעבר region)? אם כן, תעדיף את המכשיר הגמיש גם בהנחה נמוכה יותר. ה-6% שאתה מוותר עליהם זולים יותר מ-30 חודשים של התחייבות לא מנוצלת.</p>
-<blockquote>💡 Real world: ב-AWS Cost Explorer → Savings Plans → <em>Recommendations</em> מחשבים את זה לפי lookback של 7/30/60 ימים. תתייחס לזה כחסם עליון: זה מניח שהעבר חוזר ולא יודע שאתה עומד לעשות right-sizing.</blockquote>`)
+<blockquote>💡 Real world: ב-AWS Cost Explorer ← Savings Plans ← <em>Recommendations</em> מחשבים את זה לפי lookback של 7/30/60 ימים. תתייחס לזה כחסם עליון: זה מניח שהעבר חוזר ולא יודע שאתה עומד לעשות right-sizing.</blockquote>`)
     },
     {
       h: t("Right-size first, then commit", "קודם right-sizing, אחר כך התחייבות"),
@@ -497,7 +497,7 @@ build של arm64 באמולציה (QEMU) איטי — תשתמש ב-CI runners �
     { cmd: "gcloud compute commitments list --format='table(name,region,plan,status,endTimestamp)'",
       what: t("GCP: list CUDs with plan (12/36 months) and end dates so renewals don't surprise you.", "GCP: רשימת CUDs עם plan (12 או 36 חודשים) ותאריכי סיום, כדי שחידושים לא יפתיעו אותך.") }
   ],
-  mnemonic: t("Size, then sign, then switch: right-size → commit to the floor (not the peak) → move to ARM. Coverage says 'how much is covered', utilization says 'how much is wasted'.", "קודם מידה, אחר כך חתימה, ואז החלפה: right-sizing → התחייבות על הרצפה (לא על ה-peak) → מעבר ל-ARM. Coverage אומר כמה מכוסה, utilization אומר כמה מתבזבז."),
+  mnemonic: t("Size, then sign, then switch: right-size → commit to the floor (not the peak) → move to ARM. Coverage says 'how much is covered', utilization says 'how much is wasted'.", "קודם מידה, אחר כך חתימה, ואז החלפה: right-sizing ← התחייבות על הרצפה (לא על ה-peak) ← מעבר ל-ARM. Coverage אומר כמה מכוסה, utilization אומר כמה מתבזבז."),
   pitfalls: [
     t("Committing to peak or average instead of the floor — utilization drops below 100% every quiet hour, and unused hours are gone.", "להתחייב על ה-peak או על הממוצע במקום על הרצפה — ה-utilization יורד מתחת ל-100% בכל שעה שקטה, ושעות לא מנוצלות הולכות לאיבוד."),
     t("Buying a 3-year EC2 Instance SP for m6i right before migrating to Graviton — it won't cover the new family.", "לקנות EC2 Instance SP ל-3 שנים על m6i רגע לפני מעבר ל-Graviton — הוא לא יכסה את המשפחה החדשה."),
@@ -572,7 +572,7 @@ window.INFRA.lessons.push({
 <blockquote>💡 Real world: two facts surprise everyone. (1) A public IP of an instance in the same region is <em>not</em> "same AZ, free" — traffic to a public or Elastic IP is billed like cross-AZ even when it's next door. (2) NLB with cross-zone load balancing enabled bills cross-AZ data; ALB cross-zone is free.</blockquote>`,
 `<table>
 <tr><th>נתיב</th><th>מחיר טיפוסי (us-east-1, תבדוק מחירים עדכניים)</th><th>שורה בחשבון (usage type)</th></tr>
-<tr><td>אינטרנט → AWS (ingress)</td><td>בחינם</td><td>—</td></tr>
+<tr><td>אינטרנט ← AWS (ingress)</td><td>בחינם</td><td>—</td></tr>
 <tr><td>אותו AZ, IP פרטי</td><td>בחינם</td><td>—</td></tr>
 <tr><td><strong>בין AZs</strong> באותו region</td><td>$0.01 ל-GB <strong>ביציאה + $0.01 ל-GB בכניסה</strong> = $0.02 ל-GB בפועל</td><td><code>DataTransfer-Regional-Bytes</code></td></tr>
 <tr><td>בין regions</td><td>~$0.02 ל-GB (משתנה לפי הזוג)</td><td><code>USE1-EUW1-AWS-Out-Bytes</code></td></tr>
@@ -581,7 +581,7 @@ window.INFRA.lessons.push({
 <tr><td>Interface endpoint / PrivateLink</td><td>~$0.01 לשעה לכל AZ + ~$0.01 לכל GB שעובר</td><td><code>VpcEndpoint-Hours</code>, <code>VpcEndpoint-Bytes</code></td></tr>
 <tr><td>Gateway endpoint (S3, DynamoDB)</td><td><strong>בחינם</strong></td><td>—</td></tr>
 <tr><td>Transit Gateway</td><td>~$0.05 לשעה לכל attachment + $0.02 לכל GB שעובר</td><td><code>TransitGateway-Bytes</code></td></tr>
-<tr><td>Origin ב-AWS → CloudFront</td><td>בחינם; מ-CloudFront לגולשים מ-~$0.085 ל-GB, זול יותר בנפחים</td><td><code>CloudFront-Out-Bytes</code></td></tr>
+<tr><td>Origin ב-AWS ← CloudFront</td><td>בחינם; מ-CloudFront לגולשים מ-~$0.085 ל-GB, זול יותר בנפחים</td><td><code>CloudFront-Out-Bytes</code></td></tr>
 </table>
 <p>עננים אחרים: GCP גובה ~$0.01 ל-GB בין zones באותו region ויש לו processing לפי GB גם ב-Cloud NAT; ב-Azure ה-egress הוא ~$0.087 ל-GB וגם NAT Gateway מחייב לפי GB שעובר. כללי החיוב בין zones שונים בין הספקים — תבדוק מחירים עדכניים.</p>
 <blockquote>💡 Real world: שתי עובדות מפתיעות את כולם. (1) IP ציבורי של instance באותו region הוא <em>לא</em> "אותו AZ, בחינם" — תעבורה ל-IP ציבורי או Elastic IP מחויבת כמו בין AZs גם כשהיא בבית ממול. (2) NLB עם cross-zone load balancing מופעל מחייב data בין AZs; ב-ALB ה-cross-zone בחינם.</blockquote>`)
@@ -823,7 +823,7 @@ window.INFRA.lessons.push({
 `<table>
 <tr><th>Class ב-AWS S3</th><th>~$ ל-GB לחודש (us-east-1)</th><th>זמן מינימום</th><th>שליפה</th><th>מתאים ל</th></tr>
 <tr><td>Standard</td><td>$0.023</td><td>—</td><td>בחינם, ms</td><td>נתונים חמים</td></tr>
-<tr><td>Intelligent-Tiering</td><td>$0.023 → $0.0125 → $0.004 אוטומטית</td><td>—</td><td>בחינם (+ $0.0025 לכל 1,000 אובייקטים על monitoring)</td><td>גישה לא ידועה או משתנה</td></tr>
+<tr><td>Intelligent-Tiering</td><td>$0.023 ← $0.0125 ← $0.004 אוטומטית</td><td>—</td><td>בחינם (+ $0.0025 לכל 1,000 אובייקטים על monitoring)</td><td>גישה לא ידועה או משתנה</td></tr>
 <tr><td>Standard-IA</td><td>$0.0125</td><td>30 יום</td><td>$0.01 ל-GB, ms</td><td>גישה חודשית, גיבויים</td></tr>
 <tr><td>One Zone-IA</td><td>$0.01</td><td>30 יום</td><td>$0.01 ל-GB</td><td>עותקים שאפשר לייצר מחדש (AZ אחד!)</td></tr>
 <tr><td>Glacier Instant Retrieval</td><td>$0.004</td><td>90 יום</td><td>$0.03 ל-GB, ms</td><td>גישה רבעונית, הדמיות רפואיות</td></tr>
@@ -905,7 +905,7 @@ window.INFRA.lessons.push({
 <pre>aws s3api put-bucket-lifecycle-configuration --bucket acme-logs --lifecycle-configuration file://lifecycle.json</pre>
 <p>המלכודות, עם מספרים:</p>
 <ul>
-<li><strong>בקשות transition עולות כסף לכל אובייקט</strong>: ~$0.01 לכל 1,000 ל-IA, ~$0.02 ל-Glacier IR, ~$0.05 לכל 1,000 ל-Deep Archive. 2 מיליארד אובייקטים של לוגים בגודל 20 KB → Deep Archive = <strong>$100,000</strong> על transitions כדי לחסוך רק ~$450 בחודש אחרי ה-overhead של ~40 KB metadata לכל אובייקט — break-even של ~18 שנה. קודם מאחדים קבצים קטנים (compaction ל-Parquet או gzip של 100 MB+).</li>
+<li><strong>בקשות transition עולות כסף לכל אובייקט</strong>: ~$0.01 לכל 1,000 ל-IA, ~$0.02 ל-Glacier IR, ~$0.05 לכל 1,000 ל-Deep Archive. 2 מיליארד אובייקטים של לוגים בגודל 20 KB ← Deep Archive = <strong>$100,000</strong> על transitions כדי לחסוך רק ~$450 בחודש אחרי ה-overhead של ~40 KB metadata לכל אובייקט — break-even של ~18 שנה. קודם מאחדים קבצים קטנים (compaction ל-Parquet או gzip של 100 MB+).</li>
 <li><strong>אובייקטים קטנים ב-IA</strong>: אובייקט של 4 KB מחויב כ-128 KB — פי 32 מהגודל. Lifecycle של S3 כבר לא מעביר כברירת מחדל אובייקטים מתחת ל-128 KB, אבל העלאות ידניות עם <code>--storage-class</code> עדיין נושכות.</li>
 <li><strong>Minimum duration</strong>: מחיקה או דריסה של אובייקט ב-Deep Archive אחרי 10 ימים עדיין מחויבת על 180 יום. לא שמים נתונים שמשתנים הרבה ב-tiers קרים.</li>
 <li><strong>שליפה</strong>: restore של 50 TB מ-Glacier Flexible (standard tier ~$0.01 ל-GB) זה ~$500 ועוד requests — ושעות. Bulk tier זול יותר ואיטי יותר. תבדוק את זמן ה-restore ב-DR, לא רק את המחיר.</li>
@@ -999,7 +999,7 @@ aws s3api list-object-versions --bucket acme-backups --prefix db/ --max-items 5<
     { cmd: "aws cloudwatch get-metric-statistics --namespace AWS/S3 --metric-name BucketSizeBytes --dimensions Name=BucketName,Value=acme-logs Name=StorageType,Value=StandardIAStorage --start-time 2026-11-12T00:00:00Z --end-time 2026-11-14T00:00:00Z --period 86400 --statistics Average",
       what: t("Daily bucket size per storage class (change StorageType: StandardStorage, GlacierInstantRetrievalStorage, DeepArchiveStorage…).", "גודל ה-bucket היומי לכל storage class (תשנה את StorageType: StandardStorage, GlacierInstantRetrievalStorage, DeepArchiveStorage…).") },
     { cmd: "aws s3api restore-object --bucket acme-archive --key db/2024-01-01.dump --restore-request '{\"Days\":3,\"GlacierJobParameters\":{\"Tier\":\"Bulk\"}}'",
-      what: t("Start a restore from Glacier Flexible/Deep Archive (Bulk = cheapest, slowest). Check progress with head-object → Restore header.", "להתחיל restore מ-Glacier Flexible או Deep Archive (Bulk = הכי זול והכי איטי). בודקים התקדמות עם head-object → כותרת Restore.") },
+      what: t("Start a restore from Glacier Flexible/Deep Archive (Bulk = cheapest, slowest). Check progress with head-object → Restore header.", "להתחיל restore מ-Glacier Flexible או Deep Archive (Bulk = הכי זול והכי איטי). בודקים התקדמות עם head-object ← כותרת Restore.") },
     { cmd: "gsutil lifecycle get gs://acme-logs  # or: az storage account management-policy show -g rg --account-name acmelogs",
       what: t("Same check on GCS and Azure Blob lifecycle policies.", "אותה בדיקה על lifecycle policies ב-GCS וב-Azure Blob.") }
   ],
@@ -1146,7 +1146,7 @@ aws eks update-kubeconfig --name prod --profile prod-sre</pre></li>
 <li><strong>Self-managed</strong>: kube-apiserver OIDC (<code>--oidc-issuer-url</code> or the structured <code>AuthenticationConfiguration</code>) with the <code>kubectl oidc-login</code> plugin; map IdP groups to RoleBindings.</li>
 </ul>
 <blockquote>⚠️ Production tip: bind Kubernetes RBAC to <strong>groups</strong>, never individual users. Then joining/leaving the "sre-oncall" group in the IdP is the only change needed — and access reviews are a group membership report.</blockquote>`,
-`<p>לבני אדם אסור להחזיק מפתחות <code>AKIA…</code>. משתמשים ב-IdP (Okta, Entra ID, Google) → <strong>IAM Identity Center</strong> (AWS) / Entra ID (Azure) / Cloud Identity (GCP), עם permission sets לכל account ו-SCIM provisioning כדי שמי שעוזב יאבד גישה אוטומטית.</p>
+`<p>לבני אדם אסור להחזיק מפתחות <code>AKIA…</code>. משתמשים ב-IdP (Okta, Entra ID, Google) ← <strong>IAM Identity Center</strong> (AWS) / Entra ID (Azure) / Cloud Identity (GCP), עם permission sets לכל account ו-SCIM provisioning כדי שמי שעוזב יאבד גישה אוטומטית.</p>
 <pre>aws configure sso            # once: start URL, region, account, permission set
 aws sso login --profile prod-readonly
 aws sts get-caller-identity --profile prod-readonly
@@ -1242,7 +1242,7 @@ boundary connect ssh -target-id ttcp_1234567890</pre>
 `<p><strong>Break-glass</strong> מיועד למצב שבו המסלול הרגיל למטה (תקלה ב-IdP, הגדרת SSO שגויה, בעיית region עם Identity Center):</p>
 <ul>
 <li>1-2 משתמשי IAM לחירום (או חשבונות cloud-only ב-Entra) לכל ארגון, מוחרגים מ-conditional access שתלוי ב-IdP, עם מפתחות <strong>MFA חומרתיים</strong> בכספת; סיסמאות מפוצלות או ב-vault חתום.</li>
-<li>התראה על <em>כל</em> שימוש: EventBridge rule על <code>ConsoleLogin</code>/<code>AssumeRole</code> של ה-principal הזה → page לאבטחה + הודעה בערוץ ה-incident. אותו דבר ל-root account.</li>
+<li>התראה על <em>כל</em> שימוש: EventBridge rule על <code>ConsoleLogin</code>/<code>AssumeRole</code> של ה-principal הזה ← page לאבטחה + הודעה בערוץ ה-incident. אותו דבר ל-root account.</li>
 <li>נבדק כל רבעון (תרגיל מתוזמן שמצפה להתראה), וה-credentials מוחלפים אחרי כל שימוש אמיתי.</li>
 </ul>
 <pre>{
@@ -1284,7 +1284,7 @@ boundary connect ssh -target-id ttcp_1234567890</pre>
   ],
   interview: [
     { q: t("Design production access for 150 engineers across 40 AWS accounts and 12 EKS clusters.", "תתכנן גישה ל-production ל-150 מהנדסים על 40 accounts של AWS ו-12 clusters של EKS."),
-      a: t("IdP groups → IAM Identity Center permission sets via SCIM; read-only by default in prod; JIT elevation (TEAM or a commercial tool) with ticket/incident reason and auto-approve for on-call; SSM Session Manager for hosts with logs to a locked log-archive account, port 22 closed and KeyName banned via SCP; EKS access entries mapping SSO roles to view/edit policies, RBAC bound to groups; CloudTrail org trail; two break-glass users with hardware MFA and EventBridge alarms, tested quarterly; quarterly access reviews.", "Groups ב-IdP → permission sets ב-IAM Identity Center דרך SCIM; read-only כברירת מחדל ב-prod; הרשאות מוגברות ב-JIT (TEAM או כלי מסחרי) עם סיבה מטיקט או incident ואישור אוטומטי ל-on-call; SSM Session Manager ל-hosts עם לוגים ל-account נעול של log-archive, port 22 סגור ו-KeyName חסום ב-SCP; EKS access entries שממפים roles של SSO ל-policies של view/edit, ו-RBAC שקשור ל-groups; CloudTrail org trail; שני משתמשי break-glass עם MFA חומרתי והתראות EventBridge, שנבדקים כל רבעון; access reviews רבעוניים.") },
+      a: t("IdP groups → IAM Identity Center permission sets via SCIM; read-only by default in prod; JIT elevation (TEAM or a commercial tool) with ticket/incident reason and auto-approve for on-call; SSM Session Manager for hosts with logs to a locked log-archive account, port 22 closed and KeyName banned via SCP; EKS access entries mapping SSO roles to view/edit policies, RBAC bound to groups; CloudTrail org trail; two break-glass users with hardware MFA and EventBridge alarms, tested quarterly; quarterly access reviews.", "Groups ב-IdP ← permission sets ב-IAM Identity Center דרך SCIM; read-only כברירת מחדל ב-prod; הרשאות מוגברות ב-JIT (TEAM או כלי מסחרי) עם סיבה מטיקט או incident ואישור אוטומטי ל-on-call; SSM Session Manager ל-hosts עם לוגים ל-account נעול של log-archive, port 22 סגור ו-KeyName חסום ב-SCP; EKS access entries שממפים roles של SSO ל-policies של view/edit, ו-RBAC שקשור ל-groups; CloudTrail org trail; שני משתמשי break-glass עם MFA חומרתי והתראות EventBridge, שנבדקים כל רבעון; access reviews רבעוניים.") },
     { q: t("SSO is down during an incident. How do engineers get in, and how do you keep that safe?", "ה-SSO למטה באמצע incident. איך מהנדסים נכנסים, ואיך שומרים על זה בטוח?"),
       a: t("Through break-glass: pre-created emergency principals independent of the IdP, hardware MFA in a safe, use triggers an immediate page and incident-channel post, actions are logged by CloudTrail, credentials rotated afterwards and a review of everything done. Ideally a two-person rule to open the safe.", "דרך break-glass: principals לחירום שנוצרו מראש ולא תלויים ב-IdP, MFA חומרתי בכספת, שימוש מפעיל page מיידי והודעה בערוץ ה-incident, הפעולות מתועדות ב-CloudTrail, וה-credentials מוחלפים אחר כך עם סקירה של כל מה שנעשה. אידיאלית, כלל של שני אנשים לפתיחת הכספת.") }
   ],
@@ -1360,7 +1360,7 @@ USE1-EBS:VolumeUsage.gp3        ...           $2,140
       choices: [
         c("Find which NAT gateway and which flows: CUR by resource ID, then VPC flow logs on its ENI", "למצוא איזה NAT gateway ואילו flows: CUR לפי resource ID, ואז VPC flow logs על ה-ENI שלו", "s3", 15,
           "Exactly: line → resource → flows.",
-          "בדיוק: שורה → משאב → flows."),
+          "בדיוק: שורה ← משאב ← flows."),
         c("Delete the NAT gateways — private subnets don't need internet", "למחוק את ה-NAT gateways — subnets פרטיים לא צריכים אינטרנט", "lose", -25,
           "Pods lose access to ECR, STS, external APIs and package mirrors. Image pulls fail, new nodes can't join, deploys break. You caused an outage to fix a bill.",
           "ה-Pod-ים מאבדים גישה ל-ECR, ל-STS, ל-APIs חיצוניים ול-package mirrors. משיכת images נכשלת, nodes חדשים לא מצטרפים, deploys נשברים. גרמת ל-outage כדי לתקן חשבון."),

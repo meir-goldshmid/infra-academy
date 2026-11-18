@@ -37,11 +37,11 @@ window.INFRA.designs.push({
 <p><strong>Slow endpoints:</strong> a merchant doing 1,000 events/s whose endpoint takes 10 s (our timeout) would need 10,000 concurrent connections <em>just for itself</em>. That is why per-endpoint concurrency must be capped (e.g. 50) and its backlog queued separately.</p>
 <p><strong>Retries:</strong> ~5% of first attempts fail → ~2k retries/s scheduled; schedule of ~8 attempts over 3 days. Worst case a large endpoint is down for a day: 1,000/s × 86,400 = <strong>86M pending deliveries</strong> for one customer — must sit in storage, not in RAM.</p>
 <p><strong>Storage:</strong> payload ~2 KB → 2 TB/day; keep 30 days for replay = 60 TB raw, ~15 TB compressed in object storage. Attempt log: 1.3B attempts/day × ~200 bytes ≈ 260 GB/day, 30 days ≈ <strong>8 TB</strong> in a columnar/wide-column store.</p>`,
-    he: `<p><strong>Events:</strong> 1B ביום ÷ 86,400 ≈ <strong>11.6k events לשנייה</strong>; שיא בערך פי 3 ≈ <strong>35k לשנייה</strong>. Fan-out: בממוצע 1.2 endpoints ל-event → כ-42k ניסיונות שליחה לשנייה בשיא, לפני retries.</p>
-<p><strong>HTTP באוויר:</strong> latency חציוני של הצד המקבל כ-300 ms → 42k × 0.3 s ≈ <strong>12.6k בקשות במקביל</strong>. עם HTTP client אסינכרוני וכ-250 connections ל-worker, זה כ-50 workers – עם מרווח, כ-100.</p>
+    he: `<p><strong>Events:</strong> 1B ביום ÷ 86,400 ≈ <strong>11.6k events לשנייה</strong>; שיא בערך פי 3 ≈ <strong>35k לשנייה</strong>. Fan-out: בממוצע 1.2 endpoints ל-event ← כ-42k ניסיונות שליחה לשנייה בשיא, לפני retries.</p>
+<p><strong>HTTP באוויר:</strong> latency חציוני של הצד המקבל כ-300 ms ← 42k × 0.3 s ≈ <strong>12.6k בקשות במקביל</strong>. עם HTTP client אסינכרוני וכ-250 connections ל-worker, זה כ-50 workers – עם מרווח, כ-100.</p>
 <p><strong>Endpoints איטיים:</strong> סוחר שמייצר 1,000 events לשנייה וה-endpoint שלו לוקח 10 שניות (ה-timeout שלנו) יצטרך 10,000 connections במקביל <em>רק בשבילו</em>. בגלל זה חייבים תקרת concurrency לכל endpoint (למשל 50) ו-backlog נפרד בתור.</p>
-<p><strong>Retries:</strong> כ-5% מהניסיונות הראשונים נכשלים → כ-2k retries לשנייה מתוזמנים; לוח זמנים של כ-8 ניסיונות לאורך 3 ימים. במקרה הגרוע endpoint גדול נופל ליום: 1,000 × 86,400 = <strong>86M שליחות ממתינות</strong> ללקוח אחד – זה חייב לשבת באחסון, לא ב-RAM.</p>
-<p><strong>אחסון:</strong> payload של כ-2 KB → 2 TB ביום; שומרים 30 יום בשביל replay = 60 TB raw, כ-15 TB דחוס ב-object storage. לוג הניסיונות: 1.3B ניסיונות ביום × כ-200 בייט ≈ 260 GB ביום, ל-30 יום ≈ <strong>8 TB</strong> ב-store עמודתי או wide-column.</p>`
+<p><strong>Retries:</strong> כ-5% מהניסיונות הראשונים נכשלים ← כ-2k retries לשנייה מתוזמנים; לוח זמנים של כ-8 ניסיונות לאורך 3 ימים. במקרה הגרוע endpoint גדול נופל ליום: 1,000 × 86,400 = <strong>86M שליחות ממתינות</strong> ללקוח אחד – זה חייב לשבת באחסון, לא ב-RAM.</p>
+<p><strong>אחסון:</strong> payload של כ-2 KB ← 2 TB ביום; שומרים 30 יום בשביל replay = 60 TB raw, כ-15 TB דחוס ב-object storage. לוג הניסיונות: 1.3B ניסיונות ביום × כ-200 בייט ≈ 260 GB ביום, ל-30 יום ≈ <strong>8 TB</strong> ב-store עמודתי או wide-column.</p>`
   },
   api: `# Endpoint management
 POST   /v1/webhook_endpoints {url, enabled_events:["payment.*"], description}
@@ -234,7 +234,7 @@ window.INFRA.designs.push({
 <p><strong>Token verification:</strong> 500k API req/s. If each called the auth service (introspection), that is 500k/s on our most critical service. With JWTs verified locally (RS256/ES256 verify ~20-50 µs) it is ~0 network calls; services only fetch JWKS every few minutes.</p>
 <p><strong>Refresh:</strong> access token TTL 15 min; ~5M concurrently active sessions ÷ 900 s ≈ <strong>5.5k refresh/s</strong> — each one a DB/Redis lookup + rotation write.</p>
 <p><strong>Storage:</strong> users 100M × ~1 KB = 100 GB; refresh tokens/sessions 150M × ~300 B ≈ 45 GB; audit log 100M events/day × 500 B = 50 GB/day. Small data, very high availability.</p>`,
-    he: `<p><strong>Logins:</strong> 20M DAU × כ-2 logins ביום = 40M ביום ≈ 460 לשנייה בממוצע; שיא בוקר בערך פי 10 → <strong>כ-5k לשנייה</strong>. מתקפת credential stuffing יכולה להוסיף <strong>50k ניסיונות לשנייה ויותר</strong> – צריך לתכנן קיבולת לתנועת מתקפה, לא רק למשתמשים.</p>
+    he: `<p><strong>Logins:</strong> 20M DAU × כ-2 logins ביום = 40M ביום ≈ 460 לשנייה בממוצע; שיא בוקר בערך פי 10 ← <strong>כ-5k לשנייה</strong>. מתקפת credential stuffing יכולה להוסיף <strong>50k ניסיונות לשנייה ויותר</strong> – צריך לתכנן קיבולת לתנועת מתקפה, לא רק למשתמשים.</p>
 <p><strong>CPU של hashing לסיסמאות:</strong> argon2id/bcrypt מכוונים לכ-100 ms של core אחד ל-hash. 5k לשנייה × 0.1 core-s = <strong>500 cores</strong> רק ל-logins לגיטימיים; 50k לשנייה של מתקפה ידרשו 5,000 cores. לכן rate limiting וזיהוי bots חייבים לדחות <em>לפני</em> ה-hashing.</p>
 <p><strong>אימות tokens:</strong> 500k API requests לשנייה. אם כל אחד היה פונה לשירות ה-auth (introspection), זה 500k לשנייה על השירות הכי קריטי שלנו. עם JWT שמאומת מקומית (verify של RS256/ES256 לוקח כ-20-50 µs) כמעט אין קריאות רשת; ה-services רק מושכים JWKS כל כמה דקות.</p>
 <p><strong>Refresh:</strong> TTL של access token הוא 15 דקות; כ-5M sessions פעילים במקביל ÷ 900 שניות ≈ <strong>5.5k refresh לשנייה</strong> – כל אחד lookup ב-DB/Redis וכתיבה של רוטציה.</p>
@@ -298,7 +298,7 @@ audit_log(ts, user_id, event: login_ok|login_fail|mfa|reset|revoke, ip, ua, risk
 <li><strong>Browser:</strong> keep tokens out of JavaScript. Use a BFF that holds tokens server-side and gives the browser an <code>HttpOnly; Secure; SameSite=Lax</code> cookie — XSS cannot steal what JS cannot read.</li>
 <li>The SSO session at the IdP (cookie on <code>login.example.com</code>) is what makes "log in once, use all products" work: a second product's <code>/authorize</code> completes silently.</li>
 </ul>`,
-        he: `<p>Sessions בצד השרת (id אטום → lookup) נותנים revocation מיידי, אבל שמים את ה-session store בנתיב של כל בקשה: 500k lookups לשנייה ותלות קשיחה. JWT ארוכי חיים סקיילבילים לגמרי, אבל אי אפשר לבטל אותם. הפשרה הסטנדרטית:</p>
+        he: `<p>Sessions בצד השרת (id אטום ← lookup) נותנים revocation מיידי, אבל שמים את ה-session store בנתיב של כל בקשה: 500k lookups לשנייה ותלות קשיחה. JWT ארוכי חיים סקיילבילים לגמרי, אבל אי אפשר לבטל אותם. הפשרה הסטנדרטית:</p>
 <ul>
 <li><strong>Access token:</strong> JWT חתום ב-ES256, TTL של 5-15 דקות, עם claims <code>sub, aud, iss, exp, scope, sid</code>. כל service מאמת מקומית עם JWKS שמור ב-cache – בלי קריאה לשירות ה-auth.</li>
 <li><strong>Refresh token:</strong> ערך רנדומלי אטום של 256 ביט, נשמר כ-hash, TTL של ימים עד שבועות, ו-<strong>מתחלף בכל שימוש</strong>. אם מישהו מציג refresh token שכבר נוצל, זו גניבה: מבטלים את כל ה-family (ה-session).</li>
@@ -349,7 +349,7 @@ audit_log(ts, user_id, event: login_ok|login_fail|mfa|reset|revoke, ip, ua, risk
 <ul>
 <li><strong>Edge:</strong> WAF + rate limits לפי IP ולפי ASN, fingerprints של TLS/JA4 ושל המכשיר, ו-bot score.</li>
 <li><strong>לכל חשבון:</strong> limit ב-sliding window על כישלונות לחשבון (למשל 10 ב-15 דקות) עם השהיות הולכות וגדלות – לא lockout קשיח, שנותן לתוקפים לנעול קורבנות מחוץ לחשבון.</li>
-<li><strong>Risk engine:</strong> מכשיר חדש + מדינה חדשה + סיסמה שמופיעה בדליפות (בדיקת k-anonymity מול מאגר breaches) → step-up ל-MFA או CAPTCHA.</li>
+<li><strong>Risk engine:</strong> מכשיר חדש + מדינה חדשה + סיסמה שמופיעה בדליפות (בדיקת k-anonymity מול מאגר breaches) ← step-up ל-MFA או CAPTCHA.</li>
 <li><strong>אותה שגיאה ואותו timing</strong> ל"אין משתמש כזה" ול"סיסמה שגויה", כדי למנוע account enumeration.</li>
 <li><strong>MFA:</strong> TOTP ו-push טובים; SMS הכי חלש (SIM swap). <strong>Passkeys (WebAuthn)</strong> עמידים ל-phishing: המפתח הפרטי לא יוצא מהמכשיר והחתימה קשורה ל-origin, אז דף login מזויף לא מקבל שום דבר שמיש. שומרים רק את המפתח הציבורי ואת ה-sign counter.</li>
 </ul>`
@@ -433,10 +433,10 @@ window.INFRA.designs.push({
 <p><strong>Aggregates:</strong> not every ad is clicked every minute: say 300k ads with ≥1 click per minute, and most of them see only 1-2 (country × device) combos per minute: ~600k rows/min ≈ <strong>860M rows/day</strong> at minute granularity, ~40 bytes each in columnar storage ≈ 35 GB/day. Keep minute data 30 days (~1 TB), hourly 1 year, daily forever.</p>
 <p><strong>Dedup state:</strong> click ids for a 1-hour dedup window at peak: 50k × 3,600 = 180M ids. As exact keys in RocksDB (~32 B each) ≈ 6 GB spread across Flink tasks — fine. A Bloom filter at 1% FP would be ~9.6 bits × 180M ≈ 216 MB, but false positives would drop real clicks (billing loss), so use it only as a pre-filter.</p>
 <p><strong>Queries:</strong> 100k advertisers, dashboards auto-refresh every 60 s, ~10% active → ~170 QPS, mostly last-24h on one advertiser: an easy OLAP workload.</p>`,
-    he: `<p><strong>קליטה:</strong> 1B ביום ÷ 86,400 ≈ <strong>11.6k קליקים לשנייה</strong>, שיא בערך פי 4 ≈ <strong>50k לשנייה</strong>. Event של כ-300 בייט (ids, ua, ip, geo) → 300 GB ביום raw, כ-60 GB דחוס ב-Kafka. Kafka ב-50k הודעות לשנייה × 300 B = 15 MB/s – קלאסטר קטן; retention של 7 ימים ≈ 2 TB × RF 3 = 6 TB.</p>
+    he: `<p><strong>קליטה:</strong> 1B ביום ÷ 86,400 ≈ <strong>11.6k קליקים לשנייה</strong>, שיא בערך פי 4 ≈ <strong>50k לשנייה</strong>. Event של כ-300 בייט (ids, ua, ip, geo) ← 300 GB ביום raw, כ-60 GB דחוס ב-Kafka. Kafka ב-50k הודעות לשנייה × 300 B = 15 MB/s – קלאסטר קטן; retention של 7 ימים ≈ 2 TB × RF 3 = 6 TB.</p>
 <p><strong>אגרגציות:</strong> לא כל מודעה מקבלת קליק כל דקה: נניח 300k מודעות עם קליק אחד לפחות בדקה, ורוב המודעות מקבלות 1-2 צירופי dimensions בדקה: כ-600k שורות לדקה ≈ <strong>860M שורות ביום</strong> ברזולוציה של דקה, כ-40 בייט לשורה באחסון עמודתי ≈ 35 GB ביום. שומרים דקות ל-30 יום (כ-1 TB), שעות לשנה, ימים לתמיד.</p>
 <p><strong>State של dedup:</strong> click ids לחלון dedup של שעה בשיא: 50k × 3,600 = 180M ids. כמפתחות מדויקים ב-RocksDB (כ-32 B לכל אחד) ≈ 6 GB שמפוזרים על ה-tasks של Flink – בסדר. Bloom filter עם 1% FP יהיה בערך 9.6 ביט × 180M ≈ 216 MB, אבל false positives יזרקו קליקים אמיתיים (הפסד ב-billing), אז משתמשים בו רק כ-pre-filter.</p>
-<p><strong>שאילתות:</strong> 100k מפרסמים, dashboards שמתרעננים כל 60 שניות, כ-10% פעילים → כ-170 QPS, רובן 24 שעות אחרונות על מפרסם אחד: עומס OLAP קל.</p>`
+<p><strong>שאילתות:</strong> 100k מפרסמים, dashboards שמתרעננים כל 60 שניות, כ-10% פעילים ← כ-170 QPS, רובן 24 שעות אחרונות על מפרסם אחד: עומס OLAP קל.</p>`
   },
   api: `# Click tracking (ad server redirect)
 GET /c/{signed_click_token}  -> 302 Location: advertiser landing page
@@ -550,7 +550,7 @@ billing_daily(advertiser_id, ad_id, date, billable_clicks, amount, version)`,
 <li><strong>Batch (ML):</strong> device graphs, behavioral patterns, post-click conversion signals; results adjust billable counts before invoicing.</li>
 <li>Keep both <code>clicks</code> and <code>billable</code> columns so advertisers see what was filtered.</li>
 </ul>`,
-        he: `<p><strong>אחסון:</strong> store עמודתי של OLAP (ClickHouse, Druid, Pinot) שממוין לפי <code>(advertiser_id, ad_id, minute)</code> עונה על "המפרסם הזה, 24 שעות אחרונות, group by country" בקריאה של פרוסה זעירה. Rollups ממומשים (דקה → שעה → יום) שומרים על שאילתות לטווח ארוך מהירות ועל אחסון קטן. משתמשים בטבלאות בסגנון <code>ReplacingMergeTree</code> (או upserts של Pinot) כך שחלונות שנפלטים שוב מחליפים שורות במקום להוסיף.</p>
+        he: `<p><strong>אחסון:</strong> store עמודתי של OLAP (ClickHouse, Druid, Pinot) שממוין לפי <code>(advertiser_id, ad_id, minute)</code> עונה על "המפרסם הזה, 24 שעות אחרונות, group by country" בקריאה של פרוסה זעירה. Rollups ממומשים (דקה ← שעה ← יום) שומרים על שאילתות לטווח ארוך מהירות ועל אחסון קטן. משתמשים בטבלאות בסגנון <code>ReplacingMergeTree</code> (או upserts של Pinot) כך שחלונות שנפלטים שוב מחליפים שורות במקום להוסיף.</p>
 <p><strong>Fraud:</strong> מפרסמים לא משלמים על bots, חוות קליקים או מתחרים שלוחצים.</p>
 <ul>
 <li><strong>בזמן אמת (rules זולים ב-Flink):</strong> UAs מוכרים של bots וטווחי IP של data centers, יותר מדי קליקים ל-IP או device בדקה, קליק בלי impression תואם, קליק מהר יותר ממה שאדם מסוגל אחרי ה-impression.</li>
@@ -617,9 +617,9 @@ window.INFRA.designs.push({
 <p><strong>Like counters:</strong> viral video at 100k likes/s on one DB row is impossible (~1-5k updates/s per row with locking). 100 sharded counters × 1k/s each, or in-memory coalescing flushed every 1 s → 1 write/s per video per writer node.</p>`,
     he: `<p><strong>Events:</strong> 5B ביום ÷ 86,400 ≈ <strong>58k צפיות לשנייה</strong>, שיא כ-200k לשנייה. בשעה: כ-210M צפיות על פני כ-50M סרטונים שונים.</p>
 <p><strong>ספירה מדויקת לשעה:</strong> hash map של 50M רשומות × כ-50 בייט (key, count, overhead) ≈ <strong>2.5 GB</strong> לחלון לכל region – אפשרי על node גדול אחד, אבל × 3 חלונות × 200 מדינות × מיזוג בין shards זה כבר יקר, ו-7 ימים מדויק = כ-300M keys.</p>
-<p><strong>Count-Min Sketch:</strong> שגיאה ε = 0.0001 → רוחב w = e/ε ≈ 27,200; ביטחון δ = 0.1% → עומק d = ln(1/δ) ≈ 7. גודל 27,200 × 7 × 4 בייט ≈ <strong>760 KB</strong>. הערכת יתר ≤ ε × N = 0.0001 × 210M = <strong>21k צפיות</strong> לשעה – זניח לסרטונים ב-top 100, שיש להם מיליונים. לצידו min-heap של K=100: זיכרון זניח.</p>
-<p><strong>Shards:</strong> 200k לשנייה בשיא ÷ כ-20k events לשנייה ל-aggregator ≈ 10-16 shards של aggregators, וכל אחד מייצר top-K' מקומי (K'=1,000 ליתר ביטחון) כל דקה → ה-merger מטפל ב-16 × 1,000 מועמדים לדקה.</p>
-<p><strong>Counters של likes:</strong> סרטון ויראלי עם 100k likes לשנייה על שורה אחת ב-DB זה בלתי אפשרי (כ-1-5k עדכונים לשנייה לשורה עם locking). 100 sharded counters × 1k לשנייה כל אחד, או coalescing בזיכרון עם flush כל שנייה → כתיבה אחת לשנייה לסרטון לכל writer node.</p>`
+<p><strong>Count-Min Sketch:</strong> שגיאה ε = 0.0001 ← רוחב w = e/ε ≈ 27,200; ביטחון δ = 0.1% ← עומק d = ln(1/δ) ≈ 7. גודל 27,200 × 7 × 4 בייט ≈ <strong>760 KB</strong>. הערכת יתר ≤ ε × N = 0.0001 × 210M = <strong>21k צפיות</strong> לשעה – זניח לסרטונים ב-top 100, שיש להם מיליונים. לצידו min-heap של K=100: זיכרון זניח.</p>
+<p><strong>Shards:</strong> 200k לשנייה בשיא ÷ כ-20k events לשנייה ל-aggregator ≈ 10-16 shards של aggregators, וכל אחד מייצר top-K' מקומי (K'=1,000 ליתר ביטחון) כל דקה ← ה-merger מטפל ב-16 × 1,000 מועמדים לדקה.</p>
+<p><strong>Counters של likes:</strong> סרטון ויראלי עם 100k likes לשנייה על שורה אחת ב-DB זה בלתי אפשרי (כ-1-5k עדכונים לשנייה לשורה עם locking). 100 sharded counters × 1k לשנייה כל אחד, או coalescing בזיכרון עם flush כל שנייה ← כתיבה אחת לשנייה לסרטון לכל writer node.</p>`
   },
   api: `GET  /v1/trending?window=1h|24h|7d&region=IL&k=100
      -> {generated_at, window, items:[{video_id, views, rank, delta_rank}]}   (served from cache/CDN, TTL 60s)
@@ -729,7 +729,7 @@ Exact batch (data lake): views_daily(video_id, country, date, views)  -- payouts
         he: `<p><code>UPDATE videos SET likes = likes + 1 WHERE id = ?</code> עושה serialization על lock של שורה אחת: כמה אלפי עדכונים לשנייה במקרה הטוב, וסרטון ויראלי עושה 100k לשנייה.</p>
 <ul>
 <li><strong>Sharded counter:</strong> N שורות לכל סרטון (<code>video_id, shard</code>); כל כתיבה בוחרת shard רנדומלי; קריאה סוכמת N שורות (את הסכום שומרים ב-cache ל-5-10 שניות). מתחילים עם N=1 ומגדילים את N רק לסרטונים חמים.</li>
-<li><strong>Write coalescing:</strong> ה-nodes של שירות ה-counters צוברים הגדלות בזיכרון (<code>map[video_id] += 1</code>) ועושים flush כל שנייה כ-<code>+= N</code> אחד. 100k likes לשנייה על 20 nodes → 20 כתיבות לשנייה. קריסה מאבדת עד שנייה של ספירות – מקובל לצפיות; ל-likes שומרים את רשומת ה-like לכל משתמש כמקור האמת ובונים ממנה את הספירות מחדש.</li>
+<li><strong>Write coalescing:</strong> ה-nodes של שירות ה-counters צוברים הגדלות בזיכרון (<code>map[video_id] += 1</code>) ועושים flush כל שנייה כ-<code>+= N</code> אחד. 100k likes לשנייה על 20 nodes ← 20 כתיבות לשנייה. קריסה מאבדת עד שנייה של ספירות – מקובל לצפיות; ל-likes שומרים את רשומת ה-like לכל משתמש כמקור האמת ובונים ממנה את הספירות מחדש.</li>
 <li><strong>Likes חייבים dedup לכל משתמש:</strong> <code>INSERT INTO likes(user_id, video_id)</code> עם PK; רק insert מוצלח פולט event של +1. Unlike פולט -1.</li>
 <li>תצוגה: "1.2M צפיות" לא צריך דיוק – eventual consistency הוא פיצ'ר כאן.</li>
 </ul>`
@@ -792,10 +792,10 @@ window.INFRA.designs.push({
 <p><strong>Memory:</strong> a Redis sorted set entry costs ~80-100 bytes (skiplist node + hash entry + member string). 50M players × 100 B ≈ <strong>5 GB</strong> — fits on one Redis node. Per-region boards duplicate it (another ~5 GB total since each player is in one region).</p>
 <p><strong>Throughput:</strong> <code>ZADD</code>/<code>ZINCRBY</code> and <code>ZREVRANK</code> are O(log N): log2(50M) ≈ 26 levels; a single Redis node handles ~100k+ such ops/s. 60k ops/s total → one primary + replicas is enough. Sharding becomes necessary only around 500M players or 200k+ ops/s.</p>
 <p><strong>Durability:</strong> 10k updates/s × ~100 bytes = 1 MB/s into the AOF and into Postgres/DynamoDB as the source of truth — trivial.</p>`,
-    he: `<p><strong>כתיבות:</strong> בשיא 500k שחקנים במקביל, משחק כל כ-5 דקות → 500k ÷ 300 שניות ≈ 1.7k לשנייה; עם אירועים ו-spikes מתכננים ל-<strong>10k עדכונים לשנייה</strong>.</p>
-<p><strong>קריאות:</strong> כל מסך סוף משחק מציג דירוג + שכנים + top 100: כ-3 קריאות למשחק → 5k-30k לשנייה, מתכננים ל-<strong>50k לשנייה</strong>. ה-top 100 זהה לכולם – שומרים אותו ב-cache לשנייה, והוא עולה בערך קריאה אחת ל-Redis לשנייה לכל שרת אפליקציה.</p>
+    he: `<p><strong>כתיבות:</strong> בשיא 500k שחקנים במקביל, משחק כל כ-5 דקות ← 500k ÷ 300 שניות ≈ 1.7k לשנייה; עם אירועים ו-spikes מתכננים ל-<strong>10k עדכונים לשנייה</strong>.</p>
+<p><strong>קריאות:</strong> כל מסך סוף משחק מציג דירוג + שכנים + top 100: כ-3 קריאות למשחק ← 5k-30k לשנייה, מתכננים ל-<strong>50k לשנייה</strong>. ה-top 100 זהה לכולם – שומרים אותו ב-cache לשנייה, והוא עולה בערך קריאה אחת ל-Redis לשנייה לכל שרת אפליקציה.</p>
 <p><strong>זיכרון:</strong> רשומה ב-sorted set של Redis עולה כ-80-100 בייט (node של skiplist + רשומת hash + המחרוזת של ה-member). 50M שחקנים × 100 B ≈ <strong>5 GB</strong> – נכנס ל-node אחד של Redis. Boards לפי region משכפלים אותו (עוד כ-5 GB בסך הכול, כי כל שחקן נמצא ב-region אחד).</p>
-<p><strong>Throughput:</strong> <code>ZADD</code>/<code>ZINCRBY</code> ו-<code>ZREVRANK</code> הם O(log N): log2(50M) ≈ 26 רמות; node יחיד של Redis מטפל ב-100k ומעלה פעולות כאלה לשנייה. 60k פעולות לשנייה בסך הכול → primary אחד + replicas מספיקים. Sharding נהיה הכרחי רק סביב 500M שחקנים או 200k פעולות לשנייה ומעלה.</p>
+<p><strong>Throughput:</strong> <code>ZADD</code>/<code>ZINCRBY</code> ו-<code>ZREVRANK</code> הם O(log N): log2(50M) ≈ 26 רמות; node יחיד של Redis מטפל ב-100k ומעלה פעולות כאלה לשנייה. 60k פעולות לשנייה בסך הכול ← primary אחד + replicas מספיקים. Sharding נהיה הכרחי רק סביב 500M שחקנים או 200k פעולות לשנייה ומעלה.</p>
 <p><strong>Durability:</strong> 10k עדכונים לשנייה × כ-100 בייט = 1 MB/s ל-AOF ול-Postgres/DynamoDB כמקור האמת – זניח.</p>`
   },
   api: `POST /v1/matches/{match_id}/result   (game server only, signed)  {player_id, score_delta | score}
@@ -855,7 +855,7 @@ Tie-break encoding in one double (53-bit mantissa):
 <li>Keep Redis as a <em>derived</em> index: the DB holds the truth and Redis can be rebuilt from it.</li>
 </ul>`,
         he: `<p>"מה הדירוג שלי?" ב-SQL זה <code>SELECT COUNT(*) FROM scores WHERE season=? AND score &gt; ?</code> – עם 50M שורות זה סורק מיליוני רשומות אינדקס בכל קריאה; ב-20k לשנייה זה ממיס את ה-DB. אינדקס B-tree לא שומר "כמה רשומות לפניי".</p>
-<p><strong>Sorted set</strong> של Redis הוא skiplist שבו כל קישור קדימה שומר את ה-span שלו, ועוד hash map של member → score. זה הופך דירוג להליכה של O(log N): <code>ZREVRANK</code> על 50M members זה כ-26 קפיצות, מיקרו-שניות. אותו דבר ל-<code>ZREVRANGE</code> לפי דירוג (top N, שחקנים סביבי) ול-<code>ZINCRBY</code>.</p>
+<p><strong>Sorted set</strong> של Redis הוא skiplist שבו כל קישור קדימה שומר את ה-span שלו, ועוד hash map של member ← score. זה הופך דירוג להליכה של O(log N): <code>ZREVRANK</code> על 50M members זה כ-26 קפיצות, מיקרו-שניות. אותו דבר ל-<code>ZREVRANGE</code> לפי דירוג (top N, שחקנים סביבי) ול-<code>ZINCRBY</code>.</p>
 <ul>
 <li>ניקוד מצטבר: <code>ZINCRBY</code>. Best score: <code>ZADD key GT score member</code> (מעדכן רק אם גבוה יותר, מ-Redis 6.2).</li>
 <li>לשכנים משתמשים ב-<code>ZREVRANGE ... WITHSCORES</code>: מקבלים דירוג r, ואז טווח r-5..r+5.</li>
@@ -874,7 +874,7 @@ t = seconds since season start (a month ≈ 2.6M &lt; 2^22 ≈ 4.19M)</pre>
 <li>With <code>ZINCRBY</code> you cannot just add points to a composite (the time part would be wrong) — compute the new composite in a Lua script or in the service from the stored raw score, then <code>ZADD</code>.</li>
 <li>Display the raw score (<code>floor(composite / 2^22)</code>), never the composite.</li>
 </ul>`,
-        he: `<p>Redis מסדר scores שווים לקסיקוגרפית לפי ה-member – "player:9" מנצח את "player:10", שזה שרירותי ולא הוגן. הכלל הנפוץ: אותו ניקוד → מי שהגיע אליו <strong>קודם</strong> מדורג גבוה יותר. מקודדים את זה לתוך ה-double:</p>
+        he: `<p>Redis מסדר scores שווים לקסיקוגרפית לפי ה-member – "player:9" מנצח את "player:10", שזה שרירותי ולא הוגן. הכלל הנפוץ: אותו ניקוד ← מי שהגיע אליו <strong>קודם</strong> מדורג גבוה יותר. מקודדים את זה לתוך ה-double:</p>
 <pre>composite = score * 2^22 + (2^22 - 1 - t)
 t = seconds since season start (a month ≈ 2.6M &lt; 2^22 ≈ 4.19M)</pre>
 <ul>

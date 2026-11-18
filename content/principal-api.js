@@ -34,7 +34,7 @@ INFRA.lessons.push({
         he: `<p>ולידציה זה לא <code>if</code> אחד ב-controller. כל שכבה בודקת את מה שהיא <em>אחראית</em> עליו, וכל שכבה מניחה שאפשר לעקוף את זו שלפניה (caller פנימי חדש, batch job, באג).</p>
 <table>
 <tr><th>שכבה</th><th>מה היא בודקת</th><th>דוגמה</th></tr>
-<tr><td>Edge / WAF / gateway</td><td>גודל, rate, שיש auth, content-type, זבל ברור</td><td>Body &gt; 1 MB → 413, אין token → 401</td></tr>
+<tr><td>Edge / WAF / gateway</td><td>גודל, rate, שיש auth, content-type, זבל ברור</td><td>Body &gt; 1 MB ← 413, אין token ← 401</td></tr>
 <tr><td>API / transport</td><td>Schema: טיפוסים, שדות חובה, פורמטים, טווחים, enums</td><td><code>quantity</code> הוא int בין 1 ל-100</td></tr>
 <tr><td>Domain / service</td><td>חוקים עסקיים שצריכים state</td><td>הקופון לא פג, המשתמש הוא הבעלים של העגלה</td></tr>
 <tr><td>Database</td><td>Invariants שחייבים להתקיים לנצח</td><td><code>CHECK (qty &gt; 0)</code>, <code>UNIQUE(email)</code>, FK</td></tr>
@@ -693,7 +693,7 @@ PATCH /scim/v2/Users/usr_77   (offboarding)
 <tr><td>שימוש טיפוסי</td><td>IdPs ותיקים ב-Enterprise, עדיין הכי מבוקש</td><td>IdPs מודרניים, מובייל, SPAs</td></tr>
 <tr><td>כאבים</td><td>באגים של XML signature wrapping, ‏clock skew, החלפת certs</td><td>פשוט יותר, אבל config של issuer/JWKS לכל tenant</td></tr>
 </table>
-<p><strong>Config לכל tenant</strong>: לכל לקוח יש IdP metadata משלו (entity ID, ‏SSO URL, ‏signing cert / issuer + client ID), <em>דומיין מייל מאומת</em> ל-home-realm discovery ‏(<code>@acme.com</code> → ה-IdP של Acme), ומדיניות (לחייב SSO, דומיינים מותרים, JIT provisioning כן/לא). רוב הצוותים קונים את השכבה הזו (WorkOS, ‏Auth0/Okta CIC, ‏Keycloak, ‏Cognito) במקום לפרסר SAML לבד.</p>
+<p><strong>Config לכל tenant</strong>: לכל לקוח יש IdP metadata משלו (entity ID, ‏SSO URL, ‏signing cert / issuer + client ID), <em>דומיין מייל מאומת</em> ל-home-realm discovery ‏(<code>@acme.com</code> ← ה-IdP של Acme), ומדיניות (לחייב SSO, דומיינים מותרים, JIT provisioning כן/לא). רוב הצוותים קונים את השכבה הזו (WorkOS, ‏Auth0/Okta CIC, ‏Keycloak, ‏Cognito) במקום לפרסר SAML לבד.</p>
 <p><strong>SCIM 2.0</strong> ‏(RFC 7643/7644) הוא הדרך שבה ה-IdP של הלקוח יוצר, מעדכן ו — הכי חשוב — <em>מבטל</em> משתמשים אצלך. בלי זה, עובד שפוטר ביום שישי עדיין יכול להתחבר ביום שני עם session או API key.</p>
 <pre>POST /scim/v2/Users
 Authorization: Bearer &lt;per-tenant SCIM token&gt;

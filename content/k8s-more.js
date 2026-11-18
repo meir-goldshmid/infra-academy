@@ -246,8 +246,8 @@ export do='--dry-run=client -o yaml'   # k create deploy x --image=nginx $do</pr
 <table>
 <tr><th>Plugin</th><th>מה הוא עושה</th></tr>
 <tr><td><code>ctx</code> / <code>ns</code></td><td>kubectx / kubens בתור plugins</td></tr>
-<tr><td><code>neat</code></td><td>מוריד managedFields, status ודיפולטים: <code>kubectl get deploy web -o yaml | kubectl neat</code> → YAML נקי שאפשר לעשות לו apply מחדש</td></tr>
-<tr><td><code>tree</code></td><td>עץ בעלות: Deployment → ReplicaSet → Pods (עובד גם על CRDs)</td></tr>
+<tr><td><code>neat</code></td><td>מוריד managedFields, status ודיפולטים: <code>kubectl get deploy web -o yaml | kubectl neat</code> ← YAML נקי שאפשר לעשות לו apply מחדש</td></tr>
+<tr><td><code>tree</code></td><td>עץ בעלות: Deployment ← ReplicaSet ← Pods (עובד גם על CRDs)</td></tr>
 <tr><td><code>stern</code></td><td>tail ללוגים של הרבה pods ביחד, צבע לכל pod, regex: <code>kubectl stern -n shop 'checkout-.*' --since 5m</code></td></tr>
 <tr><td><code>who-can</code>, <code>rbac-tool</code></td><td>"מי יכול למחוק secrets בפרודקשן?"</td></tr>
 <tr><td><code>node-shell</code>, <code>resource-capacity</code></td><td>shell על node; requests/limits לכל node במבט אחד</td></tr>
@@ -435,7 +435,7 @@ route:
 <tr><td><code>Evicted</code></td><td>kubelet</td><td>eviction בגלל לחץ על ה-node: <code>The node was low on resource: memory. Container app was using 1.9Gi, request is 512Mi</code>. Pods שצורכים מעל ה-request שלהם הולכים ראשונים.</td></tr>
 <tr><td><code>OOMKilling</code> / <code>SystemOOM</code></td><td>node-problem-detector / kubelet (על ה-Node)</td><td>ה-OOM killer של ה-kernel הופעל על ה-node. ל-container שהגיע ל-limit שלו, תסתכל ב-describe על <code>Last State: Terminated, Reason: OOMKilled, Exit Code: 137</code>.</td></tr>
 <tr><td><code>NodeNotReady</code></td><td>node controller</td><td>ה-kubelet הפסיק לשלוח heartbeat (grace של כ-40s). ה-pods מקבלים taint ‏<code>node.kubernetes.io/unreachable</code> ועוברים eviction אחרי ה-toleration הדיפולטי של 300s.</td></tr>
-<tr><td><code>FailedCreatePodSandBox</code></td><td>kubelet</td><td>ה-CNI לא הצליח להקים את הרשת של ה-pod: <code>plugin type="aws-cni" ... failed to assign an IP address to container</code> → נגמרו IPs ב-subnet או שה-CNI למטה.</td></tr>
+<tr><td><code>FailedCreatePodSandBox</code></td><td>kubelet</td><td>ה-CNI לא הצליח להקים את הרשת של ה-pod: <code>plugin type="aws-cni" ... failed to assign an IP address to container</code> ← נגמרו IPs ב-subnet או שה-CNI למטה.</td></tr>
 <tr><td><code>FailedCreate</code></td><td>ReplicaSet / Job controller</td><td>לא הצליח ליצור pods בכלל: <code>exceeded quota</code>, או <code>admission webhook "validate.kyverno.svc" denied the request</code>. ה-Deployment פשוט מראה פחות replicas.</td></tr>
 </table>
 <blockquote>💡 מהשטח: <code>FailedCreate</code> הוא הכי חמקמק – הוא יושב על ה-<strong>ReplicaSet</strong>, לא על אף pod (כי אף pod לא נוצר!). אם Deployment תקוע על 2/5 בלי pods ב-Pending, תריץ <code>kubectl describe rs -l app=web</code>.</blockquote>`
@@ -534,8 +534,8 @@ rules:
         he: `<p>ב-Kubernetes מנוהל אתה לא שולט ב-policy – אתה מדליק את ה-audit stream של הספק:</p>
 <table>
 <tr><th>ספק</th><th>איך</th><th>איפה מחפשים</th></tr>
-<tr><td>EKS</td><td>Control plane logging → להדליק <code>audit</code> (כבוי כברירת מחדל; מחויב כ-ingestion של CloudWatch)</td><td>CloudWatch Logs group ‏<code>/aws/eks/&lt;cluster&gt;/cluster</code>, stream ‏<code>kube-apiserver-audit-*</code>, ‏Logs Insights</td></tr>
-<tr><td>AKS</td><td>Diagnostic setting → קטגוריה <code>kube-audit-admin</code> (רק כתיבות, הרבה יותר זול) או <code>kube-audit</code> (הכל)</td><td>Log Analytics, טבלה <code>AKSAuditAdmin</code> / <code>AKSAudit</code> (ב-resource-specific mode)</td></tr>
+<tr><td>EKS</td><td>Control plane logging ← להדליק <code>audit</code> (כבוי כברירת מחדל; מחויב כ-ingestion של CloudWatch)</td><td>CloudWatch Logs group ‏<code>/aws/eks/&lt;cluster&gt;/cluster</code>, stream ‏<code>kube-apiserver-audit-*</code>, ‏Logs Insights</td></tr>
+<tr><td>AKS</td><td>Diagnostic setting ← קטגוריה <code>kube-audit-admin</code> (רק כתיבות, הרבה יותר זול) או <code>kube-audit</code> (הכל)</td><td>Log Analytics, טבלה <code>AKSAuditAdmin</code> / <code>AKSAudit</code> (ב-resource-specific mode)</td></tr>
 <tr><td>GKE</td><td>Admin Activity audit logs תמיד דולקים ובחינם; Data Access (קריאות) רק אם מדליקים</td><td>Cloud Logging, ‏<code>resource.type="k8s_cluster"</code></td></tr>
 </table>
 <p>הציד אחרי מחיקה ב-EKS (Logs Insights):</p>
@@ -549,8 +549,8 @@ rules:
 <p>ב-GKE: ‏<code>protoPayload.methodName="io.k8s.apps.v1.deployments.delete" protoPayload.resourceName:"namespaces/shop/deployments/checkout"</code>. ב-AKS ‏(KQL): ‏<code>AKSAuditAdmin | where Verb == "delete" and ObjectRef.resource == "deployments"</code>.</p>
 <p>איך לקרוא את התשובה:</p>
 <ul>
-<li><strong>בן אדם</strong> (<code>alice@corp.com</code>, ARN של assumed-role) → איזה role/SSO session; תבדוק <code>sourceIPs</code> ו-<code>userAgent</code> (<code>kubectl/v1.31</code> מול Lens מול Terraform).</li>
-<li><strong>Service account</strong> → עוקבים אחרי השרשרת: Argo CD עשה לו prune (מישהו הוריד אותו מ-Git → <code>git log</code>), ‏helm uninstall, מחיקת namespace שהתגלגלה למטה (<code>system:serviceaccount:kube-system:namespace-controller</code>), או garbage collection כי ה-owner שלו נמחק (<code>generic-garbage-collector</code>).</li>
+<li><strong>בן אדם</strong> (<code>alice@corp.com</code>, ARN של assumed-role) ← איזה role/SSO session; תבדוק <code>sourceIPs</code> ו-<code>userAgent</code> (<code>kubectl/v1.31</code> מול Lens מול Terraform).</li>
+<li><strong>Service account</strong> ← עוקבים אחרי השרשרת: Argo CD עשה לו prune (מישהו הוריד אותו מ-Git ← <code>git log</code>), ‏helm uninstall, מחיקת namespace שהתגלגלה למטה (<code>system:serviceaccount:kube-system:namespace-controller</code>), או garbage collection כי ה-owner שלו נמחק (<code>generic-garbage-collector</code>).</li>
 </ul>
 <blockquote>💡 מהשטח: חצי מהחקירות של "מי מחק?" נגמרות ב-GitOps controller. ה-audit log מצביע על הרובוט; ההיסטוריה ב-Git מצביעה על הבן אדם. תשמור את שניהם לפחות 90 יום – compliance ‏(SOC 2, ISO 27001) דורש לא פעם שנה.</blockquote>`
       }
@@ -828,7 +828,7 @@ spec:
               image: registry/billing-batch:7.1</pre>
 <ul>
 <li><strong>concurrencyPolicy</strong>: ‏<code>Allow</code> מאפשר לריצות לחפוף (ריצה איטית של 02:30 + הריצה הבאה = שני jobs שמחייבים לקוחות פעמיים). <code>Forbid</code> מדלג על הריצה החדשה כל עוד הישנה פעילה. <code>Replace</code> הורג את הריצה הישנה ומתחיל את החדשה – מתאים ל-syncs של "הנתון האחרון מנצח".</li>
-<li><strong>startingDeadlineSeconds</strong>: כמה באיחור ריצה יכולה להתחיל (controller למטה, שדרוג cluster, ‏Forbid שחוסם). איחור מעבר לזה → נספר כפספוס ומדולג.</li>
+<li><strong>startingDeadlineSeconds</strong>: כמה באיחור ריצה יכולה להתחיל (controller למטה, שדרוג cluster, ‏Forbid שחוסם). איחור מעבר לזה ← נספר כפספוס ומדולג.</li>
 <li><strong>יותר מדי פספוסים</strong>: אם ה-controller רואה יותר מ-<strong>100</strong> זמני התחלה שפוספסו, הוא עוצר וכותב <code>Cannot determine if job needs to be started. Too many missed start times (&gt; 100)</code>. CronJob של <code>*/1</code> שהיה ב-suspend שעתיים נתקל בזה. הגדרת <code>startingDeadlineSeconds</code> מגבילה כמה אחורה הוא סופר.</li>
 <li><strong>אזורי זמן</strong>: בלי <code>timeZone</code>, ‏"02:30" זה לפי אזור הזמן של ה-controller – ומעברי שעון קיץ/חורף יכולים לגרום לריצה לקרות פעמיים או לא לקרות בכלל בשעון המקומי. אל תשתמש ב-<code>CRON_TZ=</code> בתוך ה-schedule – הוא נדחה; תשתמש בשדה.</li>
 </ul>
@@ -901,7 +901,7 @@ time() - kube_cronjob_status_last_successful_time{cronjob="nightly-billing"} &gt
 <p><strong>מתי CronJob + Job לא מספיקים:</strong></p>
 <table>
 <tr><th>צורך</th><th>במה להשתמש</th></tr>
-<tr><td>DAG רב-שלבי (extract → transform ×50 במקביל → load), artifacts בין שלבים, retries לכל שלב, UI</td><td><strong>Argo Workflows</strong> ‏(K8s-native, כל שלב pod) – או Airflow לצוותי דאטה</td></tr>
+<tr><td>DAG רב-שלבי (extract ← transform ×50 במקביל ← load), artifacts בין שלבים, retries לכל שלב, UI</td><td><strong>Argo Workflows</strong> ‏(K8s-native, כל שלב pod) – או Airflow לצוותי דאטה</td></tr>
 <tr><td>תהליכים עסקיים ארוכים עם state, המתנות של ימים, אישורים אנושיים, סמנטיקה של כמעט exactly-once בקוד</td><td><strong>Temporal</strong> ‏(durable execution)</td></tr>
 <tr><td>עבודה מבוססת queue שגדלה עם ה-backlog</td><td>Deployment של workers + <strong>KEDA</strong> (או KEDA ScaledJob)</td></tr>
 <tr><td>אלפי batch Jobs שמתחרים על quota/GPUs</td><td><strong>Kueue</strong> ‏(job queueing, fair sharing, quotas)</td></tr>
@@ -1128,7 +1128,7 @@ curl http://payments.billing.svc.clusterset.local:8080/healthz</pre>
 <p>Also remember the data: stateless services fail over easily; the database behind them doesn't. Multi-region active-active needs a data strategy (regional primaries, global DBs like Spanner/Cosmos DB/Aurora Global, or accepting a regional write leader).</p>`,
         he: `<table>
 <tr><th>שכבה</th><th>אפשרות</th><th>איך זה עובד</th></tr>
-<tr><td>North-south (משתמשים → cluster)</td><td><strong>Global load balancer</strong>: רשומות latency/failover ב-Route 53, ‏Azure Front Door, ‏GCP global external LB / Multi-cluster Gateway, ‏Cloudflare</td><td>עושה health-check ל-ingress של כל cluster ומנתב משתמשים לקרוב והבריא. החלק הכי פשוט והכי חשוב.</td></tr>
+<tr><td>North-south (משתמשים ← cluster)</td><td><strong>Global load balancer</strong>: רשומות latency/failover ב-Route 53, ‏Azure Front Door, ‏GCP global external LB / Multi-cluster Gateway, ‏Cloudflare</td><td>עושה health-check ל-ingress של כל cluster ומנתב משתמשים לקרוב והבריא. החלק הכי פשוט והכי חשוב.</td></tr>
 <tr><td>East-west, ‏K8s-native</td><td><strong>Multi-Cluster Services ‏(MCS API)</strong></td><td>מייצאים Service עם <code>ServiceExport</code>; ‏clusters אחרים ב-<em>ClusterSet</em> מקבלים <code>ServiceImport</code> שזמין ב-<code>payments.billing.svc.clusterset.local</code>. ממומש ב-GKE, ‏Submariner, ‏Cilium, וב-AWS Cloud Map MCS controller.</td></tr>
 <tr><td>East-west, ברמת ה-CNI</td><td><strong>Cilium ClusterMesh</strong></td><td>ה-clusters חולקים state של services וזהויות; Service עם annotation ‏<code>service.cilium.io/global: "true"</code> עושה load-balancing על endpoints מכל ה-clusters, ו-NetworkPolicy עובד בין clusters. דורש pod CIDRs שלא חופפים.</td></tr>
 <tr><td>East-west, ברמת ה-mesh</td><td><strong>Istio multi-primary</strong> (או primary-remote)</td><td>כל cluster מריץ istiod משלו, כולם סומכים על <strong>root CA משותף</strong>, והתעבורה עוברת דרך east-west gateways עם mTLS. ‏failover מודע-מיקום: קודם אותו zone, אחר כך אותו region, ואז remote.</td></tr>
@@ -1165,7 +1165,7 @@ Gate between rings: no SLO burn, no new Warning event types, add-on versions com
 <tr><td>People: upgrades, incidents, on-call per cluster</td><td>the biggest line</td></tr>
 </table>
 <blockquote>💡 Real world: teams that went "a cluster per team" often consolidate back to fewer, shared clusters with namespaces + policies once they count 30+ clusters at 15% utilization. Pick the fewest clusters that satisfy blast radius, region and compliance needs — then automate so adding one is cheap.</blockquote>`,
-        he: `<p><strong>אחידות של config ו-policy</strong>: drift בין clusters הוא הרוצח השקט ("זה עובד ב-prod-eu אבל לא ב-prod-us"). תחזיק מקור אחד ב-Git עם base + overlays לכל cluster ‏(Kustomize / Helm values), תחיל דרך ApplicationSets, ותאכוף guardrails בכל מקום עם אותן policies של Kyverno/Gatekeeper. תרכז את הזהויות (SSO → קבוצות RBAC) ותשלח metrics/logs מכל ה-clusters ל-backend אחד עם label של <code>cluster</code> על כל סדרה.</p>
+        he: `<p><strong>אחידות של config ו-policy</strong>: drift בין clusters הוא הרוצח השקט ("זה עובד ב-prod-eu אבל לא ב-prod-us"). תחזיק מקור אחד ב-Git עם base + overlays לכל cluster ‏(Kustomize / Helm values), תחיל דרך ApplicationSets, ותאכוף guardrails בכל מקום עם אותן policies של Kyverno/Gatekeeper. תרכז את הזהויות (SSO ← קבוצות RBAC) ותשלח metrics/logs מכל ה-clusters ל-backend אחד עם label של <code>cluster</code> על כל סדרה.</p>
 <p><strong>שדרוגים ב-cohorts</strong> (rings): אף פעם לא משדרגים את כל ה-fleet בבת אחת.</p>
 <pre>Ring 0: dev-*            → soak 2-3 days
 Ring 1: staging-*        → run e2e + load tests, soak 2 days
@@ -1511,7 +1511,7 @@ window.INFRA.lessons.push({
 <tr><th></th><th>Overlay ‏(VXLAN / Geneve / IPIP)</th><th>Native / routed ‏(IPs מה-VPC, ‏BGP)</th></tr>
 <tr><td>IPs של Pods</td><td>מ-pod CIDR פרטי (למשל <code>10.244.0.0/16</code>) שהרשת שמתחת לא מכירה</td><td>ניתנים לניתוב ברשת שמתחת</td></tr>
 <tr><td>איך packets עוברים בין nodes</td><td>עטופים ב-UDP בין ה-IPs של ה-nodes ‏(VXLAN בפורט 8472/4789)</td><td>נשלחים כמו שהם; routes ב-VPC או BGP יודעים איפה כל pod יושב</td></tr>
-<tr><td>מחיר</td><td>כ-50 bytes של overhead לכל packet → MTU נמוך יותר, קצת CPU</td><td>צורך IPs אמיתיים מהרשת, דורש שיתוף פעולה מהרשת</td></tr>
+<tr><td>מחיר</td><td>כ-50 bytes של overhead לכל packet ← MTU נמוך יותר, קצת CPU</td><td>צורך IPs אמיתיים מהרשת, דורש שיתוף פעולה מהרשת</td></tr>
 <tr><td>גישה מחוץ ל-cluster</td><td>אי אפשר להגיע ל-pods ישירות (egress עובר SNAT ל-IP של ה-node)</td><td>אפשר להגיע ל-pods ישירות מה-VPC / מה-on-prem</td></tr>
 </table>`
       }
@@ -1560,7 +1560,7 @@ KUBE-SEP-CCC    all   0.0.0.0/0  0.0.0.0/0</pre>
         he: `<p>ClusterIP לא קיים על אף interface – הוא חוק. ‏kube-proxy ‏(DaemonSet) עושה watch ל-Services ול-EndpointSlices ומתכנת כל node:</p>
 <table>
 <tr><th>מצב</th><th>איך</th><th>בסקייל</th></tr>
-<tr><td><code>iptables</code> (דיפולט)</td><td>שרשראות NAT: ‏<code>KUBE-SERVICES</code> → <code>KUBE-SVC-*</code> → בחירה אקראית עם <code>--probability</code> → <code>KUBE-SEP-*</code> עם DNAT ל-IP של pod</td><td>מספר החוקים גדל עם services × endpoints; שכתוב מלא של הטבלה נהיה איטי בסביבות 10k+ services, וההתאמה לכל packet היא סדרתית.</td></tr>
+<tr><td><code>iptables</code> (דיפולט)</td><td>שרשראות NAT: ‏<code>KUBE-SERVICES</code> → <code>KUBE-SVC-*</code> ← בחירה אקראית עם <code>--probability</code> → <code>KUBE-SEP-*</code> עם DNAT ל-IP של pod</td><td>מספר החוקים גדל עם services × endpoints; שכתוב מלא של הטבלה נהיה איטי בסביבות 10k+ services, וההתאמה לכל packet היא סדרתית.</td></tr>
 <tr><td><code>ipvs</code></td><td>load balancer של L4 בתוך ה-kernel עם hash tables; אלגוריתמים rr, lc, sh</td><td>lookup ב-O(1), אבל הוא בתהליך deprecation לטובת nftables</td></tr>
 <tr><td><code>nftables</code></td><td>היורש המודרני של מצב iptables ‏(GA ב-1.33), משתמש ב-verdict maps</td><td>עדכונים ו-lookups הרבה יותר מהירים מ-iptables</td></tr>
 <tr><td>החלפה ב-eBPF ‏(Cilium עם <code>kubeProxyReplacement=true</code>)</td><td>load balancing ברמת ה-socket: מתרגם את ה-ClusterIP בזמן <code>connect()</code>, בלי NAT לכל packet</td><td>בלי kube-proxy בכלל; הביצועים והנראות הכי טובים</td></tr>

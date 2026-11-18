@@ -49,9 +49,9 @@ Vlan    Mac Address       Type        Ports
 <p>frame הוא בין 64 ל-1518 בתים (1522 עם VLAN tag), ועוד 8 בתים של preamble ו-12 בתים של inter-frame gap על החוט. כתובת <strong>MAC</strong> היא 48 ביט: 24 הראשונים הם ה-OUI של היצרן (<code>3c:fd:fe</code> = Intel). שני ביטים בבית הראשון חשובים: הביט הנמוך אומר multicast (לכן <code>01:00:5e:...</code> זה IPv4 multicast ו-<code>ff:ff:ff:ff:ff:ff</code> זה broadcast), והביט שאחריו אומר "מנוהל מקומית" (<code>02:42:...</code> זה MAC ש-Docker ייצר).</p>
 <p>ה-switch בונה את <strong>טבלת ה-MAC</strong> (CAM table) מתוך כתובות ה-<em>מקור</em>:</p>
 <ol>
-<li>frame מגיע ל-port 7 מ-<code>aa:aa</code> → רושמים <code>aa:aa → port 7, VLAN 20</code> (עם aging timer, ברירת מחדל 300 שניות).</li>
-<li>מחפשים את כתובת ה-<em>יעד</em>. מוכרת → שולחים רק ל-port הזה.</li>
-<li>unicast לא מוכר, broadcast או multicast (בלי IGMP snooping) → <strong>flood</strong> לכל ה-ports ב-VLAN חוץ מזה שממנו הגיע.</li>
+<li>frame מגיע ל-port 7 מ-<code>aa:aa</code> ← רושמים <code>aa:aa → port 7, VLAN 20</code> (עם aging timer, ברירת מחדל 300 שניות).</li>
+<li>מחפשים את כתובת ה-<em>יעד</em>. מוכרת ← שולחים רק ל-port הזה.</li>
+<li>unicast לא מוכר, broadcast או multicast (בלי IGMP snooping) ← <strong>flood</strong> לכל ה-ports ב-VLAN חוץ מזה שממנו הגיע.</li>
 </ol>
 <pre>sw1# show mac address-table vlan 20
 Vlan    Mac Address       Type        Ports
@@ -294,8 +294,8 @@ Aggregator ID: 1</pre>
 <li>GCP historically gives each VM a /32 so <em>everything</em> goes via the virtual gateway.</li>
 </ul>
 <blockquote>💡 Real world: "it worked on-prem" failovers - Pacemaker VIPs, MetalLB in L2 mode, Oracle RAC, old clustering that uses multicast heartbeats - are among the first things that break in a lift-and-shift. Replace them with cloud load balancers or API-driven IP moves.</blockquote>`,
-        he: `<p>התכנון הישן של <strong>שלוש שכבות</strong> (access → aggregation → core) הריץ L2 בכל מקום והסתמך על STP, שחסם חצי מה-uplinks. DCs מודרניים משתמשים ב-<strong>leaf-spine (Clos)</strong>: כל <em>leaf</em> (ה-top-of-rack) מחובר לכל <em>spine</em>, leafs לא מתחברים זה לזה, ו-spines לא מתחברים זה לזה. כל שרת מגיע לכל שרת אחר בדיוק דרך leaf → spine → leaf, ה-links עושים routing (הרבה פעמים eBGP לפי RFC 7938, ASN לכל leaf) ו-<strong>ECMP</strong> מפזר flows על כל ה-spines. איבדת spine אחד מתוך 4? איבדת 25% מהקיבולת, לא את הקישוריות.</p>
-<p>חישוב ל-leaf: 48 פעמים 25G למטה = 1.2Tbps לכיוון השרתים, 6 פעמים 100G למעלה = 600Gbps לכיוון ה-spines → <strong>oversubscription של 2:1</strong>. fabrics של AI ו-storage מכוונים ל-1:1.</p>
+        he: `<p>התכנון הישן של <strong>שלוש שכבות</strong> (access ← aggregation ← core) הריץ L2 בכל מקום והסתמך על STP, שחסם חצי מה-uplinks. DCs מודרניים משתמשים ב-<strong>leaf-spine (Clos)</strong>: כל <em>leaf</em> (ה-top-of-rack) מחובר לכל <em>spine</em>, leafs לא מתחברים זה לזה, ו-spines לא מתחברים זה לזה. כל שרת מגיע לכל שרת אחר בדיוק דרך leaf ← spine ← leaf, ה-links עושים routing (הרבה פעמים eBGP לפי RFC 7938, ASN לכל leaf) ו-<strong>ECMP</strong> מפזר flows על כל ה-spines. איבדת spine אחד מתוך 4? איבדת 25% מהקיבולת, לא את הקישוריות.</p>
+<p>חישוב ל-leaf: 48 פעמים 25G למטה = 1.2Tbps לכיוון השרתים, 6 פעמים 100G למעלה = 600Gbps לכיוון ה-spines ← <strong>oversubscription של 2:1</strong>. fabrics של AI ו-storage מכוונים ל-1:1.</p>
 <p>אבל אפליקציות עדיין רוצות L2 (ניידות של VMs, הנחות של "אותו subnet"), אז בונים L2 <em>מעל</em> ה-fabric המנותב עם <strong>VXLAN</strong>: ה-frame המקורי נעטף ב-UDP (port 4789) על ידי <strong>VTEP</strong> (leaf switch, או ה-kernel של Linux על השרת).</p>
 <pre>| outer Eth 14 | outer IP 20 | UDP 8 (dst 4789) | VXLAN 8 (VNI 24 bit) | original Ethernet frame |
                     = 50 bytes overhead → inner MTU 1450 on a 1500 underlay</pre>
@@ -685,11 +685,11 @@ spec:
         he: `<p>חישוב גס ל-node אחד גדול, עומס יציב 24/7 (מחירי ארה"ב, בערך):</p>
 <table>
 <tr><th></th><th>Bare metal ב-colo</th><th>ענן (בסגנון AWS r7a.32xlarge: 128 ליבות, 1TiB)</th></tr>
-<tr><td>חומרה</td><td>2× EPYC של 64 ליבות, 1TB RAM, 4× NVMe של 3.84TB ≈ $30k → חלקי 60 חודשים = <strong>$500 לחודש</strong></td><td>-</td></tr>
+<tr><td>חומרה</td><td>2× EPYC של 64 ליבות, 1TB RAM, 4× NVMe של 3.84TB ≈ $30k ← חלקי 60 חודשים = <strong>$500 לחודש</strong></td><td>-</td></tr>
 <tr><td>חשמל ומקום</td><td>כ-0.8kW × כ-$250 ל-kW = <strong>$200 לחודש</strong></td><td>כלול</td></tr>
 <tr><td>חלק ברשת (ToR, transit, cross-connects)</td><td><strong>כ-$100 לחודש</strong></td><td>כלול (egress בנפרד)</td></tr>
 <tr><td>סה"כ compute</td><td><strong>כ-$800 לחודש</strong> ועוד אנשים</td><td>כ-$7,000 לחודש on-demand, כ-$2,800-3,000 לחודש עם התחייבות ל-3 שנים</td></tr>
-<tr><td>Egress של 100TB בחודש</td><td>IP transit בכ-$0.20-0.50 ל-Mbps (אחוזון 95); ממוצע כ-300Mbps → <strong>כ-$150-300 לחודש</strong></td><td>כ-$0.05-0.09 ל-GB → <strong>כ-$6,000-7,000 לחודש</strong></td></tr>
+<tr><td>Egress של 100TB בחודש</td><td>IP transit בכ-$0.20-0.50 ל-Mbps (אחוזון 95); ממוצע כ-300Mbps ← <strong>כ-$150-300 לחודש</strong></td><td>כ-$0.05-0.09 ל-GB ← <strong>כ-$6,000-7,000 לחודש</strong></td></tr>
 </table>
 <p>השורה שחסרה היא <strong>אנשים</strong>: מישהו צריך להחזיק רכש, התקנה ב-racks, firmware, חלקי חילוף, את ה-stack של ה-provisioning, ו-on-call של חומרה 24/7. זה בערך 2-4 מהנדסים לפני שהשרת הראשון מחזיר את עצמו, ולכן נקודת האיזון היא בדרך כלל סביב חשבון ענן של $1-2M בשנה על compute <em>יציב</em>. 37signals (Basecamp, HEY) עזבו בפומבי את ה-compute של AWS ב-2023 עם חשבון של כ-$3.2M בשנה, וצפו חיסכון של כ-$7M על פני חמש שנים.</p>
 <p><strong>Bare metal מנצח כש:</strong></p>
@@ -724,7 +724,7 @@ spec:
   ],
   mnemonic: {
     en: "Power before space, A and B under half, BMC on its own LAN, PXE → TFTP → HTTP → install. Metal for the steady baseline, cloud for the spikes.",
-    he: "חשמל לפני מקום, A ו-B מתחת לחצי, BMC ב-LAN משלו, PXE → TFTP → HTTP → install. metal ל-baseline היציב, ענן לקפיצות."
+    he: "חשמל לפני מקום, A ו-B מתחת לחצי, BMC ב-LAN משלו, PXE ← TFTP ← HTTP ← install. metal ל-baseline היציב, ענן לקפיצות."
   },
   pitfalls: [
     { en: "Loading both power feeds above 50%: it all works until one feed fails and the other trips from the doubled load, taking the whole rack down despite dual PSUs.", he: "להעמיס את שני קווי החשמל מעל 50%: הכל עובד עד שקו אחד נופל והשני קופץ מהעומס הכפול, ומפיל את כל ה-rack למרות ספקי כוח כפולים." },
@@ -773,7 +773,7 @@ spec:
       q: { en: "What's the correct order of a typical network install?", he: "מה הסדר הנכון של התקנה טיפוסית מהרשת?" },
       options: [
         { en: "TFTP → DHCP → PXE → installer", he: "TFTP → DHCP → PXE → installer" },
-        { en: "PXE firmware → DHCP (IP + next-server + filename) → TFTP bootloader/iPXE → HTTP kernel+initrd → automated installer", he: "PXE firmware → DHCP (IP, next-server ושם קובץ) → TFTP ל-bootloader או iPXE → HTTP ל-kernel ו-initrd → installer אוטומטי" },
+        { en: "PXE firmware → DHCP (IP + next-server + filename) → TFTP bootloader/iPXE → HTTP kernel+initrd → automated installer", he: "PXE firmware ← DHCP (IP, next-server ושם קובץ) ← TFTP ל-bootloader או iPXE ← HTTP ל-kernel ו-initrd ← installer אוטומטי" },
         { en: "DNS → HTTP → PXE → TFTP", he: "DNS → HTTP → PXE → TFTP" },
         { en: "BMC downloads the OS image and writes it to disk directly", he: "ה-BMC מוריד את ה-image של ה-OS וכותב אותו ישירות לדיסק" }
       ],

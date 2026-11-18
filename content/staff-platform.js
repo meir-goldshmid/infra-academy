@@ -702,7 +702,7 @@ INFRA.lessons.push({
         he: `<p>Zero trust (NIST SP 800-207) אומר שאין אמון מובלע בגלל מיקום ברשת: כל בקשה עוברת authentication, authorization והצפנה לפי <strong>זהות + הקשר</strong>, עם least privilege ואימות מתמשך. בתשתיות זה מתורגם לבקרות קונקרטיות:</p>
 <ul>
 <li><strong>בני אדם</strong>: SSO + MFA עמיד ל-phishing (FIDO2/passkeys), identity-aware proxies במקום VPN (Google BeyondCorp/IAP, Cloudflare Access, Teleport, Tailscale), גישה מוגברת just-in-time עם תפוגה ו-audit.</li>
-<li><strong>Workloads</strong>: לכל שירות זהות משלו (Kubernetes SA → role בענן, SPIFFE ID), mTLS בין שירותים, authz לפי זהות ולא לפי IP.</li>
+<li><strong>Workloads</strong>: לכל שירות זהות משלו (Kubernetes SA ← role בענן, SPIFFE ID), mTLS בין שירותים, authz לפי זהות ולא לפי IP.</li>
 <li><strong>מכונות/CI</strong>: OIDC federation – ה-CI מוכיח מי הוא עם token חתום, והענן מחליף אותו ב-credentials ל-15-60 דקות. בלי access keys ב-secrets של ה-CI.</li>
 <li><strong>סודות</strong>: TTLs קצרים, מקור אמת אחד, rotation אוטומטי, וכל קריאה עוברת audit.</li>
 </ul>
@@ -1275,7 +1275,7 @@ ${EB_RUNTIME}
 <table>
 <tr><th></th><th>Falco (CNCF graduated)</th><th>Tetragon (פרויקט של Cilium)</th></tr>
 <tr><td>מצב עיקרי</td><td>זיהוי: חוקים על זרם אירועי syscalls, סט חוקים ברירת מחדל עשיר</td><td>Observability + <em>אכיפה</em>: סינון ופעולות (Sigkill, override return) בתוך ה-kernel</td></tr>
-<tr><td>פלט</td><td>Alerts ל-Falcosidekick → Slack, SIEM, PagerDuty</td><td>אירועי JSON (עץ exec של תהליכים, רשת, קבצים), ייצוא ל-SIEM</td></tr>
+<tr><td>פלט</td><td>Alerts ל-Falcosidekick ← Slack, SIEM, PagerDuty</td><td>אירועי JSON (עץ exec של תהליכים, רשת, קבצים), ייצוא ל-SIEM</td></tr>
 <tr><td>חוזקה</td><td>חוקים בשלים לדפוסי תקיפה נפוצים</td><td>סינון ב-kernel עם overhead נמוך, יכול לעצור את הפעולה באופן סינכרוני</td></tr>
 </table>
 <p>אכיפה (הריגת תהליכים) חזקה ומסוכנת: policy רחב מדי יהרוג את ה-package manager שלך באמצע session דיבאג או init script לגיטימי. מריצים זיהוי כמה שבועות, בונים baseline של התנהגות נורמלית לכל workload, ורק אז אוכפים בצורה צרה (למשל "בלי כתיבה ל-/etc, בלי exec של shells ב-pods של payments").</p>`
@@ -1559,7 +1559,7 @@ ${PG_POOL}
 <table>
 <tr><th>pool_mode</th><th>ה-connection לשרת מוחזק למשך</th><th>Multiplexing</th><th>הסתייגות</th></tr>
 <tr><td>session</td><td>כל ה-session של ה-client</td><td>אין (רק reuse)</td><td>תואם לחלוטין</td></tr>
-<tr><td>transaction</td><td>טרנזקציה אחת</td><td>גבוה: 10,000 clients → 40 backends</td><td>בלי session state (SET, advisory locks, LISTEN)</td></tr>
+<tr><td>transaction</td><td>טרנזקציה אחת</td><td>גבוה: 10,000 clients ← 40 backends</td><td>בלי session state (SET, advisory locks, LISTEN)</td></tr>
 <tr><td>statement</td><td>statement אחד</td><td>הכי גבוה</td><td>טרנזקציות עם כמה statements אסורות</td></tr>
 </table>
 <p>חלופות מנוהלות: RDS Proxy, ה-PgBouncer המובנה ב-Azure Flexible Server, ו-managed connection pooling של Cloud SQL; וגם PgCat/Odyssey/Supavisor ל-pooling שמודע ל-sharding או multi-tenant. מריצים PgBouncer קרוב לאפליקציה (sidecar או לכל node) או כשכבה מרכזית ב-HA מאחורי Service – בשכבה מרכזית קל יותר להגביל גלובלית.</p>`
@@ -1846,13 +1846,13 @@ ${ZD_DUAL}
 <li><strong>Rollback plan</strong>, written before you start: for each phase, how to go back, how long it takes, and the point of no return. Keep reverse sync (new → old) running for a while after cut-over so rollback doesn't lose writes made on the new store.</li>
 </ul>
 <blockquote>💡 Real world: the riskiest moment is the step you can't undo — dropping the old column or stopping reverse sync. Put it on the calendar weeks later, behind a checklist: no reads of the old path in metrics for 14 days, backups verified, owner sign-off.</blockquote>`,
-        he: `<p>העברת מידע בין מערכות (DB של המונוליט → DB של שירות, MySQL → Postgres, self-hosted → מנוהל) הולכת באותה קשת של expand/contract, עם אימות באמצע:</p>
+        he: `<p>העברת מידע בין מערכות (DB של המונוליט ← DB של שירות, MySQL ← Postgres, self-hosted ← מנוהל) הולכת באותה קשת של expand/contract, עם אימות באמצע:</p>
 ${ZD_DUAL}
 <ul>
 <li><strong>Dual writes</strong> בקוד האפליקציה אינם אטומיים בין שני stores – כתיבה אחת יכולה להצליח והשנייה להיכשל. מתייחסים ל-store החדש כ-follower: מתקנים דרך outbox/תור, או עדיף, משתמשים ב-<strong>CDC</strong> (Debezium שקורא את ה-WAL/binlog) כדי להזרים שינויים, מה שנותן סדר ולא תלוי בזה שכל נתיב קוד יזכור לעשות dual write.</li>
 <li><strong>Shadow reads</strong> משווים תוצאות בלי להגיש אותן; dashboard של שיעור mismatch הוא אות ה-go/no-go שלך.</li>
-<li><strong>Feature flags</strong> הופכים את ה-cut-over להדרגתי (1% מה-tenants → 10% → 100%) ואת ה-rollback לשינוי קונפיג במקום deploy.</li>
-<li><strong>תוכנית rollback</strong>, כתובה לפני שמתחילים: לכל שלב, איך חוזרים, כמה זמן זה לוקח, ומהי נקודת האל-חזור. משאירים reverse sync (חדש → ישן) רץ לזמן מה אחרי ה-cut-over, כדי ש-rollback לא יאבד כתיבות שנעשו ב-store החדש.</li>
+<li><strong>Feature flags</strong> הופכים את ה-cut-over להדרגתי (1% מה-tenants ← 10% ← 100%) ואת ה-rollback לשינוי קונפיג במקום deploy.</li>
+<li><strong>תוכנית rollback</strong>, כתובה לפני שמתחילים: לכל שלב, איך חוזרים, כמה זמן זה לוקח, ומהי נקודת האל-חזור. משאירים reverse sync (חדש ← ישן) רץ לזמן מה אחרי ה-cut-over, כדי ש-rollback לא יאבד כתיבות שנעשו ב-store החדש.</li>
 </ul>
 <blockquote>💡 מהשטח: הרגע הכי מסוכן הוא הצעד שאי אפשר לבטל – מחיקת העמודה הישנה או עצירת ה-reverse sync. שמים אותו ביומן כמה שבועות אחר כך, מאחורי checklist: אין קריאות לנתיב הישן במטריקות כבר 14 יום, גיבויים אומתו, ה-owner חתם.</blockquote>`
       }

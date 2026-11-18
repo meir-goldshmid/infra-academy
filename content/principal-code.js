@@ -178,7 +178,7 @@ OrderService(FakeNotifier())                  # unit test, no network</pre>
 <blockquote>💡 Real world: "Duplication is far cheaper than the wrong abstraction" (Sandi Metz). Two services with similar validation code are fine; a shared "common-utils" library that 40 services pin to different versions is the coupling that blocks every upgrade.</blockquote>`,
         he: `<table>
 <tr><th>עיקרון</th><th>משמעות</th><th>אנלוגיה</th><th>מלכודת</th></tr>
-<tr><td><strong>DRY</strong></td><td>לכל פיסת <em>ידע</em> יש מקום סמכותי אחד</td><td>עותק מאסטר אחד של המתכון</td><td>איחוד קוד שרק <em>נראה</em> דומה → אבסטרקציה שגויה. כלל השלוש: מפשטים בעותק השלישי.</td></tr>
+<tr><td><strong>DRY</strong></td><td>לכל פיסת <em>ידע</em> יש מקום סמכותי אחד</td><td>עותק מאסטר אחד של המתכון</td><td>איחוד קוד שרק <em>נראה</em> דומה ← אבסטרקציה שגויה. כלל השלוש: מפשטים בעותק השלישי.</td></tr>
 <tr><td><strong>KISS</strong></td><td>הדבר הכי פשוט שעונה על הדרישה</td><td>פטיש, לא אולר שוויצרי</td><td>"פשוט" ≠ "קל לי היום"</td></tr>
 <tr><td><strong>YAGNI</strong></td><td>לא בונים לעתיד דמיוני</td><td>לא קונים ואן של 10 מקומות "ליתר ביטחון"</td><td>עדיין משאירים תפרים (DIP) כדי שהעתיד יהיה זול</td></tr>
 <tr><td><strong>Composition over inheritance</strong></td><td>בונים התנהגות ע"י הרכבת חלקים, לא עצי ירושה עמוקים</td><td>LEGO מול פסל מגולף</td><td>ירושה בסדר ל-is-a אמיתי עם בסיס יציב</td></tr>
@@ -412,7 +412,7 @@ HALF_OPEN --(probe ok)--&gt; CLOSED      HALF_OPEN --(probe fails)--&gt; OPEN</p
 <li><strong>Observer (pub/sub)</strong> — מנויים מקבלים הודעה כשנושא משתנה. <em>אנלוגיה</em>: "הירשמו + פעמון" ביוטיוב. <em>בתשתית</em>: informers/watches של k8s שמזינים controllers, webhooks, ו-Kafka consumers ברמת מערכת.</li>
 <li><strong>Command</strong> — הופכים בקשה לאובייקט (לשים בתור, לתעד, לבטל, לנסות שוב). <em>אנלוגיה</em>: פתק הזמנה על המסילה במטבח. <em>בתשתית</em>: הודעות ב-job queue, Celery tasks, מיגרציות DB (up/down).</li>
 <li><strong>Template Method</strong> — הבסיס מגדיר שלד, ה-subclasses ממלאים צעדים. <em>אנלוגיה</em>: חתונה — הסדר קבוע, אתה בוחר מוזיקה. <em>בתשתית</em>: frameworks של טסטים (<code>setUp/test/tearDown</code>), תבניות CI, controller-runtime שקורא ל-<code>Reconcile</code> שלך.</li>
-<li><strong>Chain of Responsibility</strong> — מעבירים בקשה בשרשרת; כל handler מטפל או מעביר. <em>אנלוגיה</em>: תמיכה L1 → L2 → L3. <em>בתשתית</em>: HTTP middleware, filter chains של Envoy, chains של iptables.</li>
+<li><strong>Chain of Responsibility</strong> — מעבירים בקשה בשרשרת; כל handler מטפל או מעביר. <em>אנלוגיה</em>: תמיכה L1 ← L2 ← L3. <em>בתשתית</em>: HTTP middleware, filter chains של Envoy, chains של iptables.</li>
 <li><strong>State</strong> — ההתנהגות משתנה לפי המצב הפנימי. <em>אנלוגיה</em>: רמזור. <em>בתשתית</em>: circuit breaker, מצבי חיבור TCP, state machines של הזמנה/תשלום.</li>
 <li><strong>Iterator</strong> — מעבר בלי לחשוף מבנה. <em>אנלוגיה</em>: "ערוץ הבא" בשלט. <em>בתשתית</em>: pagination מבוסס cursor, cursors ב-DB, offsets ב-Kafka, generators שמזרימים קובץ של 50 GB.</li>
 </ul>
@@ -469,7 +469,7 @@ public class PlaceOrderHandler(IOrderRepository orders, ShopDb uow) {
       }
     },
     {
-      h: { en: "Cheat sheet: pattern → where you've already seen it", he: "שליף: pattern → איפה כבר ראית אותו" },
+      h: { en: "Cheat sheet: pattern → where you've already seen it", he: "שליף: pattern ← איפה כבר ראית אותו" },
       body: {
         en: `<table>
 <tr><th>Pattern</th><th>Family</th><th>Intent</th><th>Lives in infra as…</th></tr>
@@ -557,7 +557,7 @@ Observer + State + Command = k8s controller:
     { q: { en: "Express/ASP.NET middleware pipelines are an example of…", he: "pipelines של middleware ב-Express/ASP.NET הם דוגמה ל…" },
       options: [ { en: "Composite", he: "Composite" }, { en: "Chain of Responsibility", he: "Chain of Responsibility" }, { en: "Abstract Factory", he: "Abstract Factory" }, { en: "Prototype", he: "Prototype" } ],
       answer: 1, explain: { en: "Each middleware handles the request or passes it on — and can stop the chain (401, 429).", he: "כל middleware מטפל בבקשה או מעביר הלאה — ויכול לעצור את השרשרת (401, 429)." } },
-    { q: { en: "A circuit breaker moving CLOSED → OPEN → HALF_OPEN is best modeled with…", he: "Circuit breaker שעובר CLOSED → OPEN → HALF_OPEN ממודל הכי טוב עם…" },
+    { q: { en: "A circuit breaker moving CLOSED → OPEN → HALF_OPEN is best modeled with…", he: "Circuit breaker שעובר CLOSED ← OPEN ← HALF_OPEN ממודל הכי טוב עם…" },
       options: [ { en: "State", he: "State" }, { en: "Builder", he: "Builder" }, { en: "Facade", he: "Facade" }, { en: "Iterator", he: "Iterator" } ],
       answer: 0, explain: { en: "Behavior (allow, reject, probe) depends on the current state, with explicit transitions.", he: "ההתנהגות (לאפשר, לדחות, לבדוק) תלויה במצב הנוכחי, עם מעברים מפורשים." } },
     { q: { en: "You add retries and metrics around an HTTP client without changing its interface. Pattern?", he: "מוסיפים retries ו-metrics סביב HTTP client בלי לשנות את ה-interface. איזה pattern?" },
@@ -637,7 +637,7 @@ public sealed class Clock {
         he: `<table>
 <tr><th>סוג</th><th>Thread-safe?</th><th>Lazy?</th><th>הערות</th></tr>
 <tr><td>Eager (שדה static final)</td><td>✅ (אתחול class נעול ע"י ה-JVM/CLR)</td><td>❌</td><td>הכי פשוט. משלמים בטעינת ה-class גם אם לא משתמשים.</td></tr>
-<tr><td>Lazy בלי סנכרון</td><td>❌</td><td>✅</td><td>שני threads יכולים לראות null → שני מופעים.</td></tr>
+<tr><td>Lazy בלי סנכרון</td><td>❌</td><td>✅</td><td>שני threads יכולים לראות null ← שני מופעים.</td></tr>
 <tr><td>Getter מסונכרן</td><td>✅</td><td>✅</td><td>כל קריאה לוקחת lock — contention ב-hot paths.</td></tr>
 <tr><td>Double-checked locking</td><td>✅ רק עם <code>volatile</code></td><td>✅</td><td>lock רק ביצירה הראשונה.</td></tr>
 <tr><td>Holder idiom (init-on-demand)</td><td>✅</td><td>✅</td><td>משתמש בהבטחות אתחול ה-class של ה-JVM. Java אידיומטי.</td></tr>
@@ -751,7 +751,7 @@ class SingletonMeta(type):
 <p>מלכודות: Gunicorn/uWSGI עושים <strong>fork</strong> ל-workers — כל worker הוא process נפרד עם "singleton" משלו; pool של DB שנוצר <em>לפני</em> ה-fork חולק sockets בין processes (השחתה) — יוצרים pools אחרי ה-fork. multiprocessing ו-Celery workers: אותו סיפור.</p>
 <p><strong>Node.js</strong> שומר מודולים לפי <em>נתיב הקובץ שנפתר</em> ב-<code>require.cache</code>, אז <code>export const pool = new Pool()</code> הוא singleton… אלא אם:</p>
 <ul>
-<li>יש שני עותקים של חבילה ב-<code>node_modules</code> (גרסאות שונות → נתיבים שונים → שני "singletons"; שגיאות ה-instanceof המפורסמות של React כפול / <code>graphql</code> כפול),</li>
+<li>יש שני עותקים של חבילה ב-<code>node_modules</code> (גרסאות שונות ← נתיבים שונים ← שני "singletons"; שגיאות ה-instanceof המפורסמות של React כפול / <code>graphql</code> כפול),</li>
 <li>bundler/micro-frontend יוצר bundles נפרדים שלכל אחד עותק משלו,</li>
 <li>Next.js ב-dev עושה hot reload למודולים ויוצר מחדש את ה-Prisma client בכל שמירה ("too many connections") — הפתרון: לשמור אותו על <code>globalThis</code>,</li>
 <li>מריצים כמה processes (cluster module, PM2, replicas ב-k8s) — אחד לכל process, אף פעם לא גלובלי.</li>
@@ -792,7 +792,7 @@ public class PriceCache(ShopDb db) { ... }           // ShopDb is scoped -&gt; o
                                                     // all requests/threads: not thread-safe, stale
 // ✅ Inject IServiceScopeFactory / IDbContextFactory&lt;ShopDb&gt; and create a scope per operation.
 // ASP.NET Core catches this in Development with ValidateScopes = true.</pre>
-<blockquote>⚠️ טיפ לפרודקשן: הכלל — service יכול להיות תלוי רק ב-services עם lifetime <em>שווה או ארוך יותר</em>. Singleton → Scoped זה הבאג ("captive dependency"). ועוד: <code>new HttpClient()</code> בכל request מכלה sockets (TIME_WAIT); משתמשים ב-<code>IHttpClientFactory</code> (pool של handlers שמנוהל כ-singleton).</blockquote>`
+<blockquote>⚠️ טיפ לפרודקשן: הכלל — service יכול להיות תלוי רק ב-services עם lifetime <em>שווה או ארוך יותר</em>. Singleton ← Scoped זה הבאג ("captive dependency"). ועוד: <code>new HttpClient()</code> בכל request מכלה sockets (TIME_WAIT); משתמשים ב-<code>IHttpClientFactory</code> (pool של handlers שמנוהל כ-singleton).</blockquote>`
       }
     },
     {
@@ -914,7 +914,7 @@ app = build_app(mailer=mailer)</pre>`
                                           A wakes: write(33) -> REJECTED`,
   handsOn: [
     { cmd: "kubectl get lease -n kube-system", what: { en: "See real cluster-wide singletons: kube-controller-manager and kube-scheduler hold Leases; HOLDER shows the current leader.", he: "רואים singletons אמיתיים ברמת cluster: kube-controller-manager ו-kube-scheduler מחזיקים Leases; HOLDER מראה את ה-leader הנוכחי." } },
-    { cmd: "python -c \"import threading,time\nclass S:\n  inst=None\n  @classmethod\n  def get(c):\n    if c.inst is None:\n      time.sleep(0.01); c.inst=object()\n    return c.inst\nr=set()\nts=[threading.Thread(target=lambda: r.add(id(S.get()))) for _ in range(8)]\n[t.start() for t in ts]; [t.join() for t in ts]; print('instances:', len(r))\"", what: { en: "Reproduce the lazy-singleton race: 8 threads, no lock → you'll usually get several 'singletons'. Add a threading.Lock and it drops to 1.", he: "משחזרים את ה-race של lazy singleton: 8 threads בלי lock → בדרך כלל יוצאים כמה 'singletons'. מוסיפים threading.Lock ויורד ל-1." } },
+    { cmd: "python -c \"import threading,time\nclass S:\n  inst=None\n  @classmethod\n  def get(c):\n    if c.inst is None:\n      time.sleep(0.01); c.inst=object()\n    return c.inst\nr=set()\nts=[threading.Thread(target=lambda: r.add(id(S.get()))) for _ in range(8)]\n[t.start() for t in ts]; [t.join() for t in ts]; print('instances:', len(r))\"", what: { en: "Reproduce the lazy-singleton race: 8 threads, no lock → you'll usually get several 'singletons'. Add a threading.Lock and it drops to 1.", he: "משחזרים את ה-race של lazy singleton: 8 threads בלי lock ← בדרך כלל יוצאים כמה 'singletons'. מוסיפים threading.Lock ויורד ל-1." } },
     { cmd: "redis-cli SET lock:nightly-report $(hostname) NX PX 30000", what: { en: "Acquire a simple distributed lock: OK means you got it, (nil) means someone else holds it. Expires after 30 s if the holder dies.", he: "תופסים distributed lock פשוט: OK — הוא שלך, (nil) — מישהו אחר מחזיק. פג אחרי 30 שניות אם המחזיק מת." } },
     { cmd: "npm ls react", what: { en: "Find duplicate package copies — each copy is its own module-cache 'singleton' (the root cause of 'Invalid hook call' and instanceof bugs).", he: "מוצאים עותקים כפולים של חבילה — כל עותק הוא 'singleton' נפרד ב-module cache (שורש הבעיה של 'Invalid hook call' ובאגים של instanceof)." } }
   ],
@@ -926,7 +926,7 @@ app = build_app(mailer=mailer)</pre>`
     { en: "Double-checked locking without volatile (Java) — compiles, passes tests, and very rarely hands out a half-built object in production.", he: "Double-checked locking בלי volatile (Java) — מתקמפל, עובר טסטים, ולעתים נדירות מאוד מחלק אובייקט חצי-בנוי בפרודקשן." },
     { en: "Assuming replicas: 1 means 'exactly one' — rolling updates (maxSurge) and node partitions both create overlap. Use Recreate, leader election or idempotency.", he: "להניח ש-replicas: 1 אומר 'בדיוק אחד' — rolling updates (maxSurge) ו-partitions של nodes יוצרים חפיפה. משתמשים ב-Recreate, leader election או אידמפוטנטיות." },
     { en: "Creating DB pools at import time in a pre-fork server (gunicorn --preload): workers share sockets and corrupt each other's protocol streams.", he: "ליצור pools של DB בזמן import בשרת pre-fork (gunicorn --preload): ה-workers חולקים sockets ומשחיתים אחד לשני את ה-protocol." },
-    { en: "Captive dependency: a singleton capturing a scoped DbContext → cross-request data leaks and threading exceptions.", he: "Captive dependency: singleton שתופס DbContext שהוא scoped → דליפת נתונים בין requests ו-exceptions של threading." }
+    { en: "Captive dependency: a singleton capturing a scoped DbContext → cross-request data leaks and threading exceptions.", he: "Captive dependency: singleton שתופס DbContext שהוא scoped ← דליפת נתונים בין requests ו-exceptions של threading." }
   ],
   interview: [
     { q: { en: "Why does double-checked locking need volatile in Java?", he: "למה double-checked locking צריך volatile ב-Java?" },
@@ -948,7 +948,7 @@ app = build_app(mailer=mailer)</pre>`
       answer: 1, explain: { en: "The storage rejects writes with a token lower than the highest seen, so the old leader's late writes are refused.", he: "האחסון דוחה כתיבות עם token נמוך מהגבוה ביותר שנראה, אז הכתיבות המאוחרות של ה-leader הישן נדחות." } },
     { q: { en: "Your Node app has two versions of the same library in node_modules, each exporting a singleton client. You get…", he: "באפליקציית Node יש שתי גרסאות של אותה ספרייה ב-node_modules, כל אחת מייצאת client singleton. מקבלים…" },
       options: [ { en: "One shared instance", he: "מופע משותף אחד" }, { en: "Two separate instances — module cache is keyed by resolved path", he: "שני מופעים נפרדים — ה-module cache ממופתח לפי הנתיב שנפתר" }, { en: "A startup crash", he: "קריסה בעלייה" }, { en: "Node merges them automatically", he: "Node מאחד אותם אוטומטית" } ],
-      answer: 1, explain: { en: "Different paths → different cache entries → two 'singletons'. Dedupe dependencies (npm dedupe, peerDependencies).", he: "נתיבים שונים → רשומות cache שונות → שני 'singletons'. עושים dedupe לתלויות (npm dedupe, peerDependencies)." } }
+      answer: 1, explain: { en: "Different paths → different cache entries → two 'singletons'. Dedupe dependencies (npm dedupe, peerDependencies).", he: "נתיבים שונים ← רשומות cache שונות ← שני 'singletons'. עושים dedupe לתלויות (npm dedupe, peerDependencies)." } }
   ],
   related: ["pr-design-patterns", "pr-concurrency-parallelism", "pr-clusters", "pr-idempotency", "staff-consensus-consistency"]
 });
@@ -1265,7 +1265,7 @@ builder.Services.AddHttpClient("payments")
   ],
   mnemonic: {
     en: "Edge → Migrate → Data → Messaging → Survive: 'Sidecar & Gateway guard the door, Strangler & ACL replace the floor, CQRS-Saga-Outbox keep data true, Queues & Claim-checks carry the load through, Retry-Breaker-Bulkhead see you through.'",
-    he: "קצה → מיגרציה → נתונים → הודעות → הישרדות: 'Sidecar ו-Gateway שומרים על הדלת, Strangler ו-ACL מחליפים את הרצפה, CQRS-Saga-Outbox שומרים על אמת, תורים ו-Claim-check סוחבים את העומס, Retry-Breaker-Bulkhead מעבירים את הסערה.'"
+    he: "קצה ← מיגרציה ← נתונים ← הודעות ← הישרדות: 'Sidecar ו-Gateway שומרים על הדלת, Strangler ו-ACL מחליפים את הרצפה, CQRS-Saga-Outbox שומרים על אמת, תורים ו-Claim-check סוחבים את העומס, Retry-Breaker-Bulkhead מעבירים את הסערה.'"
   },
   pitfalls: [
     { en: "Retrying non-idempotent operations (POST /charge) without an idempotency key — every retry is a double charge.", he: "לעשות retry לפעולות לא אידמפוטנטיות (POST /charge) בלי idempotency key — כל retry הוא חיוב כפול." },

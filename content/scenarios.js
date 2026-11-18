@@ -240,7 +240,7 @@ invoice-events  3          1802113         1802120         7`,
             "עם 4 partitions, לכל היותר 4 consumers בקבוצה מקבלים עבודה — 16 pods יישבו בטל. וזה partition אחד שתקוע."),
           c("Increase partitions to 32", "להגדיל partitions ל-32", "s1b", -5,
             "Doesn't move existing messages off partition 1 and changes key→partition mapping (ordering!). Wrong tool, wrong time.",
-            "לא מזיז הודעות קיימות מ-partition 1 ומשנה את המיפוי key→partition (ordering!). כלי לא נכון, זמן לא נכון.")
+            "לא מזיז הודעות קיימות מ-partition 1 ומשנה את המיפוי key←partition (ordering!). כלי לא נכון, זמן לא נכון.")
         ]
       },
       s1b: {
@@ -281,7 +281,7 @@ invoice-worker-2  WARN  retrying offset=992310 (attempt 4114)`,
       s4: {
         text: t("Backlog cleared. What hardening goes in the postmortem?", "ה-backlog נוקה. איזה חיזוק נכנס ל-postmortem?"),
         choices: [
-          c("Bounded retries with backoff → DLQ for non-retryable errors, alert on DLQ depth and per-partition lag, schema validation at the producer", "Retries מוגבלים עם backoff → DLQ לשגיאות שלא ניתנות ל-retry, alert על עומק ה-DLQ ועל lag לכל partition, ו-schema validation ב-producer", "win", 20,
+          c("Bounded retries with backoff → DLQ for non-retryable errors, alert on DLQ depth and per-partition lag, schema validation at the producer", "Retries מוגבלים עם backoff ← DLQ לשגיאות שלא ניתנות ל-retry, alert על עומק ה-DLQ ועל lag לכל partition, ו-schema validation ב-producer", "win", 20,
             "Defense in depth: stop bad data early, isolate it if it gets through, and notice fast.",
             "הגנה בשכבות: עוצרים data רע מוקדם, מבודדים אותו אם עבר, ושמים לב מהר."),
           c("Increase consumer timeout", "להגדיל את ה-timeout של ה-consumer", "win", 0,
@@ -441,7 +441,7 @@ error budget remaining: 60%`,
       s3: {
         text: t("v3.8.1 canary: 0.07% errors, p99 175ms after 20 minutes. Analysis passes.", "Canary של v3.8.1: 0.07% שגיאות, p99 175ms אחרי 20 דקות. ה-analysis עובר."),
         choices: [
-          c("Let Rollouts progress 10% → 50% → 100% with analysis at each step", "לתת ל-Rollouts להתקדם 10% → 50% → 100% עם analysis בכל שלב", "s4", 15,
+          c("Let Rollouts progress 10% → 50% → 100% with analysis at each step", "לתת ל-Rollouts להתקדם 10% ← 50% ← 100% עם analysis בכל שלב", "s4", 15,
             "Progressive delivery all the way.", "Progressive delivery עד הסוף."),
           c("Jump to 100% to finish faster", "לקפוץ ל-100% כדי לסיים מהר", "s4", 0,
             "Probably fine, but some bugs only show at higher load. The steps are cheap insurance.",

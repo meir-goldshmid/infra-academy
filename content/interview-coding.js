@@ -821,7 +821,7 @@ if __name__ == "__main__":
     en: `<p>Step 1 is always counting: <code>Counter</code> builds ip → hits in O(N). Sorting all n distinct IPs is O(n log n); we only need k of them.</p>
 <p><strong>Heap:</strong> <code>heapq.nsmallest(k, ..., key=(-count, ip))</code> keeps a heap of size k, giving O(n log k) — great when k is small (top 10 out of a million IPs). The key negates the count for "largest first" and adds the IP for tie-breaking.</p>
 <p><strong>Bucket sort:</strong> a frequency is at most N, so we drop IPs into <code>buckets[freq]</code> and walk from the highest frequency down until we have k. That is linear in N plus small sorts for ties.</p>`,
-    he: `<p>שלב 1 הוא תמיד ספירה: <code>Counter</code> בונה ip → hits ב-O(N). למיין את כל n ה-IPs השונים זה O(n log n); אנחנו צריכים רק k מהם.</p>
+    he: `<p>שלב 1 הוא תמיד ספירה: <code>Counter</code> בונה ip ← hits ב-O(N). למיין את כל n ה-IPs השונים זה O(n log n); אנחנו צריכים רק k מהם.</p>
 <p><strong>Heap:</strong> <code>heapq.nsmallest(k, ..., key=(-count, ip))</code> מחזיק heap בגודל k, כלומר O(n log k) – מצוין כש-k קטן (top 10 מתוך מיליון IPs). ה-key הופך את הספירה לשלילית בשביל "הגדול קודם" ומוסיף את ה-IP לשבירת תיקו.</p>
 <p><strong>Bucket sort:</strong> תדירות היא לכל היותר N, אז זורקים כל IP ל-<code>buckets[freq]</code> והולכים מהתדירות הכי גבוהה למטה עד שיש k. זה לינארי ב-N, ועוד מיונים קטנים לתיקו.</p>`
   },

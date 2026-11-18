@@ -1307,7 +1307,7 @@ modules:
   expr: count by (instance) (probe_success == 0) &gt;= 2
   for: 3m</pre>
 <p>series שימושיים: <code>probe_success</code>, <code>probe_duration_seconds</code>, <code>probe_http_status_code</code>, <code>probe_http_duration_seconds{phase="resolve|connect|tls|processing|transfer"}</code> (מפרק את ה-latency לפי שלב), <code>probe_ssl_earliest_cert_expiry</code>.</p>
-<p><strong>רמה 2 — בדיקות דפדפן מרובות שלבים</strong>: דפדפן headless אמיתי מריץ מסע משתמש (login → חיפוש → הוספה לעגלה → checkout עם כרטיס בדיקה). כלים: Checkly (Playwright), Datadog Synthetics, Grafana Synthetic Monitoring (k6 browser), canaries של AWS CloudWatch Synthetics, New Relic.</p>
+<p><strong>רמה 2 — בדיקות דפדפן מרובות שלבים</strong>: דפדפן headless אמיתי מריץ מסע משתמש (login ← חיפוש ← הוספה לעגלה ← checkout עם כרטיס בדיקה). כלים: Checkly (Playwright), Datadog Synthetics, Grafana Synthetic Monitoring (k6 browser), canaries של AWS CloudWatch Synthetics, New Relic.</p>
 <pre>// Playwright-style journey (Checkly / k6 browser are very similar)
 test('checkout journey', async ({ page }) =&gt; {
   await page.goto('https://shop.example.com');
@@ -1465,7 +1465,7 @@ INFRA.glossary.push(
   { term: "Certificate Transparency", track: "networking", lesson: "rel-cert-operations",
     def: { en: "Public append-only logs of every publicly trusted TLS certificate issued; searchable (e.g., crt.sh) to inventory your domains' certs and spot mis-issuance.", he: "לוגים ציבוריים מסוג append-only של כל certificate ציבורי שהונפק; אפשר לחפש בהם (למשל crt.sh) כדי לעשות inventory ל-certs של הדומיינים שלך ולזהות הנפקה לא מורשית." } },
   { term: "Status page", track: "reliability", lesson: "rel-incident-comms",
-    def: { en: "A public page showing component health and incident updates (Investigating → Identified → Monitoring → Resolved); must be hosted outside your own failure domain.", he: "דף ציבורי שמציג את מצב הרכיבים ועדכוני אינסידנט (Investigating → Identified → Monitoring → Resolved); חייב להתארח מחוץ ל-failure domain שלך." } },
+    def: { en: "A public page showing component health and incident updates (Investigating → Identified → Monitoring → Resolved); must be hosted outside your own failure domain.", he: "דף ציבורי שמציג את מצב הרכיבים ועדכוני אינסידנט (Investigating ← Identified ← Monitoring ← Resolved); חייב להתארח מחוץ ל-failure domain שלך." } },
   { term: "Communications Lead", track: "reliability", lesson: "rel-incident-comms",
     def: { en: "The incident role that owns status page, customer, internal and exec updates on a fixed cadence, so the Incident Commander and responders can focus on mitigation.", he: "התפקיד באינסידנט שאחראי על ה-status page ועל עדכונים ללקוחות, פנימה ולהנהלה בתדירות קבועה, כדי שה-Incident Commander והמטפלים יתמקדו ב-mitigation." } },
   { term: "RFO (Reason for Outage)", track: "reliability", lesson: "rel-incident-comms",

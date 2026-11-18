@@ -216,11 +216,11 @@ INFRA.lessons.push({
 </table>
 <p><strong>דוגמה מלאה</strong> — "תבנו לנו notification service." חמש שאלות הופכות את התכנון:</p>
 <ul>
-<li>נפח? 500 ביום → cron + קריאה ל-SendGrid. 50M ביום → תור, workers של fan-out, rate limiting לכל ספק.</li>
-<li>ערוצים? רק מייל מול מייל+SMS+push → שכבת אבסטרקציה לספקים.</li>
-<li>Latency? קודי OTP צריכים &lt; 10 שניות; סיכומי שיווק יכולים לחכות שעות → שני תורים לפי עדיפות.</li>
-<li>כפילויות בסדר? "ההזמנה נשלחה" כפול זה מעצבן; חיוב SMS כפול זה כסף → idempotency keys.</li>
-<li>העדפות משתמש/שעות שקט/הסרה מרשימה? → דרישה חוקית (CAN-SPAM, GDPR), Must.</li>
+<li>נפח? 500 ביום ← cron + קריאה ל-SendGrid. 50M ביום ← תור, workers של fan-out, rate limiting לכל ספק.</li>
+<li>ערוצים? רק מייל מול מייל+SMS+push ← שכבת אבסטרקציה לספקים.</li>
+<li>Latency? קודי OTP צריכים &lt; 10 שניות; סיכומי שיווק יכולים לחכות שעות ← שני תורים לפי עדיפות.</li>
+<li>כפילויות בסדר? "ההזמנה נשלחה" כפול זה מעצבן; חיוב SMS כפול זה כסף ← idempotency keys.</li>
+<li>העדפות משתמש/שעות שקט/הסרה מרשימה? ← דרישה חוקית (CAN-SPAM, GDPR), Must.</li>
 </ul>`
       }
     }
@@ -265,7 +265,7 @@ INFRA.lessons.push({
   ],
   interview: [
     { q: { en: "The interviewer says 'Design a URL shortener.' What do you do in the first 5 minutes?", he: "המראיין אומר 'תתכנן URL shortener'. מה עושים ב-5 הדקות הראשונות?" },
-      a: { en: "Clarify: users and flows (create, redirect, analytics?, custom aliases?, expiry?), scale (new URLs/day, redirects/day → read/write ratio ~100:1), latency for redirect (p99 &lt; 50 ms), availability (redirects are critical, creation less), consistency (a new link must work immediately for its creator), retention, abuse/security (malware links, rate limits). State non-goals out loud (no user accounts UI, no real-time analytics). Then estimate and only then draw.", he: "מבהירים: משתמשים וזרימות (יצירה, redirect, אנליטיקס?, aliases מותאמים?, תפוגה?), סקייל (URLs חדשים ביום, redirects ביום → יחס קריאה/כתיבה ~100:1), latency ל-redirect (p99 &lt; 50 ms), זמינות (redirects קריטיים, יצירה פחות), עקביות (קישור חדש חייב לעבוד מיד למי שיצר אותו), retention, abuse/אבטחה (קישורי malware, rate limits). אומרים non-goals בקול (אין UI לחשבונות, אין אנליטיקס real-time). אחר כך מעריכים, ורק אז מציירים." } },
+      a: { en: "Clarify: users and flows (create, redirect, analytics?, custom aliases?, expiry?), scale (new URLs/day, redirects/day → read/write ratio ~100:1), latency for redirect (p99 &lt; 50 ms), availability (redirects are critical, creation less), consistency (a new link must work immediately for its creator), retention, abuse/security (malware links, rate limits). State non-goals out loud (no user accounts UI, no real-time analytics). Then estimate and only then draw.", he: "מבהירים: משתמשים וזרימות (יצירה, redirect, אנליטיקס?, aliases מותאמים?, תפוגה?), סקייל (URLs חדשים ביום, redirects ביום ← יחס קריאה/כתיבה ~100:1), latency ל-redirect (p99 &lt; 50 ms), זמינות (redirects קריטיים, יצירה פחות), עקביות (קישור חדש חייב לעבוד מיד למי שיצר אותו), retention, abuse/אבטחה (קישורי malware, rate limits). אומרים non-goals בקול (אין UI לחשבונות, אין אנליטיקס real-time). אחר כך מעריכים, ורק אז מציירים." } },
     { q: { en: "How do you decide whether a feature is a Must or a Could?", he: "איך מחליטים אם פיצ'ר הוא Must או Could?" },
       a: { en: "Ask what breaks without it, who complains, what it costs, and whether it's legally required. Then ask how hard it is to add later: things baked into the data model, IDs, auth or tenancy are expensive to retrofit and get promoted; UI conveniences can wait. Keep Musts under ~60% of capacity so the plan survives surprises.", he: "שואלים מה נשבר בלעדיו, מי מתלונן, כמה זה עולה, והאם זו דרישה חוקית. אחר כך שואלים כמה קשה להוסיף בהמשך: דברים שאפויים במודל הדאטה, IDs, auth או tenancy יקרים להוספה בדיעבד ועולים בעדיפות; נוחויות UI יכולות לחכות. שומרים את ה-Musts מתחת ל-~60% מהקיבולת כדי שהתוכנית תשרוד הפתעות." } },
     { q: { en: "What's a one-way door you've seen handled badly?", he: "מה דלת חד-כיוונית שראית שטופלה רע?" },
@@ -339,7 +339,7 @@ INFRA.lessons.push({
       }
     },
     {
-      h: { en: "Steps 1–3: users → QPS → peak", he: "שלבים 1–3: משתמשים → QPS → שיא" },
+      h: { en: "Steps 1–3: users → QPS → peak", he: "שלבים 1–3: משתמשים ← QPS ← שיא" },
       body: {
         en: `<ol>
 <li><strong>Actions per user per day.</strong> DAU × actions = daily requests. Split reads and writes.</li>
@@ -419,7 +419,7 @@ ingress (uploads) peak = 700 × 2.2 MB ≈ 1.5 GB/s ≈ 12 Gbps</pre>
 <li><strong>מקום פנוי</strong>: שומרים דיסקים מתחת ל-70% מלאים; Postgres צריך מקום ל-VACUUM, Kafka לקפיצות ב-retention, Elasticsearch מפסיק לכתוב ב-95% (flood stage).</li>
 <li><strong>גיבויים</strong>: full + incrementals ≈ פי 1.5–2 מגודל ה-DB, לרוב ב-region אחר.</li>
 </ul>
-<blockquote>💡 מהשטח: מספר האחסון מכריע הרבה פעמים את הארכיטקטורה יותר מה-QPS. 16 PB בשנה של תמונות זה object storage עם lifecycle tiers (hot → infrequent → archive) — העברת תמונות בנות שנה ל-archive יכולה להוריד את השורה הזו בחשבון פי 4–5.</blockquote>`
+<blockquote>💡 מהשטח: מספר האחסון מכריע הרבה פעמים את הארכיטקטורה יותר מה-QPS. 16 PB בשנה של תמונות זה object storage עם lifecycle tiers (hot ← infrequent ← archive) — העברת תמונות בנות שנה ל-archive יכולה להוריד את השורה הזו בחשבון פי 4–5.</blockquote>`
       }
     },
     {
@@ -448,8 +448,8 @@ cache ops at peak ≈ 17,500 × ~3 lookups ≈ 52k ops/s -&gt; fine for 3 shards
 17,500 / 800 ≈ 22 cores
 target 60% CPU at peak (spikes + one AZ loss) -&gt; 22 / 0.6 ≈ 37 cores
 =&gt; 10 × 4-vCPU pods over 3 AZs (losing one AZ still leaves ~27 cores)</pre>
-<p><strong>Connections ל-DB</strong>: שוב Little's Law. אם 700 כתיבות לשנייה לוקחות 5 ms של זמן DB כל אחת, רק ~3.5 connections עסוקים בממוצע — pool של 20 לכל service זה מספיק ויותר. הטעות הקלאסית היא 200 pods × 50 connections = 10,000 connections מול Postgres שמרגיש טוב ב-~300–500 → שמים PgBouncer לפניו.</p>
-<p><strong>Partitions לתור</strong>: jobs של thumbnails בשיא 700/s, 300 ms כל אחד → 700 × 0.3 = 210 jobs במקביל. אם consumer אחד מריץ 10 במקביל, ~21 consumers → משתמשים ב-≥ 24–32 partitions (partition נצרך ע"י consumer אחד לכל היותר בכל group, אז ה-partitions מגבילים את המקביליות).</p>
+<p><strong>Connections ל-DB</strong>: שוב Little's Law. אם 700 כתיבות לשנייה לוקחות 5 ms של זמן DB כל אחת, רק ~3.5 connections עסוקים בממוצע — pool של 20 לכל service זה מספיק ויותר. הטעות הקלאסית היא 200 pods × 50 connections = 10,000 connections מול Postgres שמרגיש טוב ב-~300–500 ← שמים PgBouncer לפניו.</p>
+<p><strong>Partitions לתור</strong>: jobs של thumbnails בשיא 700/s, 300 ms כל אחד ← 700 × 0.3 = 210 jobs במקביל. אם consumer אחד מריץ 10 במקביל, ~21 consumers ← משתמשים ב-≥ 24–32 partitions (partition נצרך ע"י consumer אחד לכל היותר בכל group, אז ה-partitions מגבילים את המקביליות).</p>
 <blockquote>⚠️ טיפ לפרודקשן: עושים sizing ל-<em>N+1</em>: המערכת חייבת לשרוד עומס שיא כשאחד ה-AZs (או node אחד) נעלם. עם 3 AZs, כל AZ חייב להחזיק 50% מהשיא, לא 33%.</blockquote>`
       }
     },
@@ -499,7 +499,7 @@ peak reads x response size -> egress Gbps -> CDN?
   ],
   mnemonic: {
     en: "\"Users → Seconds → Peak → Bytes → Cores → Dollars.\" One day ≈ 10^5 seconds; 1M/day ≈ 12/s.",
-    he: "\"משתמשים → שניות → שיא → בייטים → cores → דולרים.\" יום ≈ 10^5 שניות; 1M ביום ≈ 12 לשנייה."
+    he: "\"משתמשים ← שניות ← שיא ← בייטים ← cores ← דולרים.\" יום ≈ 10^5 שניות; 1M ביום ≈ 12 לשנייה."
   },
   pitfalls: [
     { en: "Sizing for average traffic. Systems die at peak; always apply a peak factor and N+1 (survive one AZ down).", he: "לעשות sizing לפי תנועה ממוצעת. מערכות מתות בשיא; תמיד מפעילים מקדם שיא ו-N+1 (לשרוד AZ אחד למטה)." },
@@ -509,7 +509,7 @@ peak reads x response size -> egress Gbps -> CDN?
   ],
   interview: [
     { q: { en: "Estimate storage for a chat app with 50M DAU sending 40 messages/day.", he: "תעריך אחסון לאפליקציית צ'אט עם 50M DAU ששולחים 40 הודעות ביום." },
-      a: { en: "2B messages/day ≈ 23k writes/s avg, ~70k peak. ~200 B per message with metadata → 400 GB/day raw ≈ 146 TB/year; ×3 replication ≈ 440 TB/year, plus indexes → ~0.6 PB/year. Conclusion: a horizontally scalable wide-column/KV store partitioned by conversation_id (Cassandra/ScyllaDB/DynamoDB), recent data cached, old data tiered; media stored separately in object storage. State the assumptions and which one matters most.", he: "2B הודעות ביום ≈ 23k כתיבות/s בממוצע, ~70k בשיא. ~200 B להודעה עם metadata → 400 GB ביום גולמי ≈ 146 TB בשנה; ×3 replication ≈ 440 TB בשנה, ועם אינדקסים → ~0.6 PB בשנה. מסקנה: store מסוג wide-column/KV שמתרחב אופקית עם partition לפי conversation_id (Cassandra/ScyllaDB/DynamoDB), דאטה עדכני ב-cache, ישן ב-tiering; מדיה נשמרת בנפרד ב-object storage. אומרים את ההנחות ואיזו מהן הכי משפיעה." } },
+      a: { en: "2B messages/day ≈ 23k writes/s avg, ~70k peak. ~200 B per message with metadata → 400 GB/day raw ≈ 146 TB/year; ×3 replication ≈ 440 TB/year, plus indexes → ~0.6 PB/year. Conclusion: a horizontally scalable wide-column/KV store partitioned by conversation_id (Cassandra/ScyllaDB/DynamoDB), recent data cached, old data tiered; media stored separately in object storage. State the assumptions and which one matters most.", he: "2B הודעות ביום ≈ 23k כתיבות/s בממוצע, ~70k בשיא. ~200 B להודעה עם metadata ← 400 GB ביום גולמי ≈ 146 TB בשנה; ×3 replication ≈ 440 TB בשנה, ועם אינדקסים ← ~0.6 PB בשנה. מסקנה: store מסוג wide-column/KV שמתרחב אופקית עם partition לפי conversation_id (Cassandra/ScyllaDB/DynamoDB), דאטה עדכני ב-cache, ישן ב-tiering; מדיה נשמרת בנפרד ב-object storage. אומרים את ההנחות ואיזו מהן הכי משפיעה." } },
     { q: { en: "Why does Little's Law matter for a principal?", he: "למה Little's Law חשוב ל-Principal?" },
       a: { en: "It links throughput, latency and concurrency: L = λW. It sizes pools (threads, DB connections, workers) and explains incidents: when a dependency's latency doubles, in-flight requests double at the same QPS, pools exhaust and the service falls over even though traffic didn't change.", he: "הוא מקשר throughput, latency ו-concurrency: L = λW. הוא קובע גודל של pools (threads, connections ל-DB, workers) ומסביר תקלות: כש-latency של dependency מוכפל, הבקשות באוויר מוכפלות באותו QPS, ה-pools נגמרים והשירות קורס למרות שהתנועה לא השתנתה." } }
   ],
@@ -571,7 +571,7 @@ k8s pod CIDR (overlay or secondary range): 100.64.0.0/10 (CGNAT space, non-routa
 <blockquote>💡 Real world: Many companies use <code>100.64.0.0/10</code> (CGNAT) as a secondary VPC CIDR just for Kubernetes pods, so pods don't burn the routable <code>10.x</code> space. EKS supports this with "custom networking".</blockquote>`,
         he: `<p>CIDRs חופפים הם החרטה מספר 1 ברשתות: שני VPCs עם <code>10.0.0.0/16</code> לעולם לא יוכלו לעשות peering או routing ביניהם, ורכישה של חברה או VPN ל-on-prem יצטרכו בדיוק את זה יום אחד. כללים:</p>
 <ul>
-<li>שומרים בלוק גדול לכל <strong>הארגון</strong> (למשל <code>10.0.0.0/8</code>) ומחלקים אותו היררכית: region → סביבה → VPC.</li>
+<li>שומרים בלוק גדול לכל <strong>הארגון</strong> (למשל <code>10.0.0.0/8</code>) ומחלקים אותו היררכית: region ← סביבה ← VPC.</li>
 <li>שואלים את צוות ה-on-prem/IT אילו טווחים תפוסים (משרדים, pools של VPN, ברירת המחדל של Docker <code>172.17.0.0/16</code>, CIDRs של services ב-Kubernetes).</li>
 <li>עושים sizing נדיב: <code>/16</code> ל-VPC (65k כתובות) זה זול; להיגמר מ-IPs ב-cluster של EKS (כל pod לוקח IP מה-VPC עם AWS VPC CNI) זה כואב.</li>
 <li>כותבים את התוכנית במקור אמת אחד (IPAM: AWS VPC IPAM, NetBox, או מודול Terraform) — לא בוויקי.</li>
@@ -911,7 +911,7 @@ export default function () {
 <tr><td>Load</td><td>עומדים ב-SLO בשיא הצפוי?</td><td>ramp ל-1x שיא, להחזיק 15–30 דק'</td></tr>
 <tr><td>Stress</td><td>איפה ואיך נשברים? בחן?</td><td>ramp מעבר לשיא עד שגיאות</td></tr>
 <tr><td>Soak</td><td>דליפות, זחילת GC, מיצוי connections?</td><td>~70% מהשיא ל-8–24 שעות</td></tr>
-<tr><td>Spike</td><td>Autoscaling/תורים סופגים פרץ?</td><td>0 → x10 תוך 30 שניות</td></tr>
+<tr><td>Spike</td><td>Autoscaling/תורים סופגים פרץ?</td><td>0 ← x10 תוך 30 שניות</td></tr>
 </table>
 <pre>// k6: load test with SLO thresholds (CI fails if violated)
 import http from 'k6/http';
@@ -959,7 +959,7 @@ Security:    SAST + dependency scan in CI, DAST weekly, authz tests per role
 Prod:        canary 5% for 30 min with auto-rollback; synthetic order every 60 s</pre>`,
         he: `<p>Staging אף פעם לא שווה לפרודקשן (דאטה, צורת תנועה, סקייל, שכנים). לכן שכבת הבדיקות האחרונה קורית ב-prod, <em>בבטחה</em>:</p>
 <ul>
-<li><strong>Canary</strong>: 1% → 5% → 25% → 100% עם ניתוח אוטומטי של error rate/latency מול baseline (Argo Rollouts, Flagger).</li>
+<li><strong>Canary</strong>: 1% ← 5% ← 25% ← 100% עם ניתוח אוטומטי של error rate/latency מול baseline (Argo Rollouts, Flagger).</li>
 <li><strong>Shadow / dark traffic</strong>: משכפלים בקשות אמיתיות לגרסה החדשה, זורקים את התשובות שלה, ומשווים תוצאות. מושלם ל-rewrites.</li>
 <li><strong>Feature flags</strong>: עושים deploy כבוי, מפעילים לעובדים, אחר כך ל-1% מהמשתמשים; kill switch תוך שניות.</li>
 <li><strong>Synthetic probes</strong>: בוט מבצע הזמנת בדיקה אמיתית כל דקה מ-3 regions.</li>
@@ -1008,7 +1008,7 @@ Prod:        canary 5% for 30 min with auto-rollback; synthetic order every 60 s
   ],
   interview: [
     { q: { en: "How do you decide what to test with unit vs integration tests?", he: "איך מחליטים מה לבדוק ב-unit ומה ב-integration?" },
-      a: { en: "Pure decision logic (pricing, state machines, parsing) → unit tests, many cases, property-based where possible. Code whose risk is in the interaction with something external (SQL, ORM mappings, Kafka serialization, HTTP clients, config) → integration tests against real dependencies via containers. If a unit test needs five mocks, the code is glue and belongs in an integration test — or needs refactoring to separate logic from I/O (functional core, imperative shell).", he: "לוגיקת החלטה טהורה (תמחור, state machines, parsing) → unit tests, הרבה מקרים, property-based כשאפשר. קוד שהסיכון שלו באינטראקציה עם משהו חיצוני (SQL, מיפויי ORM, סריאליזציה ל-Kafka, HTTP clients, קונפיג) → integration tests מול dependencies אמיתיים ב-containers. אם unit test צריך חמישה mocks, הקוד הוא דבק ושייך ל-integration test — או שצריך refactor שיפריד לוגיקה מ-I/O (functional core, imperative shell)." } },
+      a: { en: "Pure decision logic (pricing, state machines, parsing) → unit tests, many cases, property-based where possible. Code whose risk is in the interaction with something external (SQL, ORM mappings, Kafka serialization, HTTP clients, config) → integration tests against real dependencies via containers. If a unit test needs five mocks, the code is glue and belongs in an integration test — or needs refactoring to separate logic from I/O (functional core, imperative shell).", he: "לוגיקת החלטה טהורה (תמחור, state machines, parsing) ← unit tests, הרבה מקרים, property-based כשאפשר. קוד שהסיכון שלו באינטראקציה עם משהו חיצוני (SQL, מיפויי ORM, סריאליזציה ל-Kafka, HTTP clients, קונפיג) ← integration tests מול dependencies אמיתיים ב-containers. אם unit test צריך חמישה mocks, הקוד הוא דבק ושייך ל-integration test — או שצריך refactor שיפריד לוגיקה מ-I/O (functional core, imperative shell)." } },
     { q: { en: "Two teams keep breaking each other's APIs in staging. What do you introduce?", he: "שני צוותים שוברים אחד לשני את ה-APIs ב-staging כל הזמן. מה מכניסים?" },
       a: { en: "Consumer-driven contract tests (Pact + a broker): consumers publish expectations, the provider verifies them in CI before merge, and 'can-i-deploy' gates releases. Plus API versioning rules (additive changes only, deprecation window) and schema registry for events.", he: "Consumer-driven contract tests (Pact + broker): ה-consumers מפרסמים ציפיות, ה-provider מאמת אותן ב-CI לפני merge, ו-'can-i-deploy' חוסם releases. ובנוסף כללי versioning ל-API (רק שינויים מוסיפים, חלון deprecation) ו-schema registry ל-events." } }
   ],
@@ -1139,10 +1139,10 @@ Deploy        bad config         100% errors            canary analysis     auto
 <blockquote>💡 Real world: Amazon's "working backwards" and Google's design review both expect the riskiest assumption to be identified explicitly. A reviewer's favourite question is "what's the part you're least sure about, and how did you test it?"</blockquote>`,
         he: `<p>מדרגים את ההנחות לפי <em>(הסיכוי שהיא שגויה) × (המחיר אם היא שגויה)</em>. העליונה מקבלת <strong>spike</strong> — ניסוי חד-פעמי מוגבל בזמן (1–5 ימים) שעונה על שאלה אחת:</p>
 <ul>
-<li>"Postgres יחזיק 3k inserts/s עם 4 האינדקסים שלנו?" → pgbench עם schema מציאותי, 30 דקות.</li>
-<li>"ה-API של הספק באמת תומך ב-50 req/s?" → פונים ל-sandbox שלהם; קוראים את ה-headers של rate limit.</li>
-<li>"p99 יישאר מתחת ל-300 ms עם 3 קריאות סדרתיות לשירותים?" → stubs לשירותים עם התפלגויות latency מציאותיות, מודדים.</li>
-<li>"אפשר להעביר 2 TB online?" → dry-run של ה-backfill על snapshot, מקרינים זמן.</li>
+<li>"Postgres יחזיק 3k inserts/s עם 4 האינדקסים שלנו?" ← pgbench עם schema מציאותי, 30 דקות.</li>
+<li>"ה-API של הספק באמת תומך ב-50 req/s?" ← פונים ל-sandbox שלהם; קוראים את ה-headers של rate limit.</li>
+<li>"p99 יישאר מתחת ל-300 ms עם 3 קריאות סדרתיות לשירותים?" ← stubs לשירותים עם התפלגויות latency מציאותיות, מודדים.</li>
+<li>"אפשר להעביר 2 TB online?" ← dry-run של ה-backfill על snapshot, מקרינים זמן.</li>
 </ul>
 <p>אחר כך משווים <strong>נמדד מול מוערך</strong>. אם המפית אמרה 800 req/s ל-core וה-prototype נותן 150, התכנון משתנה עכשיו — בזול. Principal לא צודק כמעט אף פעם בכל מספר; הוא/היא צודק בלדעת אילו מספרים חשובים ובלבדוק אותם מוקדם.</p>
 <p><strong>Architecture fitness functions</strong> שומרות על תקפות התכנון לאורך זמן: בדיקות אוטומטיות ב-CI כמו "p99 של ה-benchmark של checkout &lt; 300 ms", "אף service לא מייבא את חבילת ה-DB של service אחר" (ArchUnit, dependency-cruiser), "image של container &lt; 300 MB", "אין S3 buckets ציבוריים" (OPA/Conftest).</p>
@@ -1318,7 +1318,7 @@ Error budget = 0.1% × ~26M requests/28d ≈ 26,000 failed orders allowed
 Journey: order confirmation email
 SLI  freshness = emails sent within 60 s of order / orders
 SLO  99% within 60 s</pre>
-<p>ה-SLIs האלה מכתיבים את ה-instrumentation: עכשיו ידוע שצריך ספירת בקשות לפי status ב-LB, היסטוגרמות של latency (לא ממוצעים!), והפרש זמנים "הזמנה נוצרה → מייל נשלח". כל השאר הוא פירוט תומך לדיבאג.</p>
+<p>ה-SLIs האלה מכתיבים את ה-instrumentation: עכשיו ידוע שצריך ספירת בקשות לפי status ב-LB, היסטוגרמות של latency (לא ממוצעים!), והפרש זמנים "הזמנה נוצרה ← מייל נשלח". כל השאר הוא פירוט תומך לדיבאג.</p>
 <blockquote>💡 מהשטח: מודדים SLIs הכי קרוב למשתמש שאפשר (LB או edge, ועוד synthetic probes), כי service יכול לדווח על עצמו שהוא בריא בזמן שה-LB שלפניו מחזיר 502.</blockquote>`
       }
     },
@@ -1486,7 +1486,7 @@ LB -&gt; orders (span) -&gt; payments (span) -&gt; Stripe (client span)
     he: "\"SLO קודם, RED/USE אחר כך, trace ID בכל מקום, page על כאב, טיקט על סיבות, runbook לכל פעמון.\""
   },
   pitfalls: [
-    { en: "Alerting on causes (CPU 80%, one pod restarted) → hundreds of pages, fatigue, and the real outage gets ignored.", he: "התראות על סיבות (CPU 80%, pod אחד עשה restart) → מאות pages, עייפות, וההשבתה האמיתית מתפספסת." },
+    { en: "Alerting on causes (CPU 80%, one pod restarted) → hundreds of pages, fatigue, and the real outage gets ignored.", he: "התראות על סיבות (CPU 80%, pod אחד עשה restart) ← מאות pages, עייפות, וההשבתה האמיתית מתפספסת." },
     { en: "User IDs or raw URLs as metric labels — cardinality explosion that kills the metrics backend.", he: "User IDs או URLs גולמיים כ-labels של metrics — פיצוץ cardinality שהורג את ה-backend של ה-metrics." },
     { en: "Free-text logs without trace IDs: you can't join events across services during an incident.", he: "לוגים בטקסט חופשי בלי trace IDs: אי אפשר לחבר אירועים בין שירותים בזמן תקלה." },
     { en: "Logging PII/tokens 'temporarily for debugging' — now it's in 3 systems with 30-day retention and a compliance incident.", he: "לכתוב PII/tokens ללוג 'זמנית בשביל דיבאג' — עכשיו זה ב-3 מערכות עם retention של 30 יום ואירוע רגולציה." }

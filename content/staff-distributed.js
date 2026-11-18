@@ -339,8 +339,8 @@ C: [1,0,1]   B: [2,1,0]  -&gt; neither dominates: CONCURRENT -&gt; conflict!
 Dynamo / Riak: two siblings with concurrent vectors are both returned
 to the client, which must merge (e.g. union of shopping carts).</pre>
 <p>Cost: O(N) per value where N = number of writers. Riak bounded it with "dotted version vectors" keyed by replica, not client. Use vector clocks when you need to <em>detect</em> conflicts instead of silently picking a winner.</p>`,
-        he: `<p>Lamport (1978) הגדיר <strong>happened-before</strong> (→): a→b אם הם באותו תהליך ובסדר הזה, או ש-a הוא שליחה ו-b הקבלה המתאימה, או בטרנזיטיביות. אחרת האירועים <strong>מקבילים</strong> (concurrent).</p>
-<p><strong>שעון Lamport:</strong> כל node מחזיק counter <code>L</code>. באירוע מקומי או בשליחה: <code>L = L + 1</code>. בקבלת הודעה עם חותמת <code>m</code>: <code>L = max(L, m) + 1</code>. ההבטחה: אם a→b אז L(a) &lt; L(b). שבירת שוויון לפי node id נותנת סדר מלא שעקבי עם סיבתיות (משמש ל-total-order broadcast, mutual exclusion). אבל הכיוון ההפוך לא נכון: L(a) &lt; L(b) <em>לא</em> אומר ש-a גרם ל-b.</p>
+        he: `<p>Lamport (1978) הגדיר <strong>happened-before</strong> (←): a←b אם הם באותו תהליך ובסדר הזה, או ש-a הוא שליחה ו-b הקבלה המתאימה, או בטרנזיטיביות. אחרת האירועים <strong>מקבילים</strong> (concurrent).</p>
+<p><strong>שעון Lamport:</strong> כל node מחזיק counter <code>L</code>. באירוע מקומי או בשליחה: <code>L = L + 1</code>. בקבלת הודעה עם חותמת <code>m</code>: <code>L = max(L, m) + 1</code>. ההבטחה: אם a←b אז L(a) &lt; L(b). שבירת שוויון לפי node id נותנת סדר מלא שעקבי עם סיבתיות (משמש ל-total-order broadcast, mutual exclusion). אבל הכיוון ההפוך לא נכון: L(a) &lt; L(b) <em>לא</em> אומר ש-a גרם ל-b.</p>
 <p><strong>Vector clock:</strong> כל node מחזיק וקטור עם counter לכל node. מעלים את התא שלך בכל אירוע; בקבלה לוקחים max לפי איברים ואז מעלים. עכשיו אפשר לזהות מקביליות בדיוק:</p>
 <pre>A: [2,0,0]   B: [2,1,0]  -&gt; A &lt;= B element-wise: A happened-before B
 C: [1,0,1]   B: [2,1,0]  -&gt; neither dominates: CONCURRENT -&gt; conflict!
@@ -951,7 +951,7 @@ HighWatermark: 4813   MaxFollowerLag: 0   CurrentVoters: [3001,3002,3003]</pre>`
 <ul>
 <li>ה-brokers משכפלים את ה-log של המטא-דאטה ומחזיקים אותו בזיכרון ← failover של controller במילישניות-שניות במקום לטעון את כל ה-state מחדש מ-ZooKeeper, מה שהפך מספרי partitions מעל ~200 אלף לכואבים.</li>
 <li>בפרודקשן מריצים controllers כ-nodes ייעודיים (<code>process.roles=controller</code>); combined mode זה ל-dev.</li>
-<li>מיגרציה ממצב ZK דורשת גרסת גשר 3.x (3.9 היא האחרונה) עם מיגרציית ZK→KRaft; אי אפשר לקפוץ ישר ל-4.0 מ-cluster על ZK.</li>
+<li>מיגרציה ממצב ZK דורשת גרסת גשר 3.x (3.9 היא האחרונה) עם מיגרציית ZK←KRaft; אי אפשר לקפוץ ישר ל-4.0 מ-cluster על ZK.</li>
 </ul>
 <pre>process.roles=controller
 node.id=3001
@@ -1987,7 +1987,7 @@ ALTER TABLE currencies SET LOCALITY GLOBAL;           -- read-mostly reference d
 </ul>`,
         he: `<p>רגולציה הרבה פעמים מחליטה על הטופולוגיה לפני שה-latency מחליט. GDPR (ו-Schrems II להעברות מה-EU לארה״ב), תקנות הגנת הפרטיות בישראל, וחוקים פיננסיים ורפואיים בהרבה מדינות יכולים לחייב שהמידע האישי של תושבים <strong>יאוחסן ו/או יעובד</strong> בתחום שיפוט מסוים.</p>
 <ul>
-<li>ממדלים את זה כ-<strong>cells אזוריים / home regions</strong>: הדאטה של tenants מה-EU חי רק ב-cells ב-EU; השכבה הגלובלית מחזיקה רק מטא-דאטה של ניתוב בלי מידע אישי (tenant_id → region).</li>
+<li>ממדלים את זה כ-<strong>cells אזוריים / home regions</strong>: הדאטה של tenants מה-EU חי רק ב-cells ב-EU; השכבה הגלובלית מחזיקה רק מטא-דאטה של ניתוב בלי מידע אישי (tenant_id ← region).</li>
 <li><strong>הכול</strong> נחשב: גיבויים, לוגים, traces, עותקים לאנליטיקס, אינדקסים של חיפוש, כלי support, prompts ל-LLM. הדליפה הרגילה היא לא ה-DB הראשי אלא ה-pipeline של הלוגים ששולח PII ל-SaaS שמתארח בארה״ב.</li>
 <li>פיצ'רים גלובליים (חיפוש בין regions, תצוגות אדמין גלובליות) חייבים להיות מתוכננים כ-federated queries או אגרגטים בלי מידע אישי.</li>
 <li>DR חייב להישאר בתוך הגבול: primary ב-EU בפרנקפורט, DR באירלנד או בפריז, לא בווירג'יניה.</li>

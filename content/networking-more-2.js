@@ -185,7 +185,7 @@ $ ip -6 addr show dev eth0
 <p>תקלות שרואים במיגרציות אמיתיות:</p>
 <ul>
 <li><strong>רשומת AAAA פורסמה, והשירות לא נגיש ב-v6</strong>: ב-Security Group יש רק <code>0.0.0.0/0</code>, או ש-nginx מאזין עם <code>listen 80;</code> בלי <code>listen [::]:80;</code>, או שהאפליקציה עושה bind ל-<code>0.0.0.0</code>.</li>
-<li><strong>ICMPv6 חסום</strong> → black hole של PMTUD (בקשות קטנות עובדות, הורדות גדולות נתקעות).</li>
+<li><strong>ICMPv6 חסום</strong> ← black hole של PMTUD (בקשות קטנות עובדות, הורדות גדולות נתקעות).</li>
 <li><strong>קוד וסכמות שמניחים IPv4</strong>: עמודות IP מסוג <code>VARCHAR(15)</code>, ביטויים רגולריים כמו <code>\d+\.\d+\.\d+\.\d+</code>, פיצול host:port לפי הנקודתיים הראשונות, allowlists ו-geo-IP בלי נתוני IPv6.</li>
 <li><strong>לוגים ו-X-Forwarded-For</strong> פתאום מכילים <code>2a02:...</code> וה-parser זורק אותם.</li>
 <li><strong>מסלולים שונים</strong>: תעבורת IPv6 יכולה לעבור ב-route או ב-peering אחר מ-IPv4, כך שה-latency שונה לפי משפחה - בדוק את שתיהן במפורש.</li>
@@ -351,7 +351,7 @@ Cache-Control: max-age=600</pre>
 <li><strong>ETag</strong>: תג גרסה אטום. ‏Strong (<code>"abc"</code>) = זהה byte אחר byte; ‏weak (<code>W/"abc"</code>) = שקול סמנטית (למשל אותו תוכן, gzip אחר). ‏<code>If-None-Match</code> גובר על <code>If-Modified-Since</code>.</li>
 <li><strong>Last-Modified</strong>: רזולוציה של שנייה, אז שני deploys באותה שנייה נראים זהים.</li>
 </ul>
-<blockquote>⚠️ Production tip: ‏nginx ו-Apache בונים ETag ברירת מחדל מ-mtime וגודל. מאחורי load balancer, לכל node יש mtime אחר לאותו קובץ "זהה" → ETags שונים → אימותים מחזירים 200 במקום 304 באופן אקראי. תעשה hash לתוכן (רוב כלי ה-build עושים את זה), או תכבה ETag ותסתמך על URLs עם fingerprint.</blockquote>`
+<blockquote>⚠️ Production tip: ‏nginx ו-Apache בונים ETag ברירת מחדל מ-mtime וגודל. מאחורי load balancer, לכל node יש mtime אחר לאותו קובץ "זהה" ← ETags שונים ← אימותים מחזירים 200 במקום 304 באופן אקראי. תעשה hash לתוכן (רוב כלי ה-build עושים את זה), או תכבה ETag ותסתמך על URLs עם fingerprint.</blockquote>`
         )
       },
       {
@@ -445,8 +445,8 @@ $ curl -sI https://www.example.com/ | grep -i -E 'cf-cache-status|age|cache-cont
 cf-cache-status: HIT               # Cloudflare: HIT MISS EXPIRED REVALIDATED STALE UPDATING BYPASS DYNAMIC
 age: 120</pre>
 <ul>
-<li><code>Age</code> שעולה מעבר ל-TTL שהתכוונת אליו → ה-CDN משתמש ב-TTL אחר (override ב-edge או min TTL), לא ב-header שלך.</li>
-<li><code>cf-cache-status: DYNAMIC</code> → ‏Cloudflare החליט לא לשמור (למשל HTML כברירת מחדל); ‏<code>BYPASS</code> → חוק, או <code>Set-Cookie</code> או <code>no-store</code>, מנעו את השמירה.</li>
+<li><code>Age</code> שעולה מעבר ל-TTL שהתכוונת אליו ← ה-CDN משתמש ב-TTL אחר (override ב-edge או min TTL), לא ב-header שלך.</li>
+<li><code>cf-cache-status: DYNAMIC</code> ← ‏Cloudflare החליט לא לשמור (למשל HTML כברירת מחדל); ‏<code>BYPASS</code> ← חוק, או <code>Set-Cookie</code> או <code>no-store</code>, מנעו את השמירה.</li>
 <li>תבדוק כמו שדפדפן עושה: <code>-H 'Accept-Encoding: gzip, br'</code> - גרסה דחוסה יכולה להישמר בנפרד מהגרסה הרגילה.</li>
 </ul>
 <p><strong>Web cache poisoning</strong>: תוקף שולח בקשה עם קלט שהוא <em>לא חלק מה-key</em>, וה-origin משקף אותו בתשובה, למשל <code>X-Forwarded-Host: evil.com</code> שהופך ל-<code>&lt;script src="https://evil.com/app.js"&gt;</code>. התשובה המורעלת נשמרת תחת ה-key הרגיל ומוגשת לכולם. <strong>Cache deception</strong> זה ההפך: לגרום ל-CDN לשמור דף פרטי, למשל <code>/account/profile.css</code> שמוגש על ידי router סלחני ונשמר בגלל חוק לפי סיומת <code>.css</code>.</p>
@@ -693,7 +693,7 @@ aws ec2 authorize-security-group-ingress --group-id sg-0abc \
 <p><strong>Runbook - 30 הדקות הראשונות:</strong></p>
 <ol>
 <li><strong>לוודא שזו מתקפה</strong>, ולא השקה או פוסט ויראלי: בודקים ב-logs של ה-CDN וה-WAF את כתובות ה-IP המובילות, ‏ASNs, מדינות, ‏user agents, ‏JA3 או JA4 fingerprints ו-paths. קפיצה אמיתית באה אחרי שיווק; מתקפה דופקת path אחד מ-ASNs של hosting עם fingerprints זהים.</li>
-<li><strong>להגן על ה-origin קודם</strong>: לוודא שאף אחד לא פונה ל-origin ישירות (logs של ה-origin עם כתובות מקור שאינן של ה-CDN → לתקן את ה-allowlist עכשיו).</li>
+<li><strong>להגן על ה-origin קודם</strong>: לוודא שאף אחד לא פונה ל-origin ישירות (logs של ה-origin עם כתובות מקור שאינן של ה-CDN ← לתקן את ה-allowlist עכשיו).</li>
 <li><strong>להגביר את ה-edge</strong>: מצב "Under Attack" או challenge ב-Cloudflare על ה-path המותקף; ב-AWS WAF חוק rate ופעולת <code>Challenge</code> מוגבלים ל-path הזה; חסימות לפי מדינה או ASN אם התעבורה בבירור זרה לבסיס המשתמשים שלך.</li>
 <li><strong>להוריד עומס בצורה מסודרת</strong>: לשמור ב-cache את הדף המותקף, להחזיר תשובה סטטית, לכבות פיצ'רים יקרים (הצעות חיפוש) מאחורי flags, ולשמור על checkout ו-login עובדים.</li>
 <li><strong>להסלים</strong>: לפתוח case מול AWS SRT, ‏Azure DDoS Rapid Response או התמיכה של Cloudflare; לעדכן את ה-status page.</li>
@@ -871,14 +871,14 @@ grpc.NewServer(grpc.KeepaliveParams(keepalive.ServerParameters{
 }))</pre>`,
 `<p>לקוח gRPC פותח חיבור HTTP/2 <strong>אחד</strong> לכל כתובת backend ומעביר עליו את כל ה-RPCs במשך שעות. ‏load balancer ב-L4 - ‏AWS NLB, ‏Service מסוג <code>ClusterIP</code> ב-Kubernetes דרך kube-proxy ו-iptables - מאזן <em>חיבורים</em>, לא בקשות. התוצאה:</p>
 <ul>
-<li>10 Pods של לקוח → 10 חיבורים → מתפזרים על 10 מתוך 30 ה-Pods של השרת; 20 יושבים בטלים.</li>
+<li>10 Pods של לקוח ← 10 חיבורים ← מתפזרים על 10 מתוך 30 ה-Pods של השרת; 20 יושבים בטלים.</li>
 <li>אחרי שה-HPA מגדיל את השרתים מ-10 ל-30, ה-Pods החדשים מקבלים <strong>אפס</strong> תעבורה - חיבורים קיימים אף פעם לא זזים.</li>
 <li>לקוח עמוס אחד מצמיד שרת אחד ל-100% CPU בזמן שה"ממוצע" נראה בסדר.</li>
 </ul>
 <table>
 <tr><th>תיקון</th><th>איך</th><th>Trade-off</th></tr>
 <tr><td><strong>L7 proxy</strong></td><td>Envoy, ‏sidecars של Linkerd או Istio, ‏AWS ALB (‏target group עם protocol version ‏<code>gRPC</code>), ‏LBs של L7 ב-GCP וב-Azure מאזנים לפי <em>stream</em>.</td><td>עוד hop ו-CPU; הכי פשוט תפעולית.</td></tr>
-<tr><td><strong>Client-side LB</strong></td><td>Headless Service (‏<code>clusterIP: None</code>) → ה-DNS מחזיר את כל כתובות ה-Pods; הלקוח משתמש ב-<code>round_robin</code> ומתחבר לכל אחד.</td><td>עיכוב ב-DNS re-resolution; כל לקוח פותח N חיבורים.</td></tr>
+<tr><td><strong>Client-side LB</strong></td><td>Headless Service (‏<code>clusterIP: None</code>) ← ה-DNS מחזיר את כל כתובות ה-Pods; הלקוח משתמש ב-<code>round_robin</code> ומתחבר לכל אחד.</td><td>עיכוב ב-DNS re-resolution; כל לקוח פותח N חיבורים.</td></tr>
 <tr><td><strong>xDS (proxyless)</strong></td><td>ספריית ה-gRPC מקבלת endpoints, משקלים ו-policies מ-control plane (‏Istio, ‏Traffic Director או Cloud Service Mesh) דרך ה-API של xDS.</td><td>צריך control plane; התמיכה בספריות משתנה לפי שפה.</td></tr>
 <tr><td><strong>MAX_CONNECTION_AGE</strong></td><td>השרת שולח GOAWAY אחרי למשל 5 דקות (ועוד grace), הלקוחות מתחברים מחדש ומתאזנים מחדש דרך ה-L4 LB.</td><td>mitigation זול, לא איזון אמיתי לפי בקשה.</td></tr>
 </table>

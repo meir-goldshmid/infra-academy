@@ -488,7 +488,7 @@ INFRA.paths = INFRA.paths || [];
     },
     audience: {
       en: "Anyone preparing for system design interviews or joining a new team. Best after the Backend → Senior path, but each flow links to the lessons it uses.",
-      he: "כל מי שמתכונן לראיונות system design או מצטרף לצוות חדש. הכי טוב אחרי המסלול Backend → Senior, אבל כל תהליך מקשר לשיעורים שהוא משתמש בהם."
+      he: "כל מי שמתכונן לראיונות system design או מצטרף לצוות חדש. הכי טוב אחרי המסלול Backend ← Senior, אבל כל תהליך מקשר לשיעורים שהוא משתמש בהם."
     },
     stages: [
       st("Stage 1 · A user's request", "שלב 1 · הבקשה של המשתמש",

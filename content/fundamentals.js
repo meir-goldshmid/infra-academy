@@ -157,7 +157,7 @@ big-endian / network:  12 34 56 78</pre>
 <tr><td>255</td><td>1111 1111</td><td>0xFF</td><td>377</td><td>byte מלא, octet של מסכת <code>/24</code></td></tr>
 <tr><td>4095</td><td>1111 1111 1111</td><td>0xFFF</td><td>7777</td><td>טווח VLAN id של 12 bits הוא 0–4095</td></tr>
 </table>
-<p><strong>chmod 755</strong> זה אוקטלי: 7 = <code>111</code> = rwx לבעלים, 5 = <code>101</code> = r-x לקבוצה ולשאר → <code>rwxr-xr-x</code>. כל הרשאה היא ממש bit אחד.</p>
+<p><strong>chmod 755</strong> זה אוקטלי: 7 = <code>111</code> = rwx לבעלים, 5 = <code>101</code> = r-x לקבוצה ולשאר ← <code>rwxr-xr-x</code>. כל הרשאה היא ממש bit אחד.</p>
 <p><strong>כתובת IPv4 היא סתם מספר שלם של 32 bits</strong> שמודפס כ-4 bytes:</p>
 <pre>192.168.1.10
 = 11000000.10101000.00000001.00001010

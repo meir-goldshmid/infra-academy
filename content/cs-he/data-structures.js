@@ -136,9 +136,9 @@ A.next = X      // O(1), done</code></pre>
       emoji: '#️⃣',
       steps: [
         { type: 'learn', title: 'מבנה הנתונים הכי שימושי אי-פעם', html: `
-<p><b>Hash table</b> (טבלת גיבוב: dict, map, object, HashMap) נותנת חיפוש key → value ב-<b>O(1) בממוצע</b>. הטריק:</p>
-<ol><li>מריצים את ה-key דרך <b>hash function</b> → מספר גדול.</li>
-<li>לוקחים אותו <code>mod</code> מספר ה-buckets → אינדקס של bucket.</li>
+<p><b>Hash table</b> (טבלת גיבוב: dict, map, object, HashMap) נותנת חיפוש key ← value ב-<b>O(1) בממוצע</b>. הטריק:</p>
+<ol><li>מריצים את ה-key דרך <b>hash function</b> ← מספר גדול.</li>
+<li>לוקחים אותו <code>mod</code> מספר ה-buckets ← אינדקס של bucket.</li>
 <li>שומרים/מוצאים את הערך ב-bucket הזה — שיושב בתוך מערך, אז הקפיצה אליו היא O(1).</li></ol>
 <div class="formula">bucket = hash(key) mod m</div>
 <div class="dev">אתה כבר מכיר את זה: Redis הוא בעצם hash table ענקי מעל הרשת. כך גם ה-cache של ה-service discovery שלך, בלוק <code>map</code> ב-nginx, וכל JSON object שאי-פעם עשית לו parse.</div>` },
@@ -151,7 +151,7 @@ A.next = X      // O(1), done</code></pre>
 <div class="fun">🤓 עובדה משעשעת: ב-2011, מתקפות "hash flooding" שלחו לשרתי web גופי POST עם אלפי keys שנבנו בכוונה כדי להתנגש, והפכו כל בקשה לעבודה של O(n²). בגלל זה Python, Ruby, Perl וחבריהן מגרילות היום hash seed לכל תהליך.</div>` },
         { type: 'mcq', q: 'מה עלות החיפוש הממוצעת והגרועה ביותר ב-hash table?',
           choices: ['O(1) בממוצע, O(1) במקרה הגרוע', 'O(1) בממוצע, O(n) במקרה הגרוע', 'O(log n) בממוצע, O(n) במקרה הגרוע', 'O(n) בממוצע, O(n) במקרה הגרוע'], answer: 1,
-          explain: 'עם hash function טובה ו-resizing, ה-buckets נשארים קטנטנים → O(1) בממוצע. אם הכול מתנגש (hash גרוע או תוקף), סורקים שרשרת ארוכה אחת → O(n).' },
+          explain: 'עם hash function טובה ו-resizing, ה-buckets נשארים קטנטנים ← O(1) בממוצע. אם הכול מתנגש (hash גרוע או תוקף), סורקים שרשרת ארוכה אחת ← O(n).' },
         { type: 'learn', title: 'Load factor ו-resizing', html: `
 <p>ה-<b>load factor</b> הוא כמה הטבלה מלאה:</p>
 <div class="formula">α = n / m  (entries / buckets)</div>
@@ -177,8 +177,8 @@ A.next = X      // O(1), done</code></pre>
       emoji: '🌳',
       steps: [
         { type: 'learn', title: 'עצים: היררכיה, הפוכה', html: `
-<p><b>Tree</b> (עץ) הוא nodes שמחוברים הורה → ילדים, עם <b>root</b> (שורש) אחד למעלה ובלי מעגלים. nodes בלי ילדים הם <b>leaves</b> (עלים). ה-<b>height</b> (גובה) הוא המסלול הארוך ביותר מהשורש לעלה.</p>
-<div class="dev">אתה חי בתוך עצים: ה-filesystem (<code>/</code> הוא השורש), ה-DOM, מסמכי JSON, DNS (<code>.</code> → <code>com</code> → <code>example</code>), ownerReferences ב-Kubernetes (Deployment → ReplicaSet → Pod), והמבנה הארגוני שלך.</div>
+<p><b>Tree</b> (עץ) הוא nodes שמחוברים הורה ← ילדים, עם <b>root</b> (שורש) אחד למעלה ובלי מעגלים. nodes בלי ילדים הם <b>leaves</b> (עלים). ה-<b>height</b> (גובה) הוא המסלול הארוך ביותר מהשורש לעלה.</p>
+<div class="dev">אתה חי בתוך עצים: ה-filesystem (<code>/</code> הוא השורש), ה-DOM, מסמכי JSON, DNS (<code>.</code> → <code>com</code> → <code>example</code>), ownerReferences ב-Kubernetes (Deployment ← ReplicaSet ← Pod), והמבנה הארגוני שלך.</div>
 <p><b>Binary tree</b> (עץ בינארי) הוא עץ שבו לכל node יש לכל היותר 2 ילדים: שמאלי וימני.</p>` },
         { type: 'learn', title: 'Binary Search Tree: ממוין לפי הצורה', html: `
 <p><b>BST</b> שומר על חוק אחד ב-<i>כל</i> node: כל מה שבתת-העץ השמאלי קטן יותר, כל מה שבתת-העץ הימני גדול יותר.</p>
@@ -186,10 +186,10 @@ A.next = X      // O(1), done</code></pre>
 <line x1="120" y1="22" x2="65" y2="62"/><line x1="120" y1="22" x2="175" y2="62"/><line x1="65" y1="62" x2="35" y2="105"/><line x1="65" y1="62" x2="95" y2="105"/><line x1="175" y1="62" x2="205" y2="105"/>
 <circle cx="120" cy="22" r="15" fill="var(--accent)" fill-opacity="0.2"/><circle cx="65" cy="62" r="15"/><circle cx="175" cy="62" r="15"/><circle cx="35" cy="105" r="15"/><circle cx="95" cy="105" r="15"/><circle cx="205" cy="105" r="15"/>
 <g fill="currentColor" stroke="none" font-size="12" text-anchor="middle"><text x="120" y="26">50</text><text x="65" y="66">30</text><text x="175" y="66">70</text><text x="35" y="109">20</text><text x="95" y="109">40</text><text x="205" y="109">80</text></g></svg>
-<p>מחפשים את 40: 40 &lt; 50 → שמאלה; 40 &gt; 30 → ימינה; נמצא! כל השוואה זורקת תת-עץ שלם — binary search, אפוי לתוך מבנה נתונים.</p>` },
+<p>מחפשים את 40: 40 &lt; 50 ← שמאלה; 40 &gt; 30 ← ימינה; נמצא! כל השוואה זורקת תת-עץ שלם — binary search, אפוי לתוך מבנה נתונים.</p>` },
         { type: 'mcq', q: 'בעץ שלמעלה, מכניסים את 45. לאן הוא הולך?',
           choices: ['ילד שמאלי של 40', 'ילד ימני של 40', 'ילד ימני של 30, במקום 40', 'ילד שמאלי של 70'], answer: 1,
-          explain: '45 < 50 → שמאלה ל-30. 45 > 30 → ימינה ל-40. 45 > 40 → מימין ל-40, שם ריק, אז הוא נוחת שם.' },
+          explain: '45 < 50 ← שמאלה ל-30. 45 > 30 ← ימינה ל-40. 45 > 40 ← מימין ל-40, שם ריק, אז הוא נוחת שם.' },
         { type: 'learn', title: 'In-order traversal = פלט ממוין', html: `
 <p>מבקרים ב-<b>תת-העץ השמאלי, אחר כך ב-node, אחר כך בתת-העץ הימני</b>, רקורסיבית. על BST זה פולט את ה-keys בסדר ממוין — בחינם.</p>
 <pre><code>def in_order(node):
@@ -238,7 +238,7 @@ right(i)  = 2*i + 2</code></pre>
           explain: '(9 − 1) // 2 = 8 // 2 = 4. בדיקה: left(4) = 9. ✔' },
         { type: 'mcq', q: 'מערך min-heap: [2, 5, 3, 9, 7]. עושים pop למינימום. מה השורש אחרי זה?',
           choices: ['5', '3', '7', '9'], answer: 1,
-          explain: 'מוציאים את 2, מעבירים את הפריט האחרון (7) לשורש: [7, 5, 3, 9]. Sift down: הילד הקטן של 7 הוא 3, מחליפים → [3, 5, 7, 9]. השורש הוא 3 — הבא בתור הכי קטן, כמו שצריך.' },
+          explain: 'מוציאים את 2, מעבירים את הפריט האחרון (7) לשורש: [7, 5, 3, 9]. Sift down: הילד הקטן של 7 הוא 3, מחליפים ← [3, 5, 7, 9]. השורש הוא 3 — הבא בתור הכי קטן, כמו שצריך.' },
         { type: 'learn', title: 'Top-k: הטריק האהוב על SRE-ים', html: `
 <p>"תראה לי את 10 ה-endpoints הכי איטיים מתוך 50 מיליון שורות לוג." למיין הכול זה O(n log n) ודורש את כל הדאטה בזיכרון.</p>
 <p>במקום זה מחזיקים <b>min-heap בגודל k</b>. לכל פריט: אם הוא מנצח את השורש של ה-heap (הקטן ביותר ב-top-k הנוכחי), עושים pop לשורש ו-push לפריט החדש.</p>
@@ -270,7 +270,7 @@ right(i)  = 2*i + 2</code></pre>
           explain: 'הולכים ב-trie ביט אחרי ביט; הנתיב התואם העמוק ביותר שראינו הוא ה-prefix הארוך ביותר — כאן 10.1.2.0/24. hash table על IPs מדויקים לא יכול לענות על "ה-prefix הכי ספציפי".' },
         { type: 'learn', title: 'B-trees: עצים שנבנו בשביל דיסקים', html: `
 <p>לעץ בינארי עם מיליארד keys יש ~30 רמות. אם כל רמה היא <b>קריאה מהדיסק</b> אקראית, זה 30 I/Os איטיים לכל חיפוש. אאוץ׳.</p>
-<p><b>B-tree</b> הופך כל node ל-<b>disk page</b> שלם (ב-Postgres: 8 KB) שמחזיק <b>מאות</b> keys ממוינים ו-pointers לילדים. Fanout ענק → גובה זעיר:</p>
+<p><b>B-tree</b> הופך כל node ל-<b>disk page</b> שלם (ב-Postgres: 8 KB) שמחזיק <b>מאות</b> keys ממוינים ו-pointers לילדים. Fanout ענק ← גובה זעיר:</p>
 <div class="formula">height ≈ log₂₀₀(10⁹) ≈ 4</div>
 <p>ובנוסף הרמות העליונות תמיד חמות ב-RAM, אז חיפוש בטבלה של מיליארד שורות הוא לרוב רק 1–2 קריאות דיסק אמיתיות. ה-keys נשארים ממוינים, אז range scans (<code>WHERE created_at BETWEEN …</code>) הולכים על עלים שכנים.</p>
 <div class="dev">בגלל זה <code>CREATE INDEX</code> ב-Postgres נותן לך B-tree כברירת מחדל, ו-MySQL InnoDB שומר טבלאות שלמות כ-B+trees. האינדקס שלך הוא ממש מבנה הנתונים הזה.</div>` },
@@ -282,7 +282,7 @@ right(i)  = 2*i + 2</code></pre>
 <div class="dev">RocksDB, LevelDB, Cassandra, ScyllaDB והרבה time-series DBs מבוססים LSM. ה-"compaction storms" שאולי ראית בדשבורדים הם שלב המיזוג שמנסה להדביק את הקצב.</div>` },
         { type: 'learn', title: 'Bloom filters: "בטוח שלא" או "אולי"', html: `
 <p>קריאה ב-LSM אולי תבדוק הרבה קבצים. איך מדלגים על קבצים שלא יכולים להכיל את ה-key? <b>Bloom filter</b>: מערך ביטים ועוד k פונקציות hash.</p>
-<ul><li><b>הוספה</b>: מדליקים את k הביטים שה-key ממופה אליהם.</li><li><b>שאילתה</b>: אם <i>אחד</i> מ-k הביטים האלה הוא 0 → <b>בטוח לא קיים</b>. אם כולם 1 → <b>אולי קיים</b>.</li></ul>
+<ul><li><b>הוספה</b>: מדליקים את k הביטים שה-key ממופה אליהם.</li><li><b>שאילתה</b>: אם <i>אחד</i> מ-k הביטים האלה הוא 0 ← <b>בטוח לא קיים</b>. אם כולם 1 ← <b>אולי קיים</b>.</li></ul>
 <p>זיכרון זעיר (≈10 ביטים ל-key בשביל ~1% false positives), אפס false negatives.</p>
 <div class="dev">Cassandra ו-RocksDB מחזיקים Bloom filter לכל SSTable כדי שקריאה תוכל לדלג על קבצים שבטוח לא מכילים את ה-key. CDNs משתמשים בהם כדי לא לעשות cache ל-"one-hit wonders".</div>` },
         { type: 'mcq', q: 'Bloom filter אומר "אולי קיים" עבור key X. מה אתה יודע?',

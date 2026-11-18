@@ -244,7 +244,7 @@ STATIC_ROOT = "/app/static"                     # collectstatic at build, serve 
 <li><strong>Migrations</strong>: ‏<code>makemigrations</code> בפיתוח (ועושים commit לקבצים), ו-<code>migrate</code> פעם אחת בכל deploy — כ-Job של Kubernetes או כ-pre-upgrade hook של Helm, <em>לא</em> ב-entrypoint של כל Pod (עשרה replicas שמתחרים על אותו <code>ALTER TABLE</code>). השתמש ב-<code>sqlmigrate</code> כדי לראות את ה-SQL לפני שמריצים אותו על טבלה של 200 מיליון שורות.</li>
 <li><strong>Admin</strong>: ‏back-office בחינם — וגם מטרה לתוקפים. תזיז אותו מ-<code>/admin/</code>, תשים אותו מאחורי SSO או VPN, ואל תחשוף אותו ב-ingress הציבורי.</li>
 <li><strong>חיבורי DB</strong>: ‏<code>CONN_MAX_AGE</code> הוא <code>0</code> כברירת מחדל — חיבור Postgres חדש (TCP + TLS + auth, בערך 5-20 ms) לכל בקשה. תגדיר <code>CONN_MAX_AGE=60</code> עם <code>CONN_HEALTH_CHECKS=True</code>, או תשתמש ב-pool המובנה של psycopg מ-Django 5.1 ‏(<code>"OPTIONS": {"pool": True}</code>), או ב-PgBouncer. התקציב: Pod-ים × worker-ים × גודל pool חייב להישאר מתחת ל-<code>max_connections</code> של Postgres (ברירת מחדל 100).</li>
-<li><strong>עבודת רקע → Celery</strong>: אף פעם לא שולחים מיילים או מרנדרים PDF בתוך הבקשה. ‏<code>send_receipt.delay(order_id)</code> שם task על Redis או RabbitMQ; ‏Pod-ים נפרדים של worker מריצים <code>celery -A proj worker --concurrency=4</code>. תעשה את ה-tasks אידמפוטנטיים ותגדיר <code>acks_late=True</code>, כדי ש-task של worker שנהרג יישלח מחדש.</li>
+<li><strong>עבודת רקע ← Celery</strong>: אף פעם לא שולחים מיילים או מרנדרים PDF בתוך הבקשה. ‏<code>send_receipt.delay(order_id)</code> שם task על Redis או RabbitMQ; ‏Pod-ים נפרדים של worker מריצים <code>celery -A proj worker --concurrency=4</code>. תעשה את ה-tasks אידמפוטנטיים ותגדיר <code>acks_late=True</code>, כדי ש-task של worker שנהרג יישלח מחדש.</li>
 </ul>
 <pre># settings.py (production bits)
 DEBUG = False                                   # True leaks settings + stack traces
@@ -324,10 +324,10 @@ CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000",
 <p>תשתמש ב-exec form ‏(<code>CMD ["..."]</code>) כדי ש-gunicorn או uvicorn יהיו PID 1 ויקבלו את ה-SIGTERM — CMD ב-shell form עוטף אותם ב-<code>/bin/sh -c</code>, שלא מעביר signals הלאה.</p>
 <table>
 <tr><th>הגדרה</th><th>ברירת מחדל</th><th>מה היא באמת עושה</th></tr>
-<tr><td>gunicorn <code>--timeout</code></td><td>30 s</td><td>ה-arbiter הורג worker ששותק כל כך הרבה זמן (ב-sync: בקשה אחת איטית מדי → <code>[CRITICAL] WORKER TIMEOUT</code>, ‏SIGKILL, והלקוח מקבל 502 מה-LB)</td></tr>
+<tr><td>gunicorn <code>--timeout</code></td><td>30 s</td><td>ה-arbiter הורג worker ששותק כל כך הרבה זמן (ב-sync: בקשה אחת איטית מדי ← <code>[CRITICAL] WORKER TIMEOUT</code>, ‏SIGKILL, והלקוח מקבל 502 מה-LB)</td></tr>
 <tr><td>gunicorn <code>--graceful-timeout</code></td><td>30 s</td><td>הזמן שיש ל-worker-ים לסיים בקשות פתוחות אחרי SIGTERM; תשאיר אותו מתחת ל-<code>terminationGracePeriodSeconds</code> של ה-Pod ‏(30 s)</td></tr>
-<tr><td>gunicorn <code>--keep-alive</code></td><td>2 s</td><td>זמן idle של keep-alive (רק ל-workers שאינם sync). מאחורי LB עם idle timeout של 60 s → להעלות מעליו</td></tr>
-<tr><td>uvicorn <code>--timeout-keep-alive</code></td><td>5 s</td><td>אותה מלכודת כמו ה-5 s של Node: קצר מה-idle timeout של 60 s ב-ALB → ‏502 ספורדיים</td></tr>
+<tr><td>gunicorn <code>--keep-alive</code></td><td>2 s</td><td>זמן idle של keep-alive (רק ל-workers שאינם sync). מאחורי LB עם idle timeout של 60 s ← להעלות מעליו</td></tr>
+<tr><td>uvicorn <code>--timeout-keep-alive</code></td><td>5 s</td><td>אותה מלכודת כמו ה-5 s של Node: קצר מה-idle timeout של 60 s ב-ALB ← ‏502 ספורדיים</td></tr>
 </table>
 <blockquote>⚠️ Production tip: ה-request timeouts חייבים <em>להיות מקוננים</em>: ה-<code>statement_timeout</code> של ה-DB ‏(5 s) קטן מה-<code>--timeout</code> של gunicorn ‏(30 s), שקטן מה-request timeout של ה-LB ‏(60 s) — כך השכבה הפנימית נכשלת ראשונה עם שגיאה נקייה, במקום שה-LB יחזיר 504 ריק. ה-keep-alive timeout הולך <em>הפוך</em>: ה-idle timeout של האפליקציה גדול מזה של ה-LB, כדי שה-LB תמיד יסגור חיבורים idle ראשון.</blockquote>`
       }
@@ -380,7 +380,7 @@ CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000",
         { en: "It counts only physical cores, ignoring hyperthreads", he: "הוא סופר רק ליבות פיזיות ומתעלם מ-hyperthreads" },
         { en: "It is slow to call", he: "הוא איטי לקריאה" }
       ], answer: 1,
-      explain: { en: "On a 64-core node, (2×64)+1 = 129 workers in a Pod limited to 2 CPU and 1 GiB → throttling and OOMKill. Set workers explicitly (env var) from the Pod's limit.", he: "על node של 64 ליבות, ‏(2×64)+1 = ‏129 worker-ים בתוך Pod שמוגבל ל-2 CPU ו-1 GiB → ‏throttling ו-OOMKill. קובעים את מספר ה-worker-ים במפורש (משתנה סביבה) לפי ה-limit של ה-Pod." } },
+      explain: { en: "On a 64-core node, (2×64)+1 = 129 workers in a Pod limited to 2 CPU and 1 GiB → throttling and OOMKill. Set workers explicitly (env var) from the Pod's limit.", he: "על node של 64 ליבות, ‏(2×64)+1 = ‏129 worker-ים בתוך Pod שמוגבל ל-2 CPU ו-1 GiB ← ‏throttling ו-OOMKill. קובעים את מספר ה-worker-ים במפורש (משתנה סביבה) לפי ה-limit של ה-Pod." } },
     { q: { en: "Which ordering of timeouts is correct for a request path?", he: "איזה סדר של timeouts נכון למסלול של בקשה?" },
       options: [
         { en: "DB statement_timeout < app request timeout < LB timeout", he: "‏statement_timeout של ה-DB < ה-timeout של האפליקציה < ה-timeout של ה-LB" },
@@ -626,7 +626,7 @@ process.on("SIGTERM", async () =&gt; {
 <ul>
 <li><strong>PID 1</strong>: ‏<code>CMD ["node", "server.js"]</code> ולא <code>npm start</code> — העטיפות של npm ו-yarn לא מעבירות SIGTERM בצורה אמינה. ל-Node כ-PID 1 אין פעולת ברירת מחדל ל-SIGTERM: בלי handler הוא מתעלם ממנו ומת רק ב-SIGKILL אחרי 30 s. ‏<code>docker run --init</code> או tini גם אוספים zombies.</li>
 <li><strong>לוגים</strong>: ‏<code>console.log</code> סינכרוני כשהוא כותב ל-pipe או לקובץ, ולא מובנה. תשתמש ב-<strong>pino</strong> (מובנה ב-Fastify, בערך פי 5 מהיר מ-winston): שורות JSON ל-stdout, ‏<code>pino-http</code> ללוג לכל בקשה עם request id, ו-<code>redact: ["req.headers.authorization"]</code>. הדפסה יפה רק בפיתוח (<code>pino-pretty</code>).</li>
-<li><strong>זיכרון</strong>: ה-heap limit של V8 ‏(<code>--max-old-space-size</code>) נגזר מהזיכרון של המכונה, ותלוי בגרסת Node — הוא לא בהכרח מתאים ל-limit של ה-container. תגדיר אותו במפורש לבערך 75% מה-limit, ותשאיר מקום ל-buffers, ל-native addons ול-stacks של threads: ‏limit של 1 GiB → <code>NODE_OPTIONS=--max-old-space-size=768</code>. גבוה מדי → הקרנל עושה OOMKill ‏(exit 137) לפני ש-V8 מספיק לעשות GC; נמוך מדי → <code>FATAL ERROR: Reached heap limit</code>.</li>
+<li><strong>זיכרון</strong>: ה-heap limit של V8 ‏(<code>--max-old-space-size</code>) נגזר מהזיכרון של המכונה, ותלוי בגרסת Node — הוא לא בהכרח מתאים ל-limit של ה-container. תגדיר אותו במפורש לבערך 75% מה-limit, ותשאיר מקום ל-buffers, ל-native addons ול-stacks של threads: ‏limit של 1 GiB ← <code>NODE_OPTIONS=--max-old-space-size=768</code>. גבוה מדי ← הקרנל עושה OOMKill ‏(exit 137) לפני ש-V8 מספיק לעשות GC; נמוך מדי ← <code>FATAL ERROR: Reached heap limit</code>.</li>
 </ul>
 <pre>FROM node:22-slim
 ENV NODE_ENV=production NODE_OPTIONS=--max-old-space-size=768
@@ -813,10 +813,10 @@ let listener = tokio::net::TcpListener::bind("0.0.0.0:8080").await?;
 axum::serve(listener, app).with_graceful_shutdown(shutdown_signal()).await?;</pre>
 <table>
 <tr><th>Stack</th><th>מקביליות לבקשה</th><th>מה מגביל אותך ראשון</th></tr>
-<tr><td>Spring MVC (קלאסי)</td><td>thread לכל בקשה, ‏<code>threads.max</code> של Tomcat = ‏200</td><td>‏200 threads חסומים → בקשות נכנסות לתור (accept-count 100), ואז נדחות</td></tr>
+<tr><td>Spring MVC (קלאסי)</td><td>thread לכל בקשה, ‏<code>threads.max</code> של Tomcat = ‏200</td><td>‏200 threads חסומים ← בקשות נכנסות לתור (accept-count 100), ואז נדחות</td></tr>
 <tr><td>Spring עם virtual threads ‏(Java 21+)</td><td>virtual thread זול אחד לכל בקשה</td><td>ה-pool של ה-DB ‏(HikariCP, ברירת מחדל 10) והמגבלות של ה-downstream</td></tr>
 <tr><td>Spring WebFlux</td><td>event loop ‏(Netty), טיפוסים ריאקטיביים</td><td>כל קריאה חוסמת על ה-loop; עקומת למידה תלולה</td></tr>
-<tr><td>ASP.NET Core</td><td>thread pool עם async/await על Kestrel</td><td>‏sync-over-async ‏(<code>.Result</code>) → הרעבה של ה-thread pool</td></tr>
+<tr><td>ASP.NET Core</td><td>thread pool עם async/await על Kestrel</td><td>‏sync-over-async ‏(<code>.Result</code>) ← הרעבה של ה-thread pool</td></tr>
 <tr><td>Go</td><td>goroutine אחד לכל חיבור (stack של 2-8 KB)</td><td>timeouts חסרים, goroutines בלי גבול, ה-pool של ה-DB</td></tr>
 <tr><td>Rust ‏(Axum/tokio)</td><td>async tasks על runtime עם work-stealing</td><td>קריאות חוסמות בתוך async (משתמשים ב-<code>spawn_blocking</code>)</td></tr>
 </table>`
@@ -1114,7 +1114,7 @@ readinessProbe: { httpGet: { path: /readyz, port: 8080 }, periodSeconds: 5, fail
 livenessProbe:  { httpGet: { path: /healthz, port: 8080 }, periodSeconds: 10, failureThreshold: 3, timeoutSeconds: 2 }</pre>`,
         he: `<ul>
 <li><strong>Liveness</strong> ‏(<code>/healthz</code>): "האם ה-process מסוגל לענות?" — בלי תלויות. <strong>Readiness</strong> ‏(<code>/readyz</code>): "האם לשלוח לי תעבורה?" — יכול לבדוק את ה-DB עם timeout של שנייה, ומחזיר 503 בזמן עלייה או draining. <strong>Startup probe</strong> לאפליקציות שעולות לאט (JVM).</li>
-<li><strong>Drain על SIGTERM</strong>: מכשילים readiness → מחכים בערך 5-10 s שה-endpoints וה-LB יתעדכנו → מפסיקים לקבל חיבורים → מסיימים בקשות פתוחות → סוגרים pools → יוצאים לפני <code>terminationGracePeriodSeconds</code> ‏(30 s). ‏CMD ב-exec form, כדי שה-process שלך יהיה PID 1 ובאמת יקבל את ה-signal.</li>
+<li><strong>Drain על SIGTERM</strong>: מכשילים readiness ← מחכים בערך 5-10 s שה-endpoints וה-LB יתעדכנו ← מפסיקים לקבל חיבורים ← מסיימים בקשות פתוחות ← סוגרים pools ← יוצאים לפני <code>terminationGracePeriodSeconds</code> ‏(30 s). ‏CMD ב-exec form, כדי שה-process שלך יהיה PID 1 ובאמת יקבל את ה-signal.</li>
 </ul>
 <table>
 <tr><th>Framework</th><th>Health</th><th>Graceful shutdown</th></tr>
@@ -1295,7 +1295,7 @@ export default function () {
 <blockquote>💡 Real world: the launch-day outages teams remember are rarely "the framework was slow". They're a DB pool of 10, a missing timeout on a payment API, a migration that locked a table, or debug mode left on. Every item on this list is one of those incidents.</blockquote>`,
         he: `<ul>
 <li><strong>קבצים סטטיים דרך CDN</strong>: בונים assets עם hash ‏(<code>app.3f9a1c.js</code>), מעלים ל-object storage, ומגישים דרך CDN עם <code>Cache-Control: public, max-age=31536000, immutable</code>. ה-workers של האפליקציה לא צריכים לבזבז slot של בקשה על stream של bundle של 2 MB.</li>
-<li><strong>Migrations הם שלב ב-deploy</strong>, רצים פעם אחת לפני הגרסה החדשה: ‏Job של Kubernetes, ‏hook מסוג <code>pre-upgrade</code> של Helm או <code>PreSync</code> של Argo CD, עם Flyway/Liquibase, ‏Alembic, ‏Django migrate, ‏migration bundles של EF Core, ‏<code>migrate deploy</code> של Prisma או golang-migrate. עובדים ב-expand → migrate → contract כדי שגם ה-Pod-ים הישנים וגם החדשים יעבדו בזמן ה-rollout; מגדירים <code>lock_timeout</code> כדי ש-DDL לא ייתקע בתור מאחורי טרנזקציה ארוכה ויחסום כל שאילתה.</li>
+<li><strong>Migrations הם שלב ב-deploy</strong>, רצים פעם אחת לפני הגרסה החדשה: ‏Job של Kubernetes, ‏hook מסוג <code>pre-upgrade</code> של Helm או <code>PreSync</code> של Argo CD, עם Flyway/Liquibase, ‏Alembic, ‏Django migrate, ‏migration bundles של EF Core, ‏<code>migrate deploy</code> של Prisma או golang-migrate. עובדים ב-expand ← migrate ← contract כדי שגם ה-Pod-ים הישנים וגם החדשים יעבדו בזמן ה-rollout; מגדירים <code>lock_timeout</code> כדי ש-DDL לא ייתקע בתור מאחורי טרנזקציה ארוכה ויחסום כל שאילתה.</li>
 <li><strong>Container image</strong>: ‏multi-stage build, ‏base רזה או distroless, נעוץ לפי digest, ‏<code>USER</code> שאינו root, ‏root filesystem לקריאה בלבד, ‏<code>.dockerignore</code>, בלי secrets ב-layers, ‏<code>CMD</code> ב-exec form, ‏process אחד לכל container, וסריקת CVE ב-CI.</li>
 </ul>
 <pre>// k6 load test — run against staging before launch: k6 run load.js
@@ -1414,7 +1414,7 @@ INFRA.scenarios.push({
       text: { en: "You compare timeouts. The ALB's idle timeout and the Node server's settings:", he: "אתה משווה timeouts. ה-idle timeout של ה-ALB וההגדרות של שרת ה-Node:" },
       data: "$ aws elbv2 describe-load-balancer-attributes --load-balancer-arn $ALB \\\n    --query \"Attributes[?Key=='idle_timeout.timeout_seconds']\"\n[ { \"Key\": \"idle_timeout.timeout_seconds\", \"Value\": \"60\" } ]\n\n$ kubectl exec deploy/checkout-api -- node -e \"const s=require('http').createServer();console.log(s.keepAliveTimeout)\"\n5000\n\n$ grep -n keepAlive src/server.ts\n(no results)   # Express 5 app.listen(3000), Node defaults",
       choices: [
-        { label: { en: "Node closes idle connections after 5 s, the ALB reuses them for up to 60 s → race. Raise keepAliveTimeout to 65 s and headersTimeout to 66 s", he: "‏Node סוגר חיבורים idle אחרי 5 s, וה-ALB משתמש בהם עד 60 s → מרוץ. להעלות keepAliveTimeout ל-65 s ו-headersTimeout ל-66 s" }, next: "s4", score: 10, feedback: { en: "That's the root cause: the upstream must keep idle connections longer than the proxy.", he: "זה ה-root cause: ה-upstream חייב להחזיק חיבורים idle יותר זמן מה-proxy." } },
+        { label: { en: "Node closes idle connections after 5 s, the ALB reuses them for up to 60 s → race. Raise keepAliveTimeout to 65 s and headersTimeout to 66 s", he: "‏Node סוגר חיבורים idle אחרי 5 s, וה-ALB משתמש בהם עד 60 s ← מרוץ. להעלות keepAliveTimeout ל-65 s ו-headersTimeout ל-66 s" }, next: "s4", score: 10, feedback: { en: "That's the root cause: the upstream must keep idle connections longer than the proxy.", he: "זה ה-root cause: ה-upstream חייב להחזיק חיבורים idle יותר זמן מה-proxy." } },
         { label: { en: "Lower the ALB idle timeout to 4 s so the ALB always closes first", he: "להוריד את ה-idle timeout של ה-ALB ל-4 s כדי שה-ALB תמיד יסגור ראשון" }, next: "s4", score: 5, feedback: { en: "It technically fixes the race, but also cuts client keep-alive and kills long requests/WebSockets idle > 4 s. Fix the server instead.", he: "טכנית זה פותר את המרוץ, אבל גם מקצר את ה-keep-alive מול הלקוחות והורג בקשות ארוכות או WebSockets שהם idle יותר מ-4 s. עדיף לתקן את השרת." } },
         { label: { en: "Add client-side retries on 502 and close the ticket", he: "להוסיף retries בצד הלקוח על 502 ולסגור את הטיקט" }, next: "lose", score: 0, feedback: { en: "Retrying a non-idempotent checkout POST can double-charge, and the root cause stays.", he: "‏retry ל-POST של checkout שאינו אידמפוטנטי יכול לחייב פעמיים, וה-root cause נשאר." } }
       ]

@@ -18,7 +18,7 @@ INFRA.lessons.push({
   title: t("Disks Inside: HDD vs SSD vs NVMe", "דיסקים מבפנים: HDD מול SSD מול NVMe"),
   tldr: t(
     "An HDD is limited by physics (seek + rotation ≈ 8-12 ms per random IO → ~100-200 IOPS), an SSD by its flash translation layer and NAND wear, and the interface decides the ceiling: SATA has 1 queue of 32 commands, NVMe up to 64K queues of 64K commands over PCIe. Measure with fio, watch health with SMART, and know that a cloud disk is a network service with a price tag on every IOPS.",
-    "HDD מוגבל בפיזיקה (seek + סיבוב ≈ 8-12 ms לכל IO אקראי → בערך 100-200 IOPS), SSD מוגבל ב-FTL ובשחיקה של ה-NAND, והממשק קובע את התקרה: ל-SATA יש queue אחד של 32 פקודות, ל-NVMe עד 64K queues של 64K פקודות על PCIe. מודדים עם fio, עוקבים אחרי בריאות עם SMART, וזוכרים שדיסק בענן הוא שירות רשת עם תג מחיר על כל IOPS."
+    "HDD מוגבל בפיזיקה (seek + סיבוב ≈ 8-12 ms לכל IO אקראי ← בערך 100-200 IOPS), SSD מוגבל ב-FTL ובשחיקה של ה-NAND, והממשק קובע את התקרה: ל-SATA יש queue אחד של 32 פקודות, ל-NVMe עד 64K queues של 64K פקודות על PCIe. מודדים עם fio, עוקבים אחרי בריאות עם SMART, וזוכרים שדיסק בענן הוא שירות רשת עם תג מחיר על כל IOPS."
   ),
   analogy: t(
     "An HDD is a librarian on roller skates: every random request means skating to the right shelf (seek) and waiting for the carousel to spin the book in front of him (rotation) — he's quick at reading a whole shelf in order, painfully slow at fetching scattered books. An SSD is a wall of mailboxes with no skating at all, but each mailbox can only be erased in big blocks and wears out after a few thousand rewrites, so a clever clerk (the FTL) keeps shuffling letters around. NVMe is giving that clerk 64,000 service windows instead of the single window SATA had.",
@@ -58,7 +58,7 @@ INFRA.lessons.push({
 <tr><td>10,000 rpm</td><td>6.0 ms</td><td>3.0 ms</td><td>~4 ms</td><td>~140</td></tr>
 <tr><td>15,000 rpm</td><td>4.0 ms</td><td>2.0 ms</td><td>~3.5 ms</td><td>~180</td></tr>
 </table>
-<p>החשבון: 7,200 rpm → 7,200 / 60 = 120 סיבובים בשנייה → 1 / 120 = 8.33 ms לסיבוב → חצי מזה = <strong>4.17 ms</strong> rotational latency ממוצע. מוסיפים seek של 4 ms בדיסק enterprise: 8.2 ms לכל IO → 1 / 0.0082 ≈ <strong>122 IOPS</strong>. עם queue עמוק הדיסק מסדר מחדש את הבקשות כדי לקצר את תנועת הזרוע (NCQ / elevator scheduling) ומגיעים ל-150-200 IOPS — וזו התקרה הפיזיקלית. שום עדכון firmware לא משנה את ניוטון.</p>
+<p>החשבון: 7,200 rpm ← 7,200 / 60 = 120 סיבובים בשנייה ← 1 / 120 = 8.33 ms לסיבוב ← חצי מזה = <strong>4.17 ms</strong> rotational latency ממוצע. מוסיפים seek של 4 ms בדיסק enterprise: 8.2 ms לכל IO ← 1 / 0.0082 ≈ <strong>122 IOPS</strong>. עם queue עמוק הדיסק מסדר מחדש את הבקשות כדי לקצר את תנועת הזרוע (NCQ / elevator scheduling) ומגיעים ל-150-200 IOPS — וזו התקרה הפיזיקלית. שום עדכון firmware לא משנה את ניוטון.</p>
 <p>קריאה רציפה זה סיפור אחר: אין seek, הראש פשוט קורא את ה-track כשהוא חולף מתחתיו, אז דיסק מודרני של 20 TB מזרים ~250-280 MB/s ב-tracks החיצוניים ובערך חצי מזה בפנימיים (ב-track חיצוני יש יותר sectors לסיבוב). בגלל זה HDD עדיין המלך של גיבויים, ארכיונים, וידאו וה-backend של object storage, איפה שה-IO גדול ורציף, בערך $15 ל-TB לעומת $50-80 ל-TB ב-SSD של enterprise.</p>
 <blockquote>💡 מהשטח: דיסקי SAS של 15K rpm כמעט נכחדו — SSD זול של SATA עושה פי 100 מה-IOPS האקראיים שלהם. שוק ה-HDD היום הוא כמעט כולו דיסקי "nearline" גדולים של 7,200 rpm (20-30 TB, חלקם SMR או HAMR) שחיים בקופסאות NAS ובבטן של S3, Azure Blob ו-GCS.</blockquote>
 <p><strong>CMR מול SMR:</strong> בדיסקי SMR (shingled) ה-tracks חופפים כמו רעפים כדי להרוויח ~20% נפח, אבל כתיבה מחדש של track מחייבת לכתוב מחדש את כל ה-band. הם בסדר לארכיון שנכתב פעם אחת, ונוראיים בכתיבות אקראיות או ב-rebuild של RAID — דיסק SMR במערך ZFS/RAID יכול לעשות resilver במשך ימים. תבדוק את ה-datasheet לפני שאתה קונה דיסקי "NAS".</p>`
@@ -101,7 +101,7 @@ Your DB writes 1.5 TB/day at WAF 3 → 4.5 TB/day of NAND writes
 <p>ההעתקה הזו היא <strong>write amplification</strong>: WAF = bytes שנכתבו ל-NAND חלקי bytes שה-host כתב. כתיבה רציפה לדיסק ריק: WAF ≈ 1. כתיבות אקראיות קטנות לדיסק מלא ב-95%: WAF של 3-10 זה נורמלי, וגם המהירות וגם אורך החיים יורדים. שני מנופים מתקנים את זה:</p>
 <ul>
 <li><strong>TRIM</strong> (SATA) / <strong>Deallocate</strong> (NVMe) / <strong>UNMAP</strong> (SCSI): ה-filesystem אומר לדיסק "ה-blocks האלה פנויים עכשיו", ואז ה-GC לא מעתיק מידע מת. בלינוקס עדיף <code>fstrim.timer</code> שבועי על פני mount option של <code>discard</code>.</li>
-<li><strong>Over-provisioning</strong>: NAND רזרבי שה-OS לא רואה. לדיסק enterprise של 3.84 TB יש בדרך כלל ~4 TB של flash גולמי או יותר; דיסקי "mixed-use" שנמכרים כ-3.2 TB הם אותה חומרה עם יותר שטח רזרבי → WAF נמוך יותר, endurance גבוה יותר.</li>
+<li><strong>Over-provisioning</strong>: NAND רזרבי שה-OS לא רואה. לדיסק enterprise של 3.84 TB יש בדרך כלל ~4 TB של flash גולמי או יותר; דיסקי "mixed-use" שנמכרים כ-3.2 TB הם אותה חומרה עם יותר שטח רזרבי ← WAF נמוך יותר, endurance גבוה יותר.</li>
 </ul>
 <p><strong>Endurance</strong> מצוין כ-TBW (terabytes written) או DWPD (כמה פעמים אפשר לכתוב את כל הדיסק ביום לאורך האחריות):</p>
 <pre>DWPD = TBW / (capacity_TB × 365 × warranty_years)
@@ -141,9 +141,9 @@ Your DB writes 1.5 TB/day at WAF 3 → 4.5 TB/day of NAND writes
 <table>
 <tr><th></th><th>SATA (AHCI)</th><th>SAS</th><th>NVMe</th></tr>
 <tr><td>תוכנן עבור</td><td>דיסקים מסתובבים של desktop</td><td>HDD/SSD של enterprise, dual-ported</td><td>Flash, מאפס</td></tr>
-<tr><td>מהירות link</td><td>6 Gb/s → בפועל ~550 MB/s</td><td>12 Gb/s (SAS-3), 22.5 Gb/s (SAS-4 "24G")</td><td>נתיבי PCIe (בדרך כלל x4)</td></tr>
+<tr><td>מהירות link</td><td>6 Gb/s ← בפועל ~550 MB/s</td><td>12 Gb/s (SAS-3), 22.5 Gb/s (SAS-4 "24G")</td><td>נתיבי PCIe (בדרך כלל x4)</td></tr>
 <tr><td>Command queues</td><td><strong>queue אחד × 32 פקודות</strong> (NCQ)</td><td>queue אחד × ~254 פקודות לדיסק</td><td><strong>עד 65,535 queues × 65,536 פקודות</strong></td></tr>
-<tr><td>מסלול</td><td>CPU → HBA/chipset → AHCI → דיסק</td><td>CPU → SAS HBA/כרטיס RAID → דיסק</td><td>CPU → PCIe → דיסק (זוג queues לכל core, בלי lock)</td></tr>
+<tr><td>מסלול</td><td>CPU ← HBA/chipset ← AHCI ← דיסק</td><td>CPU ← SAS HBA/כרטיס RAID ← דיסק</td><td>CPU ← PCIe ← דיסק (זוג queues לכל core, בלי lock)</td></tr>
 <tr><td>4K random read טיפוסי</td><td>~90K IOPS</td><td>~200-400K IOPS (SSD)</td><td>~1-2.5M IOPS (Gen4/Gen5)</td></tr>
 <tr><td>Latency שה-stack מוסיף</td><td>~10-20 µs</td><td>~10-20 µs</td><td>~2-5 µs</td></tr>
 </table>
@@ -313,7 +313,7 @@ Little's Law:     IOPS = in-flight IOs / latency      128 / 306 us = ~418K IOPS`
   ],
   interview: [
     { q: t("Why does a 7,200 rpm HDD top out around 100-200 random IOPS?", "למה HDD של 7,200 rpm נעצר בסביבות 100-200 IOPS אקראיים?"),
-      a: t("Each random IO pays a seek (~4-9 ms) plus on average half a rotation: 60/7200 = 8.33 ms per revolution, so ~4.2 ms. ~8-12 ms per IO → ~80-120 IOPS at QD1; command reordering with a deep queue pushes it to ~150-200. It's mechanical, so no software fixes it.", "כל IO אקראי משלם seek (~4-9 ms) ועוד בממוצע חצי סיבוב: 60/7200 = 8.33 ms לסיבוב, כלומר ~4.2 ms. ~8-12 ms לכל IO → ~80-120 IOPS ב-QD1; סידור מחדש של פקודות עם queue עמוק מביא ל-150-200. זה מכני, אז שום תוכנה לא מתקנת את זה.") },
+      a: t("Each random IO pays a seek (~4-9 ms) plus on average half a rotation: 60/7200 = 8.33 ms per revolution, so ~4.2 ms. ~8-12 ms per IO → ~80-120 IOPS at QD1; command reordering with a deep queue pushes it to ~150-200. It's mechanical, so no software fixes it.", "כל IO אקראי משלם seek (~4-9 ms) ועוד בממוצע חצי סיבוב: 60/7200 = 8.33 ms לסיבוב, כלומר ~4.2 ms. ~8-12 ms לכל IO ← ~80-120 IOPS ב-QD1; סידור מחדש של פקודות עם queue עמוק מביא ל-150-200. זה מכני, אז שום תוכנה לא מתקנת את זה.") },
     { q: t("What is write amplification on an SSD and how do you reduce it?", "מה זה write amplification ב-SSD ואיך מקטינים אותו?"),
       a: t("NAND can only be erased in large blocks, so the FTL writes updates to new pages and garbage-collects blocks by copying still-valid pages. WAF = NAND writes / host writes. Reduce it with TRIM/discard so dead data isn't copied, free space / over-provisioning, and larger sequential writes (LSM-style) instead of small random overwrites.", "NAND אפשר למחוק רק בבלוקים גדולים, אז ה-FTL כותב עדכונים ל-pages חדשים ועושה garbage collection ל-blocks ע\"י העתקת ה-pages שעדיין תקפים. WAF = כתיבות NAND חלקי כתיבות host. מקטינים עם TRIM/discard כדי שמידע מת לא יועתק, שטח פנוי / over-provisioning, וכתיבות רציפות גדולות (בסגנון LSM) במקום דריסות אקראיות קטנות.") },
     { q: t("Your gp3-backed Postgres shows 40 ms write latency but %util looks fine on the host. What's going on?", "ל-Postgres שלך על gp3 יש write latency של 40 ms, אבל ה-%util על ה-host נראה בסדר. מה קורה?"),
@@ -381,7 +381,7 @@ INFRA.lessons.push({
 <tr><th>FS</th><th>קובץ מקסימלי</th><th>Volume מקסימלי</th><th>הגנה מקריסה</th><th>Snapshots</th><th>Checksums למידע</th><th>דחיסה</th><th>אותיות גדולות/קטנות</th><th>הרשאות</th><th>איפה חי</th></tr>
 <tr><td>FAT32</td><td><strong>4 GiB פחות byte</strong></td><td>2 TiB (פירמוט ב-Windows רק עד 32 GB)</td><td>אין</td><td>לא</td><td>לא</td><td>לא</td><td>Insensitive</td><td>אין</td><td>דיסקים און קי, כרטיסי SD, ה-ESP של UEFI</td></tr>
 <tr><td>exFAT</td><td>16 EiB (תיאורטי)</td><td>128 PiB</td><td>אין (בלי journal)</td><td>לא</td><td>לא</td><td>לא</td><td>Insensitive</td><td>אין</td><td>דיסקים חיצוניים גדולים, SDXC, מצלמות, דיסק משותף ל-Mac ול-Windows</td></tr>
-<tr><td>NTFS</td><td>= מגבלת ה-volume</td><td>16 TiB ב-clusters של 4 KiB → 256 TiB ב-64 KiB → 8 PiB ב-2 MiB</td><td>Journal ל-metadata ($LogFile)</td><td>דרך VSS (שירות של ה-OS)</td><td>לא</td><td>לכל קובץ (LZNT1)</td><td>Insensitive (אפשרות לכל תיקייה)</td><td>NTFS ACLs</td><td>לקוחות ושרתי Windows</td></tr>
+<tr><td>NTFS</td><td>= מגבלת ה-volume</td><td>16 TiB ב-clusters של 4 KiB ← 256 TiB ב-64 KiB ← 8 PiB ב-2 MiB</td><td>Journal ל-metadata ($LogFile)</td><td>דרך VSS (שירות של ה-OS)</td><td>לא</td><td>לכל קובץ (LZNT1)</td><td>Insensitive (אפשרות לכל תיקייה)</td><td>NTFS ACLs</td><td>לקוחות ושרתי Windows</td></tr>
 <tr><td>ReFS</td><td>35 PB</td><td>35 PB</td><td>Metadata ב-allocate-on-write</td><td>Block cloning, VSS</td><td>Metadata תמיד; מידע לפי בחירה (integrity streams)</td><td>Dedup (ודחיסה בגרסאות Server חדשות)</td><td>Insensitive</td><td>NTFS ACLs</td><td>Hyper-V, Storage Spaces Direct, repositories של גיבוי, Dev Drive</td></tr>
 <tr><td>ext4</td><td>16 TiB</td><td>1 EiB</td><td>Journal (data=ordered)</td><td>לא (דרך LVM)</td><td>רק metadata (metadata_csum)</td><td>לא</td><td>Sensitive (אפשרות casefold)</td><td>POSIX + ACLs</td><td>ברירת המחדל ב-Ubuntu/Debian</td></tr>
 <tr><td>XFS</td><td>8 EiB</td><td>8 EiB</td><td>Journal ל-metadata</td><td>לא (העתקות reflink כן)</td><td>Metadata (CRC)</td><td>לא</td><td>Sensitive</td><td>POSIX + ACLs</td><td>ברירת המחדל ב-RHEL/Amazon Linux, קבצים גדולים</td></tr>
@@ -443,7 +443,7 @@ PS&gt; Get-Content .\setup.exe -Stream Zone.Identifier
 [ZoneTransfer]
 ZoneId=3
 HostUrl=https://example.com/setup.exe</pre>
-<p>השורה השנייה היא <strong>Alternate Data Stream (ADS)</strong>: לקובץ יכולים להיות streams נוספים עם שם, ש-<code>dir</code> וה-Explorer לא מראים בגודל. Windows משתמש באחד כזה בשביל ה-"Mark of the Web" (<code>ZoneId=3</code> = Internet → אזהרת SmartScreen). Malware כבר החביא payloads ב-streams כמו <code>notes.txt:evil.exe</code>. ה-ADS הולכים לאיבוד כשמעתיקים ל-FAT32/exFAT או מעלים ברוב הפרוטוקולים.</p>
+<p>השורה השנייה היא <strong>Alternate Data Stream (ADS)</strong>: לקובץ יכולים להיות streams נוספים עם שם, ש-<code>dir</code> וה-Explorer לא מראים בגודל. Windows משתמש באחד כזה בשביל ה-"Mark of the Web" (<code>ZoneId=3</code> = Internet ← אזהרת SmartScreen). Malware כבר החביא payloads ב-streams כמו <code>notes.txt:evil.exe</code>. ה-ADS הולכים לאיבוד כשמעתיקים ל-FAT32/exFAT או מעלים ברוב הפרוטוקולים.</p>
 <p><strong>הרשאות</strong> הן ACLs: רשימה מסודרת של כניסות allow/deny לכל משתמש/קבוצה, עם זכויות מפורטות (read, write, modify, delete, שינוי הרשאות, take ownership) והורשה במורד העץ. הרבה יותר עשיר מ-<code>rwx</code> של POSIX ל-owner/group/other:</p>
 <pre>C:\&gt; icacls D:\Shares\Finance
 D:\Shares\Finance CORP\Finance-RW:(OI)(CI)(M)
@@ -919,7 +919,7 @@ $ sudo mdadm --detail /dev/md0 | sed -n '/State :/,$p'
        4       8       80        4      active sync   /dev/sdf
        5       8       96        5      active sync   /dev/sdg
        3       8       64        -      faulty   /dev/sde</pre>
-<p>איך קוראים: <code>[6/5]</code> = 6 מקומות, 5 עובדים; <code>[UUU_UU]</code> = מקום 3 חסר; <code>(F)</code> זה faulty, ו-<code>(S)</code> היה אומר spare. 6 דיסקים ב-RAID 6 → 4 × 7,812,872,704 KiB = 31,251,490,816 KiB ≈ 32 TB שמישים. נשאר: (7,812,872,704 − 1,695,483,904) KiB / 166,752 KiB/s ≈ 611 דקות.</p>
+<p>איך קוראים: <code>[6/5]</code> = 6 מקומות, 5 עובדים; <code>[UUU_UU]</code> = מקום 3 חסר; <code>(F)</code> זה faulty, ו-<code>(S)</code> היה אומר spare. 6 דיסקים ב-RAID 6 ← 4 × 7,812,872,704 KiB = 31,251,490,816 KiB ≈ 32 TB שמישים. נשאר: (7,812,872,704 − 1,695,483,904) KiB / 166,752 KiB/s ≈ 611 דקות.</p>
 <pre># Swap the dead disk, the new one becomes the next spare
 $ sudo mdadm /dev/md0 --remove /dev/sde
 $ sudo mdadm /dev/md0 --add /dev/sdi
@@ -1043,7 +1043,7 @@ INFRA.lessons.push({
   title: t("S3 in Depth: Object Model, Uploads, Access, Encryption, Events", "S3 לעומק: מודל האובייקטים, העלאות, הרשאות, הצפנה ו-events"),
   tldr: t(
     "S3 is a flat key → object store (no real folders) with strong read-after-write consistency and 11 nines of durability. Big files go up in multipart (5 MiB-5 GiB parts, max 10,000), browsers upload through presigned URLs, access is IAM + bucket policy with ACLs disabled and Block Public Access on, every object is encrypted (SSE-S3 by default, SSE-KMS + Bucket Keys for control), and changes flow out as events. Most S3 disasters are a public bucket or an over-privileged role, not a lost disk.",
-    "S3 הוא מאגר שטוח של key → object (בלי תיקיות אמיתיות) עם strong read-after-write consistency ו-11 תשיעיות של durability. קבצים גדולים עולים ב-multipart (חלקים של 5 MiB עד 5 GiB, עד 10,000 חלקים), דפדפנים מעלים דרך presigned URLs, הרשאות הן IAM + bucket policy כש-ACLs כבויים ו-Block Public Access דלוק, כל אובייקט מוצפן (SSE-S3 כברירת מחדל, SSE-KMS עם Bucket Keys לשליטה), ושינויים יוצאים החוצה כ-events. רוב האסונות ב-S3 הם bucket ציבורי או role עם יותר מדי הרשאות, לא דיסק שהלך לאיבוד."
+    "S3 הוא מאגר שטוח של key ← object (בלי תיקיות אמיתיות) עם strong read-after-write consistency ו-11 תשיעיות של durability. קבצים גדולים עולים ב-multipart (חלקים של 5 MiB עד 5 GiB, עד 10,000 חלקים), דפדפנים מעלים דרך presigned URLs, הרשאות הן IAM + bucket policy כש-ACLs כבויים ו-Block Public Access דלוק, כל אובייקט מוצפן (SSE-S3 כברירת מחדל, SSE-KMS עם Bucket Keys לשליטה), ושינויים יוצאים החוצה כ-events. רוב האסונות ב-S3 הם bucket ציבורי או role עם יותר מדי הרשאות, לא דיסק שהלך לאיבוד."
   ),
   analogy: t(
     "S3 is a gigantic coat check with infinite hooks. You hand over a coat (object), get a ticket with a unique label (key), and the label can look like 'floor2/row5/coat.jpg' — but there are no floors or rows, only labels sorted alphabetically. The coat check never loses a coat (11 nines), but it gives a coat to anyone holding a valid ticket: a presigned URL is a ticket you print for a guest that expires at midnight, and a public bucket is taping all tickets to the front door.",
@@ -1094,9 +1094,9 @@ INFRA.lessons.push({
     "BucketKeyEnabled": true,
     "StorageClass": "STANDARD_IA"
 }</pre>
-<p>הסיומת <code>-88</code> מספרת שזו הייתה העלאת multipart של 88 חלקים (700 MiB / 8 MiB = 87.5 → 88) — ושה-ETag הוא <em>לא</em> ה-MD5 של הקובץ, אז אל תשתמש בו לבדיקת שלמות של אובייקטים מ-multipart (תשתמש ב-headers של <code>x-amz-checksum-*</code> עם SHA-256/CRC).</p>
+<p>הסיומת <code>-88</code> מספרת שזו הייתה העלאת multipart של 88 חלקים (700 MiB / 8 MiB = 87.5 ← 88) — ושה-ETag הוא <em>לא</em> ה-MD5 של הקובץ, אז אל תשתמש בו לבדיקת שלמות של אובייקטים מ-multipart (תשתמש ב-headers של <code>x-amz-checksum-*</code> עם SHA-256/CRC).</p>
 <p>ההשלכות של namespace שטוח: <strong>אין rename</strong> (copy + delete — לשנות שם ל"תיקייה" של 10 מיליון אובייקטים זה 20 מיליון בקשות), <code>ls</code> מחולק לעמודים של 1,000 keys לקריאה, ואי אפשר לנעול "תיקייה" או לתת לה הרשאות אלא דרך תנאים על prefix ב-policies.</p>
-<p><strong>Durability מול availability במספרים:</strong> 11 תשיעיות durability = הסתברות אובדן שנתית של 10^-11 לכל אובייקט. שומרים 10 מיליארד אובייקטים → צפוי לאבד ~0.1 אובייקט בשנה. Availability זו הבטחה אחרת: S3 Standard מתוכנן ל-99.99% וזיכויי ה-SLA מתחילים מתחת ל-99.9% — הקריאות שלך יכולות להיכשל עם 503 בזמן אירוע בלי שאף byte אחד ילך לאיבוד. מתכננים ל-retries, לא לאובדן.</p>`
+<p><strong>Durability מול availability במספרים:</strong> 11 תשיעיות durability = הסתברות אובדן שנתית של 10^-11 לכל אובייקט. שומרים 10 מיליארד אובייקטים ← צפוי לאבד ~0.1 אובייקט בשנה. Availability זו הבטחה אחרת: S3 Standard מתוכנן ל-99.99% וזיכויי ה-SLA מתחילים מתחת ל-99.9% — הקריאות שלך יכולות להיכשל עם 503 בזמן אירוע בלי שאף byte אחד ילך לאיבוד. מתכננים ל-retries, לא לאובדן.</p>`
       )
     },
     {
@@ -1133,7 +1133,7 @@ url = s3.generate_presigned_url("put_object",
 <tr><td>חלקים להעלאה</td><td>10,000</td></tr>
 <tr><td>גודל אובייקט מקסימלי</td><td>5 TB ברוב חייו של S3; AWS העלו ל-50 TB בסוף 2025 — תבדוק בתיעוד העדכני</td></tr>
 </table>
-<p>Multipart = <code>CreateMultipartUpload</code> → מעלים חלקים במקביל (ובכשל מנסים שוב רק את החלק שנכשל) → <code>CompleteMultipartUpload</code> עם רשימת ה-ETags של החלקים. החשבון חשוב: ב-8 MiB לחלק, 10,000 חלקים מגבילים אותך ל-~78 GiB, אז קובץ של 100 GiB היה צריך 12,800 חלקים — ה-CLI וה-SDKs מגדילים את גודל החלק אוטומטית, ה-uploader שכתבת לבד אולי לא. כדי להגיע ל-5 TB צריך חלקים של ~525 MiB לפחות.</p>
+<p>Multipart = <code>CreateMultipartUpload</code> ← מעלים חלקים במקביל (ובכשל מנסים שוב רק את החלק שנכשל) ← <code>CompleteMultipartUpload</code> עם רשימת ה-ETags של החלקים. החשבון חשוב: ב-8 MiB לחלק, 10,000 חלקים מגבילים אותך ל-~78 GiB, אז קובץ של 100 GiB היה צריך 12,800 חלקים — ה-CLI וה-SDKs מגדילים את גודל החלק אוטומטית, ה-uploader שכתבת לבד אולי לא. כדי להגיע ל-5 TB צריך חלקים של ~525 MiB לפחות.</p>
 <p>העלאה שהתחילה ואף פעם לא הושלמה או בוטלה שומרת את החלקים שלה — <strong>לא נראית ב-<code>aws s3 ls</code> אבל מחויבת</strong>. לכל bucket צריך להיות lifecycle rule של <code>AbortIncompleteMultipartUpload</code> (ראה cloud-storage-lifecycle). למצוא אותן:</p>
 <pre>$ aws s3api list-multipart-uploads --bucket acme-media \
     --query 'Uploads[].{Key:Key,Started:Initiated,Id:UploadId}' --output table
@@ -1247,7 +1247,7 @@ $ aws s3 cp report.parquet s3://acme-data/reports/ --sse aws:kms</pre>
 <tr><td><strong>DSSE-KMS</strong></td><td>KMS, שתי שכבות</td><td>הצפנה כפולה לרגולציות שדורשות את זה</td><td>יותר עלות KMS</td></tr>
 <tr><td><strong>SSE-C</strong></td><td>אתה שולח את המפתח בכל בקשה; S3 לא שומר אותו</td><td>המפתח אף פעם לא נשמר ב-AWS</td><td>איבדת את המפתח = איבדת את המידע; חובה HTTPS</td></tr>
 </table>
-<p>המלכודת של SSE-KMS היא כמות הבקשות. בלי Bucket Keys, כל PUT קורא ל-<code>GenerateDataKey</code> וכל GET קורא ל-<code>Decrypt</code>. 100 מיליון GET בחודש = 100M / 10,000 × $0.03 = <strong>$300 לחודש</strong> רק על KMS, ועוד throttling (<code>ThrottlingException</code> שמופיע כ-503 של S3) בזמן קפיצות. <strong>S3 Bucket Key</strong> גורם ל-S3 לגזור מ-KMS מפתח קצר-חיים ברמת ה-bucket ולהשתמש בו להרבה אובייקטים, וזה חותך את קריאות ה-KMS בעד 99% (→ ~$3 לחודש). מדליקים אותו יחד עם ה-default encryption:</p>
+<p>המלכודת של SSE-KMS היא כמות הבקשות. בלי Bucket Keys, כל PUT קורא ל-<code>GenerateDataKey</code> וכל GET קורא ל-<code>Decrypt</code>. 100 מיליון GET בחודש = 100M / 10,000 × $0.03 = <strong>$300 לחודש</strong> רק על KMS, ועוד throttling (<code>ThrottlingException</code> שמופיע כ-503 של S3) בזמן קפיצות. <strong>S3 Bucket Key</strong> גורם ל-S3 לגזור מ-KMS מפתח קצר-חיים ברמת ה-bucket ולהשתמש בו להרבה אובייקטים, וזה חותך את קריאות ה-KMS בעד 99% (← ~$3 לחודש). מדליקים אותו יחד עם ה-default encryption:</p>
 <pre>$ aws s3api put-bucket-encryption --bucket acme-data --server-side-encryption-configuration '{
   "Rules": [{ "ApplyServerSideEncryptionByDefault": {
                 "SSEAlgorithm": "aws:kms",
@@ -1350,7 +1350,7 @@ $ aws s3api get-object --bucket acme-data --key reports/q3.csv --version-id 3HL4
 <tr><th>תקרית</th><th>מה קרה</th><th>הלקח</th></tr>
 <tr><td>Deep Root Analytics (2017)</td><td>Bucket ציבורי חשף ~198 מיליון רשומות של בוחרים בארה"ב</td><td>Block Public Access ברמת ה-account; סריקות של Macie / Access Analyzer</td></tr>
 <tr><td>Verizon דרך שותף (2017)</td><td>Bucket ציבורי של ספק החזיק ~14 מיליון רשומות לקוחות</td><td>המידע שלך ב-bucket של צד שלישי הוא עדיין הדליפה שלך — תעשה audit לספקים</td></tr>
-<tr><td>Capital One (2019)</td><td>SSRF דרך WAF שהוגדר לא נכון → שירות ה-metadata של EC2 (IMDSv1) → credentials של role → קריאה המונית מ-S3; ~106 מיליון אנשים נפגעו, קנס רגולטורי של $80M</td><td>IMDSv2, instance roles עם least privilege, התראה על נפח חריג של <code>ListBuckets</code>/GET (GuardDuty, CloudTrail data events)</td></tr>
+<tr><td>Capital One (2019)</td><td>SSRF דרך WAF שהוגדר לא נכון ← שירות ה-metadata של EC2 (IMDSv1) ← credentials של role ← קריאה המונית מ-S3; ~106 מיליון אנשים נפגעו, קנס רגולטורי של $80M</td><td>IMDSv2, instance roles עם least privilege, התראה על נפח חריג של <code>ListBuckets</code>/GET (GuardDuty, CloudTrail data events)</td></tr>
 <tr><td>נפילת S3 ב-us-east-1 (פברואר 2017)</td><td>טעות הקלדה בפקודה מתוך playbook הסירה יותר קיבולת מהמתוכנן; S3 ב-us-east-1 היה למטה ~4 שעות והפיל איתו חצי אינטרנט</td><td>Durability ≠ availability; multi-region לנתיבים קריטיים</td></tr>
 </table>
 <pre>$ aws s3 sync ./site s3://acme-web --delete --exclude ".git/*" --size-only
@@ -1397,7 +1397,7 @@ browser --(3) PUT bytes directly------------------------------------------------
   ],
   interview: [
     { q: t("How would you let users upload 2 GB videos from the browser without routing bytes through your API?", "איך תאפשר למשתמשים להעלות סרטונים של 2 GB מהדפדפן בלי להעביר את ה-bytes דרך ה-API שלך?"),
-      a: t("The API authenticates the user and returns presigned URLs: for large files, start a multipart upload server-side and presign each UploadPart (e.g. 64 MiB parts → 32 parts), the browser PUTs parts in parallel and the API completes the upload. Constrain key prefix and size (presigned POST or server-side validation), keep expiry short, add AbortIncompleteMultipartUpload, and trigger processing from an S3 event.", "ה-API מאמת את המשתמש ומחזיר presigned URLs: לקבצים גדולים, מתחילים multipart upload בצד השרת וחותמים כל UploadPart (למשל חלקים של 64 MiB → 32 חלקים), הדפדפן עושה PUT לחלקים במקביל וה-API משלים את ההעלאה. מגבילים prefix וגודל (presigned POST או ולידציה בשרת), שומרים על תוקף קצר, מוסיפים AbortIncompleteMultipartUpload, ומפעילים עיבוד מ-event של S3.") },
+      a: t("The API authenticates the user and returns presigned URLs: for large files, start a multipart upload server-side and presign each UploadPart (e.g. 64 MiB parts → 32 parts), the browser PUTs parts in parallel and the API completes the upload. Constrain key prefix and size (presigned POST or server-side validation), keep expiry short, add AbortIncompleteMultipartUpload, and trigger processing from an S3 event.", "ה-API מאמת את המשתמש ומחזיר presigned URLs: לקבצים גדולים, מתחילים multipart upload בצד השרת וחותמים כל UploadPart (למשל חלקים של 64 MiB ← 32 חלקים), הדפדפן עושה PUT לחלקים במקביל וה-API משלים את ההעלאה. מגבילים prefix וגודל (presigned POST או ולידציה בשרת), שומרים על תוקף קצר, מוסיפים AbortIncompleteMultipartUpload, ומפעילים עיבוד מ-event של S3.") },
     { q: t("A role in account B gets AccessDenied reading an object in account A, though A's bucket policy allows B. What do you check?", "Role ב-account B מקבל AccessDenied כשהוא קורא אובייקט ב-account A, למרות שה-bucket policy של A מרשה ל-B. מה אתה בודק?"),
       a: t("Cross-account needs both sides: the role's own IAM policy in B must allow s3:GetObject on that ARN. If the object is SSE-KMS, the KMS key policy in A must allow B's role kms:Decrypt (and B's IAM must allow it). Then look for explicit denies: SCPs/RCPs, VPC endpoint policies, aws:SourceVpce conditions, and whether the object was written before Bucket owner enforced (old ACL ownership).", "בין accounts צריך את שני הצדדים: ה-IAM policy של ה-role ב-B חייב לאפשר s3:GetObject על ה-ARN הזה. אם האובייקט מוצפן ב-SSE-KMS, ה-key policy של KMS ב-A חייב לאפשר ל-role של B את kms:Decrypt (וגם ה-IAM של B). אחר כך מחפשים deny מפורש: SCPs/RCPs, VPC endpoint policies, תנאי aws:SourceVpce, והאם האובייקט נכתב לפני Bucket owner enforced (בעלות ישנה של ACL).") },
     { q: t("S3 promises 11 nines of durability. Why do you still need versioning and backups?", "S3 מבטיח 11 תשיעיות durability. למה עדיין צריך versioning וגיבויים?"),
