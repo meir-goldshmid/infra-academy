@@ -933,4 +933,69 @@ INFRA.paths = INFRA.paths || [];
         ])
     ]
   });
+  // ------------------------------------------------------------------ 15. Plan a product's infrastructure
+  INFRA.paths.push({
+    id: "product-infra-plan", icon: "🗺️", color: "#0b7285",
+    title: { en: "Plan a Product's Infrastructure End to End", he: "לתכנן תשתית למוצר מקצה לקצה" },
+    blurb: {
+      en: "Plan the infrastructure of a Drive-, WhatsApp- or Netflix-like product on your own: turn requirements into numbers, choose the cloud, environments, namespaces, data stores, global traffic, monitoring and DR, and know for each choice what the trade-off is and what would change your mind.",
+      he: "לתכנן לבד את התשתית של מוצר דמוי Drive, WhatsApp או Netflix: להפוך דרישות למספרים, לבחור ענן, סביבות, namespaces, data stores, traffic גלובלי, monitoring ו-DR, ולדעת על כל בחירה מה ה-trade-off ומה יגרום לך לשנות אותה."
+    },
+    audience: {
+      en: "Engineers who are asked to 'design the infra' for a new product or an interview, and want a repeatable method instead of asking someone.",
+      he: "מהנדסים שמבקשים מהם 'לתכנן את התשתית' למוצר חדש או בראיון, ורוצים שיטה שחוזרת על עצמה במקום לשאול מישהו."
+    },
+    stages: [
+      st("Stage 1 · Numbers before boxes", "שלב 1 · מספרים לפני קופסאות",
+        "Every infra debate gets short once you have numbers and SLOs. Start with the method and the 12 decisions, then learn to size and to set reliability targets.",
+        "כל ויכוח תשתיתי מתקצר ברגע שיש מספרים ו-SLO-ים. מתחילים מהשיטה ומ-12 ההחלטות, ואז לומדים לעשות sizing ולקבוע יעדי אמינות.",
+        [
+          s("plan-product-infra-blueprint", "The map: the 12 decisions in order, the decision method, and Drive vs WhatsApp vs Netflix.", "המפה: 12 ההחלטות לפי הסדר, שיטת ההחלטה, ו-Drive מול WhatsApp מול Netflix."),
+          s("pr-architect-questions", "The questions that turn a vague ask into requirements.", "השאלות שהופכות בקשה מעורפלת לדרישות."),
+          s("pr-sizing", "Napkin math: QPS, storage and bandwidth from user numbers.", "חישובים על מפית: QPS, storage ורוחב פס ממספרי משתמשים."),
+          s("rel-sli-slo-sla", "Reliability targets per user journey, and why SLA is below SLO.", "יעדי אמינות לכל user journey, ולמה ה-SLA מתחת ל-SLO."),
+          s("rel-error-budgets", "Error budgets turn the SLO into a rule for when to slow down.", "Error budgets הופכים את ה-SLO לכלל שאומר מתי להאט.")
+        ]),
+      st("Stage 2 · Land and fences", "שלב 2 · קרקע וגדרות",
+        "Pick where you build and draw the isolation boundaries before anything is deployed. These are the hardest decisions to undo.",
+        "בוחרים איפה בונים ומשרטטים את גבולות הבידוד לפני שמשהו נפרס. אלה ההחלטות שהכי קשה להפוך.",
+        [
+          s("plan-cloud-selection", "Azure, GCP, AWS or several: scoring, data gravity and multi-cloud honestly.", "Azure, GCP, AWS או כמה: ניקוד, data gravity ו-multi-cloud בלי אשליות."),
+          s("cloud-big3-services-compare", "What actually differs between the three when you pick services.", "מה באמת שונה בין השלושה כשבוחרים שירותים."),
+          s("cloud-regions-azs", "Regions and zones are your failure domains.", "Regions ו-zones הם ה-failure domains שלך."),
+          s("cloud-landing-zones", "Account and subscription structure, guardrails and network hub.", "מבנה accounts ו-subscriptions, guardrails ו-hub לרשת."),
+          s("plan-environments-namespaces", "Which environments, clusters and namespaces, and why.", "אילו סביבות, cluster-ים ו-namespaces, ולמה."),
+          s("k8s-namespaces-rbac", "The mechanics: RBAC, NetworkPolicy and Pod Security per namespace.", "המכניקה: RBAC, NetworkPolicy ו-Pod Security לכל namespace.")
+        ]),
+      st("Stage 3 · Data and roads", "שלב 3 · Data וכבישים",
+        "Choose stores by access pattern and design how users reach the right region. Together they decide latency, consistency and how failover really works.",
+        "בוחרים stores לפי access pattern ומתכננים איך משתמשים מגיעים ל-region הנכון. ביחד הם קובעים latency, consistency ואיך failover עובד באמת.",
+        [
+          s("plan-data-store-selection", "A store per access pattern, worked for Drive, WhatsApp and Netflix.", "Store לכל access pattern, עם דוגמאות ל-Drive, WhatsApp ו-Netflix."),
+          s("pr-db-landscape", "The families of databases and what each is good at.", "משפחות ה-databases ובמה כל אחת טובה."),
+          s("staff-multi-region-data", "Active-active vs active-passive data and residency.", "Data ב-active-active מול active-passive ו-residency."),
+          s("plan-global-traffic", "DNS, anycast, CDN and failover across regions.", "DNS, anycast, CDN ו-failover בין region-ים."),
+          s("net-load-balancing", "What the load balancers in the picture actually do.", "מה ה-load balancers בתמונה עושים בפועל.")
+        ]),
+      st("Stage 4 · See it, break it, survive it", "שלב 4 · לראות, לשבור, לשרוד",
+        "Plan monitoring, then plan for failure: what breaks, what it takes down, how you recover, and how you prove it before customers do.",
+        "מתכננים monitoring, ואז מתכננים לכשל: מה נופל, מה הוא מפיל, איך מתאוששים, ואיך מוכיחים את זה לפני שהלקוחות מגלים.",
+        [
+          s("pr-observability-plan", "The day-1 monitoring and logging plan.", "תוכנית ה-monitoring וה-logging של יום 1."),
+          s("obs-datadog-victoriametrics", "Choosing the stack: SaaS vs self-hosted, with costs.", "בחירת ה-stack: SaaS מול self-hosted, עם עלויות."),
+          s("plan-failure-sla", "SLA math, failure-mode analysis and the test plan.", "חישובי SLA, ניתוח מצבי כשל ותוכנית הבדיקות."),
+          s("rel-bcdr", "RPO, RTO and the four DR strategies.", "RPO, RTO וארבע אסטרטגיות ה-DR."),
+          s("staff-cells-blast-radius", "Cells and static stability to shrink the blast radius.", "Cells ו-static stability כדי להקטין את ה-blast radius."),
+          s("rel-dr-drills", "Prove recovery with drills and game days.", "להוכיח התאוששות עם drills ו-game days.")
+        ]),
+      st("Stage 5 · Decide in writing, pay for it", "שלב 5 · להחליט בכתב, ולשלם על זה",
+        "Close the plan: a cost model per user and decisions written so that nobody needs to ask you, or an AI, why it was built this way.",
+        "סוגרים את התוכנית: מודל עלות למשתמש והחלטות כתובות, כך שאף אחד לא יצטרך לשאול אותך, או AI, למה זה נבנה ככה.",
+        [
+          s("cloud-finops", "Unit cost, commitments and the bill as a design input.", "עלות ליחידה, התחייבויות, והחשבון כקלט לתכנון."),
+          s("staff-design-docs", "Design docs and ADRs: the plan's permanent form.", "Design docs ו-ADR-ים: הצורה הקבועה של התוכנית.")
+        ])
+    ]
+  });
+
 })();
