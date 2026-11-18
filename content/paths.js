@@ -49,6 +49,7 @@ INFRA.paths = INFRA.paths || [];
           s("net-dns", "It's always DNS: learn why, and how to prove it.", "זה תמיד DNS: ללמוד למה, ואיך מוכיחים את זה."),
           s("net-http-tls", "HTTP and TLS are what your users actually speak to your system.", "HTTP ו-TLS הם מה שהמשתמשים באמת מדברים עם המערכת שלך."),
           s("linux-networking-commands", "ip, ss, dig, curl and tcpdump turn network theory into evidence.", "ip, ss, dig, curl ו-tcpdump הופכים תיאוריית רשת לראיות."),
+          s("net-hops-paths", "What a hop is, why distance beats hop count, and how to read traceroute and mtr without false alarms.", "מה זה hop, למה מרחק חשוב יותר ממספר ה-hops, ואיך קוראים traceroute ו-mtr בלי אזעקות שווא."),
           s("net-load-balancing", "How one address spreads traffic across many servers, the first step to scale.", "איך כתובת אחת מפזרת תעבורה על הרבה שרתים, הצעד הראשון לסקייל.")
         ]),
       st("Stage 4 · Containers and the cloud", "שלב 4 · קונטיינרים וענן",
@@ -60,6 +61,7 @@ INFRA.paths = INFRA.paths || [];
           s("docker-run", "Ports, volumes and networks: run and debug a real container.", "Ports, volumes ורשתות: להריץ ולדבג קונטיינר אמיתי."),
           s("container-internals", "Namespaces and cgroups reveal there's no magic, only Linux.", "Namespaces ו-cgroups מגלים שאין קסם, יש רק Linux."),
           s("cloud-models", "IaaS, PaaS, SaaS and FaaS: who manages which layer.", "IaaS, PaaS, SaaS ו-FaaS: מי מנהל איזו שכבה."),
+          s("faas-vs-container-serverless", "FaaS vs serverless containers vs Fargate: the execution model decides the bill.", "FaaS מול קונטיינרים serverless מול Fargate: מודל הריצה קובע את החשבון."),
           s("cloud-regions-azs", "Regions and AZs are the building blocks of every highly available design you'll meet next.", "Regions ו-AZs הם אבני הבניין של כל design זמין שתפגוש מכאן והלאה.")
         ])
     ]
@@ -656,7 +658,8 @@ INFRA.paths = INFRA.paths || [];
           s("disks-hdd-ssd-nvme", "HDD vs SSD vs NVMe: seek time, write amplification and queue depth.", "HDD מול SSD מול NVMe: זמן seek, write amplification ו-queue depth."),
           s("filesystems-compared", "ext4, XFS, ZFS and friends: journaling and copy-on-write decide what survives a crash.", "ext4, XFS, ZFS והחברים: journaling ו-copy-on-write קובעים מה שורד קריסה."),
           s("fs-filesystems-raid", "LVM and RAID in practice: grow a volume and survive a dead disk.", "LVM ו-RAID בפועל: להגדיל volume ולשרוד דיסק מת."),
-          s("raid-levels-deep", "The URE math shows why RAID 5 on big disks is a gamble.", "חישוב ה-URE מראה למה RAID 5 על דיסקים גדולים הוא הימור.")
+          s("raid-levels-deep", "The URE math shows why RAID 5 on big disks is a gamble.", "חישוב ה-URE מראה למה RAID 5 על דיסקים גדולים הוא הימור."),
+          s("storage-kinds-map", "Disks vs storage services: block, file, object and archive, and which one each workload needs.", "דיסקים מול שירותי storage: ‏block, קבצים, object וארכיון, ומה כל workload צריך.")
         ]),
       st("Stage 2 · Inside the database engine", "שלב 2 · בתוך מנוע ה-database",
         "With the hardware understood, see how a database turns it into tables. B-trees vs LSM decide the read/write trade-off, the right index kind decides query speed, and partitioning keeps huge tables manageable.",

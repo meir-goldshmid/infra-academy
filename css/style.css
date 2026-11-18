@@ -63,7 +63,20 @@ blockquote { margin: 14px 0; padding: 10px 14px; background: color-mix(in srgb, 
 @media (max-width: 900px) {
   .search-hint, .search-btn kbd, .brand-name { display: none; }
   .topbar { flex-wrap: wrap; padding: 8px 16px; gap: 8px; }
-  .nav { order: 3; flex-basis: 100%; }
+  .nav { order: 3; flex-basis: 100%; scroll-padding-inline: 24px;
+    /* fade both ends so it's clear the tab strip scrolls sideways */
+    -webkit-mask-image: linear-gradient(to right, transparent, #000 20px, #000 calc(100% - 20px), transparent);
+    mask-image: linear-gradient(to right, transparent, #000 20px, #000 calc(100% - 20px), transparent); }
+  .nav a { padding: 6px 10px; }
+}
+/* anchors (lesson TOC, sections) land below the sticky header */
+html { scroll-padding-top: 76px; }
+/* phones: the header slides away while reading down and comes back on the first scroll up */
+@media (max-width: 700px) {
+  .topbar { transition: transform .22s ease; will-change: transform; }
+  .topbar.tb-hide { transform: translateY(-100%); }
+  html { scroll-padding-top: 16px; }
+  .icon-btn { min-height: 40px; }
 }
 
 /* ---------- layout ---------- */
@@ -369,7 +382,7 @@ body.wrap-code .code-head .wrap { background: color-mix(in srgb, var(--code-text
 .path-hero { border-top: 5px solid var(--tc); margin-bottom: 8px; }
 .stage-jump { display: flex; gap: 6px; overflow-x: auto; margin-top: 14px; padding-bottom: 4px; scrollbar-width: thin; }
 .stage-jump .chip { white-space: nowrap; }
-.stage { margin-top: 26px; scroll-margin-top: 80px; }
+.stage { margin-top: 26px; scroll-margin-top: 6px; }
 .stage-head { display: flex; align-items: center; gap: 10px; }
 .stage-head h2 { margin: 0; flex: 1; font-size: 1.25em; }
 .stage-intro { color: var(--muted); margin: 6px 0 12px; }

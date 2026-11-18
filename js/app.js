@@ -118,6 +118,14 @@
       const r = a.dataset.route.replace("#/", "");
       a.classList.toggle("active", r === route || (r === "learn" && (route === "track" || route === "lesson")) || (r === "" && route === ""));
     });
+    { // keep the active tab visible in the horizontally scrolling nav strip (phones/tablets), without moving the page
+      const nav = $("#nav"), act = $("#nav a.active");
+      if (nav && act && nav.scrollWidth > nav.clientWidth) {
+        const n = nav.getBoundingClientRect(), a = act.getBoundingClientRect();
+        nav.scrollLeft += (a.left + a.width / 2) - (n.left + n.width / 2);
+      }
+      const bar = document.querySelector(".topbar"); if (bar) bar.classList.remove("tb-hide");
+    }
     readBar(false); hideGloss();
     const app = $("#app");
     const views = { "": home, paths: viewPaths, decide, learn, track: viewTrack, lesson: viewLesson, play, oncall, cards, glossary, cookbook, ask };
@@ -357,17 +365,46 @@
     const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, { acceptNode: n =>
       n.parentElement.closest("pre, code, a, h1, h2, h3, summary, .codebox, .cmd, .quiz, button, textarea, .chips, .fl-actors, .fl-hop, .fl-all") ? NodeFilter.FILTER_REJECT : NodeFilter.FILTER_ACCEPT });
     const nodes = []; while (walker.nextNode()) nodes.push(walker.currentNode);
+    const BIDI = window.INFRA_BIDI;
     for (const node of nodes) {
       if (count >= 30) break;
-      const text = node.nodeValue; let m, last = 0, frag = null; glossRe.lastIndex = 0;
+      const text = node.nodeValue; let m; const hits = []; glossRe.lastIndex = 0;
       while ((m = glossRe.exec(text)) && count < 30) {
         const g = glossOf(m[1]); if (!g || g.lesson === currentId || used.has(g.term)) continue;
-        used.add(g.term); count++; frag = frag || document.createDocumentFragment();
-        frag.appendChild(document.createTextNode(text.slice(last, m.index)));
-        const a = document.createElement("a"); a.className = "gl-link"; a.href = "#/lesson/" + g.lesson; a.dataset.term = g.term; a.textContent = m[1];
-        frag.appendChild(a); last = m.index + m[1].length;
+        used.add(g.term); count++; hits.push({ s: m.index, e: m.index + m[1].length, g, word: m[1] });
       }
-      if (frag) { frag.appendChild(document.createTextNode(text.slice(last))); node.parentNode.replaceChild(frag, node); }
+      if (!hits.length) continue;
+      // In Hebrew text a link splits an English phrase ("S3, SQS, Kinesis") into several nodes, and bidi.js then can't
+      // isolate it, so the commas and brackets get reordered. Wrap the whole LTR run around each link in one <bdi dir="ltr">.
+      let spans = hits.map(h => ({ s: h.s, e: h.e, hits: [h], bdi: false }));
+      if (BIDI && BIDI.RUN && BIDI.HEB.test(text)) {
+        const runs = []; let r; BIDI.RUN.lastIndex = 0;
+        while ((r = BIDI.RUN.exec(text))) { if (!r[0]) { BIDI.RUN.lastIndex++; continue; } runs.push({ s: r.index, e: r.index + r[0].length }); }
+        spans = [];
+        hits.forEach(h => {
+          const run = runs.find(x => x.s <= h.s && x.e >= h.e) || { s: h.s, e: h.e };
+          let sp = spans.find(x => x.s === run.s && x.e === run.e);
+          if (!sp) { sp = { s: run.s, e: run.e, hits: [], bdi: true }; spans.push(sp); }
+          sp.hits.push(h);
+        });
+      }
+      const frag = document.createDocumentFragment(); let last = 0;
+      const txt = (box, a, b) => { if (b > a) box.appendChild(document.createTextNode(text.slice(a, b))); };
+      spans.sort((a, b) => a.s - b.s).forEach(sp => {
+        txt(frag, last, sp.s);
+        let box = frag; if (sp.bdi) { box = document.createElement("bdi"); box.dir = "ltr"; }
+        let p = sp.s;
+        sp.hits.sort((a, b) => a.s - b.s).forEach(h => {
+          txt(box, p, h.s);
+          const a = document.createElement("a"); a.className = "gl-link"; a.href = "#/lesson/" + h.g.lesson; a.dataset.term = h.g.term; a.textContent = h.word;
+          box.appendChild(a); p = h.e;
+        });
+        txt(box, p, sp.e);
+        if (box !== frag) frag.appendChild(box);
+        last = sp.e;
+      });
+      txt(frag, last, text.length);
+      node.parentNode.replaceChild(frag, node);
     }
   }
   function showGloss(a) {
@@ -406,6 +443,17 @@
   // reading progress bar on lesson pages
   let readOn = false;
   function readBar(on) { readOn = on; const b = $("#readbar"); if (b) { b.style.width = "0"; b.hidden = !on; } }
+  // phones: hide the sticky header while scrolling down, show it again on any scroll up
+  let lastY = window.scrollY;
+  const phone = () => window.matchMedia && window.matchMedia("(max-width: 700px)").matches;
+  window.addEventListener("scroll", () => {
+    const y = window.scrollY, bar = document.querySelector(".topbar");
+    if (bar) {
+      if (!phone() || y < 80 || y < lastY - 4) bar.classList.remove("tb-hide");
+      else if (y > lastY + 4 && !document.querySelector(".search-open, .modal:not([hidden])")) bar.classList.add("tb-hide");
+    }
+    lastY = y;
+  }, { passive: true });
   window.addEventListener("scroll", () => {
     if (!readOn) return; const h = document.documentElement; const max = h.scrollHeight - h.clientHeight;
     $("#readbar").style.width = (max > 0 ? Math.min(100, h.scrollTop / max * 100) : 0) + "%";

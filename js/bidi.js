@@ -85,7 +85,7 @@
   }
 
   function unwrapAll() { // switching back to English: restore plain text so nothing lingers
-    document.querySelectorAll('bdi[dir="ltr"]').forEach(b => b.replaceWith(document.createTextNode(b.textContent)));
+    document.querySelectorAll('bdi[dir="ltr"]').forEach(b => b.replaceWith(...b.childNodes)); // keep links inside (glossary)
     document.body.normalize();
   }
 
@@ -109,5 +109,5 @@
     mo.observe(document.documentElement, { attributes: true, attributeFilter: ["dir"] });
   }
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", start); else start();
-  window.INFRA_BIDI = { walk, fixText };
+  window.INFRA_BIDI = { walk, fixText, RUN, HEB };
 })();
