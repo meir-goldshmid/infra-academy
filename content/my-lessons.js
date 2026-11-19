@@ -427,3 +427,149 @@ INFRA.glossary.push(
   { term: "Air gap", track: "cloud", def: { en: "A network physically/logically disconnected from the internet; all artifacts are imported deliberately.", he: "רשת מנותקת פיזית או לוגית מהאינטרנט. כל artifact מוכנס באופן מכוון." }, lesson: "cloud-airgapped" },
   { term: "skopeo", track: "cloud", def: { en: "CLI to inspect and copy container images between registries and archives without a daemon.", he: "CLI לבדיקה והעתקה של container images בין registries וארכיונים בלי daemon." }, lesson: "cloud-airgapped" }
 );
+
+// ---------------------------------------------------------------------------
+// Measuring real CPU / RAM / disk needs + interview logic questions
+// ---------------------------------------------------------------------------
+
+INFRA.lessons.push({
+  id: "rel-measure-resource-needs",
+  track: "reliability",
+  order: 186,
+  icon: "📏",
+  level: 2,
+  minutes: 12,
+  title: { en: "Measuring What a Service Really Needs: CPU, RAM, Disk", he: "כמה CPU, RAM ודיסק שירות באמת צריך, ואיך מודדים" },
+  tldr: {
+    en: "Measure the cost of one request under load, multiply by peak, divide by a target utilization, then add a spare AZ. Use the right metric for each resource: CPU-seconds, working set, IOPS, time-to-full.",
+    he: "מודדים כמה עולה בקשה אחת תחת עומס, מכפילים ב-peak, מחלקים ב-utilization יעד ומוסיפים AZ רזרבי. המטריקות הנכונות הן CPU-seconds, working set, IOPS ו-time-to-full, כל אחת למשאב שלה."
+  },
+  analogy: {
+    en: "Staffing a restaurant kitchen. You don't guess how many cooks feel right: you time one dish, multiply by dishes per hour at the dinner rush, make sure nobody works at 100%, and add one more cook in case someone calls in sick.",
+    he: "כמו לתכנן כמה טבחים צריך במטבח של מסעדה. לא מנחשים לפי תחושה: מודדים כמה זמן לוקחת מנה אחת, מכפילים במספר המנות בשעת העומס של הערב, דואגים שאף טבח לא יעבוד על 100%, ומוסיפים עוד אחד למקרה שמישהו לא מגיע."
+  },
+  sections: [
+    { h: { en: "The method: measure one unit, then multiply", he: "השיטה: מודדים יחידה אחת ומכפילים" },
+      body: {
+        en: `<p>Napkin math (see the sizing lesson) gives you the <em>expected</em> load. Measurement gives you the <em>cost per unit</em>. Load-test one instance, record what it uses, and scale from there:</p>
+<table>
+<tr><th>Resource</th><th>Measure</th><th>Formula</th></tr>
+<tr><td>CPU</td><td>CPU-seconds per request = cores used ÷ RPS</td><td><code>cores = peak_RPS × cpu_sec_per_req ÷ 0.6</code></td></tr>
+<tr><td>RAM</td><td>Idle baseline + memory per in-flight request + cache</td><td><code>RAM = base + concurrency × per_req + cache</code>, concurrency = RPS × latency</td></tr>
+<tr><td>Disk size</td><td>Bytes written per day</td><td><code>daily × retention × replicas ÷ 0.75</code></td></tr>
+<tr><td>Disk IO</td><td>r/s, w/s, MB/s, await at p99</td><td>Size to the peak, not the average</td></tr>
+<tr><td>Network</td><td>Request + response bytes</td><td><code>RPS × bytes × 8</code> = bits/s</td></tr>
+</table>
+<p>Always start from <strong>peak</strong>: <code>avg_RPS = daily_requests ÷ 86,400</code>, then multiply by a peak factor (usually 2–5×).</p>`,
+        he: `<p>חישוב על מפית (ראה את שיעור ה-sizing) נותן לך את העומס <em>הצפוי</em>. מדידה נותנת לך את <em>העלות ליחידה</em>. מריצים load test על instance אחד, רושמים כמה הוא צורך, ומשם מגדילים:</p>
+<table>
+<tr><th>משאב</th><th>מה מודדים</th><th>נוסחה</th></tr>
+<tr><td>CPU</td><td>CPU-seconds לבקשה: cores בשימוש חלקי RPS</td><td><code>cores = peak_RPS × cpu_sec_per_req ÷ 0.6</code></td></tr>
+<tr><td>RAM</td><td>בסיס במנוחה, ועוד זיכרון לכל בקשה פתוחה, ועוד cache</td><td><code>RAM = base + concurrency × per_req + cache</code></td></tr>
+<tr><td>גודל דיסק</td><td>כמה bytes נכתבים ביום</td><td><code>daily × retention × replicas ÷ 0.75</code></td></tr>
+<tr><td>Disk IO</td><td>r/s, w/s, MB/s ו-await ב-p99</td><td>מתכננים לפי ה-peak, לא לפי הממוצע</td></tr>
+<tr><td>רשת</td><td>גודל הבקשה והתשובה</td><td><code>RPS × bytes × 8</code></td></tr>
+</table>
+<p>ה-concurrency הוא RPS כפול latency, לפי Little's Law. תמיד מתחילים מה-<strong>peak</strong>: מחלקים את מספר הבקשות היומי ב-86,400 כדי לקבל ממוצע לשנייה, ואז מכפילים ב-peak factor (בדרך כלל פי 2 עד 5).</p>`
+      } },
+    { h: { en: "Worked example: 50M requests/day, 3 AZs", he: "דוגמה מלאה: 50M בקשות ביום ב-3 AZ-ים" },
+      body: {
+        en: `<p>Load test result: one pod uses 0.5 core at 125 RPS, so <strong>4 ms CPU per request</strong>; p50 latency is 120 ms; each in-flight request holds ~2 MB.</p>
+<ul>
+<li><strong>Traffic</strong>: 50M ÷ 86,400 ≈ 580 RPS average; × 3 peak factor ≈ <strong>1,750 RPS</strong>.</li>
+<li><strong>CPU</strong>: 1,750 × 0.004 = 7 busy cores; ÷ 0.6 ≈ <strong>12 cores</strong>. To survive losing one AZ, the remaining two must carry 12, so 6 per AZ = <strong>18 cores total</strong>.</li>
+<li><strong>RAM</strong>: 1,750 × 0.12 s = 210 in-flight × 2 MB = 420 MB, plus ~300 MB base per pod × 6 pods.</li>
+<li><strong>Logs</strong>: 50M × 1 KB = 50 GB/day × 30 days × 2 replicas = 3 TB ÷ 0.75 ≈ <strong>4 TB</strong>.</li>
+</ul>
+<blockquote>💡 Real world: the AZ-loss step is the one most people forget, and it is often the biggest number in the plan (+50% with 3 AZs).</blockquote>`,
+        he: `<p>ב-load test יצא ש-pod אחד צורך 0.5 core ב-125 RPS, כלומר <strong>4 ms של CPU לבקשה</strong>. ה-latency ב-p50 הוא 120 ms, וכל בקשה פתוחה מחזיקה בערך 2 MB.</p>
+<ul>
+<li><strong>תעבורה</strong>: 50M חלקי 86,400 זה בערך 580 RPS בממוצע. עם peak factor של 3 מקבלים בערך <strong>1,750 RPS</strong>.</li>
+<li><strong>CPU</strong>: 1,750 כפול 0.004 נותן 7 cores עסוקים. חלקי 0.6 זה בערך <strong>12 cores</strong>. כדי לשרוד נפילה של AZ, שני ה-AZ-ים שנשארים צריכים לשאת 12, כלומר 6 בכל AZ ו-<strong>18 cores בסך הכול</strong>.</li>
+<li><strong>RAM</strong>: 1,750 כפול 0.12 s נותן 210 בקשות פתוחות, וכפול 2 MB זה 420 MB. מוסיפים בערך 300 MB בסיס לכל אחד מ-6 ה-pods.</li>
+<li><strong>לוגים</strong>: 50M כפול 1 KB זה 50 GB ביום. כפול 30 יום וכפול 2 replicas זה 3 TB, וחלקי 0.75 יוצא בערך <strong>4 TB</strong>.</li>
+</ul>
+<blockquote>💡 מהשטח: את שלב נפילת ה-AZ רוב האנשים שוכחים, ולרוב הוא המספר הכי גדול בתוכנית (תוספת של 50% עם 3 AZ-ים).</blockquote>`
+      } },
+    { h: { en: "Read the right metric (most mistakes are here)", he: "לקרוא את המטריקה הנכונה (כאן רוב הטעויות)" },
+      body: {
+        en: `<ul>
+<li><strong>Memory: working set, not usage.</strong> <code>container_memory_usage_bytes</code> includes reclaimable page cache. The OOM-killer acts on <code>container_memory_working_set_bytes</code>. Size the limit to the max working set + 20–30%.</li>
+<li><strong>CPU: watch throttling, not just usage.</strong> A CPU <em>limit</em> is enforced per 100 ms CFS period. A pod averaging 30% can still be throttled during bursts, which shows up as latency. Check <code>container_cpu_cfs_throttled_periods_total</code>.</li>
+<li><strong>CPU: per core, not total.</strong> One hot single-threaded process is 100% of one core but only 12% of an 8-core box (<code>top -H</code>, <code>mpstat -P ALL</code>).</li>
+<li><strong>Disk: size, IOPS and inodes are three separate limits.</strong> AWS gp3 gives 3,000 IOPS / 125 MB/s baseline regardless of size. <code>df -i</code> can be at 100% with free GB left.</li>
+<li><strong>Disk: alert on time-to-full</strong> with <code>predict_linear()</code>, not a static 90%.</li>
+</ul>`,
+        he: `<ul>
+<li><strong>זיכרון: working set, לא usage.</strong> המטריקה <code>container_memory_usage_bytes</code> כוללת page cache שאפשר לפנות. ה-OOM-killer מסתכל על <code>container_memory_working_set_bytes</code>. קובעים limit לפי ה-working set המקסימלי ועוד 20–30%.</li>
+<li><strong>CPU: מסתכלים על throttling, לא רק על usage.</strong> CPU <em>limit</em> נאכף בכל CFS period של 100 ms. גם Pod שממוצע ה-CPU שלו 30% עדיין יכול לחטוף throttling ב-bursts, וזה מתבטא ב-latency. בודקים את <code>container_cpu_cfs_throttled_periods_total</code>.</li>
+<li><strong>CPU: לכל core, לא סך הכול.</strong> תהליך single-threaded חם תופס 100% של core אחד, אבל רק 12% ממכונה עם 8 cores. הפקודה <code>mpstat -P ALL</code> מראה את זה לכל core בנפרד.</li>
+<li><strong>דיסק: גודל, IOPS ו-inodes הם שלוש מגבלות נפרדות.</strong> ב-AWS, נפח gp3 נותן בסיס של 3,000 IOPS ו-125 MB/s בלי קשר לגודל. הפקודה <code>df -i</code> יכולה להראות 100% כשעוד יש GB פנויים.</li>
+<li><strong>דיסק: מתריעים על הזמן עד שהוא מתמלא</strong> עם <code>predict_linear()</code>, לא על סף קבוע של 90%.</li>
+</ul>`
+      } },
+    { h: { en: "Interview logic questions", he: "שאלות היגיון מראיונות" },
+      body: {
+        en: `<ol>
+<li><strong>"70% CPU at 1,000 RPS. Can it take 1,400?"</strong> Linear math says 98%, so no. Past ~80%, queueing makes latency explode, and GC and locks make it worse than linear. Load test to find the knee.</li>
+<li><strong>"Disk is 400/500 GB and grows 20 GB/day. When do you page?"</strong> It's full in 5 days, but page on time-to-full (for example, under 3 days), not on a fixed %. Also check inodes.</li>
+<li><strong>"OOMKilled, but <code>kubectl top</code> showed 60%."</strong> It samples every ~15 s and misses spikes. Off-heap memory counts too (JVM metaspace, direct buffers, native libs). The limit is enforced the instant working set crosses it.</li>
+<li><strong>"CPU is 30% but latency is bad."</strong> CFS throttling, IO wait (<code>wa</code> in <code>vmstat</code>), one hot core, or a lock / connection-pool bottleneck.</li>
+<li><strong>"Double the servers. Does latency halve?"</strong> No. Capacity doubles. Latency only drops if requests were queueing; the floor is service time plus downstream calls.</li>
+<li><strong>"10M users × 2 photos/day × 500 KB, kept 5 years?"</strong> 10 TB/day × 1,825 ≈ 18 PB before redundancy. Say your assumptions out loud, round hard, and conclude: object storage with lifecycle tiers, not disks.</li>
+</ol>`,
+        he: `<ol>
+<li><strong>"שירות על 70% CPU ב-1,000 RPS. הוא יחזיק 1,400?"</strong> חישוב לינארי נותן 98%, אז לא. מעל 80% בערך ה-queueing מפוצץ את ה-latency, ו-GC ונעילות הופכים את זה לגרוע יותר מלינארי. מריצים load test כדי למצוא את נקודת השבירה.</li>
+<li><strong>"הדיסק על 400 מתוך 500 GB וגדל ב-20 GB ביום. מתי מעירים מישהו?"</strong> הוא יתמלא בעוד 5 ימים, אבל מתריעים על הזמן עד שהוא מתמלא (למשל פחות מ-3 ימים), לא על אחוז קבוע. בודקים גם inodes.</li>
+<li><strong>"קיבלנו OOMKilled, אבל <code>kubectl top</code> הראה 60%."</strong> הפקודה דוגמת בערך כל 15 שניות ומפספסת קפיצות. גם זיכרון מחוץ ל-heap נספר, למשל ה-metaspace של ה-JVM או direct buffers. ה-limit נאכף ברגע שה-working set עובר אותו.</li>
+<li><strong>"ה-CPU על 30% אבל ה-latency גרוע."</strong> יש ארבעה חשודים: CFS throttling, IO wait (עמודת <code>wa</code> ב-<code>vmstat</code>), core אחד חם, או צוואר בקבוק של lock או connection pool.</li>
+<li><strong>"מכפילים את מספר השרתים. ה-latency יורד בחצי?"</strong> לא. ה-capacity מוכפל. ה-latency יורד רק אם בקשות חיכו בתור, והרצפה היא זמן השירות ועוד הקריאות ל-downstream.</li>
+<li><strong>"10M משתמשים, 2 תמונות ביום, 500 KB לתמונה, שמירה ל-5 שנים?"</strong> מקבלים 10 TB ביום, וכפול 1,825 יוצא בערך 18 PB לפני redundancy. אומרים את ההנחות בקול, מעגלים בנדיבות ומסיקים: object storage עם lifecycle tiers, לא דיסקים.</li>
+</ol>`
+      } }
+  ],
+  diagram: "load test 1 pod -> cost per request (CPU ms, MB, IO)\n      x peak RPS\n      / target utilization (0.6)\n      + survive 1 AZ loss (N+1)\n      = cores, RAM, disk, IOPS",
+  handsOn: [
+    { cmd: "k6 run --vus 200 --duration 10m load.js", what: { en: "Drive steady load at one pod and note its RPS while you watch the metrics below.", he: "מייצר עומס קבוע על pod אחד. רשום את ה-RPS בזמן שאתה עוקב אחרי המטריקות למטה." } },
+    { cmd: "sum(rate(container_cpu_usage_seconds_total{container=\"api\"}[5m])) / sum(rate(http_requests_total{app=\"api\"}[5m]))", what: { en: "PromQL: CPU-seconds per request. Multiply by 1000 for CPU ms per request.", he: "שאילתת PromQL שנותנת CPU-seconds לבקשה. כפול 1000 מקבלים CPU ms לבקשה." } },
+    { cmd: "max_over_time(container_memory_working_set_bytes{container=\"api\"}[1d])", what: { en: "Peak working set over a day: the number the memory limit must beat.", he: "ה-working set המקסימלי ביום: המספר שה-memory limit צריך להיות מעליו." } },
+    { cmd: "vmstat 1; iostat -x 1; df -i", what: { en: "r > cores means CPU saturation; wa means IO wait; %util and await show disk saturation; df -i shows inodes.", he: "עמודת r גדולה ממספר ה-cores אומרת שה-CPU רווי, ו-wa הוא IO wait. העמודות %util ו-await מראות רוויה של הדיסק. הפקודה df -i מראה כמה inodes תפוסים." } },
+    { cmd: "fio --name=t --rw=randwrite --bs=4k --iodepth=32 --size=2G --runtime=60 --time_based", what: { en: "Measure what the disk can actually do (IOPS and latency) before trusting the datasheet.", he: "מודד מה הדיסק באמת מסוגל (IOPS ו-latency) לפני שסומכים על הדף של היצרן." } }
+  ],
+  mnemonic: {
+    en: "Measure one, multiply by peak, divide by 0.6, add an AZ.",
+    he: "מודדים אחד, מכפילים ב-peak, מחלקים ב-0.6 ומוסיפים AZ."
+  },
+  pitfalls: [
+    { en: "Sizing from the average or from configured requests instead of measured peak usage.", he: "לתכנן לפי הממוצע או לפי ה-requests שהוגדרו, במקום לפי שימוש אמיתי ב-peak." },
+    { en: "Load testing with a warm cache and a tiny dataset; production has a cold cache and a 2 TB table.", he: "להריץ load test עם cache חם ו-dataset קטנטן, כשב-production יש cache קר וטבלה של 2 TB." },
+    { en: "Reading memory usage (with page cache) instead of working set, then setting limits that OOMKill.", he: "לקרוא memory usage (כולל page cache) במקום working set, ואז לקבוע limits שגורמים ל-OOMKill." },
+    { en: "Sizing disk by GB only: a small gp2 volume burns its burst credits and IO falls off a cliff.", he: "לתכנן דיסק רק לפי GB: נפח gp2 קטן שורף את ה-burst credits וה-IO צונח." }
+  ],
+  interview: [
+    { q: { en: "How would you decide the CPU and memory requests for a new service?", he: "איך תקבע CPU ו-memory requests לשירות חדש?" },
+      a: { en: "Load test one pod to get CPU-seconds and memory per request, then size requests from p95 usage at expected peak and memory limits from max working set + 20–30%. Run it for a week in prod with VPA in recommendation mode and adjust. Avoid tight CPU limits on latency-sensitive services because of throttling.", he: "מריצים load test על pod אחד כדי לקבל CPU-seconds וזיכרון לבקשה. את ה-requests קובעים לפי p95 של השימוש ב-peak הצפוי, ואת ה-memory limit לפי ה-working set המקסימלי ועוד 20–30%. מריצים שבוע ב-prod עם VPA במצב recommendation ומתקנים. בשירותים רגישים ל-latency נמנעים מ-CPU limit צפוף בגלל throttling." } },
+    { q: { en: "Your average CPU is 25% but p99 latency is high. What do you check?", he: "ה-CPU הממוצע על 25% אבל ה-latency ב-p99 גבוה. מה תבדוק?" },
+      a: { en: "CFS throttled periods (limit too low for bursts), per-core usage for a single hot thread, IO wait and disk await, GC pauses, and saturation of pools (DB connections, thread pool) via Little's Law: in-flight = RPS × latency versus pool size.", he: "בודקים CFS throttled periods (limit נמוך מדי ל-bursts), שימוש לכל core כדי למצוא thread חם אחד, IO wait ו-await של הדיסק, GC pauses, ורוויה של pools (חיבורי DB, thread pool). לפי Little's Law, מספר הבקשות הפתוחות הוא RPS כפול latency, ומשווים אותו לגודל ה-pool." } }
+  ],
+  quiz: [
+    { q: { en: "A pod uses 1.2 cores at 300 RPS. How many cores for 2,000 RPS at a 65% utilization target?", he: "Pod צורך 1.2 cores ב-300 RPS. כמה cores צריך ל-2,000 RPS עם יעד utilization של 65%?" },
+      options: [ { en: "8", he: "8" }, { en: "~13", he: "בערך 13" }, { en: "~20", he: "בערך 20" }, { en: "6.7", he: "6.7" } ],
+      answer: 1,
+      explain: { en: "1.2 ÷ 300 = 4 ms/req. 2,000 × 0.004 = 8 busy cores; 8 ÷ 0.65 ≈ 12.3, so ~13.", he: "1.2 חלקי 300 זה 4 ms לבקשה. 2,000 כפול 0.004 נותן 8 cores עסוקים, וחלקי 0.65 יוצא בערך 12.3, כלומר 13." } },
+    { q: { en: "Which metric does the OOM-killer effectively act on in a container?", he: "על איזו מטריקה ה-OOM-killer מגיב בפועל בקונטיינר?" },
+      options: [ { en: "container_memory_usage_bytes", he: "container_memory_usage_bytes" }, { en: "container_memory_working_set_bytes", he: "container_memory_working_set_bytes" }, { en: "Node free memory", he: "הזיכרון הפנוי ב-node" }, { en: "JVM heap used", he: "ה-heap בשימוש ב-JVM" } ],
+      answer: 1,
+      explain: { en: "Usage includes reclaimable page cache; working set is what can't be reclaimed, and it is what kubelet and the OOM-killer compare to the limit.", he: "ה-usage כולל page cache שאפשר לפנות. ה-working set הוא מה שאי אפשר לפנות, ואותו ה-kubelet וה-OOM-killer משווים ל-limit." } },
+    { q: { en: "Latency is 200 ms at a peak of 500 RPS across 3 pods with a DB pool of 20 each. What happens?", he: "יש 3 pods, ולכל אחד DB pool של 20 חיבורים. ב-peak מגיעים 500 RPS וה-latency הוא 200 ms. מה קורה?" },
+      options: [ { en: "Fine: 60 connections is plenty", he: "בסדר: 60 חיבורים זה מספיק" }, { en: "Requests queue for connections: ~100 are in flight but only 60 connections exist", he: "בקשות מחכות לחיבור: בערך 100 בקשות פתוחות אבל יש רק 60 חיבורים" }, { en: "The DB runs out of disk", he: "ל-DB נגמר הדיסק" }, { en: "CPU throttling", he: "יש CPU throttling" } ],
+      answer: 1,
+      explain: { en: "Little's Law: 500 × 0.2 = 100 concurrent. If each holds a connection, 60 isn't enough and latency climbs further.", he: "לפי Little's Law, 500 כפול 0.2 נותן 100 בקשות בו-זמנית. אם כל אחת מחזיקה חיבור, 60 לא מספיק וה-latency ממשיך לטפס." } },
+    { q: { en: "Disk has 100 GB free and grows 20 GB/day. Best alert?", he: "לדיסק נשארו 100 GB פנויים והוא גדל ב-20 GB ביום. מה ההתראה הכי טובה?" },
+      options: [ { en: "Alert at 95% used", he: "התראה ב-95% שימוש" }, { en: "Alert when predicted full within ~3 days (predict_linear)", he: "התראה כשהחיזוי אומר שהוא יתמלא תוך בערך 3 ימים (predict_linear)" }, { en: "Alert at 50% used", he: "התראה ב-50% שימוש" }, { en: "No alert; autoscaling handles it", he: "בלי התראה, autoscaling יטפל בזה" } ],
+      answer: 1,
+      explain: { en: "A static threshold fires too late on fast growth and too early on slow growth. Time-to-full gives a human enough time to act.", he: "סף קבוע קופץ מאוחר מדי כשהגדילה מהירה ומוקדם מדי כשהיא איטית. זמן עד מילוי נותן לבן אדם מספיק זמן לפעול." } }
+  ],
+  playground: "resources",
+  related: ["pr-sizing", "rel-capacity-planning", "k8s-resources", "linux-disks-storage", "linux-perf-tracing"]
+});
