@@ -486,7 +486,7 @@
       el.innerHTML = `<div class="sim-controls">
         <label>${t("DR strategy", "אסטרטגיית DR")}<select id="st">${Object.entries(S).map(([k, v]) => `<option value="${k}">${v.n}</option>`).join("")}</select></label>
         ${slider("bf", t("Backup every (hours)", "גיבוי כל (שעות)"), 1, 24, 1, 24)}
-        <label>${t("Business RPO target", "יעד RPO עסקי")}<select id="rpoT"><option value="1440">24h</option><option value="60">1h</option><option value="15" selected>15 min</option><option value="1">~0</option></select></label>
+        <label>${t("Business RPO target", "יעד RPO עסקי")}<select id="rpoT" dir="ltr"><option value="1440">24h</option><option value="60">1h</option><option value="15" selected>15 min</option><option value="1">~0</option></select></label>
         <label>${t("Business RTO target", "יעד RTO עסקי")}<select id="rtoT"><option value="1440">24h</option><option value="240">4h</option><option value="60" selected>1h</option><option value="5">5 min</option></select></label>
         <label>${t("Monthly infra cost (single region) $", "עלות תשתית חודשית (region אחד) $")}<input type="number" id="base" value="20000" style="width:110px"></label>
         <button class="btn bad" id="boom">💥 ${t("Region goes down!", "ה-Region נופל!")}</button></div>
@@ -610,7 +610,7 @@
         if (!$("#auto").checked) msg = t("🧱 Fixed capacity: either you over-provision for the peak (paying all night) or you drop traffic at peak. Turn HPA on.", "🧱 קיבולת קבועה: או שמקצים ל-peak (ומשלמים כל הלילה) או שזורקים תעבורה ב-peak. הדלק HPA.");
         else if (d > 0 && starting.length) msg = t("⏳ The autoscaler reacted, but new pods take time to start. Scaling is never instant: lower the target %, keep more min replicas before known events, make startup faster.", "⏳ ה-autoscaler הגיב, אבל pods חדשים לוקחים זמן לעלות. Scaling אף פעם לא מיידי: הורד את יעד ה-%, החזיקו יותר min replicas לפני אירועים ידועים, קצרו את זמן העלייה.");
         else if (d > 0 && ready >= max) msg = t("🧢 Hit max replicas — the ceiling protects your budget (and your DB!), but traffic above it is dropped.", "🧢 הגענו ל-max replicas — התקרה מגינה על התקציב (ועל ה-DB!), אבל תעבורה מעליה נזרקת.");
-        else msg = t("💡 HPA formula: desired = ceil(current × currentUtil / targetUtil). Lower target = more headroom = more cost. Scale-down is deliberately slow to avoid flapping.", "💡 נוסחת HPA: desired = ceil(current × currentUtil / targetUtil). יעד נמוך = יותר headroom = יותר עלות. ה-scale down איטי בכוונה כדי למנוע flapping.");
+        else msg = t("💡 HPA formula: desired = ceil(current × currentUtil / targetUtil). Lower target = more headroom = more cost. Scale-down is deliberately slow to avoid flapping.", "💡 נוסחת HPA: <code>desired = ceil(current × currentUtil / targetUtil)</code>. יעד נמוך = יותר headroom = יותר עלות. ה-scale down איטי בכוונה כדי למנוע flapping.");
         $("#lesson").innerHTML = msg;
       }, 200);
       return () => clearInterval(tick);

@@ -361,7 +361,7 @@ drwxr-xr-x deploy deploy config
       options: [ { en: "755", he: "755" }, { en: "644", he: "644" }, { en: "600", he: "600" }, { en: "022", he: "022" } ],
       answer: 1, explain: { en: "Files start from 666 (no x by default) minus 022 = 644. Directories start at 777 → 755.", he: "קבצים מתחילים מ-666 (בלי x כברירת מחדל) פחות 022 = 644. תיקיות מתחילות מ-777 ← 755." } },
     { q: { en: "Why does 'sudo echo 1 > /proc/sys/net/ipv4/ip_forward' fail?", he: "למה 'sudo echo 1 > /proc/sys/net/ipv4/ip_forward' נכשל?" },
-      options: [ { en: "echo isn't allowed under sudo", he: "אסור להריץ echo עם sudo" }, { en: "The redirection is performed by your non-root shell before sudo runs", he: "ה-redirect מתבצע ע\"י ה-shell שלך (לא root) לפני ש-sudo רץ" }, { en: "/proc is read-only", he: "‏/proc הוא read-only" }, { en: "You need chmod +x on the file", he: "צריך chmod +x על הקובץ" } ],
+      options: [ { en: "echo isn't allowed under sudo", he: "אסור להריץ echo עם sudo" }, { en: "The redirection is performed by your non-root shell before sudo runs", he: "ה-redirect מתבצע ע\"י ה-shell שלך (לא root) לפני ש-sudo רץ" }, { en: "/proc is read-only", he: "/proc הוא read-only" }, { en: "You need chmod +x on the file", he: "צריך chmod +x על הקובץ" } ],
       answer: 1, explain: { en: "Only echo runs as root. Use: echo 1 | sudo tee /proc/sys/net/ipv4/ip_forward (or sysctl -w).", he: "רק echo רץ כ-root. תשתמש ב: echo 1 | sudo tee /proc/sys/net/ipv4/ip_forward (או sysctl -w)." } }
   ],
   playground: "terminal",
@@ -603,7 +603,7 @@ INFRA.lessons.push({
   icon: "⚙️",
   level: 2,
   minutes: 12,
-  title: { en: "Processes: ps, kill, signals, jobs, /proc, strace", he: "תהליכים: ps, kill, signals, jobs, ‏/proc, strace" },
+  title: { en: "Processes: ps, kill, signals, jobs, /proc, strace", he: "תהליכים: ps, kill, signals, jobs, /proc, strace" },
   tldr: {
     en: "Find it with ps/pgrep, ask it nicely with SIGTERM, force it with SIGKILL only as a last resort, and when it's misbehaving silently, look inside with /proc, lsof and strace.",
     he: "מוצאים עם ps/pgrep, מבקשים יפה עם SIGTERM, מכריחים עם SIGKILL רק כמוצא אחרון, וכשמשהו מתנהג מוזר בשקט — מציצים פנימה עם ‎/proc, ‏lsof ו-strace."
@@ -2186,7 +2186,7 @@ $ top        # then: 1 = per-CPU, M = sort by mem, P = by CPU, c = full cmd, H =
 [
   ["inode", "The on-disk record holding a file's metadata (type, owner, permissions, timestamps, size, block pointers) — everything except its name. Check usage with df -i.", "הרשומה על הדיסק שמחזיקה את המטא-דאטה של קובץ (סוג, owner, הרשאות, timestamps, גודל, מצביעים לבלוקים) — הכל חוץ מהשם. בודקים שימוש עם df -i.", "linux-disks-storage"],
   ["Symlink", "A special file containing a path to another file or directory (ln -s). Can cross filesystems; dangles if the target is removed.", "קובץ מיוחד שמכיל נתיב לקובץ או תיקייה אחרים (ln -s). יכול לחצות filesystems; נשאר תלוי באוויר אם היעד נמחק.", "linux-files-navigation"],
-  ["/proc", "A virtual filesystem exposing live kernel and per-process information (/proc/PID/fd, /proc/loadavg, /proc/meminfo). Nothing is stored on disk.", "filesystem וירטואלי שחושף מידע חי מה-kernel ועל כל תהליך (‏/proc/PID/fd, ‏/proc/loadavg, ‏/proc/meminfo). שום דבר לא שמור על הדיסק.", "linux-files-navigation"],
+  ["/proc", "A virtual filesystem exposing live kernel and per-process information (/proc/PID/fd, /proc/loadavg, /proc/meminfo). Nothing is stored on disk.", "filesystem וירטואלי שחושף מידע חי מה-kernel ועל כל תהליך (/proc/PID/fd, /proc/loadavg, /proc/meminfo). שום דבר לא שמור על הדיסק.", "linux-files-navigation"],
   ["Permission bits (rwx)", "Read/write/execute flags for user, group and other; numeric r=4, w=2, x=1 (e.g. 755, 644, 600). On directories x means 'may traverse'.", "דגלי קריאה/כתיבה/הרצה ל-user, ‏group ו-other; במספרים r=4, ‏w=2, ‏x=1 (למשל 755, ‏644, ‏600). על תיקייה x אומר 'מותר לעבור דרכה'.", "linux-permissions-users"],
   ["umask", "A mask of permission bits removed from newly created files and dirs. umask 022 → files 644, dirs 755; 077 → private by default.", "מסכה של ביטי הרשאות שמורדים מקבצים ותיקיות חדשים. ‏umask 022 ← קבצים 644, תיקיות 755; ‏077 ← פרטי כברירת מחדל.", "linux-permissions-users"],
   ["sudo", "Runs a single command as root (or another user) per rules in /etc/sudoers, logging every use. Edit rules only with visudo.", "מריץ פקודה אחת כ-root (או כמשתמש אחר) לפי חוקים ב-/etc/sudoers, ומתעד כל שימוש. עורכים חוקים רק עם visudo.", "linux-permissions-users"],

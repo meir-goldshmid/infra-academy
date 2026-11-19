@@ -21,6 +21,14 @@
   const $ = (sel, root) => (root || document).querySelector(sel);
   const $$ = (sel, root) => Array.from((root || document).querySelectorAll(sel));
   const today = () => new Date().toISOString().slice(0, 10);
+  const fmtMonth = (iso) => { try { return new Date(iso + "T00:00:00Z").toLocaleDateString(S.lang === "he" ? "he-IL" : "en-US", { month: "short", year: "numeric", timeZone: "UTC" }); } catch (e) { return iso; } };
+  // searches with no results, saved so they can be turned into lessons (/teach)
+  function recordMiss(q) {
+    q = String(q || "").trim().replace(/\s+/g, " ").slice(0, 80);
+    if (q.length < 3) return;
+    S.misses = (S.misses || []).filter(m => m.q.toLowerCase() !== q.toLowerCase() && !q.toLowerCase().startsWith(m.q.toLowerCase()));
+    S.misses.unshift({ q, at: today() }); S.misses = S.misses.slice(0, 40); save();
+  }
   // quiz/glossary strings: render inline HTML only when they actually contain simple tags
   const rich = (s) => /<\/?(code|strong|em|b|i|br)[\s>\/]/.test(String(s)) ? String(s) : esc(s);
   const strip = (html) => String(html || "").replace(/<[^>]+>/g, " ").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&amp;/g, "&").replace(/\s+/g, " ");
@@ -602,6 +610,8 @@
     const pp = pathPos(l);
     const tr = trackOf(l.track) || { title: { en: "", he: "" }, icon: "" };
     const idx = lessons.indexOf(l); const prev = lessons[idx - 1]; const next = lessons[idx + 1];
+    const upd = (I.lessonDates || {})[l.id];
+    const stale = upd && (Date.now() - new Date(upd).getTime()) > 365 * 864e5;
     const secs = [];
     const sec = (key, title, html, cls) => { secs.push([key, title]); return `<section id="sec-${key}" class="${cls || ""}"><h2>${title}</h2>${html}</section>`; };
     let body = "";
@@ -618,6 +628,8 @@
     if (l.pitfalls && l.pitfalls.length) body += sec("pit", "🕳️ " + t("pitfalls"), l.pitfalls.map(p => `<div class="pitfall">${L(p)}</div>`).join(""));
     if (l.interview && l.interview.length) body += sec("int", "🎤 " + t("interview"), l.interview.map(q => `<details class="qa"><summary>${L(q.q)}</summary><div style="margin-top:8px">${L(q.a)}</div></details>`).join(""));
     if (l.quiz && l.quiz.length) body += sec("quiz", "📝 " + t("quiz"), `<div id="quizBox"></div>`);
+    const refs = ((I.refs || {})[l.id] || []).filter(r => /^https:\/\//.test(r.u));
+    if (refs.length) body += sec("refs", "📚 " + t("goDeeper"), `<p class="muted" style="margin-top:0">${t("goDeeperSub")}</p><ul class="refs">${refs.map(r => `<li><a href="${esc(r.u)}" target="_blank" rel="noopener noreferrer" dir="ltr">${esc(r.t)}</a> <small class="muted" dir="ltr">${esc(r.u.replace(/^https:\/\/(www\.)?/, "").split("/")[0])}</small></li>`).join("")}</ul>`);
     body += sec("notes", "✍️ " + t("notes"), `<textarea class="notes" id="notes" placeholder="${esc(t("notesPh"))}">${esc(S.notes[l.id] || "")}</textarea>`);
     body += `<div class="card ask-box" style="margin-top:20px"><b>🤖 ${t("askClaude")}</b><p class="muted" style="margin:.3em 0 .6em">${t("askClaudeSub")}</p>
       <div class="row"><input id="askQ" type="text" style="flex:1;min-width:200px;padding:8px 10px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--text);font:inherit" placeholder="${S.lang === "he" ? "מה לא ברור? (אופציונלי)" : "What's unclear? (optional)"}"><button class="btn primary" id="askCopy">${t("copyPrompt")}</button></div></div>`;
@@ -638,7 +650,8 @@
       <div class="lesson-layout">
         <article class="lesson">
           <h1><span>${l.icon || "📄"}</span><span>${esc(L(l.title))}</span></h1>
-          <div class="row" style="margin-bottom:14px"><span class="tag">${I.ui.level[S.lang][l.level || 1]}</span><span class="tag">⏱ ${l.minutes || 5} ${t("min")}</span>${S.done[l.id] ? `<span class="tag" style="color:var(--good)">✓ ${t("done")}</span>` : ""}</div>
+          <div class="row" style="margin-bottom:14px"><span class="tag">${I.ui.level[S.lang][l.level || 1]}</span><span class="tag">⏱ ${l.minutes || 5} ${t("min")}</span>${S.done[l.id] ? `<span class="tag" style="color:var(--good)">✓ ${t("done")}</span>` : ""}${upd ? `<span class="tag" title="${esc(upd)}">📅 ${t("updatedOn")} ${esc(fmtMonth(upd))}</span>` : ""}</div>
+          ${stale ? `<div class="card" style="margin-bottom:14px;border-color:var(--warn,#e67700)">⚠️ ${t("maybeOutdated")}</div>` : ""}
           <details class="toc-m"><summary>📑 ${t("onThisPage")}</summary>${secs.map(([k, ti]) => `<a href="javascript:void 0" data-sec="${k}">${ti.replace(/<[^>]+>.*$/, "")}</a>`).join("")}</details>
           ${body}
         </article>
@@ -818,6 +831,7 @@ If the answer is worth keeping, also add it as a new lesson (or extend this one)
       <div class="card"><h3 style="margin-top:0">1️⃣ ${he ? "חיפוש בבסיס הידע (מיידי)" : "Search the knowledge base (instant)"}</h3>
         <p>${he ? "כל שיעור, מונח, פקודה ותרחיש. לחץ <kbd>/</kbd> בכל מקום." : "Every lesson, term, command and scenario. Press <kbd>/</kbd> anywhere."}</p>
         <button class="btn primary" id="askSearch">🔎 ${t("searchHint")}</button></div>
+      <div class="card" style="margin-top:14px" id="missCard"></div>
       <div class="card" style="margin-top:14px"><h3 style="margin-top:0">2️⃣ ${he ? "Claude Code בתיקיית הפרויקט — המורה הפרטי שלך" : "Claude Code in this project — your private tutor"}</h3>
         <p>${he ? "הפרויקט מגיע עם קובץ CLAUDE.md ו-skills ש\"מלמדים\" את Claude להיות מורה תשתיות. כל תשובה טובה יכולה להפוך לשיעור קבוע באפליקציה — כך הידע נצבר אצלך ולא נעלם בהיסטוריית צ'אט." : "The project ships a CLAUDE.md and skills that turn Claude into an infra tutor. Any good answer can become a permanent lesson in this app — knowledge accumulates here instead of vanishing in chat history."}</p>
         <div class="cmd"><code>cd "${folder}" &amp;&amp; claude</code><button class="btn small" data-copy='cd "${folder}" && claude'>${t("copy")}</button><div class="what">${he ? "פותחים את Claude Code בתיקייה" : "Open Claude Code in the folder"}</div></div>
@@ -840,6 +854,18 @@ If the answer is worth keeping, also add it as a new lesson (or extend this one)
           <button class="btn primary" id="pbCopy">${t("copyPrompt")}</button>
         </div></div>`;
     $("#askSearch").onclick = openSearch;
+    const drawMisses = () => {
+      const ms = S.misses || [];
+      $("#missCard").innerHTML = `<h3 style="margin-top:0">🕳️ ${t("missesTitle")}</h3><p class="muted">${t("missesSub")}</p>` +
+        (ms.length ? `<div class="chips" style="margin-bottom:10px">${ms.map(m => `<span class="tag" dir="auto" title="${esc(m.at)}">${esc(m.q)}</span>`).join(" ")}</div>
+          <div class="row"><button class="btn primary" id="missAll">📋 ${t("copyAllTeach")}</button><button class="btn" id="missClear">${t("clearList")}</button></div>`
+          : `<p class="muted" style="margin:0">${t("missesNone")}</p>`);
+      if (ms.length) {
+        $("#missAll").onclick = () => copy(`/teach These searches found nothing in Infra Academy. For each one, check content/ first; if it's really missing, write a lesson (or add a glossary term if a lesson is overkill):\n${ms.map(m => `- ${m.q}`).join("\n")}`);
+        $("#missClear").onclick = () => { S.misses = []; save(); drawMisses(); };
+      }
+    };
+    drawMisses();
     $$("[data-copy]", app).forEach(b => b.onclick = () => copy(b.dataset.copy));
     $("#pbCopy").onclick = () => {
       const styles = {
@@ -973,8 +999,15 @@ If the answer is worth keeping, also add it as a new lesson (or extend this one)
     const marks = [...new Set(altsPer.flat().map(a => a.w).filter(w => w.length > 1))].sort((a, b) => b.length - a.length);
     const hl = (s) => { let h = esc(s); if (marks.length) h = h.replace(new RegExp("(" + marks.map(w => esc(w).replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("|") + ")", "gi"), "<mark>$1</mark>"); return h; };
     $("#searchResults").innerHTML = (note ? `<p class="muted" style="padding:6px 12px;margin:0">${note}</p>` : "") + (results.length ? results.map((r, i) => `<a class="sr ${i === 0 ? "sel" : ""}" href="${r.e.href}">${r.e.type} ${hl(r.e.title())}<small>${hl(String(r.e.sub()).slice(0, 140))}</small></a>`).join("")
-      : `<p class="muted" style="padding:12px">${t("noResults")}</p>`);
+      : `<div style="padding:12px"><p class="muted" style="margin:0 0 8px">${t("noResults")}</p><button class="btn small primary" id="missCopy">📋 ${t("missTeach")}</button></div>`);
+    clearTimeout(missTimer);
+    if (!results.length) {
+      const raw = q;
+      missTimer = setTimeout(() => recordMiss(raw), 1200);
+      const b = $("#missCopy"); if (b) b.onclick = (e) => { e.preventDefault(); e.stopPropagation(); recordMiss(raw); copy(`/teach ${raw.trim()}`); };
+    }
   }
+  let missTimer = null;
   function openSearch() { $("#searchModal").hidden = false; const i = $("#searchInput"); i.value = ""; doSearch(""); setTimeout(() => i.focus(), 10); }
   function closeSearch() { $("#searchModal").hidden = true; }
   $("#searchBtn").onclick = openSearch;

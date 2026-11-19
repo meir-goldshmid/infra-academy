@@ -1027,6 +1027,31 @@ ${SC_KYVERNO}
 ${SC_PIN}
 <p>Pinning בלי עדכונים מקפיא פגיעויות במקום, אז מצמידים לזה Renovate/Dependabot, שמעלים את ה-digest וה-SHA ב-PRs עם changelogs – ונותנים ל-CI (סריקה + טסטים) לשמור על ה-merge.</p>`
       }
+    },
+    {
+      h: { en: "Dependency confusion, in-toto, Scorecard and SSDF", he: "Dependency confusion, in-toto, Scorecard ו-SSDF" },
+      body: {
+        en: `<p><strong>Dependency confusion.</strong> Your code imports an internal package, say <code>acme-billing</code>. An attacker publishes <code>acme-billing</code> with a higher version to the public registry (npm, PyPI). If the build resolver checks both registries and picks the highest version, it installs the attacker's package and runs its install script inside your CI. In 2021 a researcher got code running inside dozens of large companies this way. Defenses:</p>
+<ul>
+<li>Use a <strong>scope or namespace you own</strong> (<code>@acme/billing</code> on npm) and map that scope to your private registry only.</li>
+<li>Route all installs through <strong>one proxy registry</strong> (Artifactory, Nexus, CodeArtifact) that never falls back to the public registry for internal names.</li>
+<li>Pip: never use <code>--extra-index-url</code> for private packages (it merges indexes); use <code>--index-url</code> to the proxy, and <code>--require-hashes</code> with a lock file.</li>
+<li>Commit lock files and install with <code>npm ci</code>, so CI never resolves versions on its own.</li>
+</ul>
+<p><strong>in-toto</strong> is the framework underneath SLSA provenance. It defines a signed <em>layout</em> (which steps must happen, by whom) and signed <em>links</em> (what each step actually consumed and produced), so a verifier can prove the artifact came out of exactly that chain. Today you mostly meet it as the attestation format: the JSON that <code>cosign attest</code> stores is an in-toto statement with a predicate (SLSA provenance, an SBOM, a scan result).</p>
+<p><strong>OpenSSF Scorecard</strong> grades an open-source repo on about 18 automated checks: branch protection, code review, pinned dependencies, dangerous workflow patterns, signed releases, maintained or not. Run it on dependencies you're about to adopt and on your own repos (<code>scorecard --repo=github.com/org/repo</code>), and gate new dependencies on a minimum score.</p>
+<p><strong>NIST SSDF (SP 800-218)</strong> is the checklist regulators and big customers refer to: prepare the organization, protect the software, produce well-secured software, respond to vulnerabilities. US federal suppliers attest to it, and the EU Cyber Resilience Act asks for similar practices plus SBOMs. Map your controls (SBOM, signing, scanning, review) to its practice IDs once, and that mapping answers most customer security questionnaires.</p>`,
+        he: `<p><strong>Dependency confusion.</strong> הקוד שלך מייבא package פנימי, נגיד <code>acme-billing</code>. תוקף מפרסם package באותו שם עם גרסה גבוהה יותר ב-registry הציבורי (npm, PyPI). אם ה-resolver ב-build בודק את שני ה-registries ובוחר את הגרסה הגבוהה, הוא מתקין את ה-package של התוקף ומריץ את ה-install script שלו בתוך ה-CI שלך. ב-2021 חוקר הצליח להריץ קוד ככה בתוך עשרות חברות גדולות. ההגנות:</p>
+<ul>
+<li>משתמשים ב-<strong>scope או namespace שבבעלותך</strong> (<code>@acme/billing</code> ב-npm) וממפים את ה-scope הזה רק ל-registry הפרטי.</li>
+<li>מעבירים כל התקנה דרך <strong>proxy registry אחד</strong> (Artifactory, Nexus, CodeArtifact) שלעולם לא נופל ל-registry הציבורי בשמות פנימיים.</li>
+<li>ב-pip: אף פעם לא משתמשים ב-<code>--extra-index-url</code> ל-packages פרטיים (הוא ממזג indexes). משתמשים ב-<code>--index-url</code> מול ה-proxy, וב-<code>--require-hashes</code> עם lock file.</li>
+<li>עושים commit ל-lock files ומתקינים עם <code>npm ci</code>, כדי שה-CI אף פעם לא יבחר גרסאות בעצמו.</li>
+</ul>
+<p><strong>in-toto</strong> הוא ה-framework שמתחת ל-SLSA provenance. הוא מגדיר <em>layout</em> חתום (אילו צעדים חייבים לקרות ומי מבצע אותם) ו-<em>links</em> חתומים (מה כל צעד באמת קיבל והוציא), כך שמי שמאמת יכול להוכיח שה-artifact יצא בדיוק מהשרשרת הזו. היום פוגשים אותו בעיקר כפורמט ה-attestation: ה-JSON ש-<code>cosign attest</code> שומר הוא in-toto statement עם predicate (SLSA provenance, SBOM או תוצאת סריקה).</p>
+<p><strong>OpenSSF Scorecard</strong> נותן ציון ל-repo של קוד פתוח לפי כ-18 בדיקות אוטומטיות: branch protection, code review, dependencies מוצמדים, דפוסי workflow מסוכנים, releases חתומים, והאם הפרויקט מתוחזק. מריצים אותו על dependencies לפני שמאמצים אותם ועל ה-repos שלך (<code>scorecard --repo=github.com/org/repo</code>), וקובעים ציון מינימום ל-dependency חדש.</p>
+<p><strong>NIST SSDF (SP 800-218)</strong> היא רשימת התיוג שרגולטורים ולקוחות גדולים מפנים אליה: להכין את הארגון, להגן על התוכנה, לייצר תוכנה מאובטחת ולהגיב לפגיעויות. ספקים של ממשל ארה"ב מצהירים עליה, וה-Cyber Resilience Act של האיחוד האירופי דורש פרקטיקות דומות ועוד SBOM. ממפים פעם אחת את הבקרות שלך (SBOM, חתימות, סריקה, review) למזהי הפרקטיקות שלה, והמיפוי הזה עונה על רוב שאלוני האבטחה של לקוחות.</p>`
+      }
     }
   ],
   diagram: "git (signed, reviewed) -> CI (ephemeral runner, OIDC) -> image@sha256 -> [cosign sign | SBOM attest | SLSA provenance] -> Rekor log\nkubectl apply -> Kyverno verifyImages (identity+issuer+provenance) -> mutate tag->digest -> admitted | denied",

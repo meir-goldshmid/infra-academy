@@ -168,5 +168,15 @@ INFRA.ui = {
   randomLesson: { en: "Surprise me 🎲", he: "תפתיע אותי 🎲" },
   notes: { en: "My notes", he: "ההערות שלי" },
   notesPh: { en: "Write it in your own words — that's how it sticks. Saved locally.", he: "כתוב במילים שלך — ככה זה נדבק. נשמר מקומית בדפדפן." },
-  langName: { en: "עברית", he: "English" }
+  langName: { en: "עברית", he: "English" },
+  updatedOn: { en: "Updated", he: "עודכן" },
+  maybeOutdated: { en: "May be outdated: last updated over a year ago. Check the sources below, or run /refresh in Claude Code.", he: "אולי לא עדכני: השיעור לא עודכן יותר משנה. בדוק במקורות למטה, או הרץ /refresh ב-Claude Code." },
+  goDeeper: { en: "Go deeper: official sources", he: "להעמיק: מקורות רשמיים" },
+  goDeeperSub: { en: "The docs this lesson is based on. Use them for exact flags, limits and the latest version.", he: "התיעוד שהשיעור מבוסס עליו. כאן תמצא דגלים מדויקים, מגבלות והגרסה העדכנית." },
+  missTeach: { en: "Copy as /teach for Claude Code", he: "העתק בקשת שיעור ל-Claude Code" },
+  missesTitle: { en: "Searches that found nothing", he: "חיפושים שלא מצאו כלום" },
+  missesSub: { en: "Every search with no results is saved here (only in this browser). Copy them to Claude Code and they become lessons.", he: "כל חיפוש בלי תוצאות נשמר כאן (רק בדפדפן הזה). מעתיקים אותם ל-Claude Code והם הופכים לשיעורים." },
+  missesNone: { en: "Nothing yet. When a search finds nothing, it shows up here.", he: "עוד אין. כשחיפוש לא ימצא כלום, הוא יופיע כאן." },
+  copyAllTeach: { en: "Copy all as /teach", he: "העתק הכול ל-Claude Code" },
+  clearList: { en: "Clear", he: "ניקוי" }
 };

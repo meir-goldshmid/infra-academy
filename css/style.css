@@ -40,6 +40,8 @@ a:hover { text-decoration: underline; }
 button { font: inherit; color: inherit; cursor: pointer; }
 code, pre, kbd, .mono { font-family: var(--mono); font-size: .9em; }
 :not(pre) > code { background: var(--surface-2); padding: .1em .35em; border-radius: 5px; direction: ltr; unicode-bidi: isolate; }
+/* Hebrew: keep an inline command in one box, so a wrapped "aws autoscaling suspend-processes …" doesn't end up split across both ends of a line */
+html[dir="rtl"] :not(pre):not(.cmd) > code { display: inline-block; max-width: 100%; }
 pre { background: var(--code-bg); color: var(--code-text); padding: 14px 16px; border-radius: 10px; overflow-x: auto; direction: ltr; text-align: left; line-height: 1.5; }
 table { border-collapse: collapse; width: 100%; margin: 10px 0; font-size: .93em; display: block; overflow-x: auto; }
 th, td { border: 1px solid var(--border); padding: 6px 10px; text-align: start; vertical-align: top; }
@@ -148,7 +150,7 @@ h3 { font-size: 1.1rem; margin: 1.2em 0 .4em; }
 .section-body p:first-child { margin-top: 0; }
 .diagram pre { font-size: .88em; }
 .cmd { display: grid; grid-template-columns: 1fr auto; gap: 4px 10px; align-items: center; padding: 10px 12px; border: 1px solid var(--border); border-radius: 10px; background: var(--surface); margin-bottom: 8px; }
-.cmd code { background: var(--code-bg) !important; color: var(--code-text); padding: 6px 10px !important; border-radius: 7px; display: block; overflow-x: auto; white-space: pre; direction: ltr; text-align: left; }
+.cmd > code { background: var(--code-bg) !important; color: var(--code-text); padding: 6px 10px !important; border-radius: 7px; display: block; overflow-x: auto; white-space: pre; direction: ltr; text-align: left; }
 .cmd .what { grid-column: 1 / -1; color: var(--muted); font-size: .92em; }
 .pitfall { padding: 10px 14px; border-radius: 10px; background: color-mix(in srgb, var(--bad) 8%, var(--surface)); border-inline-start: 4px solid var(--bad); margin-bottom: 8px; }
 details.qa { border: 1px solid var(--border); border-radius: 10px; padding: 10px 14px; margin-bottom: 8px; background: var(--surface); }
@@ -470,3 +472,8 @@ body.wrap-code .code-head .wrap { background: color-mix(in srgb, var(--code-text
 .fl-all ol { margin: 8px 0 0; padding-inline-start: 22px; }
 .fl-all li { margin: 4px 0; font-size: .92em; }
 .fl-all a { color: var(--text); }
+
+/* "Go deeper: official sources" list on lessons */
+ul.refs { list-style: none; padding: 0; margin: 0; }
+ul.refs li { padding: 8px 12px; border: 1px solid var(--border); border-radius: 10px; margin-bottom: 8px; display: flex; flex-wrap: wrap; gap: 4px 10px; align-items: baseline; }
+ul.refs li a { font-weight: 600; overflow-wrap: anywhere; }

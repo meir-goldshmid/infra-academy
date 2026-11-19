@@ -18,6 +18,7 @@ Turn `<topic>` (from the arguments: $ARGUMENTS) into a permanent lesson in the I
    - RTL/LTR: Hebrew prefixes/suffixes attach to English with a hyphen ("ב-kubectl", "Pod-ים"), commands/code go in `<code>`/`<pre>`; see the "Mixed Hebrew/English direction" rule in CONTENT_SCHEMA.md.
    Also add 3-8 glossary terms for new concepts.
 4. Append it to `content/my-lessons.js` (pick the best-fitting `track`, and an `order` after the existing lessons in that track, e.g. 50+).
+   Add 2-3 official sources for it to `content/refs.js` under its id (official docs, RFCs, man7.org, project docs; the most specific page, not a homepage; no blogs). Open each page to confirm it covers the lesson, then run `node tools/check-refs.js <id>`. Run `node tools/lesson-dates.js` so the lesson gets its "Updated" date.
 5. Run `node tools/validate.js` and fix until it prints `OK` (it also fails on wrong-way arrows: in Hebrew use ←, or run `node tools/bidi-arrows.js --fix`).
    Then do the full "RTL/BiDi check" from CLAUDE.md: re-read the Hebrew and look at the rendered lesson in Hebrew. If you delegate any writing to subagents, include that checklist in their brief.
 6. Tell the user the lesson URL fragment (`#/lesson/<id>`), a 2-line summary, and that `/publish` will put it online.

@@ -120,6 +120,34 @@ for (const pth of I.paths) {
   });
 }
 for (const l of I.lessons) (l.related||[]).forEach(r => { if (!allIds.has(r)) dangling.push(`${l.id} -> ${r}`); });
+// Invisible bidi control characters (LRM/RLM, embeddings, isolates): don't add new ones, js/bidi.js handles direction.
+// A lesson dense with RLM marks inside bidi.js's <bdi> wrappers made Chrome hang during layout. Older files still hold a few
+// (they render fine), so this reports counts; my-lessons.js, where new lessons go, must stay clean.
+{ const marked = [];
+  for (const f of files) {
+    const n = (fs.readFileSync(path.resolve(root, f), "utf8").match(/[‎‏‪-‮⁦-⁩]/g) || []).length;
+    if (!n) continue;
+    if (/my-lessons\.js$/.test(f)) errors.push(`${f}: ${n} invisible bidi control marks (LRM/RLM): remove them, js/bidi.js handles direction`);
+    else marked.push(`${path.basename(f)}:${n}`);
+  }
+  if (marked.length) console.log(`(info) invisible bidi marks in older files (don't add more): ${marked.join(", ")}`);
+}
+// Official sources (content/refs.js) and last-updated dates (content/lesson-dates.js), checked on full runs.
+if (files.length >= 5) {
+  const refs = I.refs || {}, dates = I.lessonDates || {};
+  const BAD_HOST = /^https:\/\/([^/]*\.)?(example\.(com|org|net)|localhost|127\.0\.0\.1|medium\.com|stackoverflow\.com|youtube\.com)(\/|$)/i;
+  for (const l of I.lessons) {
+    const rs = refs[l.id];
+    if (!Array.isArray(rs) || rs.length < 2) errors.push(`lesson ${l.id}: needs >=2 official sources in content/refs.js`);
+    (rs || []).forEach((r, i) => {
+      if (!r || typeof r.t !== "string" || !r.t.trim()) errors.push(`refs ${l.id}[${i}]: missing title t`);
+      if (!r || typeof r.u !== "string" || !/^https:\/\/[^\s"'<>]+$/.test(r.u)) errors.push(`refs ${l.id}[${i}]: url must be https`);
+      else if (BAD_HOST.test(r.u)) errors.push(`refs ${l.id}[${i}]: not an official source: ${r.u}`);
+    });
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(dates[l.id] || "")) errors.push(`lesson ${l.id}: no date in content/lesson-dates.js (run node tools/lesson-dates.js)`);
+  }
+  for (const id of Object.keys(refs)) if (!allIds.has(id)) errors.push(`refs: unknown lesson id ${id}`);
+}
 // Hebrew/English (RTL/LTR) rule: a Hebrew letter must never touch a Latin letter directly ("בkubectl", "Podים").
 // Use a maqaf-style hyphen: "ב-kubectl", "Pod-ים". js/bidi.js isolates the English run; the hyphen keeps the Hebrew prefix/suffix outside it.
 { const bidiFiles = files.concat(process.argv.slice(2).length ? [] :
